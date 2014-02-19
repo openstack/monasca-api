@@ -1,0 +1,151 @@
+package com.hpcloud.mon.infrastructure.servlet;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
+
+import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter.ErrorCapturingServletResponseWrapper;
+
+/**
+ * Authenticates requests using header information from the CsMiddleware. Provides the X-TENANT-ID
+ * servlet attribute as a request header. Intended to be added to a servlet filter chain after the
+ * CsMiddleware TokenAuth filter.
+ * 
+ * @author Jonathan Halterman
+ * @author Kevin Mansel
+ * @author Michael Sun
+ */
+public class PostAuthenticationFilter implements Filter {
+  private static final String CONFIRMED_STATUS = "CONFIRMED";
+  private static final String X_ROLES_ATTRIBUTE = "X-ROLES";
+  private static final String X_IDENTITY_STATUS_ATTRIBUTE = "X-IDENTITY-STATUS";
+  private static final String X_TENANT_ID_ATTRIBUTE = "X-TENANT-ID";
+  private static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
+
+  private final List<String> rolesToMatch = new ArrayList<String>();
+
+  public PostAuthenticationFilter(String[] rolesToMatch) {
+    for (String role : rolesToMatch)
+      this.rolesToMatch.add(role.toLowerCase());
+  }
+
+  @Override
+  public void destroy() {
+  }
+
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
+    final HttpServletRequest req = (HttpServletRequest) request;
+    ErrorCapturingServletResponseWrapper res = (ErrorCapturingServletResponseWrapper) response;
+    String tenantIdStr = null;
+
+    try {
+      Object tenantId = request.getAttribute(X_TENANT_ID_ATTRIBUTE);
+      if (tenantId == null)
+        sendAuthError(res, null, null, null);
+      tenantIdStr = tenantId.toString();
+
+      boolean authenticated = isAuthenticated(req);
+      boolean authorized = isAuthorized(req);
+
+      if (authenticated && authorized) {
+        HttpServletRequestWrapper wrapper = requestWrapperFor(req);
+        chain.doFilter(wrapper, response);
+        return;
+      }
+
+      if (authorized)
+        sendAuthError(res, tenantIdStr, null, null);
+      else
+        sendAuthError(res, tenantIdStr, "Tenant is missing a required role to access this service",
+            null);
+    } catch (Exception e) {
+      try {
+        sendAuthError(res, tenantIdStr, null, e);
+      } catch (IOException ignore) {
+      }
+    }
+  }
+
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
+  }
+
+  /**
+   * @return true if the request is authenticated else false
+   */
+  private boolean isAuthenticated(HttpServletRequest request) {
+    Object identityStatus = request.getAttribute(X_IDENTITY_STATUS_ATTRIBUTE);
+    return identityStatus != null && CONFIRMED_STATUS.equalsIgnoreCase(identityStatus.toString());
+  }
+
+  /**
+   * @return true if the request is authorized else false
+   */
+  private boolean isAuthorized(HttpServletRequest request) {
+    Object roles = request.getAttribute(X_ROLES_ATTRIBUTE);
+    if (roles == null)
+      return false;
+
+    for (String role : roles.toString().split(","))
+      if (rolesToMatch.contains(role.toLowerCase()))
+        return true;
+    return false;
+  }
+
+  /**
+   * Returns an HttpServletRequestWrapper that serves tenant id headers from request attributes.
+   */
+  private HttpServletRequestWrapper requestWrapperFor(final HttpServletRequest request) {
+    return new HttpServletRequestWrapper(request) {
+      @Override
+      public String getHeader(String name) {
+        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER))
+          return request.getAttribute(X_TENANT_ID_ATTRIBUTE).toString();
+        return super.getHeader(name);
+      }
+
+      @Override
+      public Enumeration<String> getHeaderNames() {
+        List<String> names = Collections.list(super.getHeaderNames());
+        names.add(X_TENANT_ID_HEADER);
+        return Collections.enumeration(names);
+      }
+
+      @Override
+      public Enumeration<String> getHeaders(String name) {
+        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER))
+          return Collections.enumeration(Collections.singleton(request.getAttribute(
+              X_TENANT_ID_ATTRIBUTE).toString()));
+        return super.getHeaders(name);
+      }
+    };
+  }
+
+  private void sendAuthError(ErrorCapturingServletResponseWrapper response,
+      @Nullable String tenantId, @Nullable String message, @Nullable Exception exception)
+      throws IOException {
+    response.setContentType(MediaType.APPLICATION_JSON);
+
+    if (message == null)
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+          tenantId == null ? "Failed to authenticate request"
+              : "Failed to authenticate request for " + tenantId, exception);
+    else
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, String.format(message, tenantId));
+  }
+}
