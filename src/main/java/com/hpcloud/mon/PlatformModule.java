@@ -66,7 +66,6 @@ public class PlatformModule extends AbstractModule {
     Properties props = new Properties();
     props.put("metadata.broker.list", Joiner.on(',').join(config.kafka.hosts));
     props.put("serializer.class", "kafka.serializer.StringEncoder");
-    props.put("partitioner.class", "example.producer.SimplePartitioner");
     props.put("request.required.acks", "1");
     ProducerConfig config = new ProducerConfig(props);
     return new Producer<String, String>(config);
