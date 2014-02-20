@@ -86,8 +86,8 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     // environment.addHealthCheck(new RabbitMQAPIHealthCheck(
     // Injector.getInstance(RabbitMQAdminService.class)));
 
-    /** Configure servlet filters */
-    if (config.useMiddleware) {
+    /** Configure auth filters */
+    if (config.middleware.enabled) {
       Map<String, String> authInitParams = new HashMap<String, String>();
       authInitParams.put("ServiceIds", config.middleware.serviceIds);
       authInitParams.put("EndpointIds", config.middleware.endpointIds);
@@ -106,7 +106,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
 
-      /** Setup servlet filters */
       environment.servlets()
           .addFilter("pre-auth", new PreAuthenticationFilter())
           .addMappingForUrlPatterns(null, true, "/*");
@@ -116,13 +115,15 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       environment.servlets()
           .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
           .addMappingForUrlPatterns(null, true, "/*");
-      environment.servlets()
-          .addFilter("tenant-validation", new TenantValidationFilter())
-          .addMappingForUrlPatterns(null, true, "/*");
-      environment.servlets()
-          .addFilter("call-counting", new TenantCallCountingFilter())
-          .addMappingForUrlPatterns(null, true, "/*");
     }
+
+    /** Configure additional filters */
+    environment.servlets()
+        .addFilter("tenant-validation", new TenantValidationFilter())
+        .addMappingForUrlPatterns(null, true, "/*");
+    environment.servlets()
+        .addFilter("call-counting", new TenantCallCountingFilter())
+        .addMappingForUrlPatterns(null, true, "/*");
 
     /** Initialize the identity service */
     Injector.getInstance(IdentityServiceClient.class).getAuthToken();
