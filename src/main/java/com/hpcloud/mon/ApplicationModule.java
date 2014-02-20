@@ -32,6 +32,6 @@ public class ApplicationModule extends AbstractModule {
     bind(AddressValidationProxyConfiguration.class).toInstance(config.addressValidation);
 
     install(new DomainModule());
-    install(new InfrastructureModule(config));
+    install(new InfrastructureModule());
   }
 }
