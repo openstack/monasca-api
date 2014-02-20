@@ -5,18 +5,19 @@ import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyStore;
+import java.util.Properties;
 
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import javax.inject.Singleton;
+
+import kafka.javaapi.producer.Producer;
+import kafka.producer.ProducerConfig;
+
 import org.skife.jdbi.v2.DBI;
 
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Joiner;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
+import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.google.inject.Scopes;
 import com.sun.jersey.api.client.Client;
@@ -37,79 +38,37 @@ public class PlatformModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    bind(MetricRegistry.class).in(Scopes.SINGLETON);
     bind(DataSourceFactory.class).toInstance(config.database);
-    bind(DBI.class).toProvider(new Provider<DBI>() {
-      @Override
-      public DBI get() {
-        try {
-          return new DBIFactory().build(environment, config.database, "mysql");
-        } catch (ClassNotFoundException e) {
-          throw new ProvisionException("Failed to provision DBI", e);
-        }
-      }
-    }).in(Scopes.SINGLETON);
-
-    // install(new RabbitMQModule());
-    // bind(RabbitMQConfiguration.class).annotatedWith(Names.named("internal")).toInstance(
-    // config.internalRabbit);
-    // bind(RabbitMQConfiguration.class).annotatedWith(Names.named("external")).toInstance(
-    // config.externalRabbit);
-
-    bind(Client.class).toProvider(new Provider<Client>() {
-      @Override
-      @SuppressWarnings("deprecation")
-      public Client get() {
-        try {
-          // Keystore
-          KeyStore ks = KeyStore.getInstance("jks");
-          FileInputStream is1 = new FileInputStream(new File(config.middleware.keystore));
-          try {
-            ks.load(is1, config.middleware.keystorePass.toCharArray());
-          } finally {
-            is1.close();
-          }
-
-          // Truststore
-          KeyStore ts = KeyStore.getInstance("jks");
-          FileInputStream is2 = new FileInputStream(new File(config.middleware.truststore));
-          try {
-            ts.load(is2, config.middleware.truststorePass.toCharArray());
-          } finally {
-            is2.close();
-          }
-
-          SSLSocketFactory ssf = new SSLSocketFactory(ks, config.middleware.keystorePass, ts);
-          PlainSocketFactory psf = PlainSocketFactory.getSocketFactory();
-          SchemeRegistry sr = new SchemeRegistry();
-          sr.register(new Scheme("http", 80, psf));
-          sr.register(new Scheme("http", 8080, psf));
-          sr.register(new Scheme("https", 443, ssf));
-          return new JerseyClientBuilder(environment).using(config.jerseyClient)
-              .using(environment)
-              .using(sr)
-              .build("default");
-        } catch (Exception e) {
-          throw new ProvisionException("Failed to create jersey client", e);
-        }
-      }
-    }).in(Scopes.SINGLETON);
-
-    // // Bind external config by default for AdminService to use
-    // bind(RabbitMQConfiguration.class).toInstance(config.externalRabbit);
-    // bind(RabbitMQAdminService.class).in(Scopes.SINGLETON);
   }
 
-  // @Provides
-  // @Named("internal")
-  // @Singleton
-  // public RabbitMQService getInternalRabbit() {
-  // return new RabbitMQService(config.internalRabbit);
-  // }
-  //
-  // @Provides
-  // @Named("external")
-  // @Singleton
-  // public RabbitMQService getExternalRabbit() {
-  // return new RabbitMQService(config.externalRabbit);
-  // }
+  @Provides
+  @Singleton
+  public DBI getDBI() {
+    try {
+      return new DBIFactory().build(environment, config.database, "mysql");
+    } catch (ClassNotFoundException e) {
+      throw new ProvisionException("Failed to provision DBI", e);
+    }
+  }
+
+  @Provides
+  @Singleton
+  public Client getClient() {
+    return new JerseyClientBuilder(environment).using(config.jerseyClient)
+        .using(environment)
+        .build("default");
+  }
+
+  @Provides
+  @Singleton
+  public Producer<?, ?> getProducer() {
+    Properties props = new Properties();
+    props.put("metadata.broker.list", Joiner.on(',').join(config.kafka.hosts));
+    props.put("serializer.class", "kafka.serializer.StringEncoder");
+    props.put("partitioner.class", "example.producer.SimplePartitioner");
+    props.put("request.required.acks", "1");
+    ProducerConfig config = new ProducerConfig(props);
+    return new Producer<String, String>(config);
+  }
 }
