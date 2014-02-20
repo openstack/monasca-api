@@ -20,10 +20,13 @@ import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.servlet.AddressValidationProxyServlet;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
+import com.hpcloud.mon.infrastructure.servlet.TenantCallCountingFilter;
+import com.hpcloud.mon.infrastructure.servlet.TenantValidationFilter;
 import com.hpcloud.mon.resource.VersionResource;
 import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
 import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
+import com.hpcloud.mon.resource.exception.InvalidEntityExceptionMapper;
 import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
 import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
 import com.hpcloud.mon.resource.exception.ResourceNotFoundExceptionMapper;
@@ -57,15 +60,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     Injector.registerModules(new PlatformModule(environment, config), new ApplicationModule(config));
 
     /** Configure managed services */
-    // RabbitMQService internalRabbitService = Injector.getInstance(RabbitMQService.class,
-    // "internal");
-    // RabbitMQService externalRabbitService = Injector.getInstance(RabbitMQService.class,
-    // "external");
-    // environment.manage(Management.managed(internalRabbitService));
-    // environment.manage(Management.managed(externalRabbitService));
-    // WorkService workService = Injector.getInstance(WorkService.class);
-    // environment.manage(Management.managed(workService));
-    // environment.manage(Management.managed(Injector.getInstance(LockService.class)));
 
     /** Configure resources */
     environment.jersey().register(Injector.getInstance(VersionResource.class));
@@ -76,6 +70,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     environment.jersey().register(new EntityNotFoundExceptionMapper());
     environment.jersey().register(new ResourceNotFoundExceptionMapper());
     environment.jersey().register(new IllegalArgumentExceptionMapper());
+    environment.jersey().register(new InvalidEntityExceptionMapper());
     environment.jersey().register(new JsonProcessingExceptionMapper());
     environment.jersey().register(new JsonMappingExceptionManager());
     environment.jersey().register(new ThrowableExceptionMapper<Throwable>() {
@@ -92,7 +87,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     // environment.addHealthCheck(new RabbitMQAPIHealthCheck(
     // Injector.getInstance(RabbitMQAdminService.class)));
 
-    /** Configure filters */
+    /** Configure servlet filters */
     if (config.useMiddleware) {
       Map<String, String> authInitParams = new HashMap<String, String>();
       authInitParams.put("ServiceIds", config.middleware.serviceIds);
@@ -112,7 +107,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
 
-      /** Setup auth filter chain */
+      /** Setup servlet filters */
       environment.servlets()
           .addFilter("pre-auth", new PreAuthenticationFilter())
           .addMappingForUrlPatterns(null, true, "/*");
@@ -121,6 +116,12 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       filter.setInitParameters(authInitParams);
       environment.servlets()
           .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
+          .addMappingForUrlPatterns(null, true, "/*");
+      environment.servlets()
+          .addFilter("tenant-validation", new TenantValidationFilter())
+          .addMappingForUrlPatterns(null, true, "/*");
+      environment.servlets()
+          .addFilter("call-counting", new TenantCallCountingFilter())
           .addMappingForUrlPatterns(null, true, "/*");
     }
 

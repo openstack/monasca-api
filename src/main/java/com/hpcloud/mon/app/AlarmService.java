@@ -1,13 +1,14 @@
 package com.hpcloud.mon.app;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.inject.Named;
+
+import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +20,12 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityExistsException;
+import com.hpcloud.mon.domain.exception.InvalidEntityException;
 import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.util.Exceptions;
 import com.hpcloud.util.Serialization;
-import com.yammer.dropwizard.validation.InvalidEntityException;
 
 /**
  * Services alarm related requests.
@@ -33,18 +34,17 @@ import com.yammer.dropwizard.validation.InvalidEntityException;
  */
 public class AlarmService {
   private static final Logger LOG = LoggerFactory.getLogger(AlarmService.class);
+
+  private final MonApiConfiguration config;
+  private final Producer<String, String> producer;
   private final AlarmRepository repo;
-  private final String controlExchange;
-  private final String controlRoutingKey;
-  // private final RabbitMQService rabbitService;
   private final NotificationMethodRepository notificationMethodRepo;
 
   @Inject
-  public AlarmService(MonApiConfiguration config, @Named("external") RabbitMQService rabbitService,
+  public AlarmService(MonApiConfiguration config, Producer<String, String> producer,
       AlarmRepository repo, NotificationMethodRepository notificationMethodRepo) {
-    controlExchange = config.controlExchange;
-    controlRoutingKey = config.controlEventRoutingKey;
-    this.rabbitService = rabbitService;
+    this.config = config;
+    this.producer = producer;
     this.repo = repo;
     this.notificationMethodRepo = notificationMethodRepo;
   }
@@ -63,8 +63,7 @@ public class AlarmService {
     // Assert notification methods exist for tenant
     for (String alarmAction : alarmActions)
       if (!notificationMethodRepo.exists(tenantId, alarmAction))
-        throw new InvalidEntityException("The alarm is invalid", Arrays.asList(String.format(
-            "No notification method exists for %s", alarmAction)));
+        throw new InvalidEntityException("No notification method exists for %s", alarmAction);
 
     Map<String, AlarmSubExpression> subAlarms = new HashMap<String, AlarmSubExpression>();
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
@@ -82,7 +81,7 @@ public class AlarmService {
       // Notify interested parties of new alarm
       String event = Serialization.toJson(new AlarmCreatedEvent(tenantId, alarmId, name,
           expression, subAlarms));
-      rabbitService.send(controlExchange, controlRoutingKey, event);
+      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       return alarm;
     } catch (Exception e) {
@@ -101,6 +100,6 @@ public class AlarmService {
 
     // Notify interested parties of alarm deletion
     String event = Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, subAlarmMetricDefs));
-    rabbitService.send(controlExchange, controlRoutingKey, event);
+    producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
   }
 }
