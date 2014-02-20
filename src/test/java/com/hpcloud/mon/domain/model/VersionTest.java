@@ -1,6 +1,6 @@
 package com.hpcloud.mon.domain.model;
 
-import static com.hpcloud.dropwizard.testing.JsonHelpers.jsonFixture;
+import static com.hpcloud.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
