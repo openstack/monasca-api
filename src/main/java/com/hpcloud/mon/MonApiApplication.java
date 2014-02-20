@@ -16,6 +16,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.hp.csbu.cc.middleware.TokenAuth;
+import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
@@ -81,10 +82,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     environment.getObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
 
     /** Configure health checks */
-    // environment.addHealthCheck(new RabbitMQHealthCheck("internal", config.internalRabbit));
-    // environment.addHealthCheck(new RabbitMQHealthCheck("external", config.externalRabbit));
-    // environment.addHealthCheck(new RabbitMQAPIHealthCheck(
-    // Injector.getInstance(RabbitMQAdminService.class)));
+    environment.healthChecks().register("kafka", new KafkaHealthCheck(config.kafka));
 
     /** Configure auth filters */
     if (config.middleware.enabled) {

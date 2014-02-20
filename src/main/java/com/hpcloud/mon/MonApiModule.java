@@ -79,7 +79,7 @@ public class MonApiModule extends AbstractModule {
   @Singleton
   public Producer<String, String> getProducer() {
     Properties props = new Properties();
-    props.put("metadata.broker.list", Joiner.on(',').join(config.kafka.hosts));
+    props.put("metadata.broker.list", Joiner.on(',').join(config.kafka.brokerUris));
     props.put("serializer.class", "kafka.serializer.StringEncoder");
     props.put("request.required.acks", "1");
     ProducerConfig config = new ProducerConfig(props);
