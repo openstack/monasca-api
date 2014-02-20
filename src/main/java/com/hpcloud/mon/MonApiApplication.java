@@ -22,6 +22,9 @@ import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.TenantCallCountingFilter;
 import com.hpcloud.mon.infrastructure.servlet.TenantValidationFilter;
+import com.hpcloud.mon.resource.AlarmResource;
+import com.hpcloud.mon.resource.MetricResource;
+import com.hpcloud.mon.resource.NotificationMethodResource;
 import com.hpcloud.mon.resource.VersionResource;
 import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
 import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
@@ -59,10 +62,11 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     /** Wire services */
     Injector.registerModules(new MonApiModule(environment, config));
 
-    /** Configure managed services */
-
     /** Configure resources */
     environment.jersey().register(Injector.getInstance(VersionResource.class));
+    environment.jersey().register(Injector.getInstance(AlarmResource.class));
+    environment.jersey().register(Injector.getInstance(MetricResource.class));
+    environment.jersey().register(Injector.getInstance(NotificationMethodResource.class));
 
     /** Configure providers */
     removeExceptionMappers(environment.jersey().getResourceConfig().getSingletons());
