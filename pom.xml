@@ -169,11 +169,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlets</artifactId>
-      <version>8.1.8.v20121106</version>
-    </dependency>
 
     <!-- Test dependencies -->
     <dependency>

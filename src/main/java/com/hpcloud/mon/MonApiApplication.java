@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.hp.csbu.cc.middleware.TokenAuth;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
-import com.hpcloud.mon.infrastructure.servlet.AddressValidationProxyServlet;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.TenantCallCountingFilter;
@@ -127,12 +126,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
     /** Initialize the identity service */
     Injector.getInstance(IdentityServiceClient.class).getAuthToken();
-
-    /** Configure proxy to address validation service */
-    environment.servlets()
-        .addServlet("address-validation",
-            new AddressValidationProxyServlet(config.addressValidation.url))
-        .addMapping("/v1.1/notification-addresses/*");
   }
 
   private void removeExceptionMappers(Set<Object> items) {
