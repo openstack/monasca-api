@@ -56,7 +56,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
   @Override
   public void run(MonApiConfiguration config, Environment environment) throws Exception {
     /** Wire services */
-    Injector.registerModules(new PlatformModule(environment, config), new ApplicationModule(config));
+    Injector.registerModules(new MonApiModule(environment, config));
 
     /** Configure managed services */
 
