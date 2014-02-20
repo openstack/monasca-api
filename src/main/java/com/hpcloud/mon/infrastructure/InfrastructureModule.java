@@ -6,12 +6,14 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.metric.DatapointRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.infrastructure.compute.ComputeResourceVerificationService;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.objectstore.ObjectStoreResourceVerificationService;
 import com.hpcloud.mon.infrastructure.persistence.AlarmRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.DatapointRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.NotificationMethodRepositoryImpl;
 
 /**
@@ -22,9 +24,13 @@ import com.hpcloud.mon.infrastructure.persistence.NotificationMethodRepositoryIm
 public class InfrastructureModule extends AbstractModule {
   @Override
   protected void configure() {
+    // Bind repositories
+    bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
+    bind(DatapointRepository.class).to(DatapointRepositoryImpl.class).in(Singleton.class);
     bind(NotificationMethodRepository.class).to(NotificationMethodRepositoryImpl.class).in(
         Singleton.class);
-    bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
+
+    // Bind domain services
     bind(IdentityServiceClient.class).in(Singleton.class);
     bind(ResourceVerificationService.class).annotatedWith(Names.named(Namespaces.COMPUTE_NAMESPACE))
         .to(ComputeResourceVerificationService.class)
