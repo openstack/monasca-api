@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Jonathan Halterman
  */
 public class MiddlewareConfiguration {
+  @NotNull public Boolean enabled;
   @NotEmpty @JsonProperty public String serviceIds;
   @NotEmpty @JsonProperty public String endpointIds;
   @NotEmpty @JsonProperty public String serverVIP;

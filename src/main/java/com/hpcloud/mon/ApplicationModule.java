@@ -4,7 +4,6 @@ import java.util.Map.Entry;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import com.hpcloud.mon.MonApiConfiguration.AddressValidationProxyConfiguration;
 import com.hpcloud.mon.MonApiConfiguration.CloudServiceConfiguration;
 import com.hpcloud.mon.domain.DomainModule;
 import com.hpcloud.mon.infrastructure.InfrastructureModule;
@@ -29,7 +28,6 @@ public class ApplicationModule extends AbstractModule {
       bind(CloudServiceConfiguration.class).annotatedWith(Names.named(cloudServiceConf.getKey()))
           .toInstance(cloudServiceConf.getValue());
     bind(IdentityServiceConfiguration.class).toInstance(config.identityService);
-    bind(AddressValidationProxyConfiguration.class).toInstance(config.addressValidation);
 
     install(new DomainModule());
     install(new InfrastructureModule());
