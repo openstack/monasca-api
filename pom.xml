@@ -125,16 +125,6 @@
       <version>2.3</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>1.15</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey.contribs</groupId>
-      <artifactId>jersey-apache-client4</artifactId>
-      <version>1.15</version>
-    </dependency>
-    <dependency>
       <groupId>com.hp.csbu.cc</groupId>
       <artifactId>CsMiddleware</artifactId>
       <version>3.34.0</version>
