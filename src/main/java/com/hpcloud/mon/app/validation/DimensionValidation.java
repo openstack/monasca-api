@@ -152,7 +152,8 @@ public final class DimensionValidation {
             name, namespace);
       DimensionValidator validator = VALIDATORS.get(namespace);
       if (validator != null && !validator.isValidDimension(name, value))
-        throw Exceptions.unprocessableEntity("The value of dimension %s is invalid", name);
+        throw Exceptions.unprocessableEntity("%s is not a valid dimension value for namespace %s",
+            value, namespace);
     }
   }
 }
