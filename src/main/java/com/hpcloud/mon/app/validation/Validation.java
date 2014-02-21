@@ -1,4 +1,4 @@
-package com.hpcloud.mon.app.validate;
+package com.hpcloud.mon.app.validation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +12,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.base.Strings;
-import com.hpcloud.mon.MonApiConfiguration.CloudServiceConfiguration;
 import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.resource.exception.Exceptions;
@@ -29,15 +28,6 @@ public final class Validation {
       "count");
 
   private Validation() {
-  }
-
-  /**
-   * @throws Exceptions.unprocessableEntity
-   */
-  public static void validate(Validateable validateable) {
-    ValidationResult result = validateable.validate();
-    if (result.hasErrors())
-      throw Exceptions.unprocessableEntity(result.get());
   }
 
   /**
@@ -100,17 +90,12 @@ public final class Validation {
    * the {@code namespace}.
    */
   public static void verifyOwnership(String tenantId, String namespace,
-      Map<String, String> dimensions, CloudServiceConfiguration serviceConfig, String authToken) {
-    String serviceVersion = serviceConfig == null ? null : serviceConfig.version;
-    String resourceIdDim = Namespaces.getResourceIdDimension(namespace, serviceVersion);
-
+      Map<String, String> dimensions, String authToken) {
+    String resourceIdDim = Namespaces.getResourceIdDimension(namespace);
     if (resourceIdDim != null && Injector.isBound(ResourceVerificationService.class, namespace)) {
       ResourceVerificationService verificationService = Injector.getInstance(
           ResourceVerificationService.class, namespace);
       String resourceId = dimensions.get(resourceIdDim);
-      if (resourceId == null)
-        throw Exceptions.badRequest("Missing required dimension %s", resourceIdDim);
-
       if (verificationService != null
           && !verificationService.isVerifiedOwner(tenantId, resourceId, dimensions.get("az"),
               authToken))

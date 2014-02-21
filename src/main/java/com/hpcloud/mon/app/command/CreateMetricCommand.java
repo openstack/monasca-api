@@ -4,18 +4,27 @@ import java.util.Arrays;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hpcloud.mon.app.validate.DimensionValidation;
-import com.hpcloud.mon.app.validate.NamespaceValidation;
-import com.hpcloud.mon.app.validate.Validateable;
-import com.hpcloud.mon.app.validate.ValidationResult;
+import com.hpcloud.mon.app.validation.DimensionValidation;
+import com.hpcloud.mon.app.validation.NamespaceValidation;
 import com.hpcloud.mon.common.model.metric.Metric;
+import com.hpcloud.mon.resource.exception.Exceptions;
 
-public class CreateMetricCommand implements Validateable {
-  @NotEmpty public String namespace;
+/**
+ * @author Jonathan Halterman
+ * @author Todd Walk
+ */
+public class CreateMetricCommand {
+  private static final long TIME_2MIN = 120;
+  private static final long TIME_2WEEKS = 1209600;
+  private static final double VALUE_MIN = 8.515920e-109;
+  private static final double VALUE_MAX = 1.174271e+108;
+
+  @NotEmpty @Size(min = 1, max = 64) public String namespace;
   public Map<String, String> dimensions;
   public long timestamp;
   public double value;
@@ -38,6 +47,17 @@ public class CreateMetricCommand implements Validateable {
     setDimensions(dimensions);
     setTimestamp(timestamp);
     this.timeValues = timeValues;
+  }
+
+  private static void validateTimestamp(long timestamp) {
+    long time = System.currentTimeMillis() / 1000;
+    if (timestamp > time + TIME_2MIN || timestamp < time - TIME_2WEEKS)
+      throw Exceptions.unprocessableEntity("Timestamp %s is out of legal range", timestamp);
+  }
+
+  private static void validateValue(double value) {
+    if (value < 0 || (value > 0 && (value < VALUE_MIN || value > VALUE_MAX)))
+      throw Exceptions.unprocessableEntity("Value %s is out of legal range", value);
   }
 
   @Override
@@ -85,6 +105,12 @@ public class CreateMetricCommand implements Validateable {
   }
 
   @JsonProperty
+  public void setDimensions(Map<String, String> dimensions) {
+    this.dimensions = dimensions == null || dimensions.isEmpty() ? null
+        : DimensionValidation.normalize(dimensions);
+  }
+
+  @JsonProperty
   public void setNamespace(String namespace) {
     this.namespace = NamespaceValidation.normalize(namespace);
   }
@@ -93,12 +119,6 @@ public class CreateMetricCommand implements Validateable {
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis() / 1000L
         : timestamp.longValue();
-  }
-
-  @JsonProperty
-  public void setDimensions(Map<String, String> dimensions) {
-    this.dimensions = dimensions == null || dimensions.isEmpty() ? null
-        : DimensionValidation.normalize(dimensions);
   }
 
   public Metric toMetric() {
@@ -112,8 +132,22 @@ public class CreateMetricCommand implements Validateable {
         namespace, dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
   }
 
-  @Override
-  public ValidationResult validate() {
-    return null;
+  public void validate() {
+    // Validate namespace and dimensions
+    NamespaceValidation.validate(namespace);
+    DimensionValidation.validate(namespace, dimensions);
+
+    // Validate times and values
+    validateTimestamp(timestamp);
+    if (timeValues != null && timeValues.length > 0) {
+      for (double[] timeValuePair : timeValues) {
+        if (timeValuePair.length != 2)
+          throw Exceptions.unprocessableEntity("All times_values must be timestamp / value pairs");
+        validateTimestamp((long) timeValuePair[0]);
+        validateValue(timeValuePair[1]);
+      }
+    } else {
+      validateValue(value);
+    }
   }
 }

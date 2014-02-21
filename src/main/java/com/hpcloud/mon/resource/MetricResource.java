@@ -1,6 +1,7 @@
 package com.hpcloud.mon.resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +27,11 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.app.MetricService;
 import com.hpcloud.mon.app.command.CreateMetricCommand;
-import com.hpcloud.mon.app.validate.DimensionValidation;
-import com.hpcloud.mon.app.validate.MetricValidation;
-import com.hpcloud.mon.app.validate.NamespaceValidation;
-import com.hpcloud.mon.app.validate.Validation;
+import com.hpcloud.mon.app.validation.DimensionValidation;
+import com.hpcloud.mon.app.validation.NamespaceValidation;
+import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.common.model.metric.Metric;
 import com.hpcloud.mon.domain.model.metric.Datapoint;
@@ -47,42 +46,38 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  */
 @Path("/{version: v1.[2]}/metrics")
 public class MetricResource {
+  private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
 
   private final MetricService service;
   private final DatapointRepository datapointRepo;
-  private final MonApiConfiguration config;
 
   @Inject
-  public MetricResource(MetricService service, DatapointRepository datapointRepo,
-      MonApiConfiguration config) {
+  public MetricResource(MetricService service, DatapointRepository datapointRepo) {
     this.service = service;
     this.datapointRepo = datapointRepo;
-    this.config = config;
   }
 
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
   public void create(@Context UriInfo uriInfo, @HeaderParam("X-Auth-Token") String authToken,
-      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("tenant_id") String crossTenantId,
-      @Valid CreateMetricCommand[] commands) {
+      @HeaderParam("X-Tenant-Id") String tenantId, @HeaderParam("X-Roles") String roles,
+      @QueryParam("tenant_id") String crossTenantId, @Valid CreateMetricCommand[] commands) {
+    boolean isDelegate = Arrays.asList(COMMA_SPLITTER.split(roles)).contains(
+        MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
-      // Validate access
-      if (Namespaces.isReserved(command.namespace)) {
-        NamespaceValidation.validateSimple(command.namespace);
-      } else {
+      if (!isDelegate) {
+        if (Namespaces.isReserved(command.namespace))
+          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs namespace",
+              tenantId);
         if (!Strings.isNullOrEmpty(crossTenantId))
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
-        NamespaceValidation.validate(command.namespace);
       }
 
-      // Validate dimensions and metric
-      DimensionValidation.validate(command.namespace, command.dimensions,
-          config.cloudServices.get(command.namespace));
-      MetricValidation.validate(command);
+      command.validate();
       metrics.add(command.toMetric());
     }
 
@@ -98,8 +93,9 @@ public class MetricResource {
       @QueryParam("end_time") String endTimeStr, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
+
     // Validate parameters
-    NamespaceValidation.validateSimple(namespace);
+    NamespaceValidation.validate(namespace);
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     if (!startTime.isBefore(endTime))
@@ -117,13 +113,13 @@ public class MetricResource {
         dimensions.put(dimensionArr[0], dimensionArr[1]);
     }
 
-    // Require properly formed dimensions for cloud services, for now
-    DimensionValidation.validate(namespace, dimensions, config.cloudServices.get(namespace));
+    // Validate dimensions
+    DimensionValidation.validate(namespace, dimensions);
 
     // Verify ownership
-    Validation.verifyOwnership(tenantId, namespace, dimensions,
-        config.cloudServices.get(namespace), authToken);
+    Validation.verifyOwnership(tenantId, namespace, dimensions, authToken);
 
+    // Return datapoints
     return datapointRepo.find(authToken, namespace, startTime, endTime, dimensions, statistics,
         period);
   }

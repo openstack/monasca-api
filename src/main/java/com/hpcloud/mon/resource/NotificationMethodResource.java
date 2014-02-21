@@ -1,6 +1,7 @@
 package com.hpcloud.mon.resource;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -60,7 +61,8 @@ public class NotificationMethodResource {
   @Produces(MediaType.APPLICATION_JSON)
   public NotificationMethodsRepresentation list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId) {
-    return new NotificationMethodsRepresentation(Links.hydrate(repo.find(tenantId), uriInfo));
+    List<NotificationMethod> notificationMethods = Links.hydrate(repo.find(tenantId), uriInfo);
+    return new NotificationMethodsRepresentation(notificationMethods);
   }
 
   @GET
@@ -70,8 +72,9 @@ public class NotificationMethodResource {
   public NotificationMethodRepresentation get(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
-    return new NotificationMethodRepresentation(Links.hydrate(
-        repo.findById(tenantId, notificationMethodId), uriInfo));
+    NotificationMethod notificationMethod = Links.hydrate(
+        repo.findById(tenantId, notificationMethodId), uriInfo);
+    return new NotificationMethodRepresentation(notificationMethod);
   }
 
   @DELETE

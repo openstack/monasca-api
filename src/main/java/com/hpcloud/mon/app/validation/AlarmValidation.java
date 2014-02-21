@@ -1,10 +1,7 @@
-package com.hpcloud.mon.app.validate;
+package com.hpcloud.mon.app.validation;
 
 import javax.ws.rs.WebApplicationException;
 
-import com.google.common.base.Strings;
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
@@ -15,8 +12,8 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * 
  * @author Jonathan Halterman
  */
-public final class AlarmExpressionValidation {
-  private AlarmExpressionValidation() {
+public final class AlarmValidation {
+  private AlarmValidation() {
   }
 
   /**
@@ -24,8 +21,7 @@ public final class AlarmExpressionValidation {
    * 
    * @throws WebApplicationException if validation fails
    */
-  public static AlarmExpression validateNormalizeAndGet(String expression,
-      MonApiConfiguration maasConfig) {
+  public static AlarmExpression validateNormalizeAndGet(String expression) {
     AlarmExpression alarmExpression = null;
 
     try {
@@ -38,27 +34,22 @@ public final class AlarmExpressionValidation {
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
 
+      // Normalize and validate namespace
       metricDef.namespace = NamespaceValidation.normalize(metricDef.namespace);
-      NamespaceValidation.validateSimple(metricDef.namespace);
+      NamespaceValidation.validate(metricDef.namespace);
 
+      // Normalize and validate dimensions
       metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
-      DimensionValidation.validate(metricDef.namespace, metricDef.dimensions,
-          maasConfig.cloudServices.get(metricDef.namespace));
+      DimensionValidation.validate(metricDef.namespace, metricDef.dimensions);
 
-      if (Namespaces.isReserved(metricDef.namespace)) {
-        String type = metricDef.dimensions.get("metric_name");
-        if (!Strings.isNullOrEmpty(type)
-            && !Namespaces.isValidMetricname(metricDef.namespace, type)) {
-          throw Exceptions.unprocessableEntity("%s is not a valid metric name for namespace %s",
-              type, metricDef.namespace);
-        }
-      }
-
+      // Validate period
       if (subExpression.getPeriod() == 0)
         throw Exceptions.unprocessableEntity("Period must not be 0");
       if (subExpression.getPeriod() % 60 != 0)
         throw Exceptions.unprocessableEntity("Period %s must be a multiple of 60",
             subExpression.getPeriod());
+
+      // Validate periods
       if (subExpression.getPeriods() < 1)
         throw Exceptions.unprocessableEntity("Periods %s must be greater than or equal to 1",
             subExpression.getPeriods());
