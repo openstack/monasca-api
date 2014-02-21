@@ -24,6 +24,7 @@ import com.hpcloud.mon.resource.AlarmResource;
 import com.hpcloud.mon.resource.MetricResource;
 import com.hpcloud.mon.resource.NotificationMethodResource;
 import com.hpcloud.mon.resource.VersionResource;
+import com.hpcloud.mon.resource.exception.ConstraintViolationExceptionMapper;
 import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
 import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
@@ -75,6 +76,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     environment.jersey().register(new InvalidEntityExceptionMapper());
     environment.jersey().register(new JsonProcessingExceptionMapper());
     environment.jersey().register(new JsonMappingExceptionManager());
+    environment.jersey().register(new ConstraintViolationExceptionMapper());
     environment.jersey().register(new ThrowableExceptionMapper<Throwable>() {
     });
 
