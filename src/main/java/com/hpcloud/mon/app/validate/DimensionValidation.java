@@ -3,8 +3,6 @@ package com.hpcloud.mon.app.validate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
@@ -16,7 +14,7 @@ import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
- * Utilities for working with dimensions.
+ * Utilities for validating dimensions.
  * 
  * @author Jonathan Halterman
  * @author Todd Walk
@@ -26,35 +24,12 @@ public final class DimensionValidation {
   }
 
   /**
-   * Normalizes supported dimensions for the {@code namespace} to lowercase.
+   * Normalizes dimensions by stripping whitespace.
    */
   public static Map<String, String> normalize(Map<String, String> dimensions) {
     if (dimensions == null)
       return null;
-    Map<String, String> result = new HashMap<String, String>();
-    for (Map.Entry<String, String> dimension : dimensions.entrySet()) {
-      String dimensionKey = null;
-      if (dimension.getKey() != null) {
-        dimensionKey = CharMatcher.WHITESPACE.trimFrom(dimension.getKey());
-        if (dimensionKey.isEmpty())
-          dimensionKey = null;
-      }
-      String dimensionValue = null;
-      if (dimension.getValue() != null) {
-        dimensionValue = CharMatcher.WHITESPACE.trimFrom(dimension.getValue());
-        if (dimensionValue.isEmpty())
-          dimensionValue = null;
-      }
-      result.put(dimensionKey, dimensionValue);
-    }
-
-    return result;
-  }
-
-  public static SortedMap<String, String> normalizeAndSort(Map<String, String> dimensions) {
-    if (dimensions == null)
-      return null;
-    SortedMap<String, String> result = new TreeMap<String, String>();
+    Map<String, String> result = new HashMap<>();
     for (Map.Entry<String, String> dimension : dimensions.entrySet()) {
       String dimensionKey = null;
       if (dimension.getKey() != null) {

@@ -29,8 +29,8 @@ public class ObjectStoreResourceVerificationService extends AbstractRestClient i
   }
 
   @Override
-  public boolean isVerifiedOwner(String tenantId, final String containerName, String unused,
-      String az, String authToken) {
+  public boolean isVerifiedOwner(String tenantId, final String containerName, String az,
+      String authToken) {
     Preconditions.checkNotNull(tenantId, "tenantId");
     Preconditions.checkNotNull(containerName, "containerName");
 

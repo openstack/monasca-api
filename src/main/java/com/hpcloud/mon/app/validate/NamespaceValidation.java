@@ -8,19 +8,24 @@ import com.hpcloud.mon.resource.exception.Exceptions;
 import com.sun.jersey.spi.container.WebApplication;
 
 /**
+ * Utilities for validating namespaces.
+ * 
  * @author Todd Walk
  */
 public class NamespaceValidation {
   private NamespaceValidation() {
   }
 
+  /**
+   * Normalizes the {@code namespace} by removing whitespace.
+   */
   public static String normalize(String namespace) {
     return namespace == null ? null : CharMatcher.WHITESPACE.trimFrom(namespace);
   }
 
   /**
    * Validates that the *custom metric created* {@code namespace} is valid for the character
-   * constrints
+   * constraints.
    * 
    * @throws WebApplication if validation fails
    */

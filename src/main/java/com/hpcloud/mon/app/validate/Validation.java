@@ -32,6 +32,15 @@ public final class Validation {
   }
 
   /**
+   * @throws Exceptions.unprocessableEntity
+   */
+  public static void validate(Validateable validateable) {
+    ValidationResult result = validateable.validate();
+    if (result.hasErrors())
+      throw Exceptions.unprocessableEntity(result.get());
+  }
+
+  /**
    * @throws WebApplicationException if the {@code date} invalid or is required and null.
    */
   public static DateTime parseAndValidateDate(String date, String parameterName, boolean required) {
@@ -94,8 +103,6 @@ public final class Validation {
       Map<String, String> dimensions, CloudServiceConfiguration serviceConfig, String authToken) {
     String serviceVersion = serviceConfig == null ? null : serviceConfig.version;
     String resourceIdDim = Namespaces.getResourceIdDimension(namespace, serviceVersion);
-    String secondaryResourceIdDim = Namespaces.getSecondaryResourceIdDimension(namespace,
-        serviceVersion);
 
     if (resourceIdDim != null && Injector.isBound(ResourceVerificationService.class, namespace)) {
       ResourceVerificationService verificationService = Injector.getInstance(
@@ -103,12 +110,10 @@ public final class Validation {
       String resourceId = dimensions.get(resourceIdDim);
       if (resourceId == null)
         throw Exceptions.badRequest("Missing required dimension %s", resourceIdDim);
-      String secondaryResourceId = secondaryResourceIdDim == null ? resourceId
-          : dimensions.get(secondaryResourceIdDim);
 
       if (verificationService != null
-          && !verificationService.isVerifiedOwner(tenantId, resourceId, secondaryResourceId,
-              dimensions.get("az"), authToken))
+          && !verificationService.isVerifiedOwner(tenantId, resourceId, dimensions.get("az"),
+              authToken))
         throw Exceptions.badRequest("The %s resource %s is not owned by tenant %s", namespace,
             resourceId, tenantId);
     }

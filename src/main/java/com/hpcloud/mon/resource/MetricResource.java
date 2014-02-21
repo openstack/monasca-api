@@ -16,7 +16,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -39,7 +38,6 @@ import com.hpcloud.mon.common.model.metric.Metric;
 import com.hpcloud.mon.domain.model.metric.Datapoint;
 import com.hpcloud.mon.domain.model.metric.DatapointRepository;
 import com.hpcloud.mon.resource.exception.Exceptions;
-import com.hpcloud.mon.resource.exception.Exceptions.FaultType;
 
 /**
  * Metric resource implementation.
@@ -47,7 +45,7 @@ import com.hpcloud.mon.resource.exception.Exceptions.FaultType;
  * @author Todd Walk
  * @author Jonathan Halterman
  */
-@Path("/{version: v1.[0-1]}/metrics")
+@Path("/{version: v1.[2]}/metrics")
 public class MetricResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
@@ -67,29 +65,28 @@ public class MetricResource {
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
-  public void create(@Context UriInfo uriInfo, @PathParam("version") String version,
-      @HeaderParam("X-Auth-Token") String authToken, @HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("tenant_id") String crossTenantId, @Valid CreateMetricCommand newMetric) {
-    Metric metric = validateAndConvert(version, newMetric, tenantId, crossTenantId);
-    service.create(metric, tenantId, crossTenantId, authToken);
-  }
+  public void create(@Context UriInfo uriInfo, @HeaderParam("X-Auth-Token") String authToken,
+      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("tenant_id") String crossTenantId,
+      @Valid CreateMetricCommand[] commands) {
+    List<Metric> metrics = new ArrayList<>(commands.length);
+    for (CreateMetricCommand command : commands) {
+      // Validate access
+      if (Namespaces.isReserved(command.namespace)) {
+        NamespaceValidation.validateSimple(command.namespace);
+      } else {
+        if (!Strings.isNullOrEmpty(crossTenantId))
+          throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
+        NamespaceValidation.validate(command.namespace);
+      }
 
-  @POST
-  @Timed
-  @Path("aggregate")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public void create(@Context UriInfo uriInfo, @PathParam("version") String version,
-      @HeaderParam("X-Auth-Token") String authToken, @HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("tenant_id") String crossTenantId, @Valid CreateMetricCommand[] newMetrics) {
-    if ("v1.0".equals(version))
-      throw new WebApplicationException(FaultType.NOT_FOUND.statusCode);
+      // Validate dimensions and metric
+      DimensionValidation.validate(command.namespace, command.dimensions,
+          config.cloudServices.get(command.namespace));
+      MetricValidation.validate(command);
+      metrics.add(command.toMetric());
+    }
 
-    List<Metric> flatMetrics = new ArrayList<Metric>();
-    for (CreateMetricCommand newMetric : newMetrics)
-      flatMetrics.add(validateAndConvert("v1.1", newMetric, tenantId, crossTenantId));
-
-    for (Metric metric : flatMetrics)
-      service.create(metric, tenantId, crossTenantId, authToken);
+    service.create(metrics, tenantId, crossTenantId, authToken);
   }
 
   @GET
@@ -101,9 +98,6 @@ public class MetricResource {
       @QueryParam("end_time") String endTimeStr, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
-    if ("v1.0".equals(version))
-      throw new WebApplicationException(FaultType.NOT_FOUND.statusCode);
-
     // Validate parameters
     NamespaceValidation.validateSimple(namespace);
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
@@ -132,41 +126,5 @@ public class MetricResource {
 
     return datapointRepo.find(authToken, namespace, startTime, endTime, dimensions, statistics,
         period);
-  }
-
-  private Metric validateAndConvert(String version, CreateMetricCommand newMetric,
-      String tenantId, String crossTenantId) {
-    if ("v1.1".equals(version) && !Strings.isNullOrEmpty(newMetric.type))
-      throw Exceptions.unprocessableEntity(
-          "The type field is not available for the 1.1 API (project: %s)", tenantId);
-
-    if ("v1.0".equals(version) && !Strings.isNullOrEmpty(newMetric.type)) {
-      if (newMetric.dimensions == null)
-        newMetric.dimensions = new HashMap<String, String>();
-      newMetric.dimensions.put("metric_name", newMetric.type);
-    }
-
-    newMetric.normalizeTimestamp();
-    validate(newMetric, tenantId, crossTenantId);
-    return newMetric.toFlatMetric();
-  }
-
-  private void validate(CreateMetricCommand newMetric, String tenantId, String crossTenantId) {
-    // Normalize
-    newMetric.namespace = NamespaceValidation.normalize(newMetric.namespace);
-
-    // Validate access
-    if (Namespaces.isReserved(newMetric.namespace)) {
-      NamespaceValidation.validateSimple(newMetric.namespace);
-    } else {
-      if (!Strings.isNullOrEmpty(crossTenantId))
-        throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
-      NamespaceValidation.validate(newMetric.namespace);
-    }
-
-    // Validate dimensions and metric
-    DimensionValidation.validate(newMetric.namespace, newMetric.dimensions,
-        config.cloudServices.get(newMetric.namespace));
-    MetricValidation.validate(newMetric);
   }
 }

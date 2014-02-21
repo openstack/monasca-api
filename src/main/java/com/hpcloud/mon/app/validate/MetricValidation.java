@@ -9,7 +9,7 @@ import com.hpcloud.mon.common.model.Namespaces;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
- * Utilities for working with metrics.
+ * Utilities for validating metrics.
  * 
  * @author Todd Walk
  */
@@ -23,7 +23,7 @@ public final class MetricValidation {
   }
 
   /**
-   * Normalizes supported metrics for the {@code namespace} to lowercase.
+   * Normalizes supported metrics by removing whitespace.
    */
   public static String normalize(String metric) {
     return metric == null ? null : CharMatcher.WHITESPACE.trimFrom(metric);

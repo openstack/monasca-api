@@ -42,11 +42,9 @@ public class ComputeResourceVerificationService extends AbstractRestClient imple
   }
 
   @Override
-  public boolean isVerifiedOwner(String tenantId, final String instanceId, String shortInstanceId,
-      String az, String unused) {
+  public boolean isVerifiedOwner(String tenantId, final String instanceId, String az, String unused) {
     Preconditions.checkNotNull(tenantId, "tenantId");
     Preconditions.checkNotNull(instanceId, "instanceId");
-    Preconditions.checkNotNull(shortInstanceId, "shortInstanceId");
 
     String baseUri = String.format(config.urlFormat, az);
     final String uri = String.format("%s/%s/servers/%s", baseUri, identityConfig.tenantId,
@@ -70,10 +68,10 @@ public class ComputeResourceVerificationService extends AbstractRestClient imple
       throw Exceptions.uncheck(e, "Failed to parse compute resource verification response");
     }
 
-    if (!serverId.endsWith(shortInstanceId))
+    if (!serverId.endsWith(instanceId))
       throw new IllegalArgumentException(String.format(
           "The referenced resource id %s is invalid for the secondary id %s", instanceId,
-          shortInstanceId));
+          instanceId));
     return tenantId.equals(serverTenantId);
   }
 }

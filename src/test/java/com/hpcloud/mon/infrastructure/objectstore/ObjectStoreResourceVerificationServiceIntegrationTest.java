@@ -48,20 +48,20 @@ public class ObjectStoreResourceVerificationServiceIntegrationTest {
    */
   public void shouldVerifyOwnerOfResource() {
     ObjectStoreResourceVerificationService service = serviceFor("1.0");
-    assertTrue(service.isVerifiedOwner("46995959297574", "misc", null, null, authToken));
+    assertTrue(service.isVerifiedOwner("46995959297574", "misc", null, authToken));
   }
 
   @Test(expectedExceptions = ResourceNotFoundException.class)
   public void shouldRejectNonExistentResources() {
     ObjectStoreResourceVerificationService service = serviceFor("1.0");
-    service.isVerifiedOwner("46995959297574", "foobarbaz", null, null, authToken);
+    service.isVerifiedOwner("46995959297574", "foobarbaz", null, authToken);
   }
 
   // Wrong tenant
   @Test(expectedExceptions = RestClientException.class)
   public void shouldRejectNonOwner() {
     ObjectStoreResourceVerificationService service = serviceFor("1.0");
-    assertFalse(service.isVerifiedOwner("78129159605336", "misc", null, null, authToken));
+    assertFalse(service.isVerifiedOwner("78129159605336", "misc", null, authToken));
   }
 
   /**
@@ -69,12 +69,12 @@ public class ObjectStoreResourceVerificationServiceIntegrationTest {
    */
   public void shouldVerifyOwnerOfResourceInBravo() {
     ObjectStoreResourceVerificationService service = serviceFor("1");
-    assertTrue(service.isVerifiedOwner("46995959297574", "misc", null, null, authToken));
+    assertTrue(service.isVerifiedOwner("46995959297574", "misc", null, authToken));
   }
 
   @Test(expectedExceptions = RestClientException.class)
   public void shouldRejectNonOwnerInBravo() {
     ObjectStoreResourceVerificationService service = serviceFor("1");
-    assertFalse(service.isVerifiedOwner("78129159605336", "misc", null, null, authToken));
+    assertFalse(service.isVerifiedOwner("78129159605336", "misc", null, authToken));
   }
 }

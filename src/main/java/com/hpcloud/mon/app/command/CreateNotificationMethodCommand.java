@@ -5,6 +5,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.hpcloud.mon.app.validate.Validateable;
+import com.hpcloud.mon.app.validate.ValidationResult;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
@@ -13,7 +15,7 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * 
  * @author Jonathan Halterman
  */
-public class CreateNotificationMethodCommand {
+public class CreateNotificationMethodCommand implements Validateable {
   @Valid @NotNull public CreateNotificationMethodInner notificationMethod;
 
   /** Actual resource values are wrapped since that's how OpenStack does it. */
@@ -90,5 +92,10 @@ public class CreateNotificationMethodCommand {
     } else if (!notificationMethod.equals(other.notificationMethod))
       return false;
     return true;
+  }
+
+  @Override
+  public ValidationResult validate() {
+    return null;
   }
 }
