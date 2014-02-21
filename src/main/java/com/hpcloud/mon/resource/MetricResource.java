@@ -44,7 +44,7 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * @author Todd Walk
  * @author Jonathan Halterman
  */
-@Path("/{version: v1.[2]}/metrics")
+@Path("/v2.0/metrics")
 public class MetricResource {
   private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();

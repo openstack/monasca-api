@@ -31,7 +31,7 @@ import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodReposit
  * 
  * @author Jonathan Halterman
  */
-@Path("/{version: v1.[2]}/notification-methods")
+@Path("/v2.0/notification-methods")
 public class NotificationMethodResource {
   private final NotificationMethodRepository repo;
 

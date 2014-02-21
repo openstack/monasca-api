@@ -15,17 +15,17 @@ import com.hpcloud.mon.domain.model.version.Version.VersionStatus;
  * @author Jonathan Halterman
  */
 public class VersionRepositoryImpl implements VersionRepository {
-  private static final Version v1_2 = new Version("v1.2", VersionStatus.CURRENT, new Date());
+  private static final Version v2_0 = new Version("v2.0", VersionStatus.CURRENT, new Date());
 
   @Override
   public List<Version> find() {
-    return Arrays.asList(v1_2);
+    return Arrays.asList(v2_0);
   }
 
   @Override
   public Version findById(String versionId) {
-    if ("v1.2".equals(versionId))
-      return v1_2;
+    if ("v2.0".equals(versionId))
+      return v2_0;
     throw new EntityNotFoundException("No version exists for %s", versionId);
   }
 }
