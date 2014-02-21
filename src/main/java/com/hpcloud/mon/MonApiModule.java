@@ -37,12 +37,6 @@ public class MonApiModule extends AbstractModule {
   private final MonApiConfiguration config;
   private final Environment environment;
 
-  /** For testing. */
-  public MonApiModule(MonApiConfiguration config) {
-    this.environment = null;
-    this.config = config;
-  }
-
   public MonApiModule(Environment environment, MonApiConfiguration config) {
     this.environment = environment;
     this.config = config;
