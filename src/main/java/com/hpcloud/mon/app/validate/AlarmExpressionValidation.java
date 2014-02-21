@@ -11,7 +11,7 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
- * Utilities for working with AlarmExpressions.
+ * Utilities for validating AlarmExpressions.
  * 
  * @author Jonathan Halterman
  */

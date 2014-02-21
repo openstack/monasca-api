@@ -9,11 +9,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hpcloud.mon.app.validate.DimensionValidation;
+import com.hpcloud.mon.app.validate.NamespaceValidation;
+import com.hpcloud.mon.app.validate.Validateable;
+import com.hpcloud.mon.app.validate.ValidationResult;
 import com.hpcloud.mon.common.model.metric.Metric;
 
-public class CreateMetricCommand {
+public class CreateMetricCommand implements Validateable {
   @NotEmpty public String namespace;
-  public String type;
   public Map<String, String> dimensions;
   public long timestamp;
   public double value;
@@ -22,26 +24,20 @@ public class CreateMetricCommand {
   public CreateMetricCommand() {
   }
 
-  public CreateMetricCommand(String namespace, String type, @Nullable Map<String, String> dimensions,
+  public CreateMetricCommand(String namespace, @Nullable Map<String, String> dimensions,
       @Nullable Long timestamp, double value) {
-    this.namespace = namespace;
-    this.type = type;
+    setNamespace(namespace);
     setDimensions(dimensions);
     setTimestamp(timestamp);
     this.value = value;
   }
 
-  public CreateMetricCommand(String namespace, String type, @Nullable Map<String, String> dimensions,
+  public CreateMetricCommand(String namespace, @Nullable Map<String, String> dimensions,
       @Nullable Long timestamp, double[][] timeValues) {
-    this.namespace = namespace;
-    this.type = type;
+    setNamespace(namespace);
     setDimensions(dimensions);
     setTimestamp(timestamp);
     this.timeValues = timeValues;
-  }
-  
-  public void validate() {
-    
   }
 
   @Override
@@ -68,11 +64,6 @@ public class CreateMetricCommand {
       return false;
     if (timestamp != other.timestamp)
       return false;
-    if (type == null) {
-      if (other.type != null)
-        return false;
-    } else if (!type.equals(other.type))
-      return false;
     if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
       return false;
     return true;
@@ -87,11 +78,15 @@ public class CreateMetricCommand {
     // Note Deep hash code is used here
     result = prime * result + Arrays.deepHashCode(timeValues);
     result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
     long temp;
     temp = Double.doubleToLongBits(value);
     result = prime * result + (int) (temp ^ (temp >>> 32));
     return result;
+  }
+
+  @JsonProperty
+  public void setNamespace(String namespace) {
+    this.namespace = NamespaceValidation.normalize(namespace);
   }
 
   @JsonProperty
@@ -102,24 +97,23 @@ public class CreateMetricCommand {
 
   @JsonProperty
   public void setDimensions(Map<String, String> dimensions) {
-    this.dimensions = dimensions == null || dimensions.isEmpty() ? null : dimensions;
-  }
-  
-  public void normalizeTimestamp() {
-    if (timestamp == 0L)
-      timestamp = System.currentTimeMillis() / 1000L;    
+    this.dimensions = dimensions == null || dimensions.isEmpty() ? null
+        : DimensionValidation.normalize(dimensions);
   }
 
-  public Metric toFlatMetric() {
-    return timeValues == null || timeValues.length == 0 ? new Metric(namespace,
-        DimensionValidation.normalizeAndSort(dimensions), timestamp, value) : new Metric(namespace,
-        DimensionValidation.normalizeAndSort(dimensions), timestamp, timeValues);
+  public Metric toMetric() {
+    return timeValues == null || timeValues.length == 0 ? new Metric(namespace, dimensions,
+        timestamp, value) : new Metric(namespace, dimensions, timestamp, timeValues);
   }
 
   @Override
   public String toString() {
-    return String.format(
-        "FlatMetric [namespace=%s, type=%s, dimensions=%s, timestamp=%s, value=%s]", namespace,
-        type, dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
+    return String.format("FlatMetric [namespace=%s,  dimensions=%s, timestamp=%s, value=%s]",
+        namespace, dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
+  }
+
+  @Override
+  public ValidationResult validate() {
+    return null;
   }
 }

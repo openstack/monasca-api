@@ -1,5 +1,8 @@
 package com.hpcloud.mon.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -19,6 +22,7 @@ import com.hpcloud.mon.common.model.metric.MetricEnvelopes;
  * Metric service implementation.
  * 
  * @author Todd Walk
+ * @author Jonathan Halterman
  */
 public class MetricService {
   private final MonApiConfiguration config;
@@ -33,16 +37,22 @@ public class MetricService {
     metricMeter = metricRegistry.meter(MetricRegistry.name(MetricService.class, "metrics.published"));
   }
 
-  public void create(Metric metric, String tenantId, @Nullable String crossTenantId,
+  public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId,
       String authToken) {
-    Builder<String, Object> meta = new ImmutableMap.Builder<String, Object>().put("tenantId",
-        tenantId).put("authToken", authToken);
+    Builder<String, Object> metaBuilder = new ImmutableMap.Builder<String, Object>().put(
+        "tenantId", tenantId).put("authToken", authToken);
     if (crossTenantId != null)
-      meta.put("crossTenantId", crossTenantId);
-    MetricEnvelope envelope = new MetricEnvelope(metric, meta.build());
-    KeyedMessage<String, String> keyedMessage = new KeyedMessage<>(config.metricsTopic, tenantId,
-        MetricEnvelopes.toJson(envelope));
-    producer.send(keyedMessage);
+      metaBuilder.put("crossTenantId", crossTenantId);
+    ImmutableMap<String, Object> meta = metaBuilder.build();
+
+    List<KeyedMessage<String, String>> keyedMessages = new ArrayList<>(metrics.size());
+    for (Metric metric : metrics) {
+      MetricEnvelope envelope = new MetricEnvelope(metric, meta);
+      keyedMessages.add(new KeyedMessage<>(config.metricsTopic, tenantId,
+          MetricEnvelopes.toJson(envelope)));
+    }
+
+    producer.send(keyedMessages);
     metricMeter.mark();
   }
 }

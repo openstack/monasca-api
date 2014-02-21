@@ -7,14 +7,15 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.hpcloud.mon.resource.exception.Exceptions;
+import com.hpcloud.mon.app.validate.Validateable;
+import com.hpcloud.mon.app.validate.ValidationResult;
 
 /**
  * Request for a new alarm.
  * 
  * @author Jonathan Halterman
  */
-public class CreateAlarmCommand {
+public class CreateAlarmCommand implements Validateable {
   @Valid @NotNull public CreateAlarmInner alarm;
 
   /** Actual resource values are wrapped since that's how OpenStack does it. */
@@ -59,15 +60,6 @@ public class CreateAlarmCommand {
       return true;
     }
 
-    public void validate() {
-      if (name.length() > 250)
-        throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
-      for (String action : alarmActions)
-        if (action.length() > 50)
-          throw Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less",
-              action);
-    }
-
     @Override
     public int hashCode() {
       final int prime = 31;
@@ -101,5 +93,15 @@ public class CreateAlarmCommand {
     } else if (!alarm.equals(other.alarm))
       return false;
     return true;
+  }
+
+  public ValidationResult validate() {
+    ValidationResult result = new ValidationResult();
+    if (alarm.name.length() > 250)
+      result.addError("Name %s must be 250 characters or less", alarm.name);
+    for (String action : alarm.alarmActions)
+      if (action.length() > 50)
+        result.addError("Alarm action %s must be 50 characters or less", action);
+    return result;
   }
 }

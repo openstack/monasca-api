@@ -20,8 +20,6 @@ import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
-import com.hpcloud.mon.infrastructure.servlet.TenantCallCountingFilter;
-import com.hpcloud.mon.infrastructure.servlet.TenantValidationFilter;
 import com.hpcloud.mon.resource.AlarmResource;
 import com.hpcloud.mon.resource.MetricResource;
 import com.hpcloud.mon.resource.NotificationMethodResource;
@@ -118,14 +116,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
           .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
           .addMappingForUrlPatterns(null, true, "/*");
     }
-
-    /** Configure additional filters */
-    environment.servlets()
-        .addFilter("tenant-validation", new TenantValidationFilter())
-        .addMappingForUrlPatterns(null, true, "/*");
-    environment.servlets()
-        .addFilter("call-counting", new TenantCallCountingFilter())
-        .addMappingForUrlPatterns(null, true, "/*");
 
     /** Initialize the identity service */
     Injector.getInstance(IdentityServiceClient.class).getAuthToken();

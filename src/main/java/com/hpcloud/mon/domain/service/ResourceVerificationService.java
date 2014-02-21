@@ -14,13 +14,12 @@ public interface ResourceVerificationService {
    * 
    * @param tenantId to verify ownership for
    * @param resourceId to verify ownership of
-   * @param secondaryResourceId secondary id to verify ownership of
    * @param az of resource to verify ownership in
    * @param authToken an auth token to pass through
    * @throws NullPointerException if {@code tenantId} or {@code resourceId} are null
    * @throws IllegalArgumentException if the {@code resourceId} is not tied to the
    *           {@code secondaryResourceId} for the {@code tenantId}
    */
-  boolean isVerifiedOwner(String tenantId, String resourceId, @Nullable String secondaryResourceId,
-      @Nullable String az, @Nullable String authToken);
+  boolean isVerifiedOwner(String tenantId, String resourceId, @Nullable String az,
+      @Nullable String authToken);
 }

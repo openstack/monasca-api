@@ -37,7 +37,7 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
  * 
  * @author Jonathan Halterman
  */
-@Path("/{version: v1.[0-1]}/alarms")
+@Path("/{version: v1.[2]}/alarms")
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
@@ -56,9 +56,9 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @HeaderParam("X-Auth-Token") String authToken, @Valid CreateAlarmCommand wrapper) {
-    CreateAlarmInner command = wrapper.alarm;
-    command.validate();
+    Validation.validate(wrapper);
 
+    CreateAlarmInner command = wrapper.alarm;
     AlarmExpression alarmExpression = AlarmExpressionValidation.validateNormalizeAndGet(
         command.expression, config);
     for (AlarmSubExpression alarmSubExpr : alarmExpression.getSubExpressions()) {
