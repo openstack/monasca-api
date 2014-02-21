@@ -13,6 +13,7 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * @author Jonathan Halterman
  */
 public class CreateNotificationMethodCommand {
+  /** OpenStack style resource wrapping */
   @Valid @NotNull public CreateNotificationMethodInner notificationMethod;
 
   public static class CreateNotificationMethodInner {

@@ -36,7 +36,7 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
  * 
  * @author Jonathan Halterman
  */
-@Path("/{version: v1.[2]}/alarms")
+@Path("/v2.0/alarms")
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
