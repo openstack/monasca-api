@@ -1,5 +1,7 @@
 package com.hpcloud.mon.resource;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,6 +14,7 @@ import javax.ws.rs.core.UriInfo;
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.representation.VersionRepresentation;
 import com.hpcloud.mon.app.representation.VersionsRepresentation;
+import com.hpcloud.mon.domain.model.version.Version;
 import com.hpcloud.mon.domain.model.version.VersionRepository;
 
 /**
@@ -32,7 +35,8 @@ public class VersionResource {
   @GET
   @Timed
   public VersionsRepresentation list(@Context UriInfo uriInfo) {
-    return new VersionsRepresentation(Links.hydrate(repository.find(), uriInfo));
+    List<Version> versions = Links.hydrate(repository.find(), uriInfo);
+    return new VersionsRepresentation(versions);
   }
 
   @GET
@@ -40,6 +44,7 @@ public class VersionResource {
   @Path("{version_id}")
   public VersionRepresentation get(@Context UriInfo uriInfo,
       @PathParam("version_id") String versionId) {
-    return new VersionRepresentation(Links.hydrate(repository.findById(versionId), uriInfo));
+    Version version = Links.hydrate(repository.findById(versionId), uriInfo);
+    return new VersionRepresentation(version);
   }
 }

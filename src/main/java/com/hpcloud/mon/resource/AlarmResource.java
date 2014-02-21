@@ -18,14 +18,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.app.command.CreateAlarmCommand.CreateAlarmInner;
 import com.hpcloud.mon.app.representation.AlarmRepresentation;
 import com.hpcloud.mon.app.representation.AlarmsRepresentation;
-import com.hpcloud.mon.app.validate.AlarmExpressionValidation;
-import com.hpcloud.mon.app.validate.Validation;
+import com.hpcloud.mon.app.validation.AlarmValidation;
+import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
@@ -41,13 +40,11 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
-  private final MonApiConfiguration config;
 
   @Inject
-  public AlarmResource(AlarmService service, AlarmRepository repo, MonApiConfiguration config) {
+  public AlarmResource(AlarmService service, AlarmRepository repo) {
     this.service = service;
     this.repo = repo;
-    this.config = config;
   }
 
   @POST
@@ -56,15 +53,13 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @HeaderParam("X-Auth-Token") String authToken, @Valid CreateAlarmCommand wrapper) {
-    Validation.validate(wrapper);
-
     CreateAlarmInner command = wrapper.alarm;
-    AlarmExpression alarmExpression = AlarmExpressionValidation.validateNormalizeAndGet(
-        command.expression, config);
+    command.validate();
+
+    AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     for (AlarmSubExpression alarmSubExpr : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = alarmSubExpr.getMetricDefinition();
-      Validation.verifyOwnership(tenantId, metricDef.namespace, metricDef.dimensions,
-          config.cloudServices.get(metricDef.namespace), authToken);
+      Validation.verifyOwnership(tenantId, metricDef.namespace, metricDef.dimensions, authToken);
     }
 
     AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.expression,

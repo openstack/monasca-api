@@ -2,27 +2,23 @@ package com.hpcloud.mon.app.command;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.hpcloud.mon.app.validate.Validateable;
-import com.hpcloud.mon.app.validate.ValidationResult;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
- * Request for a new notification method.
- * 
  * @author Jonathan Halterman
  */
-public class CreateNotificationMethodCommand implements Validateable {
+public class CreateNotificationMethodCommand {
   @Valid @NotNull public CreateNotificationMethodInner notificationMethod;
 
-  /** Actual resource values are wrapped since that's how OpenStack does it. */
   public static class CreateNotificationMethodInner {
-    @NotEmpty public String name;
+    @NotEmpty @Size(min = 1, max = 250) public String name;
     @NotNull public NotificationMethodType type;
-    @NotEmpty public String address;
+    @NotEmpty @Size(min = 1, max = 100) public String address;
 
     public CreateNotificationMethodInner() {
     }
@@ -31,18 +27,6 @@ public class CreateNotificationMethodCommand implements Validateable {
       this.name = name;
       this.type = type;
       this.address = address;
-    }
-
-    public void validate() {
-      if (name.length() > 250)
-        throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
-      if (address.length() > 100)
-        throw Exceptions.unprocessableEntity("Address %s must be 100 characters or less", address);
-      int atPos = address.indexOf("@");
-      int commaPos = address.indexOf(",");
-      if (type == NotificationMethodType.EMAIL
-          && (atPos <= 0 || atPos == address.length() - 1 || commaPos >= 0))
-        throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
     }
 
     @Override
@@ -68,6 +52,14 @@ public class CreateNotificationMethodCommand implements Validateable {
         return false;
       return true;
     }
+
+    public void validate() {
+      int atPos = address.indexOf("@");
+      int commaPos = address.indexOf(",");
+      if (type == NotificationMethodType.EMAIL
+          && (atPos <= 0 || atPos == address.length() - 1 || commaPos >= 0))
+        throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+    }
   }
 
   public CreateNotificationMethodCommand() {
@@ -92,10 +84,5 @@ public class CreateNotificationMethodCommand implements Validateable {
     } else if (!notificationMethod.equals(other.notificationMethod))
       return false;
     return true;
-  }
-
-  @Override
-  public ValidationResult validate() {
-    return null;
   }
 }
