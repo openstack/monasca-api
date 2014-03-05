@@ -6,6 +6,7 @@
 .idea
 .project
 .target/
+debs/*
 .settings/
 target/
 test-output/

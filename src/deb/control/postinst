@@ -1,0 +1,13 @@
+#!/bin/sh
+
+case "$1" in
+  configure)
+    if ! [ `getent passwd mon_api` ]; then
+      adduser --system --group mon_api
+    fi
+
+    restart mon-api
+  ;;
+esac
+
+exit 0
