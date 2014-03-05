@@ -1,0 +1,9 @@
+#!/bin/sh
+
+case "$1" in
+  remove)
+    stop mon-api
+  ;;
+esac
+
+exit 0
