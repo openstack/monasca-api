@@ -70,9 +70,7 @@ public class MonApiModule extends AbstractModule {
   @Provides
   @Singleton
   public Client getClient() {
-    return new JerseyClientBuilder(environment).using(config.jerseyClient)
-        .using(environment)
-        .build("default");
+    return new JerseyClientBuilder(environment).using(config.jerseyClient).build("default");
   }
 
   @Provides
