@@ -35,12 +35,12 @@ public final class AlarmValidation {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
 
       // Normalize and validate namespace
-      metricDef.namespace = NamespaceValidation.normalize(metricDef.namespace);
-      NamespaceValidation.validate(metricDef.namespace);
+      metricDef.name = NamespaceValidation.normalize(metricDef.name);
+      NamespaceValidation.validate(metricDef.name);
 
       // Normalize and validate dimensions
       metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
-      DimensionValidation.validate(metricDef.namespace, metricDef.dimensions);
+      DimensionValidation.validate(metricDef.name, metricDef.dimensions);
 
       // Validate period
       if (subExpression.getPeriod() == 0)

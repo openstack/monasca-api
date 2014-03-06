@@ -59,7 +59,7 @@ public class AlarmResource {
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     for (AlarmSubExpression alarmSubExpr : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = alarmSubExpr.getMetricDefinition();
-      Validation.verifyOwnership(tenantId, metricDef.namespace, metricDef.dimensions, authToken);
+      Validation.verifyOwnership(tenantId, metricDef.name, metricDef.dimensions, authToken);
     }
 
     AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.expression,
