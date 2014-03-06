@@ -56,7 +56,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         h.insert(
             "insert into sub_alarm (id, alarm_id, function, namespace, operator, threshold, period, periods, state, created_at, updated_at) "
                 + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", subAlarmId, id,
-            subExpr.getFunction().name(), metricDef.namespace, subExpr.getOperator().name(),
+            subExpr.getFunction().name(), metricDef.name, subExpr.getOperator().name(),
             subExpr.getThreshold(), subExpr.getPeriod(), subExpr.getPeriods(),
             AlarmState.UNDETERMINED.toString());
 
