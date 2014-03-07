@@ -11,14 +11,20 @@
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
-
   <properties>
+<<<<<<< HEAD
+    <versionNumber>1.0.0</versionNumber>
+    <computedVersion>${versionNumber}-SNAPSHOT</computedVersion>
+    <mon.common.version>1.0.0.1</mon.common.version>
+    <dropwizard.version>0.7.0-rc1</dropwizard.version>
+=======
    <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion> 
-   <computedName>${project.artifactId}-${computedVersion}</computedName>
-   <mon.common.version>1.0.0-1</mon.common.version>
-   <dropwizard.version>0.7.0-rc1</dropwizard.version>
+>>>>>>>  updated pom with Debian code to produce .deb file
 
-   <!--<skipITs>true</skipITs> -->
+   <computedName>${project.artifactId}-${computedVersion}</computedName>
+   <ps.common.version>1.0.0.285</ps.common.version>
+   <mon.common.version>1.0.0-SNAPSHOT</mon.common.version>
+   <dropwizard.version>0.7.0-rc1</dropwizard.version>
    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
  </properties>
