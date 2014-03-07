@@ -15,10 +15,10 @@
   <properties>
    <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion> 
    <computedName>${project.artifactId}-${computedVersion}</computedName>
-   <mon.common.version>1.0.0-1</mon.common.version>
+   <mon.common.version>1.0.0.1</mon.common.version>
    <dropwizard.version>0.7.0-rc1</dropwizard.version>
 
-   <!--<skipITs>true</skipITs> -->
+   <skipITs>true</skipITs>
    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
  </properties>
