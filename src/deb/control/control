@@ -1,0 +1,9 @@
+Package: [[name]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: openjdk-7-jre-headless | openjdk-7-jre
+Version: [[version]]-[[timestamp]]-[[buildNumber]]
+Maintainer: HPCloud SOM <hpcs-mon-som@hp.com>
+Description: MON-API
+  RESTful API for all MON data.
