@@ -70,7 +70,7 @@ public class MetricResource {
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
-        if (Namespaces.isReserved(command.namespace))
+        if (Namespaces.isReserved(command.name))
           throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs namespace",
               tenantId);
         if (!Strings.isNullOrEmpty(crossTenantId))
