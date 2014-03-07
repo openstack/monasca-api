@@ -24,7 +24,7 @@ public class CreateMetricCommand {
   private static final double VALUE_MIN = 8.515920e-109;
   private static final double VALUE_MAX = 1.174271e+108;
 
-  @NotEmpty @Size(min = 1, max = 64) public String namespace;
+  @NotEmpty @Size(min = 1, max = 64) public String name;
   public Map<String, String> dimensions;
   public long timestamp;
   public double value;
@@ -33,17 +33,17 @@ public class CreateMetricCommand {
   public CreateMetricCommand() {
   }
 
-  public CreateMetricCommand(String namespace, @Nullable Map<String, String> dimensions,
+  public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
       @Nullable Long timestamp, double value) {
-    setNamespace(namespace);
+    setName(name);
     setDimensions(dimensions);
     setTimestamp(timestamp);
     this.value = value;
   }
 
-  public CreateMetricCommand(String namespace, @Nullable Map<String, String> dimensions,
+  public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
       @Nullable Long timestamp, double[][] timeValues) {
-    setNamespace(namespace);
+    setName(name);
     setDimensions(dimensions);
     setTimestamp(timestamp);
     this.timeValues = timeValues;
@@ -74,10 +74,10 @@ public class CreateMetricCommand {
         return false;
     } else if (!dimensions.equals(other.dimensions))
       return false;
-    if (namespace == null) {
-      if (other.namespace != null)
+    if (name == null) {
+      if (other.name != null)
         return false;
-    } else if (!namespace.equals(other.namespace))
+    } else if (!name.equals(other.name))
       return false;
     // Note - Deep Equals is used here
     if (!Arrays.deepEquals(timeValues, other.timeValues))
@@ -94,7 +94,7 @@ public class CreateMetricCommand {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
-    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
     // Note Deep hash code is used here
     result = prime * result + Arrays.deepHashCode(timeValues);
     result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
@@ -111,8 +111,8 @@ public class CreateMetricCommand {
   }
 
   @JsonProperty
-  public void setNamespace(String namespace) {
-    this.namespace = NamespaceValidation.normalize(namespace);
+  public void setName(String name) {
+    this.name = NamespaceValidation.normalize(name);
   }
 
   @JsonProperty
@@ -122,20 +122,20 @@ public class CreateMetricCommand {
   }
 
   public Metric toMetric() {
-    return timeValues == null || timeValues.length == 0 ? new Metric(namespace, dimensions,
-        timestamp, value) : new Metric(namespace, dimensions, timestamp, timeValues);
+    return timeValues == null || timeValues.length == 0 ? new Metric(name, dimensions, timestamp,
+        value) : new Metric(name, dimensions, timestamp, timeValues);
   }
 
   @Override
   public String toString() {
-    return String.format("FlatMetric [namespace=%s,  dimensions=%s, timestamp=%s, value=%s]",
-        namespace, dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
+    return String.format("FlatMetric [name=%s,  dimensions=%s, timestamp=%s, value=%s]", name,
+        dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
   }
 
   public void validate() {
-    // Validate namespace and dimensions
-    NamespaceValidation.validate(namespace);
-    DimensionValidation.validate(namespace, dimensions);
+    // Validate name and dimensions
+    NamespaceValidation.validate(name);
+    DimensionValidation.validate(name, dimensions);
 
     // Validate times and values
     validateTimestamp(timestamp);
