@@ -66,7 +66,7 @@ public class AlarmRepositoryImplTest {
 
     handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
         + "values ('123', 'bob', '90% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'UNDETERMINED', NOW(), NOW(), NULL)");
-    handle.execute("insert into sub_alarm (id, alarm_id, function, namespace, operator, threshold, period, periods, state, created_at, updated_at) "
+    handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
         + "values ('111', '123', 'avg', 'hpcs.compute', 'GT', 10, 60, 1, 'UNDETERMINED', NOW(), NOW())");
     handle.execute("insert into sub_alarm_dimension values ('111', 'flavor_id', '777')");
     handle.execute("insert into sub_alarm_dimension values ('111', 'image_id', '888')");
@@ -77,7 +77,7 @@ public class AlarmRepositoryImplTest {
 
     handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
         + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20', 'UNDETERMINED', NOW(), NOW(), NULL)");
-    handle.execute("insert into sub_alarm (id, alarm_id, function, namespace, operator, threshold, period, periods, state, created_at, updated_at) "
+    handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
         + "values ('222', '234', 'avg', 'hpcs.compute', 'GT', 20, 60, 1, 'UNDETERMINED', NOW(), NOW())");
     handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
     handle.execute("insert into sub_alarm_dimension values ('222', 'image_id', '888')");
@@ -160,9 +160,10 @@ public class AlarmRepositoryImplTest {
     List<Alarm> alarms = repo.find("bob");
 
     assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU",
-        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10", AlarmState.UNDETERMINED),
-        new Alarm("234", "50% CPU", "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
-            AlarmState.UNDETERMINED)));
+        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
+        AlarmState.UNDETERMINED), new Alarm("234", "50% CPU",
+        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
+        AlarmState.UNDETERMINED)));
   }
 
   public void shouldDeleteById() {
