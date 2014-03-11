@@ -65,13 +65,13 @@ public class MetricResource {
   public void create(@Context UriInfo uriInfo, @HeaderParam("X-Auth-Token") String authToken,
       @HeaderParam("X-Tenant-Id") String tenantId, @HeaderParam("X-Roles") String roles,
       @QueryParam("tenant_id") String crossTenantId, @Valid CreateMetricCommand[] commands) {
-    boolean isDelegate = Arrays.asList(COMMA_SPLITTER.split(roles)).contains(
-        MONITORING_DELEGATE_ROLE);
+    boolean isDelegate = !Strings.isNullOrEmpty(roles)
+        && Arrays.asList(COMMA_SPLITTER.split(roles)).contains(MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
         if (Namespaces.isReserved(command.name))
-          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs namespace",
+          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs name",
               tenantId);
         if (!Strings.isNullOrEmpty(crossTenantId))
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
@@ -89,13 +89,13 @@ public class MetricResource {
   @Produces(MediaType.APPLICATION_JSON)
   public List<Datapoint> get(@PathParam("version") String version,
       @HeaderParam("X-Auth-Token") String authToken, @HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("namespace") String namespace, @QueryParam("start_time") String startTimeStr,
+      @QueryParam("name") String name, @QueryParam("start_time") String startTimeStr,
       @QueryParam("end_time") String endTimeStr, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
 
     // Validate parameters
-    NamespaceValidation.validate(namespace);
+    NamespaceValidation.validate(name);
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     if (!startTime.isBefore(endTime))
@@ -114,13 +114,13 @@ public class MetricResource {
     }
 
     // Validate dimensions
-    DimensionValidation.validate(namespace, dimensions);
+    DimensionValidation.validate(name, dimensions);
 
     // Verify ownership
-    Validation.verifyOwnership(tenantId, namespace, dimensions, authToken);
+    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
 
     // Return datapoints
-    return datapointRepo.find(authToken, namespace, startTime, endTime, dimensions, statistics,
+    return datapointRepo.find(authToken, name, startTime, endTime, dimensions, statistics,
         period);
   }
 }
