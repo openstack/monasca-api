@@ -25,7 +25,7 @@ import com.hpcloud.persistence.BeanMapper;
  * @author Jonathan Halterman
  */
 public class AlarmRepositoryImpl implements AlarmRepository {
-  private static final String SUB_ALARM_METRIC_DEF_SQL = "select sa.id, sa.namespace, sad.dimensions from sub_alarm as sa, "
+  private static final String SUB_ALARM_METRIC_DEF_SQL = "select sa.id, sa.metric_name, sad.dimensions from sub_alarm as sa, "
       + "(select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id) as sad "
       + "where sa.id = sad.sub_alarm_id and sa.alarm_id = :alarmId";
 
@@ -54,7 +54,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         MetricDefinition metricDef = subExpr.getMetricDefinition();
 
         h.insert(
-            "insert into sub_alarm (id, alarm_id, function, namespace, operator, threshold, period, periods, state, created_at, updated_at) "
+            "insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
                 + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", subAlarmId, id,
             subExpr.getFunction().name(), metricDef.name, subExpr.getOperator().name(),
             subExpr.getThreshold(), subExpr.getPeriod(), subExpr.getPeriods(),
@@ -117,8 +117,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     Handle h = db.open();
 
     try {
-      return h.createQuery(
-          "select * from alarm where tenant_id = :tenantId and deleted_at is NULL")
+      return h.createQuery("select * from alarm where tenant_id = :tenantId and deleted_at is NULL")
           .bind("tenantId", tenantId)
           .map(new BeanMapper<Alarm>(Alarm.class))
           .list();
@@ -161,7 +160,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       Map<String, MetricDefinition> subAlarmMetricDefs = new HashMap<String, MetricDefinition>();
       for (Map<String, Object> row : rows) {
         String id = (String) row.get("id");
-        String namespace = (String) row.get("namespace");
+        String metricName = (String) row.get("metric_name");
         String dimensionSet = (String) row.get("dimensions");
         Map<String, String> dimensions = null;
 
@@ -174,7 +173,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
           }
         }
 
-        subAlarmMetricDefs.put(id, new MetricDefinition(namespace, dimensions));
+        subAlarmMetricDefs.put(id, new MetricDefinition(metricName, dimensions));
       }
 
       return subAlarmMetricDefs;
