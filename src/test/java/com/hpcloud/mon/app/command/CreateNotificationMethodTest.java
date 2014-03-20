@@ -1,4 +1,4 @@
-package com.hpcloud.mon.app.request;
+package com.hpcloud.mon.app.command;
 
 import static com.hpcloud.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
@@ -11,7 +11,7 @@ import com.hpcloud.mon.domain.model.AbstractModelTest;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 
 @Test
-public class NewNotificationMethodTest extends AbstractModelTest {
+public class CreateNotificationMethodTest extends AbstractModelTest {
   public void shouldDeserializeFromJson() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod = new CreateNotificationMethodCommand(
         "MySMS", NotificationMethodType.SMS, "9228675309");
