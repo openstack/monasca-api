@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.hpcloud.mon.domain.exception.EntityExistsException;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 import com.hpcloud.persistence.BeanMapper;
 
 /**

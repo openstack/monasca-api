@@ -2,7 +2,6 @@ package com.hpcloud.mon.domain.model.notificationmethod;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.hpcloud.mon.domain.common.AbstractEntity;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.domain.model.common.Linked;
@@ -12,15 +11,6 @@ public class NotificationMethod extends AbstractEntity implements Linked {
   private String name;
   private NotificationMethodType type;
   private String address;
-
-  public enum NotificationMethodType {
-    EMAIL, SMS;
-
-    @JsonCreator
-    public static NotificationMethodType fromJson(String text) {
-      return valueOf(text.toUpperCase());
-    }
-  }
 
   public NotificationMethod() {
   }

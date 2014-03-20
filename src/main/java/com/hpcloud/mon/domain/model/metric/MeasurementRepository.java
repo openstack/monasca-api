@@ -8,15 +8,15 @@ import javax.annotation.Nullable;
 import org.joda.time.DateTime;
 
 /**
- * Repository for metrics.
+ * Repository for measurements.
  * 
  * @author Jonathan Halterman
  */
-public interface DatapointRepository {
+public interface MeasurementRepository {
   /**
-   * Finds metrics for the given criteria.
+   * Finds measurements for the given criteria.
    */
-  List<Datapoint> find(String authToken, String namespace, DateTime startTime,
+  List<Measurement> find(String authToken, String name, DateTime startTime,
       @Nullable DateTime endTime, Map<String, String> dimensions, List<String> statistics,
       int period);
 }

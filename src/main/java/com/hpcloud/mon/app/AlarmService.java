@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import kafka.javaapi.producer.Producer;
@@ -53,8 +54,9 @@ public class AlarmService {
    * Creates an alarm and publishes an AlarmCreatedEvent. Note, the event is published first since
    * chances of failure are higher.
    */
-  public AlarmDetail create(String tenantId, String name, String expression,
-      AlarmExpression alarmExpression, List<String> alarmActions) {
+  public AlarmDetail create(String tenantId, String name, @Nullable String description,
+      String expression, AlarmExpression alarmExpression, List<String> alarmActions,
+      @Nullable List<String> okActions, @Nullable List<String> undeterminedActions) {
     // Assert no alarm exists by the name
     if (repo.exists(tenantId, name))
       throw new EntityExistsException("An alarm already exists for project / tenant: %s, name: %s",
@@ -76,7 +78,8 @@ public class AlarmService {
 
     try {
       LOG.debug("Creating alarm {} for tenant {}", name, tenantId);
-      alarm = repo.create(alarmId, tenantId, name, expression, subAlarms, alarmActions);
+      alarm = repo.create(alarmId, tenantId, name, description, expression, subAlarms,
+          alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of new alarm
       String event = Serialization.toJson(new AlarmCreatedEvent(tenantId, alarmId, name,

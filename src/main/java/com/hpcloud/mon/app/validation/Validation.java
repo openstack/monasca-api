@@ -12,7 +12,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.base.Strings;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.resource.exception.Exceptions;
 import com.hpcloud.util.Injector;
@@ -91,7 +91,7 @@ public final class Validation {
    */
   public static void verifyOwnership(String tenantId, String namespace,
       Map<String, String> dimensions, String authToken) {
-    String resourceIdDim = Namespaces.getResourceIdDimension(namespace);
+    String resourceIdDim = Services.getResourceIdDimension(namespace);
     if (resourceIdDim != null && Injector.isBound(ResourceVerificationService.class, namespace)) {
       ResourceVerificationService verificationService = Injector.getInstance(
           ResourceVerificationService.class, namespace);

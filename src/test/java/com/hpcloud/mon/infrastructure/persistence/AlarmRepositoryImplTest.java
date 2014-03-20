@@ -93,9 +93,9 @@ public class AlarmRepositoryImplTest {
             AlarmSubExpression.of("avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10"))
         .build();
 
-    AlarmDetail alarmA = repo.create("2345", "555", "90% CPU",
+    AlarmDetail alarmA = repo.create("2345", "555", "90% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10", subExpressions,
-        alarmActions);
+        alarmActions, null, null);
     AlarmDetail alarmB = repo.findById("555", alarmA.getId());
 
     assertEquals(alarmA, alarmB);
@@ -159,9 +159,9 @@ public class AlarmRepositoryImplTest {
   public void shouldFind() {
     List<Alarm> alarms = repo.find("bob");
 
-    assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU",
+    assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-        AlarmState.UNDETERMINED), new Alarm("234", "50% CPU",
+        AlarmState.UNDETERMINED), new Alarm("234", "50% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
         AlarmState.UNDETERMINED)));
   }

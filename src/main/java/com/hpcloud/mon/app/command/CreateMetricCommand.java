@@ -10,7 +10,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hpcloud.mon.app.validation.DimensionValidation;
-import com.hpcloud.mon.app.validation.NamespaceValidation;
+import com.hpcloud.mon.app.validation.MetricNameValidation;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.common.model.metric.Metric;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
@@ -112,7 +113,7 @@ public class CreateMetricCommand {
 
   @JsonProperty
   public void setName(String name) {
-    this.name = NamespaceValidation.normalize(name);
+    this.name = MetricNameValidation.normalize(name);
   }
 
   @JsonProperty
@@ -126,16 +127,11 @@ public class CreateMetricCommand {
         value) : new Metric(name, dimensions, timestamp, timeValues);
   }
 
-  @Override
-  public String toString() {
-    return String.format("FlatMetric [name=%s,  dimensions=%s, timestamp=%s, value=%s]", name,
-        dimensions, timestamp, timeValues == null ? value : Arrays.toString(timeValues));
-  }
-
   public void validate() {
     // Validate name and dimensions
-    NamespaceValidation.validate(name);
-    DimensionValidation.validate(name, dimensions);
+    String service = dimensions.get(Services.SERVICE_DIMENSION);
+    MetricNameValidation.validate(name, service);
+    DimensionValidation.validate(dimensions, service);
 
     // Validate times and values
     validateTimestamp(timestamp);

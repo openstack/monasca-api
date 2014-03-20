@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
 import com.hpcloud.mon.domain.model.AbstractModelTest;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 
 @Test
 public class NewNotificationMethodTest extends AbstractModelTest {

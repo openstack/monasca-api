@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 import com.hpcloud.mon.domain.model.AbstractModelTest;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 
 @Test
 public class NotificationMethodsRepresentationTest extends AbstractModelTest {

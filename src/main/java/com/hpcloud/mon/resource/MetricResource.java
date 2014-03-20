@@ -30,12 +30,12 @@ import com.google.common.collect.Iterables;
 import com.hpcloud.mon.app.MetricService;
 import com.hpcloud.mon.app.command.CreateMetricCommand;
 import com.hpcloud.mon.app.validation.DimensionValidation;
-import com.hpcloud.mon.app.validation.NamespaceValidation;
+import com.hpcloud.mon.app.validation.MetricNameValidation;
 import com.hpcloud.mon.app.validation.Validation;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.common.model.metric.Metric;
-import com.hpcloud.mon.domain.model.metric.Datapoint;
-import com.hpcloud.mon.domain.model.metric.DatapointRepository;
+import com.hpcloud.mon.domain.model.metric.Measurement;
+import com.hpcloud.mon.domain.model.metric.MeasurementRepository;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
@@ -51,12 +51,12 @@ public class MetricResource {
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
 
   private final MetricService service;
-  private final DatapointRepository datapointRepo;
+  private final MeasurementRepository measurementRepo;
 
   @Inject
-  public MetricResource(MetricService service, DatapointRepository datapointRepo) {
+  public MetricResource(MetricService service, MeasurementRepository measurementRepo) {
     this.service = service;
-    this.datapointRepo = datapointRepo;
+    this.measurementRepo = measurementRepo;
   }
 
   @POST
@@ -70,9 +70,8 @@ public class MetricResource {
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
-        if (Namespaces.isReserved(command.name))
-          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs name",
-              tenantId);
+        if (Services.isReserved(command.name))
+          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs name", tenantId);
         if (!Strings.isNullOrEmpty(crossTenantId))
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
       }
@@ -87,15 +86,14 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Datapoint> get(@PathParam("version") String version,
+  public List<Measurement> get(@PathParam("version") String version,
       @HeaderParam("X-Auth-Token") String authToken, @HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("start_time") String startTimeStr,
       @QueryParam("end_time") String endTimeStr, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
 
-    // Validate parameters
-    NamespaceValidation.validate(name);
+    // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     if (!startTime.isBefore(endTime))
@@ -113,14 +111,15 @@ public class MetricResource {
         dimensions.put(dimensionArr[0], dimensionArr[1]);
     }
 
-    // Validate dimensions
-    DimensionValidation.validate(name, dimensions);
+    // Validate metric definition
+    String service = dimensions.get(Services.SERVICE_DIMENSION);
+    MetricNameValidation.validate(name, service);
+    DimensionValidation.validate(dimensions, service);
 
     // Verify ownership
     Validation.verifyOwnership(tenantId, name, dimensions, authToken);
 
-    // Return datapoints
-    return datapointRepo.find(authToken, name, startTime, endTime, dimensions, statistics,
-        period);
+    // Return measurements
+    return measurementRepo.find(authToken, name, startTime, endTime, dimensions, statistics, period);
   }
 }

@@ -3,13 +3,13 @@ package com.hpcloud.mon.domain.model.metric;
 import java.util.Map;
 
 /**
- * Encapsulates a metric datapoint.
+ * Encapsulates a metric measurements.
  * 
  * @author Jonathan Halterman
  */
-public class Datapoint {
+public class Measurement {
   private Map<String, String> dimensions;
-  private Map<String, Object> datapoints;
+  private Map<String, Object> measurements;
 
   @Override
   public boolean equals(Object obj) {
@@ -19,11 +19,11 @@ public class Datapoint {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Datapoint other = (Datapoint) obj;
-    if (datapoints == null) {
-      if (other.datapoints != null)
+    Measurement other = (Measurement) obj;
+    if (measurements == null) {
+      if (other.measurements != null)
         return false;
-    } else if (!datapoints.equals(other.datapoints))
+    } else if (!measurements.equals(other.measurements))
       return false;
     if (dimensions == null) {
       if (other.dimensions != null)
@@ -33,8 +33,8 @@ public class Datapoint {
     return true;
   }
 
-  public Map<String, Object> getDatapoints() {
-    return datapoints;
+  public Map<String, Object> getMeasurements() {
+    return measurements;
   }
 
   public Map<String, String> getDimensions() {
@@ -45,13 +45,13 @@ public class Datapoint {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + ((datapoints == null) ? 0 : datapoints.hashCode());
+    result = prime * result + ((measurements == null) ? 0 : measurements.hashCode());
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     return result;
   }
 
-  public void setDatapoints(Map<String, Object> datapoints) {
-    this.datapoints = datapoints;
+  public void setMeasurements(Map<String, Object> measurements) {
+    this.measurements = measurements;
   }
 
   public void setDimensions(Map<String, String> dimensions) {
