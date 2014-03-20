@@ -28,5 +28,12 @@ public interface NotificationMethodRepository {
    */
   NotificationMethod findById(String tenantId, String notificationMethodId);
 
+  /**
+   * @throws EntityNotFoundException if a notification method cannot be found for the
+   *           {@code notificationMethodId}
+   */
+  NotificationMethod update(String tenantId, String notificationMethodId, String name,
+      NotificationMethodType type, String address);
+
   List<NotificationMethod> find(String tenantId);
 }

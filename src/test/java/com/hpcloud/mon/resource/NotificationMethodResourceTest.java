@@ -64,6 +64,16 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     verify(repo).create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString());
   }
 
+  public void shouldUpdate() {
+    client().resource("/v2.0/notification-methods/123")
+        .header("X-Tenant-Id", "abc")
+        .header("Content-Type", MediaType.APPLICATION_JSON)
+        .put(ClientResponse.class,
+            new CreateNotificationMethodCommand("Foo", NotificationMethodType.EMAIL, "a@a.com"));
+    verify(repo).update(eq("abc"), eq("123"), eq("Foo"), eq(NotificationMethodType.EMAIL),
+        eq("a@a.com"));
+  }
+
   public void should422OnBadEnum() {
     ClientResponse response = client().resource("/v2.0/notification-methods")
         .header("X-Tenant-Id", "abc")
@@ -72,7 +82,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
-        "[notificationMethod.type may not be null (was null)]");
+        "[type may not be null (was null)]");
   }
 
   public void should422OnIncorrectAddressFormat() {
@@ -105,7 +115,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, ""));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "[notificationMethod.address may not be empty (was )");
+        "[address may not be empty (was )");
   }
 
   public void should422OnTooLongName() {
@@ -121,7 +131,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                 NotificationMethodType.SMS, "a@b"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "[notificationMethod.name size must be between 1 and 250");
+        "[name size must be between 1 and 250");
   }
 
   public void should422OnTooLongAddress() {
@@ -137,7 +147,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
-        "[notificationMethod.address size must be between 1 and 100");
+        "[address size must be between 1 and 100");
   }
 
   public void shouldList() {
