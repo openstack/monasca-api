@@ -24,7 +24,7 @@ public class AlarmsRepresentationTest extends AbstractModelTest {
         AlarmState.OK);
     alarm.setLinks(Arrays.asList(new Link("self", "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
 
-    String json = toJson(new AlarmsRepresentation(Arrays.asList(alarm)));
+    String json = toJson(Arrays.asList(alarm));
     assertEquals(json, jsonFixture("fixtures/alarms.json"));
   }
 }

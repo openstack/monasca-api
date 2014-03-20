@@ -11,20 +11,20 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
-import com.hpcloud.mon.app.representation.NotificationMethodRepresentation;
-import com.hpcloud.mon.app.representation.NotificationMethodsRepresentation;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 
 /**
  * @author Jonathan Halterman
@@ -56,7 +56,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
         .post(ClientResponse.class,
             new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "8675309"));
 
-    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethodRepresentation.class).notificationMethod;
+    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
@@ -141,20 +141,19 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    NotificationMethodsRepresentation notificationMethods = client().resource(
-        "/v2.0/notification-methods")
+    List<NotificationMethod> notificationMethods = client().resource("/v2.0/notification-methods")
         .header("X-Tenant-Id", "abc")
-        .get(NotificationMethodsRepresentation.class);
+        .get(new GenericType<List<NotificationMethod>>() {
+        });
 
-    assertEquals(notificationMethods,
-        new NotificationMethodsRepresentation(Arrays.asList(notificationMethod)));
+    assertEquals(notificationMethods, Arrays.asList(notificationMethod));
     verify(repo).find(eq("abc"));
   }
 
   public void shouldGet() {
     assertEquals(client().resource("/v2.0/notification-methods/123")
         .header("X-Tenant-Id", "abc")
-        .get(NotificationMethodRepresentation.class).notificationMethod, notificationMethod);
+        .get(NotificationMethod.class), notificationMethod);
     verify(repo).findById(eq("abc"), eq("123"));
   }
 
@@ -164,7 +163,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     try {
       client().resource("/v2.0/notification-methods/999")
           .header("X-Tenant-Id", "abc")
-          .get(NotificationMethodRepresentation.class);
+          .get(NotificationMethod.class);
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("404"));
@@ -197,7 +196,8 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     try {
       client().resource("/v2.0/notification-methods")
           .header("X-Tenant-Id", "abc")
-          .get(NotificationMethodsRepresentation.class);
+          .get(new GenericType<List<NotificationMethod>>() {
+          });
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("500"));
@@ -209,7 +209,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
       client().resource("/v2.0/notification-methods")
           .header("X-Tenant-Id", "abc")
           .header("Content-Type", MediaType.APPLICATION_JSON)
-          .post(NotificationMethodRepresentation.class,
+          .post(NotificationMethod.class,
               new CreateNotificationMethodCommand(null, null, "8675309"));
       fail();
     } catch (Exception e) {

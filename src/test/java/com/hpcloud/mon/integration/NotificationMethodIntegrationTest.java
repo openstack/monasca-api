@@ -20,7 +20,6 @@ import com.google.inject.Injector;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.MonApiModule;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
-import com.hpcloud.mon.app.representation.NotificationMethodRepresentation;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
@@ -76,7 +75,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
             ClientResponse.class,
             new CreateNotificationMethodCommand(notificationMethod.getName(),
                 notificationMethod.getType(), notificationMethod.getAddress()));
-    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethodRepresentation.class).notificationMethod;
+    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
     String location = response.getHeaders().get("Location").get(0);
 
     assertEquals(response.getStatus(), 201);

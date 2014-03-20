@@ -14,7 +14,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -86,10 +85,18 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> get(@PathParam("version") String version,
-      @HeaderParam("X-Auth-Token") String authToken, @HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("name") String name, @QueryParam("start_time") String startTimeStr,
-      @QueryParam("end_time") String endTimeStr, @QueryParam("dimensions") String dimensionsStr,
+  public List<Metric> get(@HeaderParam("X-Tenant-Id") String tenantId) {
+
+    return null;
+  }
+
+  @GET
+  @Timed
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Measurement> get(@HeaderParam("X-Auth-Token") String authToken,
+      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
+      @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
 

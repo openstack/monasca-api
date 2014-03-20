@@ -12,16 +12,16 @@ import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
-import com.hpcloud.mon.app.representation.VersionRepresentation;
-import com.hpcloud.mon.app.representation.VersionsRepresentation;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.domain.model.version.Version;
 import com.hpcloud.mon.domain.model.version.Version.VersionStatus;
 import com.hpcloud.mon.domain.model.version.VersionRepository;
+import com.sun.jersey.api.client.GenericType;
 
 /**
  * @author Jonathan Halterman
@@ -45,13 +45,14 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    VersionsRepresentation versions = client().resource("/").get(VersionsRepresentation.class);
-    assertEquals(versions, new VersionsRepresentation(Arrays.asList(version)));
+    List<Version> versions = client().resource("/").get(new GenericType<List<Version>>() {
+    });
+    assertEquals(versions, Arrays.asList(version));
     verify(repo).find();
   }
 
   public void shouldGet() {
-    assertEquals(client().resource("/v2.0").get(VersionRepresentation.class).version, version);
+    assertEquals(client().resource("/v2.0").get(Version.class), version);
     verify(repo).findById(eq("v2.0"));
   }
 
@@ -59,7 +60,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     doThrow(new EntityNotFoundException("")).when(repo).findById(anyString());
 
     try {
-      client().resource("/v9.9").get(VersionRepresentation.class);
+      client().resource("/v9.9").get(Version.class);
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("404"));
@@ -70,7 +71,8 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     doThrow(new RuntimeException("")).when(repo).find();
 
     try {
-      client().resource("/").get(VersionsRepresentation.class);
+      client().resource("/").get(new GenericType<List<Version>>() {
+      });
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("500"));

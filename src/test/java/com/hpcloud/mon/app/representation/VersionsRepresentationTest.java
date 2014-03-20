@@ -20,7 +20,7 @@ public class VersionsRepresentationTest extends AbstractModelTest {
     version.setLinks(Arrays.asList(new Link("self",
         "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
 
-    String json = toJson(new VersionsRepresentation(Arrays.asList(version)));
+    String json = toJson(Arrays.asList(version));
     assertEquals(json, jsonFixture("fixtures/versions.json"));
   }
 }
