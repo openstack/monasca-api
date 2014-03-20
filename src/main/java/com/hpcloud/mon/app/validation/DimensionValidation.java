@@ -1,16 +1,16 @@
 package com.hpcloud.mon.app.validation;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
@@ -35,7 +35,7 @@ public final class DimensionValidation {
     VALIDATORS = new HashMap<String, DimensionValidator>();
 
     // Compute validator
-    VALIDATORS.put(Namespaces.COMPUTE_NAMESPACE, new DimensionValidator() {
+    VALIDATORS.put(Services.COMPUTE_SERVICE, new DimensionValidator() {
       @Override
       public boolean isValidDimension(String name, String value) {
         if ("instance_id".equals(name))
@@ -47,7 +47,7 @@ public final class DimensionValidation {
     });
 
     // Objectstore validator
-    VALIDATORS.put(Namespaces.OBJECT_STORE_NAMESPACE, new DimensionValidator() {
+    VALIDATORS.put(Services.OBJECT_STORE_SERVICE, new DimensionValidator() {
       @Override
       public boolean isValidDimension(String name, String value) {
         if ("container".equals(name))
@@ -57,7 +57,7 @@ public final class DimensionValidation {
     });
 
     // Volume validator
-    VALIDATORS.put(Namespaces.VOLUME_NAMESPACE, new DimensionValidator() {
+    VALIDATORS.put(Services.VOLUME_SERVICE, new DimensionValidator() {
       @Override
       public boolean isValidDimension(String name, String value) {
         if ("instance_id".equals(name))
@@ -96,36 +96,11 @@ public final class DimensionValidation {
   }
 
   /**
-   * Validates that the given {@code dimensions} are valid for the {@code namespace}.
+   * Validates that the given {@code dimensions} are valid.
    * 
    * @throws WebApplicationException if validation fails
    */
-  public static void validate(String namespace, Map<String, String> dimensions) {
-    NamespaceValidation.validate(namespace);
-    List<String> requiredDimensions = Namespaces.getRequiredDimensions(namespace);
-    if (dimensions == null) {
-      if (requiredDimensions == null || requiredDimensions.isEmpty())
-        return;
-      throw Exceptions.unprocessableEntity("The required dimensions %s are not present",
-          requiredDimensions);
-    }
-
-    // Assert the presence of required dimensions
-    for (String requiredDimension : requiredDimensions)
-      if (!dimensions.containsKey(requiredDimension))
-        throw Exceptions.unprocessableEntity("The required dimensions %s are not present",
-            requiredDimensions);
-
-    // Validate metric_name dimension
-    if (Namespaces.isReserved(namespace)) {
-      String metricName = dimensions.get("metric_name");
-      if (!Strings.isNullOrEmpty(metricName)
-          && !Namespaces.isValidMetricName(namespace, metricName)) {
-        throw Exceptions.unprocessableEntity("%s is not a valid metric_name for namespace %s",
-            metricName, namespace);
-      }
-    }
-
+  public static void validate(Map<String, String> dimensions, @Nullable String service) {
     // Validate dimension names and values
     for (Map.Entry<String, String> dimension : dimensions.entrySet()) {
       String name = dimension.getKey();
@@ -146,14 +121,17 @@ public final class DimensionValidation {
         throw Exceptions.unprocessableEntity(
             "Dimension name %s may only contain: a-z A-Z 0-9 _ - .", name);
 
-      // Namespace specific validations
-      if (!Namespaces.isValidDimensionName(namespace, name))
-        throw Exceptions.unprocessableEntity("%s is not a valid dimension name for namespace %s",
-            name, namespace);
-      DimensionValidator validator = VALIDATORS.get(namespace);
-      if (validator != null && !validator.isValidDimension(name, value))
-        throw Exceptions.unprocessableEntity("%s is not a valid dimension value for namespace %s",
-            value, namespace);
+      // Service specific validations
+      if (service != null) {
+        if (!name.equals(Services.SERVICE_DIMENSION)
+            && !Services.isValidDimensionName(service, name))
+          throw Exceptions.unprocessableEntity("%s is not a valid dimension name for namespace %s",
+              name, service);
+        DimensionValidator validator = VALIDATORS.get(service);
+        if (validator != null && !validator.isValidDimension(name, value))
+          throw Exceptions.unprocessableEntity(
+              "%s is not a valid dimension value for namespace %s", value, service);
+      }
     }
   }
 }

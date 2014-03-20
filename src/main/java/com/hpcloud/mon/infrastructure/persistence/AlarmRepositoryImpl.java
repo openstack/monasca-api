@@ -37,15 +37,16 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   }
 
   @Override
-  public AlarmDetail create(String id, String tenantId, String name, String expression,
-      Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions) {
+  public AlarmDetail create(String id, String tenantId, String name, String description,
+      String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-          "insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
-          id, tenantId, name, expression, AlarmState.UNDETERMINED.toString());
+          "insert into alarm (id, tenant_id, name, description, expression, state, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+          id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString());
 
       // Persist sub-alarms
       for (Map.Entry<String, AlarmSubExpression> subEntry : subExpressions.entrySet()) {
@@ -69,10 +70,18 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
       // Persist actions
       if (alarmActions != null)
-        for (String alarmAction : alarmActions)
-          h.insert("insert into alarm_action values (?, ?)", id, alarmAction);
+        for (String action : alarmActions)
+          h.insert("insert into alarm_action values (?, ?, ?)", id, AlarmState.ALARM.name(), action);
+      if (okActions != null)
+        for (String action : okActions)
+          h.insert("insert into alarm_action values (?, ?, ?)", id, AlarmState.OK.name(), action);
+      if (undeterminedActions != null)
+        for (String action : undeterminedActions)
+          h.insert("insert into alarm_action values (?, ?, ?)", id, AlarmState.UNDETERMINED.name(),
+              action);
       h.commit();
-      return new AlarmDetail(id, name, expression, AlarmState.UNDETERMINED, alarmActions);
+      return new AlarmDetail(id, name, description, expression, AlarmState.UNDETERMINED,
+          alarmActions, okActions, undeterminedActions);
     } catch (RuntimeException e) {
       h.rollback();
       throw e;
@@ -142,7 +151,9 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
 
       // Hydrate all relationships
-      alarm.setAlarmActions(findAlarmActionsById(h, alarmId));
+      alarm.setAlarmActions(findAlarmActionsById(h, alarmId, AlarmState.ALARM));
+      alarm.setOkActions(findAlarmActionsById(h, alarmId, AlarmState.OK));
+      alarm.setUndeterminedActions(findAlarmActionsById(h, alarmId, AlarmState.UNDETERMINED));
       return alarm;
     } finally {
       h.close();
@@ -182,9 +193,11 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     }
   }
 
-  private List<String> findAlarmActionsById(Handle handle, String alarmId) {
-    return handle.createQuery("select action_id from alarm_action where alarm_id = :alarmId")
+  private List<String> findAlarmActionsById(Handle handle, String alarmId, AlarmState state) {
+    return handle.createQuery(
+        "select action_id from alarm_action where alarm_id = :alarmId and alarm_state = :alarmState")
         .bind("alarmId", alarmId)
+        .bind("alarmState", state.name())
         .map(StringMapper.FIRST)
         .list();
   }

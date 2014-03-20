@@ -62,8 +62,9 @@ public class AlarmResource {
       Validation.verifyOwnership(tenantId, metricDef.name, metricDef.dimensions, authToken);
     }
 
-    AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.expression,
-        alarmExpression, command.alarmActions), uriInfo);
+    AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
+        command.expression, alarmExpression, command.alarmActions, command.okActions,
+        command.undeterminedActions), uriInfo);
     return Response.created(URI.create(alarm.getId()))
         .entity(new AlarmRepresentation(alarm))
         .build();

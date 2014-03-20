@@ -8,7 +8,7 @@ import javax.inject.Named;
 import com.google.common.base.Preconditions;
 import com.hpcloud.http.rest.AbstractRestClient;
 import com.hpcloud.mon.MonApiConfiguration.CloudServiceConfiguration;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.sun.jersey.api.client.Client;
 
@@ -23,8 +23,8 @@ public class ObjectStoreResourceVerificationService extends AbstractRestClient i
 
   @Inject
   public ObjectStoreResourceVerificationService(
-      @Named(Namespaces.OBJECT_STORE_NAMESPACE) CloudServiceConfiguration config, Client client) {
-    super(Namespaces.OBJECT_STORE_NAMESPACE, client);
+      @Named(Services.OBJECT_STORE_SERVICE) CloudServiceConfiguration config, Client client) {
+    super(Services.OBJECT_STORE_SERVICE, client);
     this.config = config;
   }
 

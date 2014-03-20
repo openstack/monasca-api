@@ -2,6 +2,7 @@ package com.hpcloud.mon.app.command;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -18,14 +19,19 @@ public class CreateAlarmCommand {
 
   public static class CreateAlarmInner {
     @NotEmpty public String name;
+    public String description;
     @NotEmpty public String expression;
     @NotEmpty public List<String> alarmActions;
+    public List<String> okActions;
+    public List<String> undeterminedActions;
 
     public CreateAlarmInner() {
     }
 
-    public CreateAlarmInner(String name, String expression, List<String> alarmActions) {
+    public CreateAlarmInner(String name, @Nullable String description, String expression,
+        List<String> alarmActions) {
       this.name = name;
+      this.description = description;
       this.expression = expression;
       this.alarmActions = alarmActions;
     }
@@ -39,16 +45,6 @@ public class CreateAlarmCommand {
       if (getClass() != obj.getClass())
         return false;
       CreateAlarmInner other = (CreateAlarmInner) obj;
-      if (alarmActions == null) {
-        if (other.alarmActions != null)
-          return false;
-      } else if (!alarmActions.equals(other.alarmActions))
-        return false;
-      if (expression == null) {
-        if (other.expression != null)
-          return false;
-      } else if (!expression.equals(other.expression))
-        return false;
       if (name == null) {
         if (other.name != null)
           return false;
@@ -61,8 +57,6 @@ public class CreateAlarmCommand {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((alarmActions == null) ? 0 : alarmActions.hashCode());
-      result = prime * result + ((expression == null) ? 0 : expression.hashCode());
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       return result;
     }
@@ -70,9 +64,20 @@ public class CreateAlarmCommand {
     public void validate() {
       if (name.length() > 250)
         Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
+      if (description != null && description.length() > 250)
+        Exceptions.unprocessableEntity("Description %s must be 250 characters or less", description);
       for (String action : alarmActions)
         if (action.length() > 50)
           Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less", action);
+      if (okActions != null)
+        for (String action : okActions)
+          if (action.length() > 50)
+            Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
+      if (undeterminedActions != null)
+        for (String action : undeterminedActions)
+          if (action.length() > 50)
+            Exceptions.unprocessableEntity("Undetermined action %s must be 50 characters or less",
+                action);
     }
   }
 
@@ -80,7 +85,7 @@ public class CreateAlarmCommand {
   }
 
   public CreateAlarmCommand(String name, String expression, List<String> alarmActions) {
-    alarm = new CreateAlarmInner(name, expression, alarmActions);
+    alarm = new CreateAlarmInner(name, null, expression, alarmActions);
   }
 
   @Override

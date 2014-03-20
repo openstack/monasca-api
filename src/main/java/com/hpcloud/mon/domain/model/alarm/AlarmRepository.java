@@ -16,8 +16,9 @@ public interface AlarmRepository {
   /**
    * Creates and returns a new alarm for the criteria.
    */
-  AlarmDetail create(String id, String tenantId, String name, String expression,
-      Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions);
+  AlarmDetail create(String id, String tenantId, String name, String description,
+      String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}

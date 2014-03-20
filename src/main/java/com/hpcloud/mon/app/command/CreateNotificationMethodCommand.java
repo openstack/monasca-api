@@ -6,7 +6,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**

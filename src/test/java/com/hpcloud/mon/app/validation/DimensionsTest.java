@@ -33,12 +33,12 @@ public class DimensionsTest {
   @Test(expectedExceptions = WebApplicationException.class)
   @SuppressWarnings("serial")
   public void shouldThrowOnEmptyDimensionValue() {
-    DimensionValidation.validate("joe", new HashMap<String, String>() {
+    DimensionValidation.validate(new HashMap<String, String>() {
       {
         put("abc", "1 2 3");
         put("ezaz", "do re mi");
         put("abc", null);
       }
-    });
+    }, "joe");
   }
 }

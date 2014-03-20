@@ -20,7 +20,7 @@ public class AlarmsRepresentationTest extends AbstractModelTest {
     Map<String, String> dimensions = new HashMap<String, String>();
     dimensions.put("instance_id", "666");
     dimensions.put("image_id", "345");
-    Alarm alarm = new Alarm("123", "90% CPU", "avg(hpcs.compute:cpu:1:{instance_id=5}) > 5",
+    Alarm alarm = new Alarm("123", "90% CPU", null, "avg(hpcs.compute:cpu:1:{instance_id=5}) > 5",
         AlarmState.OK);
     alarm.setLinks(Arrays.asList(new Link("self", "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
 

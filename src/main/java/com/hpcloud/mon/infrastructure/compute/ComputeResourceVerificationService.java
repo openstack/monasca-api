@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.hpcloud.http.rest.AbstractRestClient;
 import com.hpcloud.mon.MonApiConfiguration.CloudServiceConfiguration;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient.TokenCallable;
@@ -32,10 +32,10 @@ public class ComputeResourceVerificationService extends AbstractRestClient imple
 
   @Inject
   public ComputeResourceVerificationService(
-      @Named(Namespaces.COMPUTE_NAMESPACE) CloudServiceConfiguration config,
+      @Named(Services.COMPUTE_SERVICE) CloudServiceConfiguration config,
       IdentityServiceConfiguration identityConfig, IdentityServiceClient identityServiceClient,
       Client client) {
-    super(Namespaces.COMPUTE_NAMESPACE, client);
+    super(Services.COMPUTE_SERVICE, client);
     this.config = config;
     this.identityConfig = identityConfig;
     this.identityServiceClient = identityServiceClient;

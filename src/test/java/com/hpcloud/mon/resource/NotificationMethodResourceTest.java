@@ -21,8 +21,8 @@ import com.hpcloud.mon.app.representation.NotificationMethodRepresentation;
 import com.hpcloud.mon.app.representation.NotificationMethodsRepresentation;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 

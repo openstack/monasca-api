@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
 import com.google.common.io.Resources;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
+import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 
 /**
  * @author Jonathan Halterman

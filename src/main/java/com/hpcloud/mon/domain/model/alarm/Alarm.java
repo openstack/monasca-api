@@ -10,15 +10,17 @@ import com.hpcloud.mon.domain.model.common.Linked;
 public class Alarm extends AbstractEntity implements Linked {
   private List<Link> links;
   private String name;
+  private String description = "";
   private String expression;
   private AlarmState state;
 
   public Alarm() {
   }
 
-  public Alarm(String id, String name, String expression, AlarmState state) {
+  public Alarm(String id, String name, String description, String expression, AlarmState state) {
     this.id = id;
     this.name = name;
+    this.setDescription(description);
     this.setExpression(expression);
     this.state = state;
   }
@@ -45,6 +47,10 @@ public class Alarm extends AbstractEntity implements Linked {
     if (state != other.state)
       return false;
     return true;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   public String getExpression() {
@@ -75,6 +81,10 @@ public class Alarm extends AbstractEntity implements Linked {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((state == null) ? 0 : state.hashCode());
     return result;
+  }
+
+  public void setDescription(String description) {
+    this.description = description == null ? "" : description;
   }
 
   public void setExpression(String expression) {

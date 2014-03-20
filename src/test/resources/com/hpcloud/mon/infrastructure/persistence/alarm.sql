@@ -1,13 +1,17 @@
 CREATE TABLE `alarm` (
-  `id` varchar(36) NOT NULL,
-  `tenant_id` varchar(36) NOT NULL,
-  `name` varchar(250) NOT NULL,
-  `expression` mediumtext NOT NULL,
+  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tenant_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `expression` mediumtext COLLATE utf8mb4_unicode_ci,
   `state` varchar(20) NOT NULL check state in ('UNDETERMINED','OK','ALARM'),
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `created_at` (`created_at`)
 );
 
 CREATE TABLE `sub_alarm` (
@@ -33,7 +37,8 @@ CREATE TABLE `sub_alarm_dimension` (
 );
 
 CREATE TABLE `alarm_action` (
-  `alarm_id` varchar(36) NOT NULL,
-  `action_id` varchar(50) NOT NULL,
-  PRIMARY KEY (`alarm_id`,`action_id`)
+  `alarm_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alarm_state` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `action_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`alarm_id`,`alarm_state`,`action_id`),
 );

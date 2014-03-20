@@ -4,9 +4,9 @@ import javax.inject.Singleton;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import com.hpcloud.mon.common.model.Namespaces;
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
-import com.hpcloud.mon.domain.model.metric.DatapointRepository;
+import com.hpcloud.mon.domain.model.metric.MeasurementRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.infrastructure.compute.ComputeResourceVerificationService;
@@ -26,17 +26,17 @@ public class InfrastructureModule extends AbstractModule {
   protected void configure() {
     // Bind repositories
     bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
-    bind(DatapointRepository.class).to(DatapointRepositoryImpl.class).in(Singleton.class);
+    bind(MeasurementRepository.class).to(DatapointRepositoryImpl.class).in(Singleton.class);
     bind(NotificationMethodRepository.class).to(NotificationMethodRepositoryImpl.class).in(
         Singleton.class);
 
     // Bind domain services
     bind(IdentityServiceClient.class).in(Singleton.class);
-    bind(ResourceVerificationService.class).annotatedWith(Names.named(Namespaces.COMPUTE_NAMESPACE))
+    bind(ResourceVerificationService.class).annotatedWith(Names.named(Services.COMPUTE_SERVICE))
         .to(ComputeResourceVerificationService.class)
         .in(Singleton.class);
     bind(ResourceVerificationService.class).annotatedWith(
-        Names.named(Namespaces.OBJECT_STORE_NAMESPACE))
+        Names.named(Services.OBJECT_STORE_SERVICE))
         .to(ObjectStoreResourceVerificationService.class)
         .in(Singleton.class);
   }

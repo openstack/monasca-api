@@ -3,7 +3,6 @@ package com.hpcloud.mon.domain.model.notificationmethod;
 import java.util.List;
 
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
-import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod.NotificationMethodType;
 
 /**
  * Repository for notification methods.
@@ -20,6 +19,7 @@ public interface NotificationMethodRepository {
    */
   void deleteById(String tenantId, String notificationMethodId);
 
+  /** Returns whether the {@code notificationMethodId} exists for the {@code tenantId}. */
   boolean exists(String tenantId, String notificationMethodId);
 
   /**

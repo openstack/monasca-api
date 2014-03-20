@@ -2,6 +2,7 @@ package com.hpcloud.mon.app.validation;
 
 import javax.ws.rs.WebApplicationException;
 
+import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
@@ -33,14 +34,15 @@ public final class AlarmValidation {
 
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
+      String service = metricDef.dimensions.get(Services.SERVICE_DIMENSION);
 
       // Normalize and validate namespace
-      metricDef.name = NamespaceValidation.normalize(metricDef.name);
-      NamespaceValidation.validate(metricDef.name);
+      metricDef.name = MetricNameValidation.normalize(metricDef.name);
+      MetricNameValidation.validate(metricDef.name, service);
 
       // Normalize and validate dimensions
       metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
-      DimensionValidation.validate(metricDef.name, metricDef.dimensions);
+      DimensionValidation.validate(metricDef.dimensions, service);
 
       // Validate period
       if (subExpression.getPeriod() == 0)

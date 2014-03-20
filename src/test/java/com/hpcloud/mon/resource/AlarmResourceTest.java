@@ -50,17 +50,18 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90";
 
-    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", expression, AlarmState.OK);
+    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK);
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new AlarmDetail("123", "Disk Exceeds 1k Operations", expression, AlarmState.OK,
-        alarmActions);
+    alarm = new AlarmDetail("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
+        alarmActions, null, null);
 
     service = mock(AlarmService.class);
     when(
-        service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), eq(expression),
-            eq(AlarmExpression.of(expression)), any(List.class))).thenReturn(alarm);
+        service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
+            eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
+            any(List.class))).thenReturn(alarm);
 
     repo = mock(AlarmRepository.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
@@ -80,8 +81,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(location, "/v1.1/alarms/" + newAlarm.getId());
     assertEquals(newAlarm, alarm);
-    verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), eq(expression),
-        eq(AlarmExpression.of(expression)), any(List.class));
+    verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
+        eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
+        any(List.class));
   }
 
   public void shouldErrorOnCreateWithInvalidDimensions() {
@@ -116,8 +118,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldNotRequireDimensionsForCustomNamespace() {
     String expression = "avg(foo{metric_name=bar}) >= 90";
     when(
-        service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), eq(expression),
-            eq(AlarmExpression.of(expression)), any(List.class))).thenReturn(alarm);
+        service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
+            eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
+            any(List.class))).thenReturn(alarm);
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
         "Disk Exceeds 1k Operations", expression, alarmActions));
     assertEquals(response.getStatus(), 201);
