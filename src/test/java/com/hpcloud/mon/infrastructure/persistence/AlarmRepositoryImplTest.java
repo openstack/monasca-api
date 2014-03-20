@@ -72,8 +72,8 @@ public class AlarmRepositoryImplTest {
     handle.execute("insert into sub_alarm_dimension values ('111', 'image_id', '888')");
     handle.execute("insert into sub_alarm_dimension values ('111', 'metric_name', 'cpu')");
     handle.execute("insert into sub_alarm_dimension values ('111', 'device', '1')");
-    handle.execute("insert into alarm_action values ('123', '29387234')");
-    handle.execute("insert into alarm_action values ('123', '77778687')");
+    handle.execute("insert into alarm_action values ('123', 'ALARM', '29387234')");
+    handle.execute("insert into alarm_action values ('123', 'ALARM', '77778687')");
 
     handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
         + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20', 'UNDETERMINED', NOW(), NOW(), NULL)");
@@ -82,8 +82,8 @@ public class AlarmRepositoryImplTest {
     handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
     handle.execute("insert into sub_alarm_dimension values ('222', 'image_id', '888')");
     handle.execute("insert into sub_alarm_dimension values ('222', 'metric_name', 'mem')");
-    handle.execute("insert into alarm_action values ('234', '29387234')");
-    handle.execute("insert into alarm_action values ('234', '77778687')");
+    handle.execute("insert into alarm_action values ('234', 'ALARM', '29387234')");
+    handle.execute("insert into alarm_action values ('234', 'ALARM', '77778687')");
   }
 
   public void shouldCreate() {
