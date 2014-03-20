@@ -24,7 +24,7 @@ public class NotificationMethodsRepresentationTest extends AbstractModelTest {
   }
 
   public void shouldSerializeToJson() throws Exception {
-    String json = toJson(new NotificationMethodsRepresentation(Arrays.asList(notificationMethod)));
+    String json = toJson(Arrays.asList(notificationMethod));
     assertEquals(json, jsonFixture("fixtures/notificationMethods.json"));
   }
 }

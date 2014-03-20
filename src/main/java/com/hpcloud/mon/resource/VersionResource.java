@@ -12,8 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hpcloud.mon.app.representation.VersionRepresentation;
-import com.hpcloud.mon.app.representation.VersionsRepresentation;
 import com.hpcloud.mon.domain.model.version.Version;
 import com.hpcloud.mon.domain.model.version.VersionRepository;
 
@@ -34,17 +32,14 @@ public class VersionResource {
 
   @GET
   @Timed
-  public VersionsRepresentation list(@Context UriInfo uriInfo) {
-    List<Version> versions = Links.hydrate(repository.find(), uriInfo);
-    return new VersionsRepresentation(versions);
+  public List<Version> list(@Context UriInfo uriInfo) {
+    return Links.hydrate(repository.find(), uriInfo);
   }
 
   @GET
   @Timed
   @Path("{version_id}")
-  public VersionRepresentation get(@Context UriInfo uriInfo,
-      @PathParam("version_id") String versionId) {
-    Version version = Links.hydrate(repository.findById(versionId), uriInfo);
-    return new VersionRepresentation(version);
+  public Version get(@Context UriInfo uriInfo, @PathParam("version_id") String versionId) {
+    return Links.hydrate(repository.findById(versionId), uriInfo);
   }
 }

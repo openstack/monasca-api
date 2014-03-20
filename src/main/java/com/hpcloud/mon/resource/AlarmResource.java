@@ -1,6 +1,7 @@
 package com.hpcloud.mon.resource;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -20,14 +21,12 @@ import javax.ws.rs.core.UriInfo;
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
-import com.hpcloud.mon.app.command.CreateAlarmCommand.CreateAlarmInner;
-import com.hpcloud.mon.app.representation.AlarmRepresentation;
-import com.hpcloud.mon.app.representation.AlarmsRepresentation;
 import com.hpcloud.mon.app.validation.AlarmValidation;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 
@@ -52,8 +51,7 @@ public class AlarmResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @HeaderParam("X-Auth-Token") String authToken, @Valid CreateAlarmCommand wrapper) {
-    CreateAlarmInner command = wrapper.alarm;
+      @HeaderParam("X-Auth-Token") String authToken, @Valid CreateAlarmCommand command) {
     command.validate();
 
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
@@ -65,26 +63,23 @@ public class AlarmResource {
     AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
         command.undeterminedActions), uriInfo);
-    return Response.created(URI.create(alarm.getId()))
-        .entity(new AlarmRepresentation(alarm))
-        .build();
+    return Response.created(URI.create(alarm.getId())).entity(alarm).build();
   }
 
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public AlarmsRepresentation list(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId) {
-    return new AlarmsRepresentation(Links.hydrate(repo.find(tenantId), uriInfo));
+  public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId) {
+    return Links.hydrate(repo.find(tenantId), uriInfo);
   }
 
   @GET
   @Timed
   @Path("{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public AlarmRepresentation get(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
-    return new AlarmRepresentation(Links.hydrate(repo.findById(tenantId, alarmId), uriInfo));
+  public Alarm get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("alarm_id") String alarmId) {
+    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
   }
 
   @DELETE

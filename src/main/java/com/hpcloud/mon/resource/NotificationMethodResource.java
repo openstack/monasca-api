@@ -21,8 +21,6 @@ import javax.ws.rs.core.UriInfo;
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand.CreateNotificationMethodInner;
-import com.hpcloud.mon.app.representation.NotificationMethodRepresentation;
-import com.hpcloud.mon.app.representation.NotificationMethodsRepresentation;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 
@@ -52,29 +50,26 @@ public class NotificationMethodResource {
     NotificationMethod notificationMethod = Links.hydrate(
         repo.create(tenantId, command.name, command.type, command.address), uriInfo);
     return Response.created(URI.create(notificationMethod.getId()))
-        .entity(new NotificationMethodRepresentation(notificationMethod))
+        .entity(notificationMethod)
         .build();
   }
 
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public NotificationMethodsRepresentation list(@Context UriInfo uriInfo,
+  public List<NotificationMethod> list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId) {
-    List<NotificationMethod> notificationMethods = Links.hydrate(repo.find(tenantId), uriInfo);
-    return new NotificationMethodsRepresentation(notificationMethods);
+    return Links.hydrate(repo.find(tenantId), uriInfo);
   }
 
   @GET
   @Timed
   @Path("{notification_method_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public NotificationMethodRepresentation get(@Context UriInfo uriInfo,
+  public NotificationMethod get(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
-    NotificationMethod notificationMethod = Links.hydrate(
-        repo.findById(tenantId, notificationMethodId), uriInfo);
-    return new NotificationMethodRepresentation(notificationMethod);
+    return Links.hydrate(repo.findById(tenantId, notificationMethodId), uriInfo);
   }
 
   @DELETE

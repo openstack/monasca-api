@@ -1,1 +1,1 @@
-{"alarm":{"name":"Disk Exceeds 1k Operations","expression":"avg(hpcs.compute:cpu:1:{instance_id=5}) > 5","alarm_actions":["123345345","23423"]}}}
+{"name":"Disk Exceeds 1k Operations","expression":"avg(hpcs.compute:cpu:1:{instance_id=5}) > 5","alarm_actions":["123345345","23423"]}}
