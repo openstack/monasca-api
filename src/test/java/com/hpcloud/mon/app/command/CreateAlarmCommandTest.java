@@ -1,4 +1,4 @@
-package com.hpcloud.mon.app.request;
+package com.hpcloud.mon.app.command;
 
 import static com.hpcloud.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
@@ -13,7 +13,7 @@ import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.domain.model.AbstractModelTest;
 
 @Test
-public class NewAlarmTest extends AbstractModelTest {
+public class CreateAlarmCommandTest extends AbstractModelTest {
   public void shouldDeserializeFromJson() throws Exception {
     Map<String, String> dimensions = new HashMap<String, String>();
     dimensions.put("instanceId", "392633");
