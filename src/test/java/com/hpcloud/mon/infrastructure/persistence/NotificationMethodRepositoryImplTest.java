@@ -79,6 +79,13 @@ public class NotificationMethodRepositoryImplTest {
         Arrays.asList(new NotificationMethod("123", "MySMS", NotificationMethodType.SMS, "8675309")));
   }
 
+  public void shouldUpdate() {
+    repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc");
+    NotificationMethod nm = repo.findById("444", "123");
+
+    assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc"));
+  }
+
   public void shouldDeleteById() {
     repo.deleteById("444", "123");
 

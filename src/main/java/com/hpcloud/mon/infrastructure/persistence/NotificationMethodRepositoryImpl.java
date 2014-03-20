@@ -139,4 +139,21 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
       h.close();
     }
   }
+
+  @Override
+  public NotificationMethod update(String tenantId, String notificationMethodId, String name,
+      NotificationMethodType type, String address) {
+    Handle h = db.open();
+
+    try {
+      if (h.update(
+          "update notification_method set name = ?, type = ?, address = ? where tenant_id = ? and id = ?",
+          name, type.name(), address, tenantId, notificationMethodId) == 0)
+        throw new EntityNotFoundException("No notification method exists for %s",
+            notificationMethodId);
+      return new NotificationMethod(notificationMethodId, name, type, address);
+    } finally {
+      h.close();
+    }
+  }
 }

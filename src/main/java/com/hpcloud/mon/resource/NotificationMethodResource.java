@@ -10,6 +10,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -20,7 +21,6 @@ import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
-import com.hpcloud.mon.app.command.CreateNotificationMethodCommand.CreateNotificationMethodInner;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 
@@ -43,8 +43,7 @@ public class NotificationMethodResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @Valid CreateNotificationMethodCommand wrapper) {
-    CreateNotificationMethodInner command = wrapper.notificationMethod;
+      @Valid CreateNotificationMethodCommand command) {
     command.validate();
 
     NotificationMethod notificationMethod = Links.hydrate(
@@ -70,6 +69,21 @@ public class NotificationMethodResource {
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
     return Links.hydrate(repo.findById(tenantId, notificationMethodId), uriInfo);
+  }
+
+  @PUT
+  @Timed
+  @Path("{notification_method_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public NotificationMethod update(@Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("notification_method_id") String notificationMethodId,
+      @Valid CreateNotificationMethodCommand command) {
+    command.validate();
+
+    return Links.hydrate(
+        repo.update(tenantId, notificationMethodId, command.name, command.type, command.address),
+        uriInfo);
   }
 
   @DELETE
