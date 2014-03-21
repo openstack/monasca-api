@@ -37,10 +37,9 @@ public class MetricService {
     metricMeter = metricRegistry.meter(MetricRegistry.name(MetricService.class, "metrics.published"));
   }
 
-  public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId,
-      String authToken) {
+  public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId) {
     Builder<String, Object> metaBuilder = new ImmutableMap.Builder<String, Object>().put(
-        "tenantId", tenantId).put("authToken", authToken);
+        "tenantId", tenantId);
     if (crossTenantId != null)
       metaBuilder.put("crossTenantId", crossTenantId);
     ImmutableMap<String, Object> meta = metaBuilder.build();

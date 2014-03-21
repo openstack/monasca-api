@@ -10,6 +10,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -48,7 +49,7 @@ public class AlarmResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @HeaderParam("X-Auth-Token") String authToken, @Valid CreateAlarmCommand command) {
+      @Valid CreateAlarmCommand command) {
     command.validate();
 
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
@@ -71,6 +72,15 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Alarm get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
+    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
+  }
+
+  @PUT
+  @Timed
+  @Path("{alarm_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("alarm_id") String alarmId, @Valid CreateAlarmCommand command) {
     return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
   }
 
