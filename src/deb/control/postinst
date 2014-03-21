@@ -6,7 +6,9 @@ case "$1" in
       adduser --system --group mon_api
     fi
 
-    restart mon-api
+    #Restart does not pick up upstart job config changes stop/start is needed
+    stop mon-api
+    start mon-api
   ;;
 esac
 
