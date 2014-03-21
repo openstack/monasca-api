@@ -50,7 +50,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     timestamp = System.currentTimeMillis() / 1000L;
 
     service = mock(MetricService.class);
-    doNothing().when(service).create(any(List.class), anyString(), anyString(), anyString());
+    doNothing().when(service).create(any(List.class), anyString(), anyString());
 
     metricRepo = mock(MetricRepository.class);
     measurementRepo = mock(MeasurementRepository.class);
@@ -62,7 +62,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         dimensions, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString(), anyString());
+    verify(service).create(any(List.class), eq("abc"), anyString());
   }
 
   public void shouldCreateWithNonNumericAZ() {
@@ -74,7 +74,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         dimensions_local, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString(), anyString());
+    verify(service).create(any(List.class), eq("abc"), anyString());
   }
 
   public void shouldCreateWithNullTimestamp() throws Exception {
@@ -83,7 +83,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     ClientResponse response = createResponseFor(metric);
 
     assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString(), anyString());
+    verify(service).create(any(List.class), eq("abc"), anyString());
   }
 
   public void shouldCreateWithZeroValue() {
@@ -91,7 +91,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         dimensions, timestamp, 0.0));
 
     assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString(), anyString());
+    verify(service).create(any(List.class), eq("abc"), anyString());
   }
 
   public void shouldCreateWithZeroTimestamp() {
@@ -99,7 +99,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         dimensions, 0L, 0.0));
 
     assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString(), anyString());
+    verify(service).create(any(List.class), eq("abc"), anyString());
   }
 
   public void shouldCreateList() {

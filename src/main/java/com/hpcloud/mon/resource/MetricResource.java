@@ -64,9 +64,9 @@ public class MetricResource {
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
-  public void create(@Context UriInfo uriInfo, @HeaderParam("X-Auth-Token") String authToken,
-      @HeaderParam("X-Tenant-Id") String tenantId, @HeaderParam("X-Roles") String roles,
-      @QueryParam("tenant_id") String crossTenantId, @Valid CreateMetricCommand[] commands) {
+  public void create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @HeaderParam("X-Roles") String roles, @QueryParam("tenant_id") String crossTenantId,
+      @Valid CreateMetricCommand[] commands) {
     boolean isDelegate = !Strings.isNullOrEmpty(roles)
         && Arrays.asList(COMMA_SPLITTER.split(roles)).contains(MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
@@ -75,7 +75,8 @@ public class MetricResource {
         if (command.dimensions != null) {
           String service = command.dimensions.get(Services.SERVICE_DIMENSION);
           if (service != null && Services.isReserved(service))
-            throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs service", tenantId);
+            throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs service",
+                tenantId);
         }
         if (!Strings.isNullOrEmpty(crossTenantId))
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
@@ -85,7 +86,7 @@ public class MetricResource {
       metrics.add(command.toMetric());
     }
 
-    service.create(metrics, tenantId, crossTenantId, authToken);
+    service.create(metrics, tenantId, crossTenantId);
   }
 
   @GET
@@ -102,9 +103,8 @@ public class MetricResource {
   @Timed
   @Path("/measurements")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> getMeasurements(@HeaderParam("X-Auth-Token") String authToken,
-      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
-      @QueryParam("dimensions") String dimensionsStr,
+  public List<Measurement> getMeasurements(@HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
 
     // Validate query parameters
@@ -121,9 +121,8 @@ public class MetricResource {
   @Timed
   @Path("/statistics")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> getStatistics(@HeaderParam("X-Auth-Token") String authToken,
-      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
-      @QueryParam("dimensions") String dimensionsStr,
+  public List<Measurement> getStatistics(@HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
