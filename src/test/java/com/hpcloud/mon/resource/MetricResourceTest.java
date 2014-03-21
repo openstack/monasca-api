@@ -22,7 +22,8 @@ import org.testng.annotations.Test;
 
 import com.hpcloud.mon.app.MetricService;
 import com.hpcloud.mon.app.command.CreateMetricCommand;
-import com.hpcloud.mon.domain.model.metric.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.metric.MetricRepository;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -34,7 +35,8 @@ import com.sun.jersey.api.client.ClientResponse;
 public class MetricResourceTest extends AbstractMonApiResourceTest {
   private Map<String, String> dimensions;
   private MetricService service;
-  private MeasurementRepository datapointRepo;
+  private MetricRepository metricRepo;
+  private MeasurementRepository measurementRepo;
   long timestamp;
 
   @Override
@@ -50,8 +52,9 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     service = mock(MetricService.class);
     doNothing().when(service).create(any(List.class), anyString(), anyString(), anyString());
 
-    datapointRepo = mock(MeasurementRepository.class);
-    addResources(new MetricResource(service, datapointRepo));
+    metricRepo = mock(MetricRepository.class);
+    measurementRepo = mock(MeasurementRepository.class);
+    addResources(new MetricResource(service, metricRepo, measurementRepo));
   }
 
   public void shouldCreate() {
@@ -296,8 +299,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
             + "&dimensions=metric_name:cpu_utilization,%20instance_id:123,az:1,instance_uuid:8499a88b-5830-4c85-9507-fe7d4382919c&statistics=avg,%20min,%20max&period=60")
         .header("X-Tenant-Id", "abc")
         .get(ClientResponse.class);
-    verify(datapointRepo).find(anyString(), anyString(), any(DateTime.class), any(DateTime.class),
-        any(Map.class), any(List.class), anyInt());
+    verify(measurementRepo).findAggregated(anyString(), any(Map.class), any(DateTime.class),
+        any(DateTime.class), any(List.class), anyInt());
   }
 
   public void queryShouldThrowOnInvalidDateFormat() throws Exception {
