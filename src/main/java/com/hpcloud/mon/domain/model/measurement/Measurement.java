@@ -1,4 +1,4 @@
-package com.hpcloud.mon.domain.model.metric;
+package com.hpcloud.mon.domain.model.measurement;
 
 import java.util.Map;
 

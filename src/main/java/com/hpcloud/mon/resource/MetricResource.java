@@ -33,8 +33,9 @@ import com.hpcloud.mon.app.validation.MetricNameValidation;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.common.model.metric.Metric;
-import com.hpcloud.mon.domain.model.metric.Measurement;
-import com.hpcloud.mon.domain.model.metric.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurement;
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.metric.MetricRepository;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
@@ -50,11 +51,14 @@ public class MetricResource {
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
 
   private final MetricService service;
+  private final MetricRepository metricRepo;
   private final MeasurementRepository measurementRepo;
 
   @Inject
-  public MetricResource(MetricService service, MeasurementRepository measurementRepo) {
+  public MetricResource(MetricService service, MetricRepository metricRepo,
+      MeasurementRepository measurementRepo) {
     this.service = service;
+    this.metricRepo = metricRepo;
     this.measurementRepo = measurementRepo;
   }
 
@@ -82,35 +86,73 @@ public class MetricResource {
     service.create(metrics, tenantId, crossTenantId, authToken);
   }
 
-//  @GET
-//  @Timed
-//  @Produces(MediaType.APPLICATION_JSON)
-//  public List<Metric> get(@HeaderParam("X-Tenant-Id") String tenantId) {
-//
-//    return null;
-//  }
-
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> get(@HeaderParam("X-Auth-Token") String authToken,
+  public List<Metric> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr) {
+    Map<String, String> dimensions = parseAndValidateNameAndDimensions(name, dimensionsStr);
+
+    return metricRepo.find(name, dimensions);
+  }
+
+  @GET
+  @Timed
+  @Path("/measurements")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Measurement> getMeasurements(@HeaderParam("X-Auth-Token") String authToken,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
+
+    // Validate query parameters
+    DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
+    DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
+    validateTimes(startTime, endTime);
+    Map<String, String> dimensions = parseAndValidateNameAndDimensions(name, dimensionsStr);
+
+    // Verify ownership
+    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
+
+    // Return measurements
+    return measurementRepo.find(name, dimensions, startTime, endTime);
+  }
+
+  @GET
+  @Timed
+  @Path("/statistics")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Measurement> getStatistics(@HeaderParam("X-Auth-Token") String authToken,
+      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
+      @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
       @DefaultValue("300") @QueryParam("period") String periodStr) {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
-    if (!startTime.isBefore(endTime))
-      throw Exceptions.badRequest("start_time must be before end_time");
-    Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
+    validateTimes(startTime, endTime);
     Validation.validateNotNullOrEmpty(statisticsStr, "statistics");
     int period = Validation.parseAndValidateNumber(periodStr, "period");
     List<String> statistics = Validation.parseValidateAndNormalizeStatistics(COMMA_SPLITTER.split(statisticsStr));
+    Map<String, String> dimensions = parseAndValidateNameAndDimensions(name, dimensionsStr);
 
-    // Parse dimensions
+    // Verify ownership
+    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
+
+    // Return measurements
+    return measurementRepo.findAggregated(name, dimensions, startTime, endTime, statistics, period);
+  }
+
+  private void validateTimes(DateTime startTime, DateTime endTime) {
+    if (!startTime.isBefore(endTime))
+      throw Exceptions.badRequest("start_time must be before end_time");
+  }
+
+  private Map<String, String> parseAndValidateNameAndDimensions(String name, String dimensionsStr) {
+    Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
+
     Map<String, String> dimensions = new HashMap<String, String>();
     for (String dimensionStr : COMMA_SPLITTER.split(dimensionsStr)) {
       String[] dimensionArr = Iterables.toArray(COLON_SPLITTER.split(dimensionStr), String.class);
@@ -118,15 +160,9 @@ public class MetricResource {
         dimensions.put(dimensionArr[0], dimensionArr[1]);
     }
 
-    // Validate metric definition
     String service = dimensions.get(Services.SERVICE_DIMENSION);
     MetricNameValidation.validate(name, service);
     DimensionValidation.validate(dimensions, service);
-
-    // Verify ownership
-    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
-
-    // Return measurements
-    return measurementRepo.find(authToken, name, startTime, endTime, dimensions, statistics, period);
+    return dimensions;
   }
 }
