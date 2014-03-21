@@ -1,6 +1,5 @@
 package com.hpcloud.mon;
 
-import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
@@ -22,7 +21,6 @@ import com.google.inject.ProvisionException;
 import com.hpcloud.mon.app.ApplicationModule;
 import com.hpcloud.mon.domain.DomainModule;
 import com.hpcloud.mon.infrastructure.InfrastructureModule;
-import com.sun.jersey.api.client.Client;
 
 /**
  * Monitoring API server bindings.
@@ -57,12 +55,6 @@ public class MonApiModule extends AbstractModule {
     } catch (ClassNotFoundException e) {
       throw new ProvisionException("Failed to provision DBI", e);
     }
-  }
-
-  @Provides
-  @Singleton
-  public Client getClient() {
-    return new JerseyClientBuilder(environment).using(config.jerseyClient).build("default");
   }
 
   @Provides
