@@ -3,7 +3,6 @@ package com.hpcloud.mon.app.validation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 
@@ -12,10 +11,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.base.Strings;
-import com.hpcloud.mon.common.model.Services;
-import com.hpcloud.mon.domain.service.ResourceVerificationService;
 import com.hpcloud.mon.resource.exception.Exceptions;
-import com.hpcloud.util.Injector;
 
 /**
  * Validation related utilities.
@@ -83,24 +79,5 @@ public final class Validation {
   public static void validateNotNullOrEmpty(String value, String parameterName) {
     if (Strings.isNullOrEmpty(value))
       throw Exceptions.unprocessableEntity("%s is required", parameterName);
-  }
-
-  /**
-   * Verifies that the {@code tenantId} owns any resources referenced in the {@code dimensions} for
-   * the {@code namespace}.
-   */
-  public static void verifyOwnership(String tenantId, String namespace,
-      Map<String, String> dimensions, String authToken) {
-    String resourceIdDim = Services.getResourceIdDimension(namespace);
-    if (resourceIdDim != null && Injector.isBound(ResourceVerificationService.class, namespace)) {
-      ResourceVerificationService verificationService = Injector.getInstance(
-          ResourceVerificationService.class, namespace);
-      String resourceId = dimensions.get(resourceIdDim);
-      if (verificationService != null
-          && !verificationService.isVerifiedOwner(tenantId, resourceId, dimensions.get("az"),
-              authToken))
-        throw Exceptions.badRequest("The %s resource %s is not owned by tenant %s", namespace,
-            resourceId, tenantId);
-    }
   }
 }

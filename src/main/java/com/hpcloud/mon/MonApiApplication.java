@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.hp.csbu.cc.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
-import com.hpcloud.mon.infrastructure.identity.IdentityServiceClient;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
 import com.hpcloud.mon.resource.AlarmResource;
@@ -118,9 +117,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
           .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
           .addMappingForUrlPatterns(null, true, "/*");
     }
-
-    /** Initialize the identity service */
-    Injector.getInstance(IdentityServiceClient.class).getAuthToken();
   }
 
   private void removeExceptionMappers(Set<Object> items) {

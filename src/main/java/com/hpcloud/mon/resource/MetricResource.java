@@ -41,7 +41,6 @@ import com.hpcloud.mon.resource.exception.Exceptions;
 /**
  * Metric resource implementation.
  * 
- * @author Todd Walk
  * @author Jonathan Halterman
  */
 @Path("/v2.0/metrics")
@@ -111,9 +110,6 @@ public class MetricResource {
     validateTimes(startTime, endTime);
     Map<String, String> dimensions = parseAndValidateNameAndDimensions(name, dimensionsStr);
 
-    // Verify ownership
-    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
-
     // Return measurements
     return measurementRepo.find(name, dimensions, startTime, endTime);
   }
@@ -137,9 +133,6 @@ public class MetricResource {
     int period = Validation.parseAndValidateNumber(periodStr, "period");
     List<String> statistics = Validation.parseValidateAndNormalizeStatistics(COMMA_SPLITTER.split(statisticsStr));
     Map<String, String> dimensions = parseAndValidateNameAndDimensions(name, dimensionsStr);
-
-    // Verify ownership
-    Validation.verifyOwnership(tenantId, name, dimensions, authToken);
 
     // Return measurements
     return measurementRepo.findAggregated(name, dimensions, startTime, endTime, statistics, period);

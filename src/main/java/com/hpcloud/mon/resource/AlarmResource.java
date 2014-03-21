@@ -22,10 +22,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.app.validation.AlarmValidation;
-import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
@@ -55,11 +52,6 @@ public class AlarmResource {
     command.validate();
 
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
-    for (AlarmSubExpression alarmSubExpr : alarmExpression.getSubExpressions()) {
-      MetricDefinition metricDef = alarmSubExpr.getMetricDefinition();
-      Validation.verifyOwnership(tenantId, metricDef.name, metricDef.dimensions, authToken);
-    }
-
     AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
         command.undeterminedActions), uriInfo);
