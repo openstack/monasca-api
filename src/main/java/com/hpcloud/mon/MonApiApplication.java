@@ -52,7 +52,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
   @Override
   public String getName() {
-    return "monitoring";
+    return "HP Cloud Monitoring";
   }
 
   @Override
