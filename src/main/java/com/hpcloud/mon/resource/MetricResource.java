@@ -82,13 +82,13 @@ public class MetricResource {
     service.create(metrics, tenantId, crossTenantId, authToken);
   }
 
-  @GET
-  @Timed
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Metric> get(@HeaderParam("X-Tenant-Id") String tenantId) {
-
-    return null;
-  }
+//  @GET
+//  @Timed
+//  @Produces(MediaType.APPLICATION_JSON)
+//  public List<Metric> get(@HeaderParam("X-Tenant-Id") String tenantId) {
+//
+//    return null;
+//  }
 
   @GET
   @Timed
