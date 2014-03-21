@@ -72,8 +72,11 @@ public class MetricResource {
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
-        if (Services.isReserved(command.name))
-          throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs name", tenantId);
+        if (command.dimensions != null) {
+          String service = command.dimensions.get(Services.SERVICE_DIMENSION);
+          if (service != null && Services.isReserved(service))
+            throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs service", tenantId);
+        }
         if (!Strings.isNullOrEmpty(crossTenantId))
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
       }
