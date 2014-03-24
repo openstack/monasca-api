@@ -1,7 +1,5 @@
 package com.hpcloud.mon.resource;
 
-import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.hpcloud.dropwizard.AbstractResourceTest;
@@ -11,6 +9,7 @@ import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
 import com.hpcloud.mon.resource.exception.InvalidEntityExceptionMapper;
 import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
+import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
 import com.hpcloud.mon.resource.exception.ResourceNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
 

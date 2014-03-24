@@ -37,6 +37,7 @@ import com.sun.jersey.api.client.GenericType;
  */
 @Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
+  private String expression;
   private AlarmDetail alarm;
   private Alarm alarmItem;
   private AlarmService service;
@@ -47,8 +48,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   @SuppressWarnings("unchecked")
   protected void setupResources() throws Exception {
     super.setupResources();
-    String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90";
 
+    expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937}) >= 90";
     alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK);
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
@@ -71,27 +72,35 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldCreate() {
-    String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
         "Disk Exceeds 1k Operations", null, expression, alarmActions));
 
     assertEquals(response.getStatus(), 201);
     AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
     String location = response.getHeaders().get("Location").get(0);
-    assertEquals(location, "/v1.1/alarms/" + newAlarm.getId());
+    assertEquals(location, "/v2.0/alarms/" + newAlarm.getId());
     assertEquals(newAlarm, alarm);
     verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
         eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
         any(List.class));
   }
 
-  public void shouldErrorOnCreateWithInvalidDimensions() {
-    String expression = "avg(hpcs.compute{instance_id=937, metric_name=disk_read_ops}) >= 90";
+  public void shouldErrorOnCreateWithInvalidMetricName() {
+    String expression = "avg(foo{service=hpcs.compute, instance_id=937}) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
         "Disk Exceeds 1k Operations", null, expression, alarmActions));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "The required dimensions");
+        "foo is not a valid metric name for namespace hpcs.compute");
+  }
+
+  public void shouldErrorOnCreateWithInvalidDimensions() {
+    String expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937, foo=bar}) >= 90";
+    ClientResponse response = createResponseFor(new CreateAlarmCommand(
+        "Disk Exceeds 1k Operations", null, expression, alarmActions));
+
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+        "foo is not a valid dimension name for service hpcs.compute");
   }
 
   public void shouldErrorOnCreateWithDuplicateDimensions() {
@@ -102,15 +111,6 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "The alarm expression is invalid",
         "More than one value was given for dimension instance_id");
-  }
-
-  public void shouldErrorOnCreateWithEmptyDimensionsForHpCloudNamespace() {
-    String expression = "avg(hpcs.compute{metric_name=disk_read_ops}) >= 90";
-    ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "The required dimensions [instance_id, instance_uuid, az] are not present");
   }
 
   @SuppressWarnings("unchecked")
@@ -132,15 +132,6 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         "Unable to process the provided JSON", "Unexpected character (':'");
   }
 
-  public void shouldErrorOnCreateWithInvalidMetricType() {
-    String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=blah}) >= 90";
-    ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "blah is not a valid metric name for namespace hpcs.compute");
-  }
-
   public void shouldErrorOnCreateWithInvalidOperator() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) & 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
@@ -155,9 +146,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
         "Disk Exceeds 1k Operations", null, expression, null));
 
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("bad_request", 400,
-        "The request entity had the following errors:",
-        "[alarm.alarmActions may not be empty (was null)]");
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+        "[alarmActions may not be empty (was null)]");
   }
 
   public void shouldErrorOnCreateWith0Period() {
@@ -212,7 +202,6 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldErrorOnCreateWithTooLongAlarmAction() {
-    String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90";
     alarmActions = new ArrayList<String>();
     alarmActions.add("012345678901234567890123456789012345678901234567890");
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
@@ -224,7 +213,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    List<Alarm> alarms = client().resource("/v1.1/alarms")
+    List<Alarm> alarms = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", "abc")
         .get(new GenericType<List<Alarm>>() {
         });
@@ -234,9 +223,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldGet() {
-    assertEquals(client().resource("/v1.1/alarms/123")
+    assertEquals(client().resource("/v2.0/alarms/123")
         .header("X-Tenant-Id", "abc")
-        .get(Alarm.class), alarm);
+        .get(AlarmDetail.class), alarm);
     verify(repo).findById(eq("abc"), eq("123"));
   }
 
@@ -244,7 +233,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     doThrow(new EntityNotFoundException(null)).when(repo).findById(eq("abc"), eq("999"));
 
     try {
-      client().resource("/v1.1/alarms/999").header("X-Tenant-Id", "abc").get(Alarm.class);
+      client().resource("/v2.0/alarms/999").header("X-Tenant-Id", "abc").get(Alarm.class);
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("404"));
@@ -252,7 +241,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldDelete() {
-    ClientResponse response = client().resource("/v1.1/alarms/123")
+    ClientResponse response = client().resource("/v2.0/alarms/123")
         .header("X-Tenant-Id", "abc")
         .delete(ClientResponse.class);
     assertEquals(response.getStatus(), 204);
@@ -263,7 +252,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     doThrow(new EntityNotFoundException(null)).when(service).delete(eq("abc"), eq("999"));
 
     try {
-      client().resource("/v1.1/alarms/999").header("X-Tenant-Id", "abc").delete();
+      client().resource("/v2.0/alarms/999").header("X-Tenant-Id", "abc").delete();
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("404"));
@@ -274,7 +263,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     doThrow(new RuntimeException("")).when(repo).find(anyString());
 
     try {
-      client().resource("/v1.1/alarms").header("X-Tenant-Id", "abc").get(List.class);
+      client().resource("/v2.0/alarms").header("X-Tenant-Id", "abc").get(List.class);
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("500"));
@@ -282,8 +271,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldHydateLinksOnList() {
-    List<Link> expected = Arrays.asList(new Link("self", "/v1.1/alarms/123"));
-    List<Link> links = client().resource("/v1.1/alarms")
+    List<Link> expected = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
+    List<Link> links = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", "abc")
         .get(new GenericType<List<Alarm>>() {
         })
@@ -293,15 +282,15 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldHydateLinksOnGet() {
-    List<Link> links = Arrays.asList(new Link("self", "/v1.1/alarms/123"));
-    assertEquals(client().resource("/v1.1/alarms/123")
+    List<Link> links = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
+    assertEquals(client().resource("/v2.0/alarms/123")
         .header("X-Tenant-Id", "abc")
-        .get(Alarm.class)
+        .get(AlarmDetail.class)
         .getLinks(), links);
   }
 
   private ClientResponse createResponseFor(Object request) {
-    return client().resource("/v1.1/alarms")
+    return client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", "abc")
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, request);

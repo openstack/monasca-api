@@ -57,20 +57,22 @@ public class CreateAlarmCommand {
 
   public void validate() {
     if (name.length() > 250)
-      Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
+      throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
     if (description != null && description.length() > 250)
-      Exceptions.unprocessableEntity("Description %s must be 250 characters or less", description);
+      throw Exceptions.unprocessableEntity("Description %s must be 250 characters or less",
+          description);
     for (String action : alarmActions)
       if (action.length() > 50)
-        Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less", action);
+        throw Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less",
+            action);
     if (okActions != null)
       for (String action : okActions)
         if (action.length() > 50)
-          Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
+          throw Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
     if (undeterminedActions != null)
       for (String action : undeterminedActions)
         if (action.length() > 50)
-          Exceptions.unprocessableEntity("Undetermined action %s must be 50 characters or less",
-              action);
+          throw Exceptions.unprocessableEntity(
+              "Undetermined action %s must be 50 characters or less", action);
   }
 }
