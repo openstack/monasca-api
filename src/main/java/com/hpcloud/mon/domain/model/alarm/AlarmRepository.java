@@ -3,6 +3,7 @@ package com.hpcloud.mon.domain.model.alarm;
 import java.util.List;
 import java.util.Map;
 
+import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
@@ -44,4 +45,17 @@ public interface AlarmRepository {
    * Returns the sub-alarm Ids for the {@code alarmId}.
    */
   Map<String, MetricDefinition> findSubAlarmMetricDefinitions(String alarmId);
+
+  /**
+   * Returns the sub expressions for the {@code alarmId}.
+   */
+  Map<String, AlarmSubExpression> findSubExpressions(String alarmId);
+
+  /**
+   * Updates and returns an alarm for the criteria.
+   */
+  AlarmDetail update(String id, String tenantId, String name, String description,
+      String expression, AlarmState state, boolean enabled,
+      Map<String, AlarmSubExpression> oldSubAlarms, Map<String, AlarmSubExpression> newSubAlarms,
+      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions);
 }

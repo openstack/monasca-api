@@ -2,6 +2,8 @@ package com.hpcloud.mon.resource;
 
 import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.hpcloud.dropwizard.AbstractResourceTest;
 import com.hpcloud.mon.resource.exception.ConstraintViolationExceptionMapper;
 import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
@@ -26,5 +28,8 @@ public abstract class AbstractMonApiResourceTest extends AbstractResourceTest {
         new JsonMappingExceptionManager(), new ConstraintViolationExceptionMapper(),
         new ThrowableExceptionMapper<Throwable>() {
         });
+
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+    objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
   }
 }

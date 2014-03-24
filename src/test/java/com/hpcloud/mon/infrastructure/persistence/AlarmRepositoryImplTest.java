@@ -22,6 +22,8 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
+import com.hpcloud.mon.common.model.alarm.AggregateFunction;
+import com.hpcloud.mon.common.model.alarm.AlarmOperator;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
@@ -59,9 +61,10 @@ public class AlarmRepositoryImplTest {
 
   @BeforeMethod
   protected void beforeMethod() {
-    handle.execute("truncate table sub_alarm_dimension");
-    handle.execute("truncate table alarm_action");
+    handle.execute("SET foreign_key_checks = 0;");
     handle.execute("truncate table sub_alarm");
+    handle.execute("truncate table alarm_action");
+    handle.execute("truncate table sub_alarm_dimension");
     handle.execute("truncate table alarm");
 
     handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
@@ -123,8 +126,8 @@ public class AlarmRepositoryImplTest {
   }
 
   @Test(groups = "database")
-  public void shouldFindSubAlarmIds() {
-    db = new DBI("jdbc:mysql://localhost/maas", "root", "password");
+  public void shouldFindSubAlarmMetricDefinitions() {
+    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
     handle = db.open();
     repo = new AlarmRepositoryImpl(db);
     beforeMethod();
@@ -145,6 +148,33 @@ public class AlarmRepositoryImplTest {
             .put("image_id", "888")
             .put("metric_name", "mem")
             .build()));
+
+    assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
+  }
+
+  @Test(groups = "database")
+  public void shouldFindSubExpressions() {
+    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
+    handle = db.open();
+    repo = new AlarmRepositoryImpl(db);
+    beforeMethod();
+
+    assertEquals(repo.findSubExpressions("123").get("111"), new AlarmSubExpression(
+        AggregateFunction.AVG, new MetricDefinition("hpcs.compute",
+            ImmutableMap.<String, String>builder()
+                .put("flavor_id", "777")
+                .put("image_id", "888")
+                .put("metric_name", "cpu")
+                .put("device", "1")
+                .build()), AlarmOperator.GT, 10, 60, 1));
+
+    assertEquals(repo.findSubExpressions("234").get("222"), new AlarmSubExpression(
+        AggregateFunction.AVG, new MetricDefinition("hpcs.compute",
+            ImmutableMap.<String, String>builder()
+                .put("flavor_id", "777")
+                .put("image_id", "888")
+                .put("metric_name", "mem")
+                .build()), AlarmOperator.GT, 20, 60, 1));
 
     assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
   }
