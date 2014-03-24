@@ -18,10 +18,4 @@ public interface MeasurementRepository {
    */
   List<Measurement> find(String name, Map<String, String> dimensions, DateTime startTime,
       @Nullable DateTime endTime);
-
-  /**
-   * Finds aggregated measurements for the given criteria.
-   */
-  List<Measurement> findAggregated(String name, Map<String, String> dimensions, DateTime startTime,
-      @Nullable DateTime endTime, List<String> statistics, int period);
 }

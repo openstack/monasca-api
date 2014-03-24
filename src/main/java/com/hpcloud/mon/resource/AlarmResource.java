@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
+import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.app.validation.AlarmValidation;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
@@ -51,7 +52,6 @@ public class AlarmResource {
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @Valid CreateAlarmCommand command) {
     command.validate();
-
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
@@ -70,7 +70,7 @@ public class AlarmResource {
   @Timed
   @Path("{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Alarm get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+  public AlarmDetail get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
     return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
   }
@@ -79,9 +79,11 @@ public class AlarmResource {
   @Timed
   @Path("{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @PathParam("alarm_id") String alarmId, @Valid CreateAlarmCommand command) {
-    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
+  public AlarmDetail update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
+    command.validate();
+    AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
+    return Links.hydrate(service.update(tenantId, alarmId, alarmExpression, command), uriInfo);
   }
 
   @DELETE

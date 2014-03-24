@@ -35,7 +35,7 @@ import com.sun.jersey.api.client.GenericType;
 /**
  * @author Jonathan Halterman
  */
-@Test(enabled = false)
+@Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private AlarmDetail alarm;
   private Alarm alarmItem;

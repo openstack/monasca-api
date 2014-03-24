@@ -125,12 +125,12 @@ public final class DimensionValidation {
       if (service != null) {
         if (!name.equals(Services.SERVICE_DIMENSION)
             && !Services.isValidDimensionName(service, name))
-          throw Exceptions.unprocessableEntity("%s is not a valid dimension name for namespace %s",
+          throw Exceptions.unprocessableEntity("%s is not a valid dimension name for service %s",
               name, service);
         DimensionValidator validator = VALIDATORS.get(service);
         if (validator != null && !validator.isValidDimension(name, value))
-          throw Exceptions.unprocessableEntity(
-              "%s is not a valid dimension value for namespace %s", value, service);
+          throw Exceptions.unprocessableEntity("%s is not a valid dimension value for service %s",
+              value, service);
       }
     }
   }

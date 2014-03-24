@@ -24,7 +24,6 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.MonApiModule;
 import com.hpcloud.mon.app.MetricService;
 import com.hpcloud.mon.app.command.CreateMetricCommand;
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.metric.MetricRepository;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.MetricResource;
@@ -41,7 +40,6 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
   private Producer<String, String> producer;
   private MonApiConfiguration config;
   private MetricRepository metricRepo;
-  private MeasurementRepository measurementRepo;
   private Map<String, String> dimensions;
 
   @Override
@@ -51,9 +49,8 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     handle.execute("truncate table access");
     db.close(handle);
     metricRepo = mock(MetricRepository.class);
-    measurementRepo = mock(MeasurementRepository.class);
     service = new MetricService(config, producer, metricRegistry);
-    addResources(new MetricResource(service, metricRepo, measurementRepo));
+    addResources(new MetricResource(service, metricRepo));
   }
 
   @BeforeTest

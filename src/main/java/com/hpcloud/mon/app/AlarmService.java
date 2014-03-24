@@ -1,8 +1,10 @@
 package com.hpcloud.mon.app;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -14,9 +16,12 @@ import kafka.producer.KeyedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.common.event.AlarmCreatedEvent;
 import com.hpcloud.mon.common.event.AlarmDeletedEvent;
+import com.hpcloud.mon.common.event.AlarmUpdatedEvent;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
@@ -59,13 +64,12 @@ public class AlarmService {
       @Nullable List<String> okActions, @Nullable List<String> undeterminedActions) {
     // Assert no alarm exists by the name
     if (repo.exists(tenantId, name))
-      throw new EntityExistsException("An alarm already exists for project / tenant: %s, name: %s",
+      throw new EntityExistsException("An alarm already exists for project / tenant: %s named: %s",
           tenantId, name);
 
-    // Assert notification methods exist for tenant
-    for (String alarmAction : alarmActions)
-      if (!notificationMethodRepo.exists(tenantId, alarmAction))
-        throw new InvalidEntityException("No notification method exists for %s", alarmAction);
+    assertActionsExist(tenantId, alarmActions);
+    assertActionsExist(tenantId, okActions);
+    assertActionsExist(tenantId, undeterminedActions);
 
     Map<String, AlarmSubExpression> subAlarms = new HashMap<String, AlarmSubExpression>();
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
@@ -97,6 +101,51 @@ public class AlarmService {
     }
   }
 
+  /**
+   * Updates the alarm for the {@code tenantId} and {@code alarmId} to the state of the
+   * {@code command}.
+   */
+  public AlarmDetail update(String tenantId, String alarmId, AlarmExpression alarmExpression,
+      UpdateAlarmCommand command) {
+    // Assert alarm and actions exist
+    AlarmDetail oldAlarm = repo.findById(tenantId, alarmId);
+    assertActionsExist(tenantId, command.alarmActions);
+    assertActionsExist(tenantId, command.okActions);
+    assertActionsExist(tenantId, command.undeterminedActions);
+
+    Map<String, AlarmSubExpression> oldSubAlarms = repo.findSubExpressions(alarmId);
+    Set<AlarmSubExpression> oldSet = new HashSet<>(oldSubAlarms.values());
+    Set<AlarmSubExpression> newSet = new HashSet<>(alarmExpression.getSubExpressions());
+    Set<AlarmSubExpression> oldExpressions = Sets.difference(oldSet, newSet);
+    Set<AlarmSubExpression> newExpressions = Sets.difference(newSet, oldSet);
+    oldSubAlarms.values().retainAll(oldExpressions);
+
+    Map<String, AlarmSubExpression> newSubAlarms = new HashMap<String, AlarmSubExpression>();
+    for (AlarmSubExpression expression : newExpressions)
+      newSubAlarms.put(UUID.randomUUID().toString(), expression);
+
+    try {
+      LOG.debug("Updating alarm {} for tenant {}", command.name, tenantId);
+      AlarmDetail updatedAlarm = repo.update(alarmId, tenantId, command.name, command.description,
+          command.expression, command.state, command.enabled, oldSubAlarms, newSubAlarms,
+          command.alarmActions, command.okActions, command.undeterminedActions);
+
+      // Notify interested parties of new alarm
+      String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, command.name,
+          command.expression, oldSubAlarms, newSubAlarms));
+      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+
+      return updatedAlarm;
+    } catch (Exception e) {
+      if (oldAlarm != null)
+        try {
+          repo.deleteById(tenantId, oldAlarm.getId());
+        } catch (Exception ignore) {
+        }
+      throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
+    }
+  }
+
   public void delete(String tenantId, String alarmId) {
     Map<String, MetricDefinition> subAlarmMetricDefs = repo.findSubAlarmMetricDefinitions(alarmId);
     repo.deleteById(tenantId, alarmId);
@@ -104,5 +153,11 @@ public class AlarmService {
     // Notify interested parties of alarm deletion
     String event = Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, subAlarmMetricDefs));
     producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+  }
+
+  private void assertActionsExist(String tenantId, List<String> actions) {
+    for (String action : actions)
+      if (!notificationMethodRepo.exists(tenantId, action))
+        throw new InvalidEntityException("No notification method exists for action %s", action);
   }
 }
