@@ -23,11 +23,13 @@ public class CreateAlarmCommand {
   }
 
   public CreateAlarmCommand(String name, @Nullable String description, String expression,
-      List<String> alarmActions) {
+      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     this.name = name;
     this.description = description;
     this.expression = expression;
     this.alarmActions = alarmActions;
+    this.okActions = okActions;
+    this.undeterminedActions = undeterminedActions;
   }
 
   @Override

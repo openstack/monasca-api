@@ -108,7 +108,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
         .post(
             ClientResponse.class,
             new CreateAlarmCommand("90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
-                alarmActions));
+                alarmActions, null, null));
 
     AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
     String location = response.getHeaders().get("Location").get(0);
@@ -128,7 +128,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
         .post(
             ClientResponse.class,
             new CreateAlarmCommand("90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
-                alarmActions));
+                alarmActions, null, null));
 
     AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
     String location = response.getHeaders().get("Location").get(0);

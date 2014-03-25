@@ -16,8 +16,8 @@ import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
  */
 public class MonApiConfiguration extends Configuration {
   @NotNull public Boolean accessedViaHttps;
-  @NotEmpty public String metricsTopic;
-  @NotEmpty public String eventsTopic;
+  @NotEmpty public String metricsTopic = "metrics";
+  @NotEmpty public String eventsTopic = "events";
 
   @Valid @NotNull public DataSourceFactory database;
   @Valid @NotNull public KafkaConfiguration kafka;
