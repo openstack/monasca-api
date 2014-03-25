@@ -94,13 +94,10 @@ public class AlarmResource {
   @PATCH
   @Timed
   @Path("{alarm_id}")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes("application/json-patch+json")
   @Produces(MediaType.APPLICATION_JSON)
   public AlarmDetail patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields) {
-    // command.validate();
-    // AlarmExpression alarmExpression =
-    // AlarmValidation.validateNormalizeAndGet(command.expression);
     return Links.hydrate(service.update(tenantId, alarmId, fields), uriInfo);
   }
 
