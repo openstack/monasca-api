@@ -78,6 +78,7 @@ public class AlarmResource {
   @PUT
   @Timed
   @Path("{alarm_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public AlarmDetail update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
