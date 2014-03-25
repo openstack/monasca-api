@@ -74,6 +74,7 @@ public class NotificationMethodResource {
   @PUT
   @Timed
   @Path("{notification_method_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public NotificationMethod update(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
