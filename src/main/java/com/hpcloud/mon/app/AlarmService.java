@@ -72,10 +72,8 @@ public class AlarmService {
     assertActionsExist(tenantId, undeterminedActions);
 
     Map<String, AlarmSubExpression> subAlarms = new HashMap<String, AlarmSubExpression>();
-    for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
-      String subAlarmId = UUID.randomUUID().toString();
-      subAlarms.put(subAlarmId, subExpression);
-    }
+    for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions())
+      subAlarms.put(UUID.randomUUID().toString(), subExpression);
 
     String alarmId = UUID.randomUUID().toString();
     AlarmDetail alarm = null;
@@ -164,8 +162,9 @@ public class AlarmService {
   }
 
   private void assertActionsExist(String tenantId, List<String> actions) {
-    for (String action : actions)
-      if (!notificationMethodRepo.exists(tenantId, action))
-        throw new InvalidEntityException("No notification method exists for action %s", action);
+    if (actions != null)
+      for (String action : actions)
+        if (!notificationMethodRepo.exists(tenantId, action))
+          throw new InvalidEntityException("No notification method exists for action %s", action);
   }
 }
