@@ -1,6 +1,7 @@
 package com.hpcloud.mon.resource;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -43,8 +44,6 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     repo = mock(NotificationMethodRepository.class);
     when(repo.create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString())).thenReturn(
         notificationMethod);
-    when(repo.update(eq("abc"), anyString(), anyString(), any(NotificationMethodType.class),
-        anyString())).thenReturn(notificationMethod);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
     when(repo.find(eq("abc"))).thenReturn(Arrays.asList(notificationMethod));
 
@@ -67,6 +66,9 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldUpdate() {
+    when(
+        repo.update(eq("abc"), anyString(), anyString(), any(NotificationMethodType.class),
+            anyString())).thenReturn(notificationMethod);
     ClientResponse response = client().resource("/v2.0/notification-methods/123")
         .header("X-Tenant-Id", "abc")
         .header("Content-Type", MediaType.APPLICATION_JSON)

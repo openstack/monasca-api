@@ -21,6 +21,7 @@ import org.testng.annotations.Test;
 
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
+import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
@@ -84,6 +85,23 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
         eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
         any(List.class));
+  }
+
+  public void shouldUpdate() {
+    when(
+        service.update(eq("abc"), eq("123"), any(AlarmExpression.class),
+            any(UpdateAlarmCommand.class))).thenReturn(alarm);
+    ClientResponse response = client().resource("/v2.0/alarms/123")
+        .header("X-Tenant-Id", "abc")
+        .header("Content-Type", MediaType.APPLICATION_JSON)
+        .put(
+            ClientResponse.class,
+            new UpdateAlarmCommand("Disk Exceeds 1k Operations", null, expression,
+                AlarmState.ALARM, true, alarmActions));
+
+    assertEquals(response.getStatus(), 200);
+    verify(service).update(eq("abc"), eq("123"), any(AlarmExpression.class),
+        any(UpdateAlarmCommand.class));
   }
 
   public void shouldErrorOnCreateWithInvalidMetricName() {

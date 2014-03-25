@@ -2,6 +2,7 @@ package com.hpcloud.mon.resource;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -19,6 +20,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
@@ -28,6 +31,7 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.resource.annotation.PATCH;
 
 /**
  * Alarm resource implementation.
@@ -85,6 +89,19 @@ public class AlarmResource {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     return Links.hydrate(service.update(tenantId, alarmId, alarmExpression, command), uriInfo);
+  }
+
+  @PATCH
+  @Timed
+  @Path("{alarm_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public AlarmDetail patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields) {
+    // command.validate();
+    // AlarmExpression alarmExpression =
+    // AlarmValidation.validateNormalizeAndGet(command.expression);
+    return Links.hydrate(service.update(tenantId, alarmId, fields), uriInfo);
   }
 
   @DELETE

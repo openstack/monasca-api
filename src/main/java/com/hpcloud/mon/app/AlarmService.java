@@ -146,6 +146,14 @@ public class AlarmService {
     }
   }
 
+  /**
+   * Patches the alarm for the {@code tenantId} and {@code alarmId} to the state of the
+   * {@code fields}.
+   */
+  public AlarmDetail update(String tenantId, String alarmId, Map<String, Object> fields) {
+    return null;
+  }
+
   public void delete(String tenantId, String alarmId) {
     Map<String, MetricDefinition> subAlarmMetricDefs = repo.findSubAlarmMetricDefinitions(alarmId);
     repo.deleteById(tenantId, alarmId);
