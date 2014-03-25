@@ -18,8 +18,9 @@ public class UpdateAlarmCommand extends CreateAlarmCommand {
   }
 
   public UpdateAlarmCommand(String name, @Nullable String description, String expression,
-      AlarmState state, boolean enabled, List<String> alarmActions) {
-    super(name, description, expression, alarmActions);
+      AlarmState state, boolean enabled, List<String> alarmActions, List<String> okActions,
+      List<String> undeterminedActions) {
+    super(name, description, expression, alarmActions, okActions, undeterminedActions);
     this.state = state;
     this.enabled = enabled;
   }
