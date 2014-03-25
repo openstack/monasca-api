@@ -106,7 +106,7 @@ public class AlarmService {
   public AlarmDetail update(String tenantId, String alarmId, AlarmExpression alarmExpression,
       UpdateAlarmCommand command) {
     // Assert alarm and actions exist
-    AlarmDetail oldAlarm = repo.findById(tenantId, alarmId);
+    repo.findById(tenantId, alarmId);
     assertActionsExist(tenantId, command.alarmActions);
     assertActionsExist(tenantId, command.okActions);
     assertActionsExist(tenantId, command.undeterminedActions);
@@ -135,11 +135,6 @@ public class AlarmService {
 
       return updatedAlarm;
     } catch (Exception e) {
-      if (oldAlarm != null)
-        try {
-          repo.deleteById(tenantId, oldAlarm.getId());
-        } catch (Exception ignore) {
-        }
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
     }
   }
