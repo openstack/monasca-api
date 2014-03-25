@@ -127,7 +127,7 @@ public class AlarmService {
     try {
       LOG.debug("Updating alarm {} for tenant {}", command.name, tenantId);
       AlarmDetail updatedAlarm = repo.update(alarmId, tenantId, command.name, command.description,
-          command.expression, command.state, command.enabled, oldSubAlarms, newSubAlarms,
+          command.expression, command.state, command.enabled, oldSubAlarms.keySet(), newSubAlarms,
           command.alarmActions, command.okActions, command.undeterminedActions);
 
       // Notify interested parties of new alarm

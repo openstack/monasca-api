@@ -19,12 +19,39 @@ public class AlarmDetail extends Alarm {
   }
 
   public AlarmDetail(String id, String name, String description, String expression,
-      AlarmState state, List<String> alarmActions, List<String> okActions,
+      AlarmState state, boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
-    super(id, name, description, expression, state);
+    super(id, name, description, expression, state, enabled);
     this.alarmActions = alarmActions;
     setOkActions(okActions);
     setUndeterminedActions(undeterminedActions);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    AlarmDetail other = (AlarmDetail) obj;
+    if (alarmActions == null) {
+      if (other.alarmActions != null)
+        return false;
+    } else if (!alarmActions.equals(other.alarmActions))
+      return false;
+    if (okActions == null) {
+      if (other.okActions != null)
+        return false;
+    } else if (!okActions.equals(other.okActions))
+      return false;
+    if (undeterminedActions == null) {
+      if (other.undeterminedActions != null)
+        return false;
+    } else if (!undeterminedActions.equals(other.undeterminedActions))
+      return false;
+    return true;
   }
 
   public List<String> getAlarmActions() {
@@ -37,6 +64,16 @@ public class AlarmDetail extends Alarm {
 
   public List<String> getUndeterminedActions() {
     return undeterminedActions;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((alarmActions == null) ? 0 : alarmActions.hashCode());
+    result = prime * result + ((okActions == null) ? 0 : okActions.hashCode());
+    result = prime * result + ((undeterminedActions == null) ? 0 : undeterminedActions.hashCode());
+    return result;
   }
 
   public void setAlarmActions(List<String> alarmActions) {

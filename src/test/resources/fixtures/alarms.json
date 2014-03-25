@@ -1,1 +1,1 @@
-[{"id":"123","links":[{"rel":"self","href":"https://region-a.geo-1.maas.hpcloudsvc.com/v1.0"}],"name":"90% CPU","description":"","expression":"avg(hpcs.compute:cpu:1:{instance_id=5}) > 5","state":"OK"}]
+[{"id":"123","links":[{"rel":"self","href":"https://region-a.geo-1.maas.hpcloudsvc.com/v1.0"}],"name":"90% CPU","description":"","expression":"avg(hpcs.compute:cpu:1:{instance_id=5}) > 5","state":"OK","enabled":true}]

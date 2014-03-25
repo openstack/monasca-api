@@ -50,12 +50,13 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
 
     expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937}) >= 90";
-    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK);
+    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
+        true);
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
     alarm = new AlarmDetail("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
-        alarmActions, null, null);
+        true, alarmActions, null, null);
 
     service = mock(AlarmService.class);
     when(
@@ -223,9 +224,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldGet() {
-    assertEquals(client().resource("/v2.0/alarms/123")
-        .header("X-Tenant-Id", "abc")
-        .get(AlarmDetail.class), alarm);
+    assertEquals(
+        client().resource("/v2.0/alarms/123").header("X-Tenant-Id", "abc").get(AlarmDetail.class),
+        alarm);
     verify(repo).findById(eq("abc"), eq("123"));
   }
 
@@ -283,10 +284,11 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldHydateLinksOnGet() {
     List<Link> links = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
-    assertEquals(client().resource("/v2.0/alarms/123")
-        .header("X-Tenant-Id", "abc")
-        .get(AlarmDetail.class)
-        .getLinks(), links);
+    assertEquals(
+        client().resource("/v2.0/alarms/123")
+            .header("X-Tenant-Id", "abc")
+            .get(AlarmDetail.class)
+            .getLinks(), links);
   }
 
   private ClientResponse createResponseFor(Object request) {

@@ -93,7 +93,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     alarmActions.add("29387234");
     alarmActions.add("77778687");
     alarm = new AlarmDetail("123", "90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
-        AlarmState.OK, alarmActions, null, null);
+        AlarmState.OK, true, alarmActions, null, null);
   }
 
   @AfterTest
@@ -121,7 +121,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   public void shouldCreateCaseInsensitiveAndKeywords() throws Exception {
     AlarmDetail alarm_local;
     alarm_local = new AlarmDetail("123", "90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
-        AlarmState.OK, alarmActions, null, null);
+        AlarmState.OK, true, alarmActions, null, null);
     ClientResponse response = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", TENANT_ID)
         .header("Content-Type", MediaType.APPLICATION_JSON)
