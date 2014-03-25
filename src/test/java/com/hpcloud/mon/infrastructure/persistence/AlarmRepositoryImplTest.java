@@ -67,8 +67,8 @@ public class AlarmRepositoryImplTest {
     handle.execute("truncate table sub_alarm_dimension");
     handle.execute("truncate table alarm");
 
-    handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
-        + "values ('123', 'bob', '90% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'UNDETERMINED', NOW(), NOW(), NULL)");
+    handle.execute("insert into alarm (id, tenant_id, name, expression, state, enabled, created_at, updated_at, deleted_at) "
+        + "values ('123', 'bob', '90% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
     handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
         + "values ('111', '123', 'avg', 'hpcs.compute', 'GT', 10, 60, 1, 'UNDETERMINED', NOW(), NOW())");
     handle.execute("insert into sub_alarm_dimension values ('111', 'flavor_id', '777')");
@@ -78,8 +78,8 @@ public class AlarmRepositoryImplTest {
     handle.execute("insert into alarm_action values ('123', 'ALARM', '29387234')");
     handle.execute("insert into alarm_action values ('123', 'ALARM', '77778687')");
 
-    handle.execute("insert into alarm (id, tenant_id, name, expression, state, created_at, updated_at, deleted_at) "
-        + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20', 'UNDETERMINED', NOW(), NOW(), NULL)");
+    handle.execute("insert into alarm (id, tenant_id, name, expression, state, enabled, created_at, updated_at, deleted_at) "
+        + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
     handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
         + "values ('222', '234', 'avg', 'hpcs.compute', 'GT', 20, 60, 1, 'UNDETERMINED', NOW(), NOW())");
     handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
@@ -114,6 +114,30 @@ public class AlarmRepositoryImplTest {
             .first(), "3");
   }
 
+  @Test(groups = "dateabase")
+  public void shouldUpdate() {
+    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
+    handle = db.open();
+    repo = new AlarmRepositoryImpl(db);
+    beforeMethod();
+
+    List<String> oldSubAlarmIds = Arrays.asList("222");
+    AlarmSubExpression newSubExpression = AlarmSubExpression.of("avg(foo{flavor_id=777}) > 333");
+    Map<String, AlarmSubExpression> newSubExpressions = ImmutableMap.<String, AlarmSubExpression>builder()
+        .put("555", newSubExpression)
+        .build();
+
+    AlarmDetail alarmA = repo.update("234", "bob", "90% CPU", null,
+        "avg(foo{flavor_id=777}) > 333", AlarmState.ALARM, false, oldSubAlarmIds,
+        newSubExpressions, alarmActions, null, null);
+
+    AlarmDetail alarmB = repo.findById("bob", alarmA.getId());
+    assertEquals(alarmA, alarmB);
+
+    Map<String, AlarmSubExpression> subExpressions = repo.findSubExpressions("234");
+    assertEquals(subExpressions.get("555"), newSubExpression);
+  }
+
   public void shouldFindById() {
     AlarmDetail alarm = repo.findById("bob", "123");
 
@@ -122,6 +146,7 @@ public class AlarmRepositoryImplTest {
     assertEquals(alarm.getExpression(),
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10");
     assertEquals(alarm.getState(), AlarmState.UNDETERMINED);
+    assertEquals(alarm.isEnabled(), true);
     assertEquals(alarm.getAlarmActions(), alarmActions);
   }
 
@@ -191,9 +216,9 @@ public class AlarmRepositoryImplTest {
 
     assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-        AlarmState.UNDETERMINED), new Alarm("234", "50% CPU", null,
+        AlarmState.UNDETERMINED, true), new Alarm("234", "50% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
-        AlarmState.UNDETERMINED)));
+        AlarmState.UNDETERMINED, true)));
   }
 
   public void shouldDeleteById() {

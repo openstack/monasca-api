@@ -1,5 +1,6 @@
 package com.hpcloud.mon.domain.model.alarm;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,7 @@ public interface AlarmRepository {
    * Updates and returns an alarm for the criteria.
    */
   AlarmDetail update(String id, String tenantId, String name, String description,
-      String expression, AlarmState state, boolean enabled,
-      Map<String, AlarmSubExpression> oldSubAlarms, Map<String, AlarmSubExpression> newSubAlarms,
-      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions);
+      String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
+      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions);
 }

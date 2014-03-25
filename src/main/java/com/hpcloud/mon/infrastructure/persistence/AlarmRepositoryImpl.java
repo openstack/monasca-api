@@ -1,5 +1,6 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +48,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     try {
       h.begin();
       h.insert(
-          "insert into alarm (id, tenant_id, name, description, expression, state, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
-          id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString());
+          "insert into alarm (id, tenant_id, name, description, expression, state, enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+          id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
       persistSubExpressions(h, id, subExpressions);
@@ -59,7 +60,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       persistActions(h, id, AlarmState.UNDETERMINED, undeterminedActions);
 
       h.commit();
-      return new AlarmDetail(id, name, description, expression, AlarmState.UNDETERMINED,
+      return new AlarmDetail(id, name, description, expression, AlarmState.UNDETERMINED, true,
           alarmActions, okActions, undeterminedActions);
     } catch (RuntimeException e) {
       h.rollback();
@@ -71,9 +72,9 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public AlarmDetail update(String id, String tenantId, String name, String description,
-      String expression, AlarmState state, boolean enabled,
-      Map<String, AlarmSubExpression> oldSubAlarms, Map<String, AlarmSubExpression> newSubAlarms,
-      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
+      String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
+      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
@@ -82,7 +83,10 @@ public class AlarmRepositoryImpl implements AlarmRepository {
           "update alarm set name = ?, description = ?, expression = ?, state = ?, enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
           name, description, expression, state.name(), enabled, tenantId, id);
 
-      // Persist sub-alarms
+      // Update sub-alarms
+      if (oldSubAlarmIds != null)
+        for (String oldSubAlarmId : oldSubAlarmIds)
+          h.execute("delete from sub_alarm where id = ?", oldSubAlarmId);
       persistSubExpressions(h, id, newSubAlarms);
 
       // Update actions
@@ -92,8 +96,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       persistActions(h, id, AlarmState.UNDETERMINED, undeterminedActions);
 
       h.commit();
-      return new AlarmDetail(id, name, description, expression, AlarmState.UNDETERMINED,
-          alarmActions, okActions, undeterminedActions);
+      return new AlarmDetail(id, name, description, expression, state, enabled, alarmActions,
+          okActions, undeterminedActions);
     } catch (RuntimeException e) {
       h.rollback();
       throw e;

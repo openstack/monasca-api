@@ -23,7 +23,7 @@ public class AlarmTest extends AbstractModelTest {
     dimensions.put("instance_id", "666");
     dimensions.put("image_id", "345");
     alarm = new AlarmDetail("123", "90% CPU", null,
-        "avg(hpcs.compute:cpu:1:{instance_id=666, image_id=345}) >= 90", AlarmState.OK,
+        "avg(hpcs.compute:cpu:1:{instance_id=666, image_id=345}) >= 90", AlarmState.OK, false,
         Arrays.asList("123345345", "23423"), null, null);
     alarm.setLinks(Arrays.asList(new Link("self", "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
   }
@@ -37,6 +37,5 @@ public class AlarmTest extends AbstractModelTest {
     String json = jsonFixture("fixtures/alarm.json");
     AlarmDetail detail = fromJson(json, AlarmDetail.class);
     assertEquals(alarm, detail);
-    assertEquals(alarm.getAlarmActions(), detail.getAlarmActions());
   }
 }
