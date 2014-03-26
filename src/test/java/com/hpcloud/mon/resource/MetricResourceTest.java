@@ -92,6 +92,15 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   }
 
   @SuppressWarnings("unchecked")
+  public void shouldCreateWithoutDimensions() throws Exception {
+    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", null,
+        timestamp, 22.0));
+
+    assertEquals(response.getStatus(), 204);
+    verify(service).create(any(List.class), eq("abc"), anyString());
+  }
+
+  @SuppressWarnings("unchecked")
   public void shouldCreateWithZeroValue() {
     ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
         dimensions, timestamp, 0.0));

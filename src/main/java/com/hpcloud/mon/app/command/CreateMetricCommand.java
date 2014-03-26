@@ -129,9 +129,11 @@ public class CreateMetricCommand {
 
   public void validate() {
     // Validate name and dimensions
-    String service = dimensions.get(Services.SERVICE_DIMENSION);
-    MetricNameValidation.validate(name, service);
-    DimensionValidation.validate(dimensions, service);
+    if (dimensions != null) {
+      String service = dimensions.get(Services.SERVICE_DIMENSION);
+      MetricNameValidation.validate(name, service);
+      DimensionValidation.validate(dimensions, service);
+    }
 
     // Validate times and values
     validateTimestamp(timestamp);
