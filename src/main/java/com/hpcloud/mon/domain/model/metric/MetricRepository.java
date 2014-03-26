@@ -14,5 +14,5 @@ public interface MetricRepository {
   /**
    * Finds metrics for the given criteria.
    */
-  List<Metric> find(String name, Map<String, String> dimensions);
+  List<Metric> find(String tenantId, String name, Map<String, String> dimensions);
 }

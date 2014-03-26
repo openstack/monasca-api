@@ -33,7 +33,6 @@ import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
-import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.infrastructure.persistence.AlarmRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.NotificationMethodRepositoryImpl;
@@ -48,7 +47,7 @@ import com.sun.jersey.api.client.ClientResponse;
 public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   private static final String TENANT_ID = "alarm-test";
   private DBI db;
-  private AlarmDetail alarm;
+  private Alarm alarm;
   private AlarmService service;
   private MonApiConfiguration config;
   private Producer<String, String> producer;
@@ -92,7 +91,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new AlarmDetail("123", "90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
+    alarm = new Alarm("123", "90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
         AlarmState.OK, true, alarmActions, null, null);
   }
 
@@ -110,7 +109,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
             new CreateAlarmCommand("90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
                 alarmActions, null, null));
 
-    AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
+    Alarm newAlarm = response.getEntity(Alarm.class);
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/alarms/" + newAlarm.getId());
@@ -119,8 +118,8 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldCreateCaseInsensitiveAndKeywords() throws Exception {
-    AlarmDetail alarm_local;
-    alarm_local = new AlarmDetail("123", "90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
+    Alarm alarm_local;
+    alarm_local = new Alarm("123", "90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
         AlarmState.OK, true, alarmActions, null, null);
     ClientResponse response = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", TENANT_ID)
@@ -130,7 +129,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
             new CreateAlarmCommand("90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
                 alarmActions, null, null));
 
-    AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
+    Alarm newAlarm = response.getEntity(Alarm.class);
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/alarms/" + newAlarm.getId());
@@ -139,7 +138,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldDelete() {
-    Alarm newAlarm = repo.create("123", TENANT_ID, alarm.getName(), alarm.getName(),
+    Alarm newAlarm = repo.create(TENANT_ID, "123", alarm.getName(), alarm.getName(),
         alarm.getExpression(), null, alarm.getAlarmActions(), alarm.getOkActions(),
         alarm.getUndeterminedActions());
     assertNotNull(repo.findById(TENANT_ID, newAlarm.getId()));

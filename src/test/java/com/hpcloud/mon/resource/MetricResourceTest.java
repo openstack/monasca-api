@@ -148,11 +148,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         "1234567890123456789012345678901234567890123456789012345678901234567890", dimensions,
         timestamp, 22.0));
 
-    ErrorMessages.assertThat(response.getEntity(String.class))
-        .matches(
-            "unprocessable_entity",
-            422,
-            "Metric name 1234567890123456789012345678901234567890123456789012345678901234567890 must be 64 characters or less");
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+        "[name size must be between 1 and 64");
   }
 
   public void shouldErrorOnCreateWithReservedService() {
@@ -171,7 +168,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     ClientResponse response = createResponseFor(json);
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Metric name is required");
+        "[name may not be empty");
   }
 
   public void shouldErrorOnCreateWithMissingDimensionKey() throws Exception {

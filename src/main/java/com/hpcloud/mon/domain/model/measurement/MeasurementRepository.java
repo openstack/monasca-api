@@ -16,6 +16,6 @@ public interface MeasurementRepository {
   /**
    * Finds measurements for the given criteria.
    */
-  List<Measurement> find(String name, Map<String, String> dimensions, DateTime startTime,
-      @Nullable DateTime endTime);
+  List<Measurement> find(String tenantId, String name, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime);
 }

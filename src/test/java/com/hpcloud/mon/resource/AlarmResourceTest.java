@@ -26,7 +26,6 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
-import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
@@ -39,7 +38,7 @@ import com.sun.jersey.api.client.GenericType;
 @Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private String expression;
-  private AlarmDetail alarm;
+  private Alarm alarm;
   private Alarm alarmItem;
   private AlarmService service;
   private AlarmRepository repo;
@@ -52,12 +51,12 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
     expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937}) >= 90";
     alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
-        true);
+        true, null, null, null);
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new AlarmDetail("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
-        true, alarmActions, null, null);
+    alarm = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK, true,
+        alarmActions, null, null);
 
     service = mock(AlarmService.class);
     when(
@@ -78,7 +77,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
 
     assertEquals(response.getStatus(), 201);
-    AlarmDetail newAlarm = response.getEntity(AlarmDetail.class);
+    Alarm newAlarm = response.getEntity(Alarm.class);
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(location, "/v2.0/alarms/" + newAlarm.getId());
     assertEquals(newAlarm, alarm);
@@ -242,9 +241,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldGet() {
-    assertEquals(
-        client().resource("/v2.0/alarms/123").header("X-Tenant-Id", "abc").get(AlarmDetail.class),
-        alarm);
+    assertEquals(client().resource("/v2.0/alarms/123")
+        .header("X-Tenant-Id", "abc")
+        .get(Alarm.class), alarm);
     verify(repo).findById(eq("abc"), eq("123"));
   }
 
@@ -302,11 +301,10 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldHydateLinksOnGet() {
     List<Link> links = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
-    assertEquals(
-        client().resource("/v2.0/alarms/123")
-            .header("X-Tenant-Id", "abc")
-            .get(AlarmDetail.class)
-            .getLinks(), links);
+    assertEquals(client().resource("/v2.0/alarms/123")
+        .header("X-Tenant-Id", "abc")
+        .get(Alarm.class)
+        .getLinks(), links);
   }
 
   private ClientResponse createResponseFor(Object request) {

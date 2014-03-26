@@ -15,8 +15,8 @@ import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
  */
 public class MeasurementRepositoryImpl implements MeasurementRepository {
   @Override
-  public List<Measurement> find(String name, Map<String, String> dimensions, DateTime startTime,
-      @Nullable DateTime endTime) {
+  public List<Measurement> find(String tenantId, String name, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime) {
     return null;
   }
 }

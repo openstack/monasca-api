@@ -18,6 +18,6 @@ public interface StatisticRepository {
   /**
    * Finds statistics for the given criteria.
    */
-  List<Statistic> find(String name, Map<String, String> dimensions, DateTime startTime,
-      @Nullable DateTime endTime, List<String> statistics, int period);
+  List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime, List<String> statistics, int period);
 }

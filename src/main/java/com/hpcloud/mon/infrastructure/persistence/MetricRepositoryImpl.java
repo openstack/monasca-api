@@ -11,7 +11,7 @@ import com.hpcloud.mon.domain.model.metric.MetricRepository;
  */
 public class MetricRepositoryImpl implements MetricRepository {
   @Override
-  public List<Metric> find(String name, Map<String, String> dimensions) {
+  public List<Metric> find(String tenantId, String name, Map<String, String> dimensions) {
     return null;
   }
 }

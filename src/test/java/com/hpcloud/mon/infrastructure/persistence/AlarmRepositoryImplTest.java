@@ -9,6 +9,7 @@ import static org.testng.Assert.fail;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,6 @@ import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
-import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 
 /**
@@ -96,10 +96,10 @@ public class AlarmRepositoryImplTest {
             AlarmSubExpression.of("avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10"))
         .build();
 
-    AlarmDetail alarmA = repo.create("2345", "555", "90% CPU", null,
+    Alarm alarmA = repo.create("555", "2345", "90% CPU", null,
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10", subExpressions,
         alarmActions, null, null);
-    AlarmDetail alarmB = repo.findById("555", alarmA.getId());
+    Alarm alarmB = repo.findById("555", alarmA.getId());
 
     assertEquals(alarmA, alarmB);
 
@@ -127,19 +127,21 @@ public class AlarmRepositoryImplTest {
         .put("555", newSubExpression)
         .build();
 
-    AlarmDetail alarmA = repo.update("234", "bob", "90% CPU", null,
-        "avg(foo{flavor_id=777}) > 333", AlarmState.ALARM, false, oldSubAlarmIds,
-        newSubExpressions, alarmActions, null, null);
+    repo.update("bob", "234", false, "90% CPU", null, "avg(foo{flavor_id=777}) > 333",
+        AlarmState.ALARM, false, oldSubAlarmIds, newSubExpressions, alarmActions, null, null);
 
-    AlarmDetail alarmB = repo.findById("bob", alarmA.getId());
-    assertEquals(alarmA, alarmB);
+    Alarm alarm = repo.findById("bob", "234");
+    Alarm expected = new Alarm("234", "90% CPU", null, "avg(foo{flavor_id=777}) > 333",
+        AlarmState.ALARM, false, alarmActions, Collections.<String>emptyList(),
+        Collections.<String>emptyList());
+    assertEquals(expected, alarm);
 
     Map<String, AlarmSubExpression> subExpressions = repo.findSubExpressions("234");
     assertEquals(subExpressions.get("555"), newSubExpression);
   }
 
   public void shouldFindById() {
-    AlarmDetail alarm = repo.findById("bob", "123");
+    Alarm alarm = repo.findById("bob", "123");
 
     assertEquals(alarm.getId(), "123");
     assertEquals(alarm.getName(), "90% CPU");
@@ -214,11 +216,15 @@ public class AlarmRepositoryImplTest {
   public void shouldFind() {
     List<Alarm> alarms = repo.find("bob");
 
-    assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU", null,
-        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-        AlarmState.UNDETERMINED, true), new Alarm("234", "50% CPU", null,
-        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
-        AlarmState.UNDETERMINED, true)));
+    assertEquals(alarms, Arrays.asList(
+        new Alarm("123", "90% CPU", null,
+            "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
+            AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
+            Collections.<String>emptyList(), Collections.<String>emptyList()),
+        new Alarm("234", "50% CPU", null,
+            "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20",
+            AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
+            Collections.<String>emptyList(), Collections.<String>emptyList())));
   }
 
   public void shouldDeleteById() {

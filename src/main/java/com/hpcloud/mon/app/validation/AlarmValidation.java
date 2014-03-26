@@ -1,5 +1,7 @@
 package com.hpcloud.mon.app.validation;
 
+import java.util.List;
+
 import javax.ws.rs.WebApplicationException;
 
 import com.hpcloud.mon.common.model.Services;
@@ -15,6 +17,32 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  */
 public final class AlarmValidation {
   private AlarmValidation() {
+  }
+
+  /**
+   * @throws WebApplicationException if validation fails
+   */
+  public static void validate(String name, String description, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
+    if (name != null && name.length() > 250)
+      throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
+    if (description != null && description.length() > 250)
+      throw Exceptions.unprocessableEntity("Description %s must be 250 characters or less",
+          description);
+    if (alarmActions != null)
+      for (String action : alarmActions)
+        if (action.length() > 50)
+          throw Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less",
+              action);
+    if (okActions != null)
+      for (String action : okActions)
+        if (action.length() > 50)
+          throw Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
+    if (undeterminedActions != null)
+      for (String action : undeterminedActions)
+        if (action.length() > 50)
+          throw Exceptions.unprocessableEntity(
+              "Undetermined action %s must be 50 characters or less", action);
   }
 
   /**

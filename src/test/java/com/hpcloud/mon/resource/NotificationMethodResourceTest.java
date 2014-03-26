@@ -239,7 +239,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, null);
 
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("bad_request", 400,
-        "HV000116: The object to be validated must not be null.");
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+        "The request entity was empty");
   }
 }

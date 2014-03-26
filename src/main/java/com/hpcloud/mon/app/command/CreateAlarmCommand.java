@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.hpcloud.mon.resource.exception.Exceptions;
+import com.hpcloud.mon.app.validation.AlarmValidation;
 
 /**
  * @author Jonathan Halterman
@@ -58,23 +58,6 @@ public class CreateAlarmCommand {
   }
 
   public void validate() {
-    if (name.length() > 250)
-      throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
-    if (description != null && description.length() > 250)
-      throw Exceptions.unprocessableEntity("Description %s must be 250 characters or less",
-          description);
-    for (String action : alarmActions)
-      if (action.length() > 50)
-        throw Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less",
-            action);
-    if (okActions != null)
-      for (String action : okActions)
-        if (action.length() > 50)
-          throw Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
-    if (undeterminedActions != null)
-      for (String action : undeterminedActions)
-        if (action.length() > 50)
-          throw Exceptions.unprocessableEntity(
-              "Undetermined action %s must be 50 characters or less", action);
+    AlarmValidation.validate(name, description, alarmActions, okActions, undeterminedActions);
   }
 }

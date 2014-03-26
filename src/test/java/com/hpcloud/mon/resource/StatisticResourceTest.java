@@ -38,7 +38,7 @@ public class StatisticResourceTest extends AbstractMonApiResourceTest {
         "/v2.0/metrics/statistics?name=cpu_utilization&start_time=2013-11-20T18:43Z&dimensions=service:hpcs.compute,%20instance_id:123&statistics=avg,%20min,%20max&period=60")
         .header("X-Tenant-Id", "abc")
         .get(ClientResponse.class);
-    verify(statisticRepo).find(anyString(), any(Map.class), any(DateTime.class),
+    verify(statisticRepo).find(anyString(), anyString(), any(Map.class), any(DateTime.class),
         any(DateTime.class), any(List.class), anyInt());
   }
 

@@ -55,6 +55,6 @@ public class StatisticResource {
     Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
         dimensionsStr);
 
-    return repo.find(name, dimensions, startTime, endTime, statistics, period);
+    return repo.find(tenantId, name, dimensions, startTime, endTime, statistics, period);
   }
 }

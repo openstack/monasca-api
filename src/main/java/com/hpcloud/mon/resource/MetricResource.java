@@ -83,6 +83,6 @@ public class MetricResource {
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr) {
     Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
         dimensionsStr);
-    return metricRepo.find(name, dimensions);
+    return metricRepo.find(tenantId, name, dimensions);
   }
 }

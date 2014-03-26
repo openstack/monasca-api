@@ -14,18 +14,25 @@ public class Alarm extends AbstractEntity implements Linked {
   private String expression;
   private AlarmState state;
   private boolean enabled;
+  private List<String> alarmActions;
+  private List<String> okActions;
+  private List<String> undeterminedActions;
 
   public Alarm() {
   }
 
   public Alarm(String id, String name, String description, String expression, AlarmState state,
-      boolean enabled) {
+      boolean enabled, List<String> alarmActions, List<String> okActions,
+      List<String> undeterminedActions) {
     this.id = id;
     this.name = name;
     setDescription(description);
     setExpression(expression);
     setState(state);
     setEnabled(enabled);
+    setAlarmActions(alarmActions);
+    setOkActions(okActions);
+    setUndeterminedActions(undeterminedActions);
   }
 
   @Override
@@ -37,6 +44,11 @@ public class Alarm extends AbstractEntity implements Linked {
     if (getClass() != obj.getClass())
       return false;
     Alarm other = (Alarm) obj;
+    if (alarmActions == null) {
+      if (other.alarmActions != null)
+        return false;
+    } else if (!alarmActions.equals(other.alarmActions))
+      return false;
     if (description == null) {
       if (other.description != null)
         return false;
@@ -59,9 +71,23 @@ public class Alarm extends AbstractEntity implements Linked {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (okActions == null) {
+      if (other.okActions != null)
+        return false;
+    } else if (!okActions.equals(other.okActions))
+      return false;
     if (state != other.state)
       return false;
+    if (undeterminedActions == null) {
+      if (other.undeterminedActions != null)
+        return false;
+    } else if (!undeterminedActions.equals(other.undeterminedActions))
+      return false;
     return true;
+  }
+
+  public List<String> getAlarmActions() {
+    return alarmActions;
   }
 
   public String getDescription() {
@@ -84,25 +110,40 @@ public class Alarm extends AbstractEntity implements Linked {
     return name;
   }
 
+  public List<String> getOkActions() {
+    return okActions;
+  }
+
   public AlarmState getState() {
     return state;
+  }
+
+  public List<String> getUndeterminedActions() {
+    return undeterminedActions;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
+    result = prime * result + ((alarmActions == null) ? 0 : alarmActions.hashCode());
     result = prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + (enabled ? 1231 : 1237);
     result = prime * result + ((expression == null) ? 0 : expression.hashCode());
     result = prime * result + ((links == null) ? 0 : links.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((okActions == null) ? 0 : okActions.hashCode());
     result = prime * result + ((state == null) ? 0 : state.hashCode());
+    result = prime * result + ((undeterminedActions == null) ? 0 : undeterminedActions.hashCode());
     return result;
   }
 
   public boolean isEnabled() {
     return enabled;
+  }
+
+  public void setAlarmActions(List<String> alarmActions) {
+    this.alarmActions = alarmActions;
   }
 
   public void setDescription(String description) {
@@ -130,7 +171,20 @@ public class Alarm extends AbstractEntity implements Linked {
     this.name = name;
   }
 
+  public void setOkActions(List<String> okActions) {
+    this.okActions = okActions;
+  }
+
   public void setState(AlarmState state) {
     this.state = state;
+  }
+
+  public void setUndeterminedActions(List<String> undeterminedActions) {
+    this.undeterminedActions = undeterminedActions;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Alarm [name=%s]", name);
   }
 }
