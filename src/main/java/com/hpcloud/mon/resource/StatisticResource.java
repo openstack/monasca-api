@@ -21,7 +21,7 @@ import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.util.stats.Statistic;
 
 /**
- * Metric resource implementation.
+ * Statistic resource implementation.
  * 
  * @author Jonathan Halterman
  */
@@ -39,7 +39,7 @@ public class StatisticResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Statistic> getStatistics(@HeaderParam("X-Tenant-Id") String tenantId,
+  public List<Statistic> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,

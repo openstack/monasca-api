@@ -19,23 +19,23 @@ import com.hpcloud.mon.domain.model.measurement.Measurement;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 
 /**
- * Metric resource implementation.
+ * Measurement resource implementation.
  * 
  * @author Jonathan Halterman
  */
 @Path("/v2.0/metrics/measurements")
 public class MeasurementResource {
-  private final MeasurementRepository measurementRepo;
+  private final MeasurementRepository repo;
 
   @Inject
-  public MeasurementResource(MeasurementRepository measurementRepo) {
-    this.measurementRepo = measurementRepo;
+  public MeasurementResource(MeasurementRepository repo) {
+    this.repo = repo;
   }
 
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> getMeasurements(@HeaderParam("X-Tenant-Id") String tenantId,
+  public List<Measurement> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
 
@@ -46,6 +46,6 @@ public class MeasurementResource {
     Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
         dimensionsStr);
 
-    return measurementRepo.find(tenantId, name, dimensions, startTime, endTime);
+    return repo.find(tenantId, name, dimensions, startTime, endTime);
   }
 }
