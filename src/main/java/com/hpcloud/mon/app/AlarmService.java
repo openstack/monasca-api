@@ -180,7 +180,7 @@ public class AlarmService {
 
       // Notify interested parties of new alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          expression, subAlarms.getKey(), subAlarms.getValue()));
+          expression, state, enabled, subAlarms.getKey(), subAlarms.getValue()));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
