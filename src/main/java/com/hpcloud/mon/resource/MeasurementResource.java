@@ -46,6 +46,6 @@ public class MeasurementResource {
     Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
         dimensionsStr);
 
-    return measurementRepo.find(name, dimensions, startTime, endTime);
+    return measurementRepo.find(tenantId, name, dimensions, startTime, endTime);
   }
 }

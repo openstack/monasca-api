@@ -19,11 +19,11 @@ public class ConstraintViolationExceptionMapper implements
   public Response toResponse(ConstraintViolationException exception) {
     final ValidationErrorMessage message = new ValidationErrorMessage(
         exception.getConstraintViolations());
+    String msg = message.getErrors().isEmpty() ? exception.getMessage() : message.getErrors()
+        .toString();
     return Response.status(UNPROCESSABLE_ENTITY)
         .type(MediaType.APPLICATION_JSON)
-        .entity(
-            Exceptions.buildLoggedErrorMessage(FaultType.UNPROCESSABLE_ENTITY, message.getErrors()
-                .toString()))
+        .entity(Exceptions.buildLoggedErrorMessage(FaultType.UNPROCESSABLE_ENTITY, msg))
         .build();
   }
 }

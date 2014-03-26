@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -31,6 +32,20 @@ public final class Validation {
       "count");
 
   private Validation() {
+  }
+
+  /**
+   * @throws JsonMappingException if the {@code value} is not valid for the {@code type}
+   */
+  public static <T extends Enum<T>> T parseAndValidate(Class<T> type, String value)
+      throws JsonMappingException {
+    for (T constant : type.getEnumConstants())
+      if (constant.name().equalsIgnoreCase(value))
+        return constant;
+    List<String> acceptedValues = new ArrayList<>();
+    for (T constant : type.getEnumConstants())
+      acceptedValues.add(constant.name());
+    throw new JsonMappingException(String.format("%s was not one of %s", value, acceptedValues));
   }
 
   /**

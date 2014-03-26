@@ -18,8 +18,8 @@ public interface AlarmRepository {
   /**
    * Creates and returns a new alarm for the criteria.
    */
-  AlarmDetail create(String id, String tenantId, String name, String description,
-      String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+  Alarm create(String tenantId, String id, String name, String description, String expression,
+      Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
       List<String> okActions, List<String> undeterminedActions);
 
   /**
@@ -40,7 +40,7 @@ public interface AlarmRepository {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
    */
-  AlarmDetail findById(String tenantId, String alarmId);
+  Alarm findById(String tenantId, String alarmId);
 
   /**
    * Returns the sub-alarm Ids for the {@code alarmId}.
@@ -55,7 +55,7 @@ public interface AlarmRepository {
   /**
    * Updates and returns an alarm for the criteria.
    */
-  AlarmDetail update(String id, String tenantId, String name, String description,
+  void update(String tenantId, String id, boolean patch, String name, String description,
       String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
       Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
       List<String> okActions, List<String> undeterminedActions);

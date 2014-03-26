@@ -23,13 +23,15 @@ import javax.ws.rs.core.UriInfo;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.app.validation.AlarmValidation;
+import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
+import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
-import com.hpcloud.mon.domain.model.alarm.AlarmDetail;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.resource.annotation.PATCH;
 
@@ -57,7 +59,7 @@ public class AlarmResource {
       @Valid CreateAlarmCommand command) {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
-    AlarmDetail alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
+    Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
         command.undeterminedActions), uriInfo);
     return Response.created(URI.create(alarm.getId())).entity(alarm).build();
@@ -74,7 +76,7 @@ public class AlarmResource {
   @Timed
   @Path("{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public AlarmDetail get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+  public Alarm get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
     return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
   }
@@ -84,7 +86,7 @@ public class AlarmResource {
   @Path("{alarm_id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public AlarmDetail update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+  public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
@@ -96,9 +98,26 @@ public class AlarmResource {
   @Path("{alarm_id}")
   @Consumes("application/json-patch+json")
   @Produces(MediaType.APPLICATION_JSON)
-  public AlarmDetail patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields) {
-    return Links.hydrate(service.update(tenantId, alarmId, fields), uriInfo);
+  @SuppressWarnings("unchecked")
+  public Alarm patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields)
+      throws JsonMappingException {
+    String name = (String) fields.get("name");
+    String description = (String) fields.get("description");
+    String expression = (String) fields.get("name");
+    String stateStr = (String) fields.get("state");
+    AlarmState state = stateStr == null ? null : Validation.parseAndValidate(AlarmState.class,
+        stateStr);
+    Boolean enabled = (Boolean) fields.get("enabled");
+    List<String> alarmActions = (List<String>) fields.get("alarm_actions");
+    List<String> okActions = (List<String>) fields.get("ok_actions");
+    List<String> undeterminedActions = (List<String>) fields.get("undetermined_actions");
+    AlarmValidation.validate(name, description, alarmActions, okActions, undeterminedActions);
+    AlarmExpression alarmExpression = expression == null ? null
+        : AlarmValidation.validateNormalizeAndGet(expression);
+
+    return Links.hydrate(service.patch(tenantId, alarmId, name, description, expression,
+        alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo);
   }
 
   @DELETE
