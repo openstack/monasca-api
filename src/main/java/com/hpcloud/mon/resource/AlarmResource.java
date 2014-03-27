@@ -33,6 +33,8 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistory;
+import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistoryRepository;
 import com.hpcloud.mon.resource.annotation.PATCH;
 
 /**
@@ -44,11 +46,14 @@ import com.hpcloud.mon.resource.annotation.PATCH;
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
+  private final AlarmHistoryRepository alarmHistoryRepo;
 
   @Inject
-  public AlarmResource(AlarmService service, AlarmRepository repo) {
+  public AlarmResource(AlarmService service, AlarmRepository repo,
+      AlarmHistoryRepository alarmHistoryRepo) {
     this.service = service;
     this.repo = repo;
+    this.alarmHistoryRepo = alarmHistoryRepo;
   }
 
   @POST
@@ -61,7 +66,7 @@ public class AlarmResource {
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
-        command.undeterminedActions), uriInfo);
+        command.undeterminedActions), uriInfo, "history");
     return Response.created(URI.create(alarm.getId())).entity(alarm).build();
   }
 
@@ -69,7 +74,7 @@ public class AlarmResource {
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
   public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId) {
-    return Links.hydrate(repo.find(tenantId), uriInfo);
+    return Links.hydrate(repo.find(tenantId), uriInfo, "history");
   }
 
   @GET
@@ -78,7 +83,17 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Alarm get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
-    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
+    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo, "history");
+  }
+
+  @GET
+  @Timed
+  @Path("{alarm_id}/history")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<AlarmHistory> getHistory(@Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
+    // return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
+    return null;
   }
 
   @PUT
@@ -90,7 +105,8 @@ public class AlarmResource {
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
-    return Links.hydrate(service.update(tenantId, alarmId, alarmExpression, command), uriInfo);
+    return Links.hydrate(service.update(tenantId, alarmId, alarmExpression, command), uriInfo,
+        "history");
   }
 
   @PATCH
@@ -117,7 +133,8 @@ public class AlarmResource {
         : AlarmValidation.validateNormalizeAndGet(expression);
 
     return Links.hydrate(service.patch(tenantId, alarmId, name, description, expression,
-        alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo);
+        alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
+        "history");
   }
 
   @DELETE

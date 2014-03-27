@@ -68,7 +68,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
     when(repo.find(anyString())).thenReturn(Arrays.asList(alarmItem));
 
-    addResources(new AlarmResource(service, repo));
+    addResources(new AlarmResource(service, repo, null));
   }
 
   @SuppressWarnings("unchecked")
@@ -289,7 +289,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldHydateLinksOnList() {
-    List<Link> expected = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
+    List<Link> expected = Arrays.asList(new Link("self", "/v2.0/alarms/123"), new Link("history",
+        "/v2.0/alarms/123/history"));
     List<Link> links = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", "abc")
         .get(new GenericType<List<Alarm>>() {
@@ -300,7 +301,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldHydateLinksOnGet() {
-    List<Link> links = Arrays.asList(new Link("self", "/v2.0/alarms/123"));
+    List<Link> links = Arrays.asList(new Link("self", "/v2.0/alarms/123"), new Link("history",
+        "/v2.0/alarms/123/history"));
     assertEquals(client().resource("/v2.0/alarms/123")
         .header("X-Tenant-Id", "abc")
         .get(Alarm.class)

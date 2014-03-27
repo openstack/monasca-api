@@ -67,7 +67,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
 
     repo = new AlarmRepositoryImpl(db);
     service = new AlarmService(config, producer, repo, new NotificationMethodRepositoryImpl(db));
-    addResources(new AlarmResource(service, repo));
+    addResources(new AlarmResource(service, repo, null));
   }
 
   @BeforeTest

@@ -1,6 +1,6 @@
 package com.hpcloud.mon.resource;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.UriInfo;
@@ -32,13 +32,13 @@ public final class Links {
    * @throws NullPointerException if {@code resource} is null
    */
   public static <T extends AbstractEntity & Linked> List<T> hydrate(List<T> resources,
-      UriInfo uriInfo) {
+      UriInfo uriInfo, String... children) {
     Preconditions.checkNotNull(resources, "resources");
 
     // Safe since this path should not be specific to a resource
     String absolutePath = prefixForHttps(uriInfo.getAbsolutePath().toString());
     for (T resource : resources)
-      hydrate(resource, absolutePath);
+      hydrate(resource, absolutePath, children);
     return resources;
   }
 
@@ -47,8 +47,9 @@ public final class Links {
    * 
    * @throws NullPointerException if {@code resource} is null
    */
-  public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo) {
-    return hydrate(resource, prefixForHttps(uriInfo.getAbsolutePath().toString()));
+  public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo,
+      String... children) {
+    return hydrate(resource, prefixForHttps(uriInfo.getAbsolutePath().toString()), children);
   }
 
   /**
@@ -65,9 +66,11 @@ public final class Links {
    * 
    * @throws NullPointerException if {@code resource} is null
    */
-  private static <T extends AbstractEntity & Linked> T hydrate(T resource, String path) {
+  private static <T extends AbstractEntity & Linked> T hydrate(T resource, String path,
+      String... children) {
     Preconditions.checkNotNull(resource, "resource");
 
+    List<Link> links = new ArrayList<>(children.length + 1);
     if (!path.endsWith(resource.getId())) {
       boolean pathEndsInSlash = path.length() > 0 && path.charAt(path.length() - 1) == '/';
       if (!pathEndsInSlash)
@@ -75,7 +78,11 @@ public final class Links {
       path += resource.getId();
     }
 
-    resource.setLinks(Arrays.asList(new Link("self", path)));
+    links.add(new Link("self", path));
+    for (String child : children)
+      links.add(new Link(child, path + "/" + child));
+
+    resource.setLinks(links);
     return resource;
   }
 }
