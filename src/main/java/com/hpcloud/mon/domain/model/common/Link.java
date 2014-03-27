@@ -2,23 +2,14 @@ package com.hpcloud.mon.domain.model.common;
 
 public class Link {
   public String rel;
-  public String href;
 
+  public String href;
   public Link() {
   }
 
   public Link(String rel, String href) {
     this.rel = rel;
     this.href = href;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((href == null) ? 0 : href.hashCode());
-    result = prime * result + ((rel == null) ? 0 : rel.hashCode());
-    return result;
   }
 
   @Override
@@ -41,5 +32,19 @@ public class Link {
     } else if (!rel.equals(other.rel))
       return false;
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((href == null) ? 0 : href.hashCode());
+    result = prime * result + ((rel == null) ? 0 : rel.hashCode());
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Link [rel=%s, href=%s]", rel, href);
   }
 }
