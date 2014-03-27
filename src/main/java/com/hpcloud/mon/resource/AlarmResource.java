@@ -92,8 +92,7 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public List<AlarmHistory> getHistory(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
-    // return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo);
-    return null;
+    return Links.hydrate(alarmHistoryRepo.findById(tenantId, alarmId), uriInfo);
   }
 
   @PUT

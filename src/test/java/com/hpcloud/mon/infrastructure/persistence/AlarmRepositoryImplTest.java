@@ -114,7 +114,7 @@ public class AlarmRepositoryImplTest {
             .first(), "3");
   }
 
-  @Test(groups = "dateabase")
+  @Test(groups = "database")
   public void shouldUpdate() {
     db = new DBI("jdbc:mysql://localhost/mon", "root", "");
     handle = db.open();
