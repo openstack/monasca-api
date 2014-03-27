@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * @author Jonathan Halterman
  */
 public enum AlarmHistoryType {
-  CONFIGURATION_UPDATE, STATE_UPDATE, ACTION_UPDATE;
+  CONFIGURATION_UPDATE, STATE_UPDATE, ACTION;
 
   @JsonCreator
   public static AlarmHistoryType fromJson(String text) {

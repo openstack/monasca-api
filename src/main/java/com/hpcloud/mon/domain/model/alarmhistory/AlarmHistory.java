@@ -8,6 +8,7 @@ import com.hpcloud.mon.domain.model.common.Linked;
 
 public class AlarmHistory extends AbstractEntity implements Linked {
   private List<Link> links;
+  private AlarmHistoryType type;
 
   public AlarmHistory() {
   }
@@ -20,5 +21,13 @@ public class AlarmHistory extends AbstractEntity implements Linked {
   @Override
   public void setLinks(List<Link> links) {
     this.links = links;
+  }
+
+  public AlarmHistoryType getType() {
+    return type;
+  }
+
+  public void setType(AlarmHistoryType type) {
+    this.type = type;
   }
 }
