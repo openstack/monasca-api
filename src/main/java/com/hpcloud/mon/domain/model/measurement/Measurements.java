@@ -1,5 +1,6 @@
-package com.hpcloud.mon.domain.model.statistic;
+package com.hpcloud.mon.domain.model.measurement;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -7,10 +8,23 @@ import java.util.Map;
  * 
  * @author Jonathan Halterman
  */
-public class Statistic {
+public class Measurements {
   private String name;
   private Map<String, String> dimensions;
-  private Map<String, Object> statistics;
+  private List<Measurement> measurements;
+
+  public Measurements() {
+  }
+
+  public Measurements(String name, Map<String, String> dimensions, List<Measurement> measurements) {
+    this.name = name;
+    this.dimensions = dimensions;
+    this.measurements = measurements;
+  }
+
+  public void addMeasurement(Measurement measurement) {
+    measurements.add(measurement);
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -20,21 +34,21 @@ public class Statistic {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Statistic other = (Statistic) obj;
+    Measurements other = (Measurements) obj;
     if (dimensions == null) {
       if (other.dimensions != null)
         return false;
     } else if (!dimensions.equals(other.dimensions))
       return false;
+    if (measurements == null) {
+      if (other.measurements != null)
+        return false;
+    } else if (!measurements.equals(other.measurements))
+      return false;
     if (name == null) {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
-      return false;
-    if (statistics == null) {
-      if (other.statistics != null)
-        return false;
-    } else if (!statistics.equals(other.statistics))
       return false;
     return true;
   }
@@ -43,12 +57,12 @@ public class Statistic {
     return dimensions;
   }
 
-  public String getName() {
-    return name;
+  public List<Measurement> getMeasurements() {
+    return measurements;
   }
 
-  public Map<String, Object> getStatistics() {
-    return statistics;
+  public String getName() {
+    return name;
   }
 
   @Override
@@ -56,8 +70,8 @@ public class Statistic {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
+    result = prime * result + ((measurements == null) ? 0 : measurements.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
     return result;
   }
 
@@ -65,17 +79,17 @@ public class Statistic {
     this.dimensions = dimensions;
   }
 
+  public void setMeasurements(List<Measurement> measurements) {
+    this.measurements = measurements;
+  }
+
   public void setName(String name) {
     this.name = name;
   }
 
-  public void setStatistics(Map<String, Object> statistics) {
-    this.statistics = statistics;
-  }
-
   @Override
   public String toString() {
-    return String.format("Statistic [name=%s, dimensions=%s, statistics=%s]", name, dimensions,
-        statistics);
+    return String.format("Measurement [name=%s, dimensions=%s, measurements=%s]", name, dimensions,
+        measurements);
   }
 }

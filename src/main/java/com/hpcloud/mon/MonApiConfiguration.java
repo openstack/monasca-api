@@ -19,7 +19,8 @@ public class MonApiConfiguration extends Configuration {
   @NotEmpty public String metricsTopic = "metrics";
   @NotEmpty public String eventsTopic = "events";
 
-  @Valid @NotNull public DataSourceFactory database;
+  @Valid @NotNull public DataSourceFactory mysql;
+  @Valid @NotNull public DataSourceFactory vertica;
   @Valid @NotNull public KafkaConfiguration kafka;
   @Valid @NotNull public MiddlewareConfiguration middleware;
 }
