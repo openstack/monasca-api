@@ -27,9 +27,9 @@ import com.hpcloud.persistence.SqlQueries;
  * Vertica measurement repository implementation.
  */
 public class MeasurementRepositoryImpl implements MeasurementRepository {
-  private static final String FIND_BY_METRIC_DEF_SQL = "select m.metric_definition_id, m.time_stamp, m.value "
+  private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def%s "
-      + "where m.metric_definition_id = def.id%s order by m.metric_definition_id";
+      + "where m.definition_id = def.id%s order by m.definition_id";
 
   private final DBI db;
 
@@ -60,7 +60,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
               .append(i)
               .append(" and def.id = d")
               .append(i)
-              .append(".metric_definition_id");
+              .append(".definition_id");
         }
       }
 
@@ -85,7 +85,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       // Build results
       Map<ByteBuffer, Measurements> results = new LinkedHashMap<>();
       for (Map<String, Object> row : rows) {
-        byte[] defIdBytes = (byte[]) row.get("metric_definition_id");
+        byte[] defIdBytes = (byte[]) row.get("definition_id");
         ByteBuffer defId = ByteBuffer.wrap(defIdBytes);
         long timestamp = ((Timestamp) row.get("time_stamp")).getTime();
         double value = (double) row.get("value");
@@ -93,7 +93,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
         Measurements measurements = results.get(defId);
         if (measurements == null) {
           Map<String, String> dims = SqlQueries.keyValuesFor(h,
-              "select name, value from MonMetrics.Dimensions where metric_definition_id = ?",
+              "select name, value from MonMetrics.Dimensions where definition_id = ?",
               defIdBytes);
           measurements = new Measurements(name, dims, new ArrayList<Measurement>());
           results.put(defId, measurements);
@@ -107,5 +107,4 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       h.close();
     }
   }
-
 }

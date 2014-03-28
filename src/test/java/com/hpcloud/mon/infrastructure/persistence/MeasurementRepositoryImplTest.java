@@ -44,15 +44,15 @@ public class MeasurementRepositoryImplTest {
     handle.execute("insert into MonMetrics.Dimensions values ('/1', 'service', 'compute')");
     handle.execute("insert into MonMetrics.Dimensions values ('/1', 'instance_id', '123')");
     handle.execute("insert into MonMetrics.Dimensions values ('/1', 'flavor_id', '1')");
-    handle.execute("insert into MonMetrics.Measurements (metric_definition_id, time_stamp, value) values ('/1', '2014-01-01 00:00:00', 10)");
-    handle.execute("insert into MonMetrics.Measurements (metric_definition_id, time_stamp, value) values ('/1', '2014-01-01 00:01:00', 15)");
+    handle.execute("insert into MonMetrics.Measurements (definition_id, time_stamp, value) values ('/1', '2014-01-01 00:00:00', 10)");
+    handle.execute("insert into MonMetrics.Measurements (definition_id, time_stamp, value) values ('/1', '2014-01-01 00:01:00', 15)");
 
     handle.execute("insert into MonMetrics.Definitions values ('/2', 'cpu_utilization', 'bob', '1')");
     handle.execute("insert into MonMetrics.Dimensions values ('/2', 'service', 'compute')");
     handle.execute("insert into MonMetrics.Dimensions values ('/2', 'instance_id', '123')");
     handle.execute("insert into MonMetrics.Dimensions values ('/2', 'flavor_id', '2')");
-    handle.execute("insert into MonMetrics.Measurements (metric_definition_id, time_stamp, value) values ('/2', '2014-01-01 00:00:00', 12)");
-    handle.execute("insert into MonMetrics.Measurements (metric_definition_id, time_stamp, value) values ('/2', '2014-01-01 00:01:00', 13)");
+    handle.execute("insert into MonMetrics.Measurements (definition_id, time_stamp, value) values ('/2', '2014-01-01 00:00:00', 12)");
+    handle.execute("insert into MonMetrics.Measurements (definition_id, time_stamp, value) values ('/2', '2014-01-01 00:01:00', 13)");
   }
 
   public void shouldFind() {
