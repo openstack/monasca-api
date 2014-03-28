@@ -1,6 +1,6 @@
 package com.hpcloud.mon.resource;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -15,8 +15,8 @@ import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.validation.Validation;
-import com.hpcloud.mon.domain.model.measurement.Measurement;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 
 /**
  * Measurement resource implementation.
@@ -35,7 +35,7 @@ public class MeasurementResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Measurement> get(@HeaderParam("X-Tenant-Id") String tenantId,
+  public Collection<Measurements> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
 

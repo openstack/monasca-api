@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -27,7 +28,7 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
   private final DBI db;
 
   @Inject
-  public NotificationMethodRepositoryImpl(DBI db) {
+  public NotificationMethodRepositoryImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

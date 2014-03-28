@@ -1,6 +1,6 @@
 package com.hpcloud.mon.domain.model.measurement;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -16,6 +16,6 @@ public interface MeasurementRepository {
   /**
    * Finds measurements for the given criteria.
    */
-  List<Measurement> find(String tenantId, String name, Map<String, String> dimensions,
+  Collection<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, @Nullable DateTime endTime);
 }

@@ -105,6 +105,11 @@
       <version>${dropwizard.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.vertica</groupId>
+      <artifactId>vertica-jdbc</artifactId>
+      <version>6.1.0</version>
+    </dependency>
+    <dependency>
       <groupId>com.palominolabs.metrics</groupId>
       <artifactId>metrics-guice</artifactId>
       <version>3.0.1</version>
@@ -118,11 +123,6 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>2.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.3</version>
     </dependency>
     <dependency>
       <groupId>com.hp.csbu.cc</groupId>

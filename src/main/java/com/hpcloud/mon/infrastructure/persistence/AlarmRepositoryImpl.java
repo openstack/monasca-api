@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -35,7 +36,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   private final DBI db;
 
   @Inject
-  public AlarmRepositoryImpl(DBI db) {
+  public AlarmRepositoryImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

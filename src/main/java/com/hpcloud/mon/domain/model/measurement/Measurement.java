@@ -1,60 +1,67 @@
 package com.hpcloud.mon.domain.model.measurement;
 
-import java.util.Map;
-
 /**
  * Encapsulates a metric measurements.
  * 
  * @author Jonathan Halterman
  */
 public class Measurement {
-  private Map<String, String> dimensions;
-  private Map<String, Object> measurements;
+  private long timestamp;
+  private double value;
+
+  public Measurement() {
+  }
+
+  public Measurement(long timestamp, double value) {
+    this.timestamp = timestamp;
+    this.value = value;
+  }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
-    if (!super.equals(obj))
+    if (obj == null)
       return false;
     if (getClass() != obj.getClass())
       return false;
     Measurement other = (Measurement) obj;
-    if (measurements == null) {
-      if (other.measurements != null)
-        return false;
-    } else if (!measurements.equals(other.measurements))
+    if (timestamp != other.timestamp)
       return false;
-    if (dimensions == null) {
-      if (other.dimensions != null)
-        return false;
-    } else if (!dimensions.equals(other.dimensions))
+    if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
       return false;
     return true;
   }
 
-  public Map<String, Object> getMeasurements() {
-    return measurements;
+  public long getTimestamp() {
+    return timestamp;
   }
 
-  public Map<String, String> getDimensions() {
-    return dimensions;
+  public double getValue() {
+    return value;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + ((measurements == null) ? 0 : measurements.hashCode());
-    result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
+    int result = 1;
+    result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+    long temp;
+    temp = Double.doubleToLongBits(value);
+    result = prime * result + (int) (temp ^ (temp >>> 32));
     return result;
   }
 
-  public void setMeasurements(Map<String, Object> measurements) {
-    this.measurements = measurements;
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
   }
 
-  public void setDimensions(Map<String, String> dimensions) {
-    this.dimensions = dimensions;
+  public void setValue(double value) {
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Measurement [timestamp=%s, value=%s]", timestamp, value);
   }
 }

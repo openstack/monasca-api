@@ -6,6 +6,7 @@ import io.dropwizard.setup.Environment;
 
 import java.util.Properties;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import kafka.javaapi.producer.Producer;
@@ -18,6 +19,7 @@ import com.google.common.base.Joiner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
+import com.google.inject.name.Names;
 import com.hpcloud.mon.app.ApplicationModule;
 import com.hpcloud.mon.domain.DomainModule;
 import com.hpcloud.mon.infrastructure.InfrastructureModule;
@@ -40,7 +42,8 @@ public class MonApiModule extends AbstractModule {
   protected void configure() {
     bind(MonApiConfiguration.class).toInstance(config);
     bind(MetricRegistry.class).in(Singleton.class);
-    bind(DataSourceFactory.class).toInstance(config.database);
+    bind(DataSourceFactory.class).annotatedWith(Names.named("mysql")).toInstance(config.mysql);
+    bind(DataSourceFactory.class).annotatedWith(Names.named("vertiva")).toInstance(config.vertica);
 
     install(new ApplicationModule());
     install(new DomainModule());
@@ -49,11 +52,23 @@ public class MonApiModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public DBI getDBI() {
+  @Named("mysql")
+  public DBI getMySqlDBI() {
     try {
-      return new DBIFactory().build(environment, config.database, "mysql");
+      return new DBIFactory().build(environment, config.mysql, "mysql");
     } catch (ClassNotFoundException e) {
-      throw new ProvisionException("Failed to provision DBI", e);
+      throw new ProvisionException("Failed to provision MySQL DBI", e);
+    }
+  }
+
+  @Provides
+  @Singleton
+  @Named("vertica")
+  public DBI getVerticaDBI() {
+    try {
+      return new DBIFactory().build(environment, config.vertica, "vertica");
+    } catch (ClassNotFoundException e) {
+      throw new ProvisionException("Failed to provision Vertica DBI", e);
     }
   }
 
