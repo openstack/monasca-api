@@ -15,7 +15,7 @@ public class CreateAlarmCommand {
   @NotEmpty public String name;
   public String description;
   @NotEmpty public String expression;
-  @NotEmpty public List<String> alarmActions;
+  public List<String> alarmActions;
   public List<String> okActions;
   public List<String> undeterminedActions;
 
