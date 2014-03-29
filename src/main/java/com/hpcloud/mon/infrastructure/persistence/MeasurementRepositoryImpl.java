@@ -48,22 +48,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       // Build query
       StringBuilder sbFrom = new StringBuilder();
       StringBuilder sbWhere = new StringBuilder();
-      if (dimensions != null) {
-        for (int i = 0; i < dimensions.size(); i++) {
-          sbFrom.append(", MonMetrics.Dimensions d").append(i);
-          sbWhere.append(" and d")
-              .append(i)
-              .append(".name = :dname")
-              .append(i)
-              .append(" and d")
-              .append(i)
-              .append(".value = :dvalue")
-              .append(i)
-              .append(" and def.id = d")
-              .append(i)
-              .append(".definition_id");
-        }
-      }
+      MetricQueries.buildClausesForDimensions(sbFrom, sbWhere, dimensions);
 
       if (name != null)
         sbWhere.append(" and def.name = :name");
@@ -98,9 +83,8 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
 
         Measurements measurements = results.get(defId);
         if (measurements == null) {
-          Map<String, String> dims = SqlQueries.keyValuesFor(h,
-              "select name, value from MonMetrics.Dimensions where definition_id = ?", defIdBytes);
-          measurements = new Measurements(name, dims, new ArrayList<Measurement>());
+          measurements = new Measurements(name, dimensionsFor(h, defIdBytes),
+              new ArrayList<Measurement>());
           results.put(defId, measurements);
         }
 
@@ -111,5 +95,10 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
     } finally {
       h.close();
     }
+  }
+
+  Map<String, String> dimensionsFor(Handle handle, byte[] definitionId) {
+    return SqlQueries.keyValuesFor(handle,
+        "select name, value from MonMetrics.Dimensions where definition_id = ?", definitionId);
   }
 }

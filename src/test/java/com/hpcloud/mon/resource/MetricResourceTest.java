@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 
 import com.hpcloud.mon.app.MetricService;
 import com.hpcloud.mon.app.command.CreateMetricCommand;
-import com.hpcloud.mon.domain.model.metric.MetricRepository;
+import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -31,7 +31,7 @@ import com.sun.jersey.api.client.ClientResponse;
 public class MetricResourceTest extends AbstractMonApiResourceTest {
   private Map<String, String> dimensions;
   private MetricService service;
-  private MetricRepository metricRepo;
+  private MetricDefinitionRepository metricRepo;
   long timestamp;
 
   @Override
@@ -46,7 +46,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     service = mock(MetricService.class);
     doNothing().when(service).create(any(List.class), anyString(), anyString());
 
-    metricRepo = mock(MetricRepository.class);
+    metricRepo = mock(MetricDefinitionRepository.class);
     addResources(new MetricResource(service, metricRepo));
   }
 
