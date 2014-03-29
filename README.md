@@ -1,3 +1,5 @@
+<img src="http://images4.fanpop.com/image/photos/20400000/Rainbow-Dash-my-little-pony-friendship-is-magic-20416585-555-375.jpg"/>
+
 # Overview
 
 `mon-api` is a RESTful API server that is designed with a layered architecture [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
