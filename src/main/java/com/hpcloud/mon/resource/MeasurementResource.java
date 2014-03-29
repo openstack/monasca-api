@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Strings;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
@@ -43,8 +44,8 @@ public class MeasurementResource {
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     Validation.validateTimes(startTime, endTime);
-    Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
-        dimensionsStr);
+    Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
+        : Validation.parseAndValidateNameAndDimensions(name, dimensionsStr);
 
     return repo.find(tenantId, name, dimensions, startTime, endTime);
   }
