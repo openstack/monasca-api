@@ -159,15 +159,6 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         "The alarm expression is invalid", "Syntax Error");
   }
 
-  public void shouldErrorOnCreateWithInvalidAlarmActions() {
-    String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90";
-    ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, null, null, null));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "[alarmActions may not be empty (was null)]");
-  }
-
   public void shouldErrorOnCreateWith0Period() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops},0) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
