@@ -21,10 +21,11 @@ import org.skife.jdbi.v2.Query;
 import com.hpcloud.mon.domain.model.measurement.Measurement;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
-import com.hpcloud.persistence.SqlQueries;
 
 /**
  * Vertica measurement repository implementation.
+ * 
+ * @author Jonathan Halterman
  */
 public class MeasurementRepositoryImpl implements MeasurementRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_id, m.time_stamp, m.value "
@@ -83,7 +84,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
 
         Measurements measurements = results.get(defId);
         if (measurements == null) {
-          measurements = new Measurements(name, dimensionsFor(h, defIdBytes),
+          measurements = new Measurements(name, MetricQueries.dimensionsFor(h, defIdBytes),
               new ArrayList<Measurement>());
           results.put(defId, measurements);
         }
@@ -95,10 +96,5 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
     } finally {
       h.close();
     }
-  }
-
-  Map<String, String> dimensionsFor(Handle handle, byte[] definitionId) {
-    return SqlQueries.keyValuesFor(handle,
-        "select name, value from MonMetrics.Dimensions where definition_id = ?", definitionId);
   }
 }

@@ -18,7 +18,9 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 
 /**
- * Vertica metric repository implementation.
+ * Vertica metric definition repository implementation.
+ * 
+ * @author Jonathan Halterman
  */
 public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select def.id, def.name, d.name as dname, d.value as dvalue "

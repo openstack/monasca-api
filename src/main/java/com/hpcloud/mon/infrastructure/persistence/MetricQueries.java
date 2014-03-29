@@ -2,6 +2,10 @@ package com.hpcloud.mon.infrastructure.persistence;
 
 import java.util.Map;
 
+import org.skife.jdbi.v2.Handle;
+
+import com.hpcloud.persistence.SqlQueries;
+
 final class MetricQueries {
   private MetricQueries() {
   }
@@ -24,5 +28,10 @@ final class MetricQueries {
             .append(".definition_id");
       }
     }
+  }
+
+  static Map<String, String> dimensionsFor(Handle handle, byte[] definitionId) {
+    return SqlQueries.keyValuesFor(handle,
+        "select name, value from MonMetrics.Dimensions where definition_id = ?", definitionId);
   }
 }
