@@ -29,7 +29,8 @@ import com.hpcloud.persistence.SqlQueries;
 public class MeasurementRepositoryImpl implements MeasurementRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def%s "
-      + "where m.definition_id = def.id%s order by m.definition_id";
+      + "where m.definition_id = def.id and m.time_stamp >= :startTime%s "
+      + "order by m.definition_id";
 
   private final DBI db;
 
@@ -66,10 +67,15 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
 
       if (name != null)
         sbWhere.append(" and def.name = :name");
+      if (endTime != null)
+        sbWhere.append(" and m.time_stamp <= :endTime");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
-      Query<Map<String, Object>> query = h.createQuery(sql);
+      Query<Map<String, Object>> query = h.createQuery(sql).bind("startTime",
+          new Timestamp(startTime.getMillis()));
       if (name != null)
         query.bind("name", name);
+      if (endTime != null)
+        query.bind("endTime", new Timestamp(endTime.getMillis()));
       if (dimensions != null) {
         int i = 0;
         for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
@@ -93,8 +99,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
         Measurements measurements = results.get(defId);
         if (measurements == null) {
           Map<String, String> dims = SqlQueries.keyValuesFor(h,
-              "select name, value from MonMetrics.Dimensions where definition_id = ?",
-              defIdBytes);
+              "select name, value from MonMetrics.Dimensions where definition_id = ?", defIdBytes);
           measurements = new Measurements(name, dims, new ArrayList<Measurement>());
           results.put(defId, measurements);
         }
