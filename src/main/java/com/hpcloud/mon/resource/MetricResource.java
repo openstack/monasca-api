@@ -82,8 +82,8 @@ public class MetricResource {
   @Produces(MediaType.APPLICATION_JSON)
   public List<MetricDefinition> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr) {
-    Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
-        dimensionsStr);
+    Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
+        : Validation.parseAndValidateNameAndDimensions(name, dimensionsStr);
     return metricRepo.find(tenantId, name, dimensions);
   }
 }
