@@ -27,7 +27,7 @@ import com.hpcloud.mon.resource.exception.Exceptions;
 public final class Validation {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
-  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateTimeParser();
+  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
   private static final List<String> VALID_STATISTICS = Arrays.asList("avg", "min", "max", "sum",
       "count");
 

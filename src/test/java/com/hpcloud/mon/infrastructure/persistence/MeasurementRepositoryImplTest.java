@@ -1,8 +1,12 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
+import static org.testng.Assert.assertEquals;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.testng.annotations.AfterClass;
@@ -11,6 +15,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 
 /**
  * @author Jonathan Halterman
@@ -60,6 +65,8 @@ public class MeasurementRepositoryImplTest {
     dims.put("service", "compute");
     dims.put("instance_id", "123");
 
-    repo.find("1234", "cpu_utilization", dims, null, null);
+    Collection<Measurements> measurements = repo.find("1234", "cpu_utilization", dims, new DateTime(
+        2014, 1, 1, 0, 0, 0), null);
+    assertEquals(measurements.size(), 2);
   }
 }
