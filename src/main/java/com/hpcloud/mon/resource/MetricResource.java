@@ -26,7 +26,8 @@ import com.hpcloud.mon.app.command.CreateMetricCommand;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.common.model.Services;
 import com.hpcloud.mon.common.model.metric.Metric;
-import com.hpcloud.mon.domain.model.metric.MetricRepository;
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.resource.exception.Exceptions;
 
 /**
@@ -40,10 +41,10 @@ public class MetricResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
   private final MetricService service;
-  private final MetricRepository metricRepo;
+  private final MetricDefinitionRepository metricRepo;
 
   @Inject
-  public MetricResource(MetricService service, MetricRepository metricRepo) {
+  public MetricResource(MetricService service, MetricDefinitionRepository metricRepo) {
     this.service = service;
     this.metricRepo = metricRepo;
   }
@@ -79,7 +80,7 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Metric> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
+  public List<MetricDefinition> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr) {
     Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
         dimensionsStr);
