@@ -79,7 +79,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       for (Map<String, Object> row : rows) {
         byte[] defIdBytes = (byte[]) row.get("definition_id");
         ByteBuffer defId = ByteBuffer.wrap(defIdBytes);
-        long timestamp = ((Timestamp) row.get("time_stamp")).getTime();
+        long timestamp = ((Timestamp) row.get("time_stamp")).getTime() / 1000;
         double value = (double) row.get("value");
 
         Measurements measurements = results.get(defId);
