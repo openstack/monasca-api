@@ -62,15 +62,18 @@ public final class AlarmValidation {
 
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
-      String service = metricDef.dimensions.get(Services.SERVICE_DIMENSION);
+      String service = metricDef.dimensions == null ? null
+          : metricDef.dimensions.get(Services.SERVICE_DIMENSION);
 
       // Normalize and validate namespace
       metricDef.name = MetricNameValidation.normalize(metricDef.name);
       MetricNameValidation.validate(metricDef.name, service);
 
       // Normalize and validate dimensions
-      metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
-      DimensionValidation.validate(metricDef.dimensions, service);
+      if (metricDef.dimensions != null) {
+        metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
+        DimensionValidation.validate(metricDef.dimensions, service);
+      }
 
       // Validate period
       if (subExpression.getPeriod() == 0)
