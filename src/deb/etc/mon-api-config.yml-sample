@@ -1,61 +1,60 @@
-repositoryType: vertica
-useMiddleware: false
-maxBatchSize: 1000
-claimBufferSize: 128
-deployBatchSeconds: 10
+# Whether this server is running on a secure port
+accessedViaHttps: false
 
-http:
-  port: 8080
-  adminPort: 8081
+# Topic for publishing metrics to
+metricsTopic: metrics
 
-  # A map of servlet context parameter names to servlet context
-  # parameter values.
-  contextParameters:
-    ServerVIP: csnode.rndd.aw1.hpcloud.net
-    ServerPort: 9543
-    ConnTimeout: 500
-    ConnSSLClientAuth: True
-    Keystore: ./hpmiddleware-keystore.jks
-    KeystorePass: changeit
-    Truststore: ./hpmiddleware-truststore.jks
-    TruststorePass: changeit
-    ConnPoolMaxActive: 3
-    ConnPoolMaxIdle: 3
-    ConnPoolEvictPeriod: 60000
-    ConnPoolMinIdleTime: 90000
-    DelayAuthDecision: False
-    AuthVersion: v3
+# Topic for publishing domain events to
+eventsTopic: events
 
-database:
-  driverClass: com.vertica.jdbc.Driver
-  url: jdbc:vertica://15.185.251.191:5433/som
-#  url: jdbc:vertica://mon-aw1rdd1-vertica0001.rndd.aw1.hpcloud.net:5433/som
-  user: som_service
-  password: <password>
-  properties:
-    charSet: UTF-8
-    ssl: false
-#
-  # The maximum amount of time to wait on an empty pool before throwing an exception
+kafka:
+  brokerUris: 
+    - 192.168.10.10:9092
+  zookeeperUris:
+    - 192.168.10.10:2181
+  healthCheckTopic: healthcheck
+
+mysql:
+  driverClass: com.mysql.jdbc.Driver
+  url: jdbc:mysql://localhost:3306/mon?connectTimeout=5000&autoReconnect=true
+  user: root
+  password: 
   maxWaitForConnection: 1s
-
-  # The SQL vertica to run when validating a connection's liveness
   validationQuery: "/* MyService Health Check */ SELECT 1"
-
-  # The minimum number of connections to keep open
-  minSize: 8
-
-  # The maximum number of connections to keep open
+  minSize: 4
   maxSize: 32
-
-  # Whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
-  # How long a connection must be held before it can be validated
-  checkConnectionHealthWhenIdleFor: 10s
+vertica:
+  driverClass: com.vertica.jdbc.Driver
+  url: jdbc:vertica://192.168.10.8/mon
+  user: dbadmin
+  password: password
+  maxWaitForConnection: 1s
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  minSize: 4
+  maxSize: 32
+  checkConnectionWhileIdle: false
 
-  # The maximum lifetime of an idle connection
-  closeConnectionIfIdleFor: 1 minute
+middleware:
+  enabled: false
+  serviceIds: 100
+  endpointIds: 160
+  serverVIP: region-a.geo-1.identity-admin.hpcloudsvc.com #15.184.9.181
+  serverPort: 9543
+  connTimeout: 500
+  connSSLClientAuth: true
+  keystore: etc/security/prod-hpmiddleware-keystore.jks
+  keystorePass: changeit
+  truststore: etc/security/prod-hpmiddleware-truststore.jks
+  truststorePass: changeit
+  connPoolMaxActive: 3
+  connPoolMaxIdle: 3
+  connPoolEvictPeriod: 600000
+  connPoolMinIdleTime: 600000
+  connRetryTimes: 2
+  connRetryInterval: 50
+  rolesToMatch: [user, domainuser, domainadmin]
 
 logging:
   level: INFO #DEBUG, TRACE, WARN, INFO
@@ -67,9 +66,9 @@ logging:
     # Do not addToBatch log statements below this threshold to the file
     threshold: ALL
     # The file to which statements will be logged
-    currentLogFilename: /var/log/som-api/som-api.log
+    currentLogFilename: /var/log/mon-api/mon-api.log
     #  When the log file rolls over, the file will be archived to example-2012-03-15.log.gz
     # example.log will be truncated, and new statements written to it
-    archivedLogFilenamePattern: /var/log/som-api/som-api%d.log.gz
+    archivedLogFilenamePattern: /var/log/mon-api/mon-api%d.log.gz
     # The maximum number of log files to archive
     archivedFileCount: 10
