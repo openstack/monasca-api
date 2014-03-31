@@ -30,7 +30,7 @@ import com.hpcloud.mon.domain.model.measurement.Measurements;
 public class MeasurementRepositoryImpl implements MeasurementRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def%s "
-      + "where m.definition_id = def.id and m.time_stamp >= :startTime%s "
+      + "where def.tenant_id = :tenantId and m.definition_id = def.id and m.time_stamp >= :startTime%s "
       + "order by m.definition_id";
 
   private final DBI db;
@@ -56,8 +56,9 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       if (endTime != null)
         sbWhere.append(" and m.time_stamp <= :endTime");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
-      Query<Map<String, Object>> query = h.createQuery(sql).bind("startTime",
-          new Timestamp(startTime.getMillis()));
+      Query<Map<String, Object>> query = h.createQuery(sql)
+          .bind("tenantId", tenantId)
+          .bind("startTime", new Timestamp(startTime.getMillis()));
       if (name != null)
         query.bind("name", name);
       if (endTime != null)
