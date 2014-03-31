@@ -16,9 +16,10 @@ kafka:
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://localhost:3306/mon?connectTimeout=5000&autoReconnect=true
-  user: root
-  password: 
+  #url: jdbc:mysql://localhost:3306/mon?connectTimeout=5000&autoReconnect=true
+  url: jdbc:mysql://192.168.10.6:3306/mon?connectTimeout=5000&autoReconnect=true
+  user: monapi
+  password: password
   maxWaitForConnection: 1s
   validationQuery: "/* MyService Health Check */ SELECT 1"
   minSize: 4
@@ -56,19 +57,18 @@ middleware:
   connRetryInterval: 50
   rolesToMatch: [user, domainuser, domainadmin]
 
-logging:
-  level: INFO #DEBUG, TRACE, WARN, INFO
 
-  # Settings for logging to a file
-  file:
-    # If true, addToBatch log statements to a file
-    enabled: true
-    # Do not addToBatch log statements below this threshold to the file
-    threshold: ALL
-    # The file to which statements will be logged
-    currentLogFilename: /var/log/mon-api/mon-api.log
-    #  When the log file rolls over, the file will be archived to example-2012-03-15.log.gz
-    # example.log will be truncated, and new statements written to it
-    archivedLogFilenamePattern: /var/log/mon-api/mon-api%d.log.gz
-    # The maximum number of log files to archive
-    archivedFileCount: 10
+# Logging settings.
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.example.app: DEBUG
+
+  appenders:
+    - type: console
