@@ -72,3 +72,23 @@ logging:
 
   appenders:
     - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: # TODO
+
+    - type: file
+      currentLogFilename: ./log/mon-api.log
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: ./log/mon-api-%d.log
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: # TODO
+
+    - type: syslog
+      host: localhost
+      port: 514
+      facility: local0
+      threshold: ALL
+      logFormat: # TODO
