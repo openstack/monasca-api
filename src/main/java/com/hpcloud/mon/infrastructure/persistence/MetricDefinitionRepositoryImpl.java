@@ -25,7 +25,7 @@ import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select def.id, def.name, d.name as dname, d.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
-      + "where d.definition_id = def.id%s order by def.id";
+      + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";
 
   private final DBI db;
 
@@ -47,7 +47,7 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
       if (name != null)
         sbWhere.append(" and def.name = :name");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
-      Query<Map<String, Object>> query = h.createQuery(sql);
+      Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       if (name != null)
         query.bind("name", name);
       if (dimensions != null) {
