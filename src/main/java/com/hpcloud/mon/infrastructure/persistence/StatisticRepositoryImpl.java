@@ -26,6 +26,9 @@ public class StatisticRepositoryImpl implements StatisticRepository {
   @Override
   public List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, DateTime endTime, List<String> statistics, int period) {
+
+
+
     return null;
   }
 }
