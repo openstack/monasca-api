@@ -12,13 +12,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import com.hpcloud.mon.domain.model.statistic.Statistic;
 import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
-import com.hpcloud.util.stats.Statistic;
+//import com.hpcloud.util.stats.Statistic;
 
 /**
  * Statistic resource implementation.

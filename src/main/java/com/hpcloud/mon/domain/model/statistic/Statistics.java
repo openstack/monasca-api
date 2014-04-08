@@ -1,6 +1,9 @@
 package com.hpcloud.mon.domain.model.statistic;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +14,20 @@ public class Statistics {
 
   private List<Long> timestamp;
 
-  public List<Long> getTimestamp() { return timestamp;}
+  @JsonProperty("timestamp")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public List<Long> getTimestamp() {
+    return timestamp;
+  }
 
-  public void setTimestamp(List<Long> timestamp) { this.timestamp = timestamp;}
+  public void setTimestamp(List<Long> timestamp) {
+    this.timestamp = timestamp;
+  }
 
   private List<Double> average;
 
+  @JsonProperty("avg")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public List<Double> getAverage() {
     return average;
   }
@@ -27,7 +38,8 @@ public class Statistics {
 
   private List<Double> min;
 
-
+  @JsonProperty("min")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public List<Double> getMin() {
     return min;
   }
@@ -38,6 +50,8 @@ public class Statistics {
 
   private List<Double> max;
 
+  @JsonProperty("max")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public List<Double> getMax() {
     return max;
   }
@@ -46,18 +60,22 @@ public class Statistics {
     this.max = mas;
   }
 
-  private List<Double> count;
+  private List<Long> count;
 
-  public List<Double> getCount() {
+  @JsonProperty("count")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public List<Long> getCount() {
     return count;
   }
 
-  public void setCount(List<Double> count) {
+  public void setCount(List<Long> count) {
     this.count = count;
   }
 
   private List<Double> sum;
 
+  @JsonProperty("sum")
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public List<Double> getSum() {
     return sum;
   }
@@ -78,7 +96,7 @@ public class Statistics {
     max = lazyInstantiation(max, value);
   }
 
-  public void addCount(Double value) {
+  public void addCount(Long value) {
     count = lazyInstantiation(count, value);
   }
 

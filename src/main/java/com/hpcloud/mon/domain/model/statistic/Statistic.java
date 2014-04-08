@@ -10,7 +10,7 @@ import java.util.Map;
 public class Statistic {
   private String name;
   private Map<String, String> dimensions;
-  private Map<String, Object> statistics;
+  private Statistics statistics;
 
   @Override
   public boolean equals(Object obj) {
@@ -47,7 +47,7 @@ public class Statistic {
     return name;
   }
 
-  public Map<String, Object> getStatistics() {
+  public Statistics getStatistics() {
     return statistics;
   }
 
@@ -69,13 +69,11 @@ public class Statistic {
     this.name = name;
   }
 
-  public void setStatistics(Map<String, Object> statistics) {
-    this.statistics = statistics;
-  }
 
+  public void setStatistics(Statistics statistics)  { this.statistics = statistics;}
   @Override
   public String toString() {
-    return String.format("Statistic [name=%s, dimensions=%s, statistics=%s]", name, dimensions,
+    return String.format("Statistic [name=%s, dimensions=%s,statistics=%s]", name, dimensions,
         statistics);
   }
 }
