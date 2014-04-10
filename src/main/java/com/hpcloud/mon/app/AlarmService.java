@@ -179,8 +179,9 @@ public class AlarmService {
           undeterminedActions);
 
       // Notify interested parties of new alarm
+      // TODO pass changed sub alarms
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          expression, state, enabled, subAlarms.getKey(), subAlarms.getValue()));
+          expression, state, enabled, subAlarms.getKey(), null, subAlarms.getValue()));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);

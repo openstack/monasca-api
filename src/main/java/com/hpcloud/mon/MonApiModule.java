@@ -41,7 +41,7 @@ public class MonApiModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(MonApiConfiguration.class).toInstance(config);
-    bind(MetricRegistry.class).in(Singleton.class);
+    bind(MetricRegistry.class).toInstance(environment.metrics());
     bind(DataSourceFactory.class).annotatedWith(Names.named("mysql")).toInstance(config.mysql);
     bind(DataSourceFactory.class).annotatedWith(Names.named("vertiva")).toInstance(config.vertica);
 
