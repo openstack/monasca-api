@@ -131,7 +131,6 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     Map<byte[], Statistic> byteIdMap = new HashMap();
     // Build results
 
-    List<String> bufferString = new ArrayList<>(rows.size());
     byte[] currentId = null;
     Map<String, String> dims = null;
     for (Map<String, Object> row : rows) {
