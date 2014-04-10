@@ -15,8 +15,8 @@
   <properties>
     <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion>
     <computedName>${project.artifactId}-${computedVersion}</computedName>
-    <mon.common.version>1.0.0.23</mon.common.version>
-    <dropwizard.version>0.7.0-rc3</dropwizard.version>
+    <mon.common.version>1.0.0.29</mon.common.version>
+    <dropwizard.version>0.7.0</dropwizard.version>
 
     <skipITs>true</skipITs>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

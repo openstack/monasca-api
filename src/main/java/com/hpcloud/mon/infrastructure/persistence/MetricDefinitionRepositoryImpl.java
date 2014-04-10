@@ -3,7 +3,6 @@ package com.hpcloud.mon.infrastructure.persistence;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +22,10 @@ import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
  * @author Jonathan Halterman
  */
 public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepository {
-  private static final String FIND_BY_METRIC_DEF_SQL = "select def.id, def.name, d.name as dname, d.value as dvalue "
-      + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
-      + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";
+  private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
+      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
+      + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
+      + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
 
   private final DBI db;
 
@@ -39,27 +39,20 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
     Handle h = db.open();
 
     try {
-      // Build query
-      StringBuilder sbFrom = new StringBuilder();
+      // Build sql
       StringBuilder sbWhere = new StringBuilder();
-      MetricQueries.buildClausesForDimensions(sbFrom, sbWhere, dimensions);
-
       if (name != null)
         sbWhere.append(" and def.name = :name");
-      String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
+      String sql = String.format(FIND_BY_METRIC_DEF_SQL,
+          MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+
+      // Build query
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       if (name != null)
         query.bind("name", name);
-      if (dimensions != null) {
-        int i = 0;
-        for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
-          Map.Entry<String, String> entry = it.next();
-          query.bind("dname" + i, entry.getKey());
-          query.bind("dvalue" + i, entry.getValue());
-        }
-      }
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
-      // Execute
+      // Execute query
       List<Map<String, Object>> rows = query.list();
 
       // Build results
@@ -75,7 +68,8 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
         if (defId == null || !Arrays.equals(currentId, defId)) {
           currentId = defId;
           dims = new HashMap<>();
-          dims.put(dName, dValue);
+          if (dName != null && dValue != null)
+            dims.put(dName, dValue);
           metricDefs.add(new MetricDefinition(metricName, dims));
         } else
           dims.put(dName, dValue);
