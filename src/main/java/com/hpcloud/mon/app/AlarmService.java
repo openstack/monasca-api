@@ -132,10 +132,10 @@ public class AlarmService {
     assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
         command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
-        alarmExpression, command.state, command.enabled, command.alarmActions, command.okActions,
+        alarmExpression, command.state, command.actionsEnabled, command.alarmActions, command.okActions,
         command.undeterminedActions);
     return new Alarm(alarmId, command.name, command.description, command.expression, command.state,
-        command.enabled, command.alarmActions, command.okActions, command.undeterminedActions);
+        command.actionsEnabled, command.alarmActions, command.okActions, command.undeterminedActions);
   }
 
   /**
@@ -146,7 +146,7 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, String name, String description,
-      String expression, AlarmExpression alarmExpression, AlarmState state, Boolean enabled,
+      String expression, AlarmExpression alarmExpression, AlarmState state, Boolean actionsEnabled,
       List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
     name = name == null ? alarm.getName() : name;
@@ -154,12 +154,12 @@ public class AlarmService {
     expression = expression == null ? alarm.getExpression() : expression;
     alarmExpression = alarmExpression == null ? AlarmExpression.of(expression) : alarmExpression;
     state = state == null ? alarm.getState() : state;
-    enabled = enabled == null ? alarm.isEnabled() : enabled;
+    actionsEnabled = actionsEnabled == null ? alarm.isActionsEnabled() : actionsEnabled;
 
     updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression, state,
-        enabled, alarmActions, okActions, undeterminedActions);
+        actionsEnabled, alarmActions, okActions, undeterminedActions);
 
-    return new Alarm(alarmId, name, description, expression, state, enabled,
+    return new Alarm(alarmId, name, description, expression, state, actionsEnabled,
         alarmActions == null ? alarm.getAlarmActions() : alarmActions,
         okActions == null ? alarm.getOkActions() : okActions,
         undeterminedActions == null ? alarm.getUndeterminedActions() : undeterminedActions);
@@ -167,21 +167,21 @@ public class AlarmService {
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
       String description, String expression, AlarmExpression alarmExpression, AlarmState state,
-      Boolean enabled, List<String> alarmActions, List<String> okActions,
+      Boolean actionsEnabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     Entry<Map<String, AlarmSubExpression>, Map<String, AlarmSubExpression>> subAlarms = oldAndNewSubExpressionsFor(
         alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, state, enabled,
+      repo.update(tenantId, alarmId, patch, name, description, expression, state, actionsEnabled,
           subAlarms.getKey().keySet(), subAlarms.getValue(), alarmActions, okActions,
           undeterminedActions);
 
       // Notify interested parties of new alarm
       // TODO pass changed sub alarms
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          expression, state, enabled, subAlarms.getKey(), null, subAlarms.getValue()));
+          expression, state, actionsEnabled, subAlarms.getKey(), null, subAlarms.getValue()));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
