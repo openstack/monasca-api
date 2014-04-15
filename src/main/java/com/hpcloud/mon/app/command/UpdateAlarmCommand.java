@@ -12,7 +12,7 @@ import com.hpcloud.mon.common.model.alarm.AlarmState;
  */
 public class UpdateAlarmCommand extends CreateAlarmCommand {
   @NotNull public AlarmState state;
-  @NotNull public Boolean enabled;
+  @NotNull public Boolean actionsEnabled;
 
   public UpdateAlarmCommand() {
   }
@@ -22,6 +22,6 @@ public class UpdateAlarmCommand extends CreateAlarmCommand {
       List<String> undeterminedActions) {
     super(name, description, expression, alarmActions, okActions, undeterminedActions);
     this.state = state;
-    this.enabled = enabled;
+    this.actionsEnabled = enabled;
   }
 }
