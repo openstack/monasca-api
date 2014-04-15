@@ -5,7 +5,7 @@ CREATE TABLE `alarm` (
   `description` varchar(250) DEFAULT NULL,
   `expression` mediumtext,
   `state` varchar(20) NOT NULL check state in ('UNDETERMINED','OK','ALARM'),
-  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `actions_enabled` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,

@@ -49,7 +49,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     try {
       h.begin();
       h.insert(
-          "insert into alarm (id, tenant_id, name, description, expression, state, enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+          "insert into alarm (id, tenant_id, name, description, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
           id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
@@ -191,16 +191,16 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public void update(String tenantId, String id, boolean patch, String name, String description,
-      String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
-      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions) {
+      String expression, AlarmState state, boolean actionsEnabled,
+      Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> newSubAlarms,
+      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-          "update alarm set name = ?, description = ?, expression = ?, state = ?, enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
-          name, description, expression, state.name(), enabled, tenantId, id);
+          "update alarm set name = ?, description = ?, expression = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
+          name, description, expression, state.name(), actionsEnabled, tenantId, id);
 
       // Delete old sub-alarms
       if (oldSubAlarmIds != null)
