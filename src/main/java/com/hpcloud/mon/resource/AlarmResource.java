@@ -20,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import com.wordnik.swagger.annotations.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.codahale.metrics.annotation.Timed;
@@ -37,6 +36,11 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistory;
 import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistoryRepository;
 import com.hpcloud.mon.resource.annotation.PATCH;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * Alarm resource implementation.
@@ -45,7 +49,6 @@ import com.hpcloud.mon.resource.annotation.PATCH;
  */
 @Path("/v2.0/alarms")
 @Api(value = "/v2.0/alarms", description = "Operations about alarms")
-@Produces({"application/json"})
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
@@ -84,13 +87,13 @@ public class AlarmResource {
   @Timed
   @Path("{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Find by alarm ID", notes = "More notes about this method", response = Alarm.class)
-  @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "Invalid ID supplied"),
-          @ApiResponse(code = 404, message = "Alarm not found")
-  })
-  public Alarm get(@ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @PathParam("alarm_id") String alarmId) {
+  @ApiOperation(value = "Find by alarm ID", notes = "More notes about this method",
+      response = Alarm.class)
+  @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
+      @ApiResponse(code = 404, message = "Alarm not found") })
+  public Alarm get(
+      @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
     return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo, "history");
   }
 
