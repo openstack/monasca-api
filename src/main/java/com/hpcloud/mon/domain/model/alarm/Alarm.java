@@ -19,7 +19,7 @@ public class Alarm extends AbstractEntity implements Linked {
   private String description = "";
   private String expression;
   private AlarmState state;
-  private boolean enabled;
+  private boolean actionsEnabled;
   private List<String> alarmActions;
   private List<String> okActions;
   private List<String> undeterminedActions;
@@ -28,14 +28,14 @@ public class Alarm extends AbstractEntity implements Linked {
   }
 
   public Alarm(String id, String name, String description, String expression, AlarmState state,
-      boolean enabled, List<String> alarmActions, List<String> okActions,
+      boolean actionsEnabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     this.id = id;
     this.name = name;
     setDescription(description);
     setExpression(expression);
     setState(state);
-    setEnabled(enabled);
+    setActionsEnabled(actionsEnabled);
     setAlarmActions(alarmActions);
     setOkActions(okActions);
     setUndeterminedActions(undeterminedActions);
@@ -60,7 +60,7 @@ public class Alarm extends AbstractEntity implements Linked {
         return false;
     } else if (!description.equals(other.description))
       return false;
-    if (enabled != other.enabled)
+    if (actionsEnabled != other.actionsEnabled)
       return false;
     if (expression == null) {
       if (other.expression != null)
@@ -134,7 +134,7 @@ public class Alarm extends AbstractEntity implements Linked {
     int result = super.hashCode();
     result = prime * result + ((alarmActions == null) ? 0 : alarmActions.hashCode());
     result = prime * result + ((description == null) ? 0 : description.hashCode());
-    result = prime * result + (enabled ? 1231 : 1237);
+    result = prime * result + (actionsEnabled ? 1231 : 1237);
     result = prime * result + ((expression == null) ? 0 : expression.hashCode());
     result = prime * result + ((links == null) ? 0 : links.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -144,8 +144,12 @@ public class Alarm extends AbstractEntity implements Linked {
     return result;
   }
 
-  public boolean isEnabled() {
-    return enabled;
+  public boolean isActionsEnabled() {
+    return actionsEnabled;
+  }
+
+  public void setActionsEnabled(boolean actionsEnabled) {
+    this.actionsEnabled = actionsEnabled;
   }
 
   public void setAlarmActions(List<String> alarmActions) {
@@ -154,10 +158,6 @@ public class Alarm extends AbstractEntity implements Linked {
 
   public void setDescription(String description) {
     this.description = description == null ? "" : description;
-  }
-
-  public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
   }
 
   public void setExpression(String expression) {
