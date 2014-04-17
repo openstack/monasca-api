@@ -9,20 +9,23 @@ import java.util.Map;
  * @author Jonathan Halterman
  */
 public class Measurements {
+  private static final String[] COLUMNS = new String[] { "id", "timestamp", "value" };
+
   private String name;
   private Map<String, String> dimensions;
-  private List<Measurement> measurements;
+  private final String[] columns = COLUMNS;
+  private List<Object[]> measurements;
 
   public Measurements() {
   }
 
-  public Measurements(String name, Map<String, String> dimensions, List<Measurement> measurements) {
+  public Measurements(String name, Map<String, String> dimensions, List<Object[]> measurements) {
     this.name = name;
     this.dimensions = dimensions;
     this.measurements = measurements;
   }
 
-  public void addMeasurement(Measurement measurement) {
+  public void addMeasurement(Object[] measurement) {
     measurements.add(measurement);
   }
 
@@ -53,11 +56,15 @@ public class Measurements {
     return true;
   }
 
+  public String[] getColumns() {
+    return columns;
+  }
+
   public Map<String, String> getDimensions() {
     return dimensions;
   }
 
-  public List<Measurement> getMeasurements() {
+  public List<Object[]> getMeasurements() {
     return measurements;
   }
 
@@ -79,7 +86,7 @@ public class Measurements {
     this.dimensions = dimensions;
   }
 
-  public void setMeasurements(List<Measurement> measurements) {
+  public void setMeasurements(List<Object[]> measurements) {
     this.measurements = measurements;
   }
 
