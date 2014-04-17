@@ -1,11 +1,10 @@
 package com.hpcloud.mon.app;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,6 +17,8 @@ import kafka.producer.KeyedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
@@ -57,6 +58,15 @@ public class AlarmService {
     this.producer = producer;
     this.repo = repo;
     this.notificationMethodRepo = notificationMethodRepo;
+  }
+
+  static class SubExpressions {
+    /** Sub expressions which have been removed from an updated alarm expression. */
+    Map<String, AlarmSubExpression> oldAlarmSubExpressions;
+    /** Sub expressions which have had their operator or threshold changed. */
+    Map<String, AlarmSubExpression> changedSubExpressions;
+    /** Sub expressions which have been added to an updated alarm expression. */
+    Map<String, AlarmSubExpression> newAlarmSubExpressions;
   }
 
   /**
@@ -132,10 +142,11 @@ public class AlarmService {
     assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
         command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
-        alarmExpression, command.state, command.actionsEnabled, command.alarmActions, command.okActions,
-        command.undeterminedActions);
+        alarmExpression, command.state, command.actionsEnabled, command.alarmActions,
+        command.okActions, command.undeterminedActions);
     return new Alarm(alarmId, command.name, command.description, command.expression, command.state,
-        command.actionsEnabled, command.alarmActions, command.okActions, command.undeterminedActions);
+        command.actionsEnabled, command.alarmActions, command.okActions,
+        command.undeterminedActions);
   }
 
   /**
@@ -146,7 +157,7 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, String name, String description,
-      String expression, AlarmExpression alarmExpression, AlarmState state, Boolean actionsEnabled,
+      String expression, AlarmExpression alarmExpression, AlarmState state, Boolean enabled,
       List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
     name = name == null ? alarm.getName() : name;
@@ -154,12 +165,12 @@ public class AlarmService {
     expression = expression == null ? alarm.getExpression() : expression;
     alarmExpression = alarmExpression == null ? AlarmExpression.of(expression) : alarmExpression;
     state = state == null ? alarm.getState() : state;
-    actionsEnabled = actionsEnabled == null ? alarm.isActionsEnabled() : actionsEnabled;
+    enabled = enabled == null ? alarm.isActionsEnabled() : enabled;
 
     updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression, state,
-        actionsEnabled, alarmActions, okActions, undeterminedActions);
+        enabled, alarmActions, okActions, undeterminedActions);
 
-    return new Alarm(alarmId, name, description, expression, state, actionsEnabled,
+    return new Alarm(alarmId, name, description, expression, state, enabled,
         alarmActions == null ? alarm.getAlarmActions() : alarmActions,
         okActions == null ? alarm.getOkActions() : okActions,
         undeterminedActions == null ? alarm.getUndeterminedActions() : undeterminedActions);
@@ -167,21 +178,20 @@ public class AlarmService {
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
       String description, String expression, AlarmExpression alarmExpression, AlarmState state,
-      Boolean actionsEnabled, List<String> alarmActions, List<String> okActions,
+      Boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
-    Entry<Map<String, AlarmSubExpression>, Map<String, AlarmSubExpression>> subAlarms = oldAndNewSubExpressionsFor(
-        alarmId, alarmExpression);
+    SubExpressions subExpressions = subExpressionsFor(alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, state, actionsEnabled,
-          subAlarms.getKey().keySet(), subAlarms.getValue(), alarmActions, okActions,
-          undeterminedActions);
+      repo.update(tenantId, alarmId, patch, name, description, expression, state, enabled,
+          subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
+          subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
 
-      // Notify interested parties of new alarm
-      // TODO pass changed sub alarms
+      // Notify interested parties of updated alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          expression, state, actionsEnabled, subAlarms.getKey(), null, subAlarms.getValue()));
+          expression, state, enabled, subExpressions.oldAlarmSubExpressions,
+          subExpressions.changedSubExpressions, subExpressions.newAlarmSubExpressions));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
@@ -189,26 +199,57 @@ public class AlarmService {
   }
 
   /**
-   * Returns an entry containing Maps of old and new sub expressions by comparing the
+   * Returns an entry containing Maps of old, changed, and new sub expressions by comparing the
    * {@code alarmExpression} to the existing sub expressions for the {@code alarmId}.
    */
-  Entry<Map<String, AlarmSubExpression>, Map<String, AlarmSubExpression>> oldAndNewSubExpressionsFor(
-      String alarmId, AlarmExpression alarmExpression) {
-    Map<String, AlarmSubExpression> oldSubAlarms = repo.findSubExpressions(alarmId);
-    Set<AlarmSubExpression> oldSet = new HashSet<>(oldSubAlarms.values());
+  SubExpressions subExpressionsFor(String alarmId, AlarmExpression alarmExpression) {
+    BiMap<String, AlarmSubExpression> oldExpressions = HashBiMap.create(repo.findSubExpressions(alarmId));
+    Set<AlarmSubExpression> oldSet = oldExpressions.inverse().keySet();
     Set<AlarmSubExpression> newSet = new HashSet<>(alarmExpression.getSubExpressions());
 
-    // Filter old sub expressions
-    Set<AlarmSubExpression> oldExpressions = Sets.difference(oldSet, newSet);
-    oldSubAlarms.values().retainAll(oldExpressions);
+    // Identify old or changed expressions
+    Set<AlarmSubExpression> oldOrChangedExpressions = new HashSet<>(Sets.difference(oldSet, newSet));
 
-    // Identify new sub expressions
-    Map<String, AlarmSubExpression> newSubAlarms = new HashMap<>();
-    Set<AlarmSubExpression> newExpressions = Sets.difference(newSet, oldSet);
-    for (AlarmSubExpression expression : newExpressions)
-      newSubAlarms.put(UUID.randomUUID().toString(), expression);
+    // Identify new or changed expressions
+    Set<AlarmSubExpression> newOrChangedExpressions = new HashSet<>(Sets.difference(newSet, oldSet));
 
-    return new SimpleEntry<>(oldSubAlarms, newSubAlarms);
+    // Find changed expressions
+    Map<String, AlarmSubExpression> changedExpressions = new HashMap<>();
+    for (Iterator<AlarmSubExpression> oldIt = oldOrChangedExpressions.iterator(); oldIt.hasNext();) {
+      AlarmSubExpression oldExpr = oldIt.next();
+      for (Iterator<AlarmSubExpression> newIt = newOrChangedExpressions.iterator(); newIt.hasNext();) {
+        AlarmSubExpression newExpr = newIt.next();
+        if (sameKeyFields(oldExpr, newExpr)) {
+          oldIt.remove();
+          newIt.remove();
+          changedExpressions.put(oldExpressions.inverse().get(oldExpr), newExpr);
+        }
+      }
+    }
+
+    // Remove old sub expressions
+    oldExpressions.values().retainAll(oldOrChangedExpressions);
+
+    // Create IDs for new expressions
+    Map<String, AlarmSubExpression> newExpressions = new HashMap<>();
+    for (AlarmSubExpression expression : newOrChangedExpressions)
+      newExpressions.put(UUID.randomUUID().toString(), expression);
+
+    SubExpressions subExpressions = new SubExpressions();
+    subExpressions.oldAlarmSubExpressions = oldExpressions;
+    subExpressions.changedSubExpressions = changedExpressions;
+    subExpressions.newAlarmSubExpressions = newExpressions;
+    return subExpressions;
+  }
+
+  /**
+   * Returns whether all of the fields of {@code a} and {@code b} are the same except the operator
+   * and threshold.
+   */
+  private boolean sameKeyFields(AlarmSubExpression a, AlarmSubExpression b) {
+    return a.getMetricDefinition().equals(b.getMetricDefinition())
+        && a.getFunction().equals(b.getFunction()) && a.getPeriod() == b.getPeriod()
+        && a.getPeriods() == b.getPeriods();
   }
 
   /**

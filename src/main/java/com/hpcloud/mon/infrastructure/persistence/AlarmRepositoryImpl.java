@@ -53,7 +53,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
           id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
-      persistSubExpressions(h, id, subExpressions);
+      createSubExpressions(h, id, subExpressions);
 
       // Persist actions
       persistActions(h, id, AlarmState.ALARM, alarmActions);
@@ -192,8 +192,9 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   @Override
   public void update(String tenantId, String id, boolean patch, String name, String description,
       String expression, AlarmState state, boolean actionsEnabled,
-      Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> newSubAlarms,
-      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
+      Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
+      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
@@ -207,8 +208,17 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         for (String oldSubAlarmId : oldSubAlarmIds)
           h.execute("delete from sub_alarm where id = ?", oldSubAlarmId);
 
+      // Update changed sub-alarms
+      if (changedSubAlarms != null)
+        for (Map.Entry<String, AlarmSubExpression> entry : changedSubAlarms.entrySet()) {
+          AlarmSubExpression sa = entry.getValue();
+          h.execute(
+              "update sub_alarm set operator = ?, threshold = ?, updated_at = NOW() where id = ?",
+              sa.getOperator().name(), sa.getThreshold(), entry.getKey());
+        }
+
       // Insert new sub-alarms
-      persistSubExpressions(h, id, newSubAlarms);
+      createSubExpressions(h, id, newSubAlarms);
 
       // Delete old actions
       if (patch) {
@@ -274,7 +284,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     alarm.setUndeterminedActions(findActionsById(handle, alarm.getId(), AlarmState.UNDETERMINED));
   }
 
-  private void persistSubExpressions(Handle handle, String id,
+  private void createSubExpressions(Handle handle, String id,
       Map<String, AlarmSubExpression> alarmSubExpressions) {
     if (alarmSubExpressions != null)
       for (Map.Entry<String, AlarmSubExpression> subEntry : alarmSubExpressions.entrySet()) {

@@ -10,10 +10,10 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.app.AlarmService.SubExpressions;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
@@ -120,24 +121,25 @@ public class AlarmServiceTest {
 
   public void testOldAndNewSubExpressionsFor() {
     Map<String, AlarmSubExpression> oldSubExpressions = new HashMap<>();
-    oldSubExpressions.put("444", AlarmSubExpression.of("avg(foo{instance_id=123}) > 90"));
-    oldSubExpressions.put("555", AlarmSubExpression.of("avg(bar{instance_id=777}) > 80"));
+    oldSubExpressions.put("111", AlarmSubExpression.of("avg(foo{instance_id=123}) > 1"));
+    oldSubExpressions.put("222", AlarmSubExpression.of("avg(foo{instance_id=456}) > 2"));
+    oldSubExpressions.put("333", AlarmSubExpression.of("avg(foo{instance_id=789}) > 3"));
     when(repo.findSubExpressions(eq("123"))).thenReturn(oldSubExpressions);
-    String newExprStr = "avg(foo{instance_id=123}) > 90 or avg(bar{instance_id=xxxx}) > 10 or avg(baz{instance_id=654}) > 123";
+
+    String newExprStr = "avg(foo{instance_id=123}) > 1 or avg(foo{instance_id=456}) <= 22 or avg(foo{instance_id=444}) > 4";
     AlarmExpression newExpr = AlarmExpression.of(newExprStr);
 
-    Entry<Map<String, AlarmSubExpression>, Map<String, AlarmSubExpression>> expressions = service.oldAndNewSubExpressionsFor(
-        "123", newExpr);
+    SubExpressions expressions = service.subExpressionsFor("123", newExpr);
 
     // Assert old expressions
-    Map<String, AlarmSubExpression> expectedOldExprs = new HashMap<>();
-    expectedOldExprs.put("555", AlarmSubExpression.of("avg(bar{instance_id=777}) > 80"));
-    assertEquals(expressions.getKey(), expectedOldExprs);
+    assertEquals(expressions.oldAlarmSubExpressions,
+        Collections.singletonMap("333", AlarmSubExpression.of("avg(foo{instance_id=789}) > 3")));
+
+    // Assert changed expressions
+    assertEquals(expressions.changedSubExpressions,
+        Collections.singletonMap("222", AlarmSubExpression.of("avg(foo{instance_id=456}) <= 22")));
 
     // Assert new expressions
-    assertTrue(expressions.getValue().containsValue(
-        AlarmSubExpression.of("avg(bar{instance_id=xxxx}) > 10")));
-    assertTrue(expressions.getValue().containsValue(
-        AlarmSubExpression.of("avg(baz{instance_id=654}) > 123")));
+    assertTrue(expressions.newAlarmSubExpressions.containsValue(AlarmSubExpression.of("avg(foo{instance_id=444}) > 4")));
   }
 }
