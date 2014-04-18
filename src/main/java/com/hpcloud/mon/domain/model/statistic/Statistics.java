@@ -12,8 +12,76 @@ import java.util.List;
  */
 public class Statistics {
 
-  private List<Long> timestamp;
+  private Double average;
+  private Long count;
+  private Double min;
+  private Double max;
 
+  public Double getSum() {
+    return sum;
+  }
+
+  public void setSum(Double sum) {
+    this.sum = sum;
+  }
+
+  private Double sum;
+  private Long timestamp;
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public Double getAverage() {
+    return average;
+  }
+
+  public void setAverage(Double average) {
+    this.average = average;
+  }
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public Double getMin() {
+    return min;
+  }
+
+
+  public void setMin(Double min) {
+    this.min = min;
+  }
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public Double getMax() {
+    return max;
+  }
+
+  public void setMax(Double max) {
+    this.max = max;
+  }
+
+  public Long getTimestamp() {
+    return timestamp;
+  }
+
+  public void setTimestamp(Long timestamp) {
+    this.timestamp = timestamp/1000;
+  }
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  public Long getCount() {
+    return count;
+  }
+
+  public void setCount(Long count) {
+    this.count = count;
+  }
+
+
+
+
+
+  /*public Statistics() {
+    rows = new ArrayList<Statistics>();
+  } */
+
+ /*
   @JsonProperty("timestamp")
   @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public List<Long> getTimestamp() {
@@ -116,6 +184,6 @@ public class Statistics {
     list.add(value);
     return list;
 
-  }
+  }  */
 
 }

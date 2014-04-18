@@ -22,10 +22,16 @@ import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
  * @author Jonathan Halterman
  */
 public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepository {
+<<<<<<< HEAD
   private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
-    + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
-    + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
-    + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
+      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
+      + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
+      + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
+=======
+  private static final String FIND_BY_METRIC_DEF_SQL = "select def.id, def.name, d.name as dname, d.value as dvalue "
+    + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
+    + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";
+>>>>>>> updated to support Statistics
 
   private final DBI db;
 
@@ -44,7 +50,7 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
       if (name != null)
         sbWhere.append(" and def.name = :name");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL,
-        MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+          MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
       // Build query
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);

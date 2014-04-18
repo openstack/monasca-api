@@ -1,5 +1,7 @@
 package com.hpcloud.mon.domain.model.statistic;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,7 +12,15 @@ import java.util.Map;
 public class Statistic {
   private String name;
   private Map<String, String> dimensions;
-  private Statistics statistics;
+  //private Statistics statistics;
+  private List<String> columns;
+  private List<Statistics> values;
+
+  public Statistic() {
+    values = new ArrayList<>();
+    //columns = new ArrayList<>();
+    //columns.add("timestamp");
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -31,11 +41,11 @@ public class Statistic {
         return false;
     } else if (!name.equals(other.name))
       return false;
-    if (statistics == null) {
+   /* if (statistics == null) {
       if (other.statistics != null)
         return false;
     } else if (!statistics.equals(other.statistics))
-      return false;
+      return false;*/
     return true;
   }
 
@@ -47,9 +57,13 @@ public class Statistic {
     return name;
   }
 
-  public Statistics getStatistics() {
+  /*public Statistics getStatistics() {
     return statistics;
-  }
+  } */
+
+  public List<String> getColumns() { return columns;}
+  public List<Statistics> getValues() { return values;}
+
 
   @Override
   public int hashCode() {
@@ -57,7 +71,7 @@ public class Statistic {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
+    //result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
     return result;
   }
 
@@ -69,11 +83,16 @@ public class Statistic {
     this.name = name;
   }
 
+  public void setColumns(List<String> columns) { this.columns =columns;}
+  public void setValues(List<Statistics> values) { this.values = values;}
 
-  public void setStatistics(Statistics statistics)  { this.statistics = statistics;}
+  public void addValues(Statistics value) {
+    values.add(value);
+  }
+
   @Override
   public String toString() {
     return String.format("Statistic [name=%s, dimensions=%s,statistics=%s]", name, dimensions,
-        statistics);
+        values);
   }
 }
