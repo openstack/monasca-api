@@ -60,7 +60,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         List<Map<String, Object>> rows = query.list();
 
 
-        Statistics currentStatistics = new Statistics();
+        //Statistics currentStatistics = new Statistics();
+        List<Object> statisticsRow = new ArrayList<Object>();
         for (Map<String, Object> row : rows) {
           Double sum = (Double)row.get("sum");
           Double average = (Double) row.get("avg");
@@ -70,28 +71,35 @@ public class StatisticRepositoryImpl implements StatisticRepository {
           Timestamp time_stamp = (Timestamp)row.get("time_interval");
 
           if(time_stamp != null) {
-            currentStatistics.setTimestamp(time_stamp.getTime());
+            //currentStatistics.setTimestamp(time_stamp.getTime());
+               statisticsRow.add(time_stamp.getTime());
           }
 
           if(average != null) {
-            currentStatistics.setAverage(average);
+            //currentStatistics.setAverage(average);
+            statisticsRow.add(average);
           }
           if(count != null) {
-            currentStatistics.setCount(count);
+            //currentStatistics.setCount(count);
+            statisticsRow.add(count);
           }
           if(max != null) {
-            currentStatistics.setMax(max);
+            //currentStatistics.setMax(max);
+            statisticsRow.add(max);
           }
           if(min != null) {
-            currentStatistics.setMin(min);
+            //currentStatistics.setMin(min);
+            statisticsRow.add(min);
           }
 
           if(sum != null) {
-            currentStatistics.setSum(sum);
+            //currentStatistics.setSum(sum);
+            statisticsRow.add(sum);
           }
-          byteMap.get(bufferId).addValues(currentStatistics);
-        }
-        Collections.sort(statistics);
+          byteMap.get(bufferId).addValues(statisticsRow);
+          statisticsRow = new ArrayList<>();
+        }//for
+        //Collections.sort(statistics);
         statistics.add(0,"timestamp");
         byteMap.get(bufferId).setColumns(statistics);
         listStats.add(byteMap.get(bufferId));

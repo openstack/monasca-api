@@ -1,5 +1,7 @@
 package com.hpcloud.mon.domain.model.statistic;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +16,8 @@ public class Statistic {
   private Map<String, String> dimensions;
   //private Statistics statistics;
   private List<String> columns;
-  private List<Statistics> values;
-
+  //private List<Statistics> values;
+  private List<List<Object>> values;
   public Statistic() {
     values = new ArrayList<>();
     //columns = new ArrayList<>();
@@ -62,7 +64,8 @@ public class Statistic {
   } */
 
   public List<String> getColumns() { return columns;}
-  public List<Statistics> getValues() { return values;}
+  //public List<Statistics> getValues() { return values;}
+  public List<List<Object>> getValues() { return values;}
 
 
   @Override
@@ -84,9 +87,10 @@ public class Statistic {
   }
 
   public void setColumns(List<String> columns) { this.columns =columns;}
-  public void setValues(List<Statistics> values) { this.values = values;}
+  //public void setValues(List<Statistics> values) { this.values = values;}
+  public void setValues(List<List<Object>> values) { this.values = values;}
 
-  public void addValues(Statistics value) {
+  public void addValues(List<Object> value) {
     values.add(value);
   }
 
