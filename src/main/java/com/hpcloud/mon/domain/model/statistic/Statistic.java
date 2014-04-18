@@ -14,14 +14,11 @@ import java.util.Map;
 public class Statistic {
   private String name;
   private Map<String, String> dimensions;
-  //private Statistics statistics;
   private List<String> columns;
-  //private List<Statistics> values;
   private List<List<Object>> values;
+
   public Statistic() {
     values = new ArrayList<>();
-    //columns = new ArrayList<>();
-    //columns.add("timestamp");
   }
 
   @Override
@@ -38,16 +35,22 @@ public class Statistic {
         return false;
     } else if (!dimensions.equals(other.dimensions))
       return false;
+    if(columns==null) {
+      if(other.columns!=null)
+        return false;
+    } else if(!columns.equals(other.columns))
+      return false;
+    if(values==null) {
+      if(other.values!=null)
+        return false;
+    } else if(!values.equals(other.values))
+      return false;
     if (name == null) {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
       return false;
-   /* if (statistics == null) {
-      if (other.statistics != null)
-        return false;
-    } else if (!statistics.equals(other.statistics))
-      return false;*/
+
     return true;
   }
 
@@ -59,12 +62,7 @@ public class Statistic {
     return name;
   }
 
-  /*public Statistics getStatistics() {
-    return statistics;
-  } */
-
   public List<String> getColumns() { return columns;}
-  //public List<Statistics> getValues() { return values;}
   public List<List<Object>> getValues() { return values;}
 
 
@@ -74,7 +72,8 @@ public class Statistic {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    //result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
+    result = prime * result + ((values == null) ?  0 : values.hashCode());
+    result = prime * result + ((columns == null) ? 0 : columns.hashCode());
     return result;
   }
 
@@ -87,7 +86,7 @@ public class Statistic {
   }
 
   public void setColumns(List<String> columns) { this.columns =columns;}
-  //public void setValues(List<Statistics> values) { this.values = values;}
+
   public void setValues(List<List<Object>> values) { this.values = values;}
 
   public void addValues(List<Object> value) {

@@ -1,6 +1,5 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -10,7 +9,6 @@ import javax.inject.Named;
 
 
 import com.hpcloud.mon.domain.model.statistic.Statistic;
-import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
@@ -25,9 +23,6 @@ import org.skife.jdbi.v2.Query;
 public class StatisticRepositoryImpl implements StatisticRepository {
   private final DBI db;
 
-  /*private static final String FIND_BY_METRIC_DEF_SQL = "select distinct def.id, def.name, d.name as dname, d.value as dvalue "
-     + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
-     + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";*/
   private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
     + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
     + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
@@ -45,6 +40,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
     Handle h = db.open();
     List<Statistic> listStats = new ArrayList<>();
+    List<String> copyStatistics = createColumns(statistics);
+
     try {
 
       Map<byte[], Statistic> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
@@ -58,10 +55,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
         // Execute
         List<Map<String, Object>> rows = query.list();
-
-
-        //Statistics currentStatistics = new Statistics();
         List<Object> statisticsRow = new ArrayList<Object>();
+
         for (Map<String, Object> row : rows) {
           Double sum = (Double)row.get("sum");
           Double average = (Double) row.get("avg");
@@ -71,37 +66,29 @@ public class StatisticRepositoryImpl implements StatisticRepository {
           Timestamp time_stamp = (Timestamp)row.get("time_interval");
 
           if(time_stamp != null) {
-            //currentStatistics.setTimestamp(time_stamp.getTime());
-               statisticsRow.add(time_stamp.getTime());
+            statisticsRow.add(time_stamp.getTime());
           }
 
           if(average != null) {
-            //currentStatistics.setAverage(average);
             statisticsRow.add(average);
           }
           if(count != null) {
-            //currentStatistics.setCount(count);
             statisticsRow.add(count);
           }
           if(max != null) {
-            //currentStatistics.setMax(max);
             statisticsRow.add(max);
           }
           if(min != null) {
-            //currentStatistics.setMin(min);
             statisticsRow.add(min);
           }
-
           if(sum != null) {
-            //currentStatistics.setSum(sum);
             statisticsRow.add(sum);
           }
           byteMap.get(bufferId).addValues(statisticsRow);
           statisticsRow = new ArrayList<>();
-        }//for
-        //Collections.sort(statistics);
-        statistics.add(0,"timestamp");
-        byteMap.get(bufferId).setColumns(statistics);
+        }
+
+        byteMap.get(bufferId).setColumns(copyStatistics);
         listStats.add(byteMap.get(bufferId));
       }
 
@@ -114,20 +101,20 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
   private Map<byte[], Statistic> findDefIds(Handle h, String tenantId, String name,
                                             Map<String, String> dimensions, DateTime startTime, DateTime endTime) {
-    List<ByteBuffer> byteBufferArray = new ArrayList<>();
+
     List<byte[]> bytes = new ArrayList<>();
+
     // Build query
-    //StringBuilder sbFrom = new StringBuilder();
+
     StringBuilder sbWhere = new StringBuilder();
 
-    // MetricQueries.buildClausesForDimensions(sbFrom, sbWhere, dimensions);
     if (name != null)
       sbWhere.append(" and def.name = :name");
 
     if (endTime != null) {
       sbWhere.append(" and m.time_stamp <= :endTime");
     }
-    //String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
+
     String sql =  String.format(FIND_BY_METRIC_DEF_SQL,
       MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
@@ -184,6 +171,18 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
     return byteIdMap;
   }
+
+  List<String> createColumns(List<String> list) {
+    List<String> copy = new ArrayList<>();
+    for(String string:list) {
+      copy.add(string);
+    }
+    Collections.sort(copy);
+    copy.add(0, "timestamp");
+
+    return copy;
+  }
+
   private String createQuery(int period, DateTime startTime, DateTime endTime, List<String> statistics) {
     StringBuilder builder = new StringBuilder();
 
@@ -217,6 +216,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     }
     return clause;
   }
+
   private String createOffset(int period, DateTime startTime, DateTime endTime) {
 
     StringBuilder offset = new StringBuilder();
@@ -229,6 +229,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
     return offset.toString();
   }
+
   private String getColumns(List<String> statistics) {
     StringBuilder buildColumns = new StringBuilder();
 
