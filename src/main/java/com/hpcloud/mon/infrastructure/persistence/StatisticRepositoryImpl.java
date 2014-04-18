@@ -25,9 +25,13 @@ import org.skife.jdbi.v2.Query;
 public class StatisticRepositoryImpl implements StatisticRepository {
   private final DBI db;
 
-  private static final String FIND_BY_METRIC_DEF_SQL = "select distinct def.id, def.name, d.name as dname, d.value as dvalue "
-    + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
-    + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";
+  /*private static final String FIND_BY_METRIC_DEF_SQL = "select distinct def.id, def.name, d.name as dname, d.value as dvalue "
+     + "from MonMetrics.Definitions def, MonMetrics.Dimensions d%s "
+     + "where def.tenant_id = :tenantId and d.definition_id = def.id%s order by def.id";*/
+  private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
+    + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
+    + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
+    + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
 
   @Inject
   public StatisticRepositoryImpl(@Named("vertica") DBI db) {
@@ -37,13 +41,14 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
   @Override
   public List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, DateTime endTime, List<String> statistics, int period) {
+                              DateTime startTime, DateTime endTime, List<String> statistics, int period) {
 
     Handle h = db.open();
     List<Statistic> listStats = new ArrayList<>();
     try {
 
       Map<byte[], Statistic> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
+
       for(byte[] bufferId:byteMap.keySet()) {
 
         Query<Map<String, Object>> query =  h.createQuery(createQuery(period,startTime,endTime,statistics))
@@ -64,21 +69,31 @@ public class StatisticRepositoryImpl implements StatisticRepository {
           Long count = (Long) row.get("count");
           Timestamp time_stamp = (Timestamp)row.get("time_interval");
 
-          if(sum != null)
-            currentStatistics.addSum(sum);
-          if(average != null)
-            currentStatistics.addAverage(average);
-          if(min != null)
-            currentStatistics.addMin(min);
-          if(max != null)
-            currentStatistics.addMax(max);
-          if(count != null)
-            currentStatistics.addCount(count);
-          if(time_stamp != null)
-            currentStatistics.addTimeStamp(time_stamp.getTime());
-        }
+          if(time_stamp != null) {
+            currentStatistics.setTimestamp(time_stamp.getTime());
+          }
 
-        byteMap.get(bufferId).setStatistics(currentStatistics);
+          if(average != null) {
+            currentStatistics.setAverage(average);
+          }
+          if(count != null) {
+            currentStatistics.setCount(count);
+          }
+          if(max != null) {
+            currentStatistics.setMax(max);
+          }
+          if(min != null) {
+            currentStatistics.setMin(min);
+          }
+
+          if(sum != null) {
+            currentStatistics.setSum(sum);
+          }
+          byteMap.get(bufferId).addValues(currentStatistics);
+        }
+        Collections.sort(statistics);
+        statistics.add(0,"timestamp");
+        byteMap.get(bufferId).setColumns(statistics);
         listStats.add(byteMap.get(bufferId));
       }
 
@@ -94,17 +109,20 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     List<ByteBuffer> byteBufferArray = new ArrayList<>();
     List<byte[]> bytes = new ArrayList<>();
     // Build query
-    StringBuilder sbFrom = new StringBuilder();
+    //StringBuilder sbFrom = new StringBuilder();
     StringBuilder sbWhere = new StringBuilder();
-    MetricQueries.buildClausesForDimensions(sbFrom, sbWhere, dimensions);
 
+    // MetricQueries.buildClausesForDimensions(sbFrom, sbWhere, dimensions);
     if (name != null)
       sbWhere.append(" and def.name = :name");
 
     if (endTime != null) {
       sbWhere.append(" and m.time_stamp <= :endTime");
     }
-    String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
+    //String sql = String.format(FIND_BY_METRIC_DEF_SQL, sbFrom.toString(), sbWhere.toString());
+    String sql =  String.format(FIND_BY_METRIC_DEF_SQL,
+      MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+
     Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId).bind("startTime", startTime);
 
     if (name != null) {
@@ -154,7 +172,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         dims.put(demName, demValue);
     }
 
-      bytes.add(currentId);
+    bytes.add(currentId);
 
     return byteIdMap;
   }
@@ -171,7 +189,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     }
 
     builder.append(" FROM MonMetrics.Measurements ");
-    builder.append("WHERE definition_id = :definition_id ");
+    builder.append("WHERE definition_dimensions_id = :definition_id ");
     builder.append(createWhereClause(startTime, endTime));
 
 
@@ -195,7 +213,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
     StringBuilder offset = new StringBuilder();
     offset.append("(select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements ");
-    offset.append("WHERE definition_id = :definition_id ");
+    offset.append("WHERE definition_dimensions_id = :definition_id ");
     offset.append(createWhereClause(startTime, endTime));
     offset.append("order by time_stamp limit 1");
     offset.append("),");
