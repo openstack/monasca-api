@@ -2,7 +2,10 @@ package com.hpcloud.mon.domain.model.statistic;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.json4s.jackson.JsonMethods;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +13,13 @@ import java.util.List;
 /**
  * Encapsulate a statistics
  */
+
 public class Statistics {
 
   private Double average;
   private Long count;
   private Double min;
-  private Double max;
+  public Double max;
 
   public Double getSum() {
     return sum;
@@ -37,6 +41,7 @@ public class Statistics {
     this.average = average;
   }
 
+
   @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public Double getMin() {
     return min;
@@ -47,11 +52,12 @@ public class Statistics {
     this.min = min;
   }
 
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+ /* @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
   public Double getMax() {
     return max;
-  }
-
+  }*/
+ // mapper.setVisibility(JsonMethod.ALL, Visibility.NONE);
+  //mapper.setVisibility(JsonMethod.FIELD, Visibility.ANY);
   public void setMax(Double max) {
     this.max = max;
   }

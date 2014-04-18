@@ -1,0 +1,1024 @@
+INFO  [2014-04-18 01:35:16,269] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:35:16,355] org.eclipse.jetty.setuid.SetUIDListener: Opened application@3d2328bf{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:35:16,356] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@4f4832f4{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:35:16,359] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:35:17,267] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:35:17,387] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:35:17,824] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@3aa99dd2{/,null,AVAILABLE}
+INFO  [2014-04-18 01:35:17,829] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:35:17,834] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@5451ef54{/,null,AVAILABLE}
+INFO  [2014-04-18 01:35:17,838] org.eclipse.jetty.server.ServerConnector: Started application@3d2328bf{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:35:17,839] org.eclipse.jetty.server.ServerConnector: Started admin@4f4832f4{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:36:18,594] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:36:18,656] org.eclipse.jetty.setuid.SetUIDListener: Opened application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:36:18,656] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:36:18,658] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:36:19,450] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:36:19,551] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:36:19,938] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@23ca4f4f{/,null,AVAILABLE}
+INFO  [2014-04-18 01:36:19,944] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:36:19,950] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@4967d80b{/,null,AVAILABLE}
+INFO  [2014-04-18 01:36:19,954] org.eclipse.jetty.server.ServerConnector: Started application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:36:19,955] org.eclipse.jetty.server.ServerConnector: Started admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:37:15,608] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:37:15,669] org.eclipse.jetty.setuid.SetUIDListener: Opened application@21082033{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:37:15,669] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@1c7a0536{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:37:15,672] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:37:16,538] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:37:16,639] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:37:17,027] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@642e0260{/,null,AVAILABLE}
+INFO  [2014-04-18 01:37:17,028] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:37:17,035] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@4098dfd3{/,null,AVAILABLE}
+INFO  [2014-04-18 01:37:17,039] org.eclipse.jetty.server.ServerConnector: Started application@21082033{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:37:17,040] org.eclipse.jetty.server.ServerConnector: Started admin@1c7a0536{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:38:31,682] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:38:31,742] org.eclipse.jetty.setuid.SetUIDListener: Opened application@1c7a0536{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:38:31,742] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@eec2ad5{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:38:31,744] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:38:32,516] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:38:32,612] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:38:32,974] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@304a6504{/,null,AVAILABLE}
+INFO  [2014-04-18 01:38:32,975] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:38:32,980] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@4967d80b{/,null,AVAILABLE}
+INFO  [2014-04-18 01:38:32,984] org.eclipse.jetty.server.ServerConnector: Started application@1c7a0536{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:38:32,985] org.eclipse.jetty.server.ServerConnector: Started admin@eec2ad5{HTTP/1.1}{0.0.0.0:8081}
+WARN  [2014-04-18 01:38:37,498] org.eclipse.jetty.servlet.ServletHandler: /v2.0/metrics/statistics
+! java.lang.IllegalArgumentException: Problem with definition of [AnnotedClass com.hpcloud.mon.domain.model.statistic.Statistics]: Multiple value properties defined ([method com.hpcloud.mon.domain.model.statistic.Statistics#getTimestamp(0 params)] vs [method com.hpcloud.mon.domain.model.statistic.Statistics#getMin(0 params)])
+! at com.fasterxml.jackson.databind.introspect.POJOPropertiesCollector.reportProblem(POJOPropertiesCollector.java:815) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.introspect.POJOPropertiesCollector.getJsonValueMethod(POJOPropertiesCollector.java:152) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.introspect.BasicBeanDescription.forSerialization(BasicBeanDescription.java:125) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.introspect.BasicClassIntrospector.forSerialization(BasicClassIntrospector.java:68) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.introspect.BasicClassIntrospector.forSerialization(BasicClassIntrospector.java:11) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.SerializationConfig.introspect(SerializationConfig.java:530) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.BeanSerializerFactory.createSerializer(BeanSerializerFactory.java:133) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.SerializerProvider._createUntypedSerializer(SerializerProvider.java:1077) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.SerializerProvider._createAndCacheUntypedSerializer(SerializerProvider.java:1037) ~[jackson-databind-2.3.0.jar:2.3.0]
+! ... 53 common frames omitted
+! Causing: com.fasterxml.jackson.databind.JsonMappingException: Problem with definition of [AnnotedClass com.hpcloud.mon.domain.model.statistic.Statistics]: Multiple value properties defined ([method com.hpcloud.mon.domain.model.statistic.Statistics#getTimestamp(0 params)] vs [method com.hpcloud.mon.domain.model.statistic.Statistics#getMin(0 params)]) (through reference chain: java.util.ArrayList[0]->com.hpcloud.mon.domain.model.statistic.Statistic["values"]->java.util.ArrayList[0])
+! at com.fasterxml.jackson.databind.SerializerProvider._createAndCacheUntypedSerializer(SerializerProvider.java:1042) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.SerializerProvider.findValueSerializer(SerializerProvider.java:445) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.impl.PropertySerializerMap.findAndAddSecondarySerializer(PropertySerializerMap.java:95) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.AsArraySerializerBase._findAndAddDynamic(AsArraySerializerBase.java:268) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.impl.IndexedListSerializer.serializeContents(IndexedListSerializer.java:96) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.impl.IndexedListSerializer.serializeContents(IndexedListSerializer.java:21) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.AsArraySerializerBase.serialize(AsArraySerializerBase.java:183) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.module.afterburner.ser.ObjectMethodPropertyWriter.unsafeSerializeAsField(ObjectMethodPropertyWriter.java:76) ~[jackson-module-afterburner-2.3.2.jar:2.3.2]
+! at com.fasterxml.jackson.module.afterburner.ser.OptimizedBeanPropertyWriter.serializeAsField(OptimizedBeanPropertyWriter.java:57) ~[jackson-module-afterburner-2.3.2.jar:2.3.2]
+! at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:632) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:152) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContentsUsing(CollectionSerializer.java:145) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:87) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:23) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.std.AsArraySerializerBase.serialize(AsArraySerializerBase.java:183) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:235) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:612) ~[jackson-databind-2.3.0.jar:2.3.0]
+! at com.fasterxml.jackson.jaxrs.base.ProviderBase.writeTo(ProviderBase.java:635) ~[jackson-jaxrs-base-2.3.2.jar:2.3.2]
+! at com.sun.jersey.spi.container.ContainerResponse.write(ContainerResponse.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1510) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) ~[jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) ~[jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) ~[jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) ~[javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) ~[dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) ~[jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) ~[jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) ~[jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) ~[dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) ~[jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) ~[dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) ~[jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+INFO  [2014-04-18 01:40:00,742] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:40:00,803] org.eclipse.jetty.setuid.SetUIDListener: Opened application@5ec30b53{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:40:00,803] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@571ca6bf{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:40:00,805] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:40:01,644] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:40:01,751] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:40:02,115] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@6cf662b4{/,null,AVAILABLE}
+INFO  [2014-04-18 01:40:02,116] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:40:02,121] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@7bca8054{/,null,AVAILABLE}
+INFO  [2014-04-18 01:40:02,125] org.eclipse.jetty.server.ServerConnector: Started application@5ec30b53{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:40:02,126] org.eclipse.jetty.server.ServerConnector: Started admin@571ca6bf{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:40:42,560] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:40:42,617] org.eclipse.jetty.setuid.SetUIDListener: Opened application@5c80f478{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:40:42,617] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@163221ba{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:40:42,622] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:40:43,403] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:40:43,498] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:40:43,886] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@6ccf2f3f{/,null,AVAILABLE}
+INFO  [2014-04-18 01:40:43,890] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:40:43,896] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@3d25cb47{/,null,AVAILABLE}
+INFO  [2014-04-18 01:40:43,899] org.eclipse.jetty.server.ServerConnector: Started application@5c80f478{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:40:43,900] org.eclipse.jetty.server.ServerConnector: Started admin@163221ba{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:58:29,272] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:58:29,334] org.eclipse.jetty.setuid.SetUIDListener: Opened application@3d2328bf{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:58:29,334] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@4f4832f4{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:58:29,336] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:58:30,135] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:58:30,239] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:58:30,676] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@6cf662b4{/,null,AVAILABLE}
+INFO  [2014-04-18 01:58:30,677] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:58:30,683] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@7bca8054{/,null,AVAILABLE}
+INFO  [2014-04-18 01:58:30,687] org.eclipse.jetty.server.ServerConnector: Started application@3d2328bf{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:58:30,687] org.eclipse.jetty.server.ServerConnector: Started admin@4f4832f4{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:59:20,766] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 01:59:20,829] org.eclipse.jetty.setuid.SetUIDListener: Opened application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:59:20,830] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 01:59:20,832] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 01:59:21,614] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 01:59:21,711] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 01:59:22,077] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@23ca4f4f{/,null,AVAILABLE}
+INFO  [2014-04-18 01:59:22,078] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 01:59:22,084] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@2baf4a4a{/,null,AVAILABLE}
+INFO  [2014-04-18 01:59:22,087] org.eclipse.jetty.server.ServerConnector: Started application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 01:59:22,088] org.eclipse.jetty.server.ServerConnector: Started admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:18:14,893] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+WARN  [2014-04-18 02:18:14,956] org.eclipse.jetty.util.component.AbstractLifeCycle: FAILED org.eclipse.jetty.server.Server@3202d58a: java.lang.RuntimeException: java.net.BindException: Address already in use
+! java.net.BindException: Address already in use
+! at sun.nio.ch.Net.bind0(Native Method) ~[na:1.7.0_13]
+! at sun.nio.ch.Net.bind(Net.java:344) ~[na:1.7.0_13]
+! at sun.nio.ch.Net.bind(Net.java:336) ~[na:1.7.0_13]
+! at sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:199) ~[na:1.7.0_13]
+! at sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:74) ~[na:1.7.0_13]
+! at org.eclipse.jetty.server.ServerConnector.open(ServerConnector.java:264) ~[jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.setuid.SetUIDListener.lifeCycleStarting(SetUIDListener.java:200) ~[jetty-setuid-java-1.0.2.jar:na]
+! ... 14 common frames omitted
+! Causing: java.lang.RuntimeException: java.net.BindException: Address already in use
+! at org.eclipse.jetty.setuid.SetUIDListener.lifeCycleStarting(SetUIDListener.java:213) ~[jetty-setuid-java-1.0.2.jar:na]
+! at org.eclipse.jetty.util.component.AbstractLifeCycle.setStarting(AbstractLifeCycle.java:187) ~[jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68) ~[jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.cli.ServerCommand.run(ServerCommand.java:43) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.EnvironmentCommand.run(EnvironmentCommand.java:43) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.ConfiguredCommand.run(ConfiguredCommand.java:76) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.Cli.run(Cli.java:70) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.Application.run(Application.java:72) [dropwizard-core-0.7.0.jar:0.7.0]
+! at com.hpcloud.mon.MonApiApplication.main(MonApiApplication.java:40) [classes/:na]
+! at com.hpcloud.mon.MonApiApplicationRunner.main(MonApiApplicationRunner.java:5) [test-classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.intellij.rt.execution.application.AppMain.main(AppMain.java:120) [idea_rt.jar:na]
+ERROR [2014-04-18 02:18:14,957] io.dropwizard.cli.ServerCommand: Unable to start server, shutting down
+! java.net.BindException: Address already in use
+! at sun.nio.ch.Net.bind0(Native Method) ~[na:1.7.0_13]
+! at sun.nio.ch.Net.bind(Net.java:344) ~[na:1.7.0_13]
+! at sun.nio.ch.Net.bind(Net.java:336) ~[na:1.7.0_13]
+! at sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:199) ~[na:1.7.0_13]
+! at sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:74) ~[na:1.7.0_13]
+! at org.eclipse.jetty.server.ServerConnector.open(ServerConnector.java:264) ~[jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.setuid.SetUIDListener.lifeCycleStarting(SetUIDListener.java:200) ~[jetty-setuid-java-1.0.2.jar:na]
+! ... 14 common frames omitted
+! Causing: java.lang.RuntimeException: java.net.BindException: Address already in use
+! at org.eclipse.jetty.setuid.SetUIDListener.lifeCycleStarting(SetUIDListener.java:213) ~[jetty-setuid-java-1.0.2.jar:na]
+! at org.eclipse.jetty.util.component.AbstractLifeCycle.setStarting(AbstractLifeCycle.java:187) ~[jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68) ~[jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.cli.ServerCommand.run(ServerCommand.java:43) ~[dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.EnvironmentCommand.run(EnvironmentCommand.java:43) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.ConfiguredCommand.run(ConfiguredCommand.java:76) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.cli.Cli.run(Cli.java:70) [dropwizard-core-0.7.0.jar:0.7.0]
+! at io.dropwizard.Application.run(Application.java:72) [dropwizard-core-0.7.0.jar:0.7.0]
+! at com.hpcloud.mon.MonApiApplication.main(MonApiApplication.java:40) [classes/:na]
+! at com.hpcloud.mon.MonApiApplicationRunner.main(MonApiApplicationRunner.java:5) [test-classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.intellij.rt.execution.application.AppMain.main(AppMain.java:120) [idea_rt.jar:na]
+INFO  [2014-04-18 02:18:48,539] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:18:48,598] org.eclipse.jetty.setuid.SetUIDListener: Opened application@6506fe2b{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:18:48,599] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@2e18ecde{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:18:48,601] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:18:49,359] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:18:49,464] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:18:49,819] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@500c43fe{/,null,AVAILABLE}
+INFO  [2014-04-18 02:18:49,820] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:18:49,825] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@1e497345{/,null,AVAILABLE}
+INFO  [2014-04-18 02:18:49,829] org.eclipse.jetty.server.ServerConnector: Started application@6506fe2b{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:18:49,830] org.eclipse.jetty.server.ServerConnector: Started admin@2e18ecde{HTTP/1.1}{0.0.0.0:8081}
+ERROR [2014-04-18 02:22:25,693] com.hpcloud.mon.resource.exception.Exceptions: SERVER_ERROR f6e9669fa3fd540c - An internal server error occurred
+! com.vertica.util.ServerException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! ... 73 common frames omitted
+! Causing: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! at com.vertica.util.ServerErrorData.buildException(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.io.ProtocolStream.readExpectedMessage(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepareImpl(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SPreparedStatement.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VerticaPreparedStatementImpl.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VJDBCObjectFactory.createPreparedStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SConnection.prepareStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at org.apache.tomcat.jdbc.pool.ProxyConnection.invoke(ProxyConnection.java:126) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.JdbcInterceptor.invoke(JdbcInterceptor.java:109) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.DisposableConnectionFacade.invoke(DisposableConnectionFacade.java:80) ~[tomcat-jdbc-7.0.50.jar:na]
+! at sun.proxy.$Proxy67.prepareStatement(Unknown Source) ~[na:na]
+! at org.skife.jdbi.v2.DefaultStatementBuilder.create(DefaultStatementBuilder.java:48) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1292) ~[jdbi-2.48.2.jar:na]
+! ... 54 common frames omitted
+! Causing: org.skife.jdbi.v2.exceptions.UnableToCreateStatementException: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value" [statement:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", located:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", rewritten:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? ) as TimeSlices group by time_slice order by time_slice", arguments:{ positional:{}, named:{definition_id:[100, 6, -118, 6, 60, 3, -25, 66, 100, -55, 97, 68, 105, -96, 127, 32, 60, -42, 104, -80],end_time:null,start_time:io.dropwizard.jdbi.args.JodaDateTimeArgument@76329266}, finder:[]}]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1296) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.fold(Query.java:171) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:84) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:78) ~[jdbi-2.48.2.jar:na]
+! at com.hpcloud.mon.infrastructure.persistence.StatisticRepositoryImpl.find(StatisticRepositoryImpl.java:60) ~[classes/:na]
+! at com.hpcloud.mon.resource.StatisticResource.get(StatisticResource.java:59) ~[classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$TypeOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:185) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.codahale.metrics.jersey.InstrumentedResourceMethodDispatchProvider$TimedRequestDispatcher.dispatch(InstrumentedResourceMethodDispatchProvider.java:30) ~[metrics-jersey-3.0.1.jar:3.0.1]
+! at io.dropwizard.jersey.guava.OptionalResourceMethodDispatchAdapter$OptionalRequestDispatcher.dispatch(OptionalResourceMethodDispatchAdapter.java:37) ~[dropwizard-jersey-0.7.0.jar:0.7.0]
+! at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.ResourceObjectRule.accept(ResourceObjectRule.java:100) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) [jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) [javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) [dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+INFO  [2014-04-18 02:23:33,394] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:23:33,454] org.eclipse.jetty.setuid.SetUIDListener: Opened application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:23:33,454] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:23:33,456] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:23:34,221] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:23:34,318] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:23:34,690] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@23ca4f4f{/,null,AVAILABLE}
+INFO  [2014-04-18 02:23:34,691] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:23:34,698] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@2baf4a4a{/,null,AVAILABLE}
+INFO  [2014-04-18 02:23:34,702] org.eclipse.jetty.server.ServerConnector: Started application@7ccc7b7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:23:34,703] org.eclipse.jetty.server.ServerConnector: Started admin@154bc361{HTTP/1.1}{0.0.0.0:8081}
+ERROR [2014-04-18 02:23:37,903] com.hpcloud.mon.resource.exception.Exceptions: SERVER_ERROR 7a710ac98e03de81 - An internal server error occurred
+! com.vertica.util.ServerException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! ... 73 common frames omitted
+! Causing: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! at com.vertica.util.ServerErrorData.buildException(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.io.ProtocolStream.readExpectedMessage(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepareImpl(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SPreparedStatement.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VerticaPreparedStatementImpl.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VJDBCObjectFactory.createPreparedStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SConnection.prepareStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at org.apache.tomcat.jdbc.pool.ProxyConnection.invoke(ProxyConnection.java:126) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.JdbcInterceptor.invoke(JdbcInterceptor.java:109) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.DisposableConnectionFacade.invoke(DisposableConnectionFacade.java:80) ~[tomcat-jdbc-7.0.50.jar:na]
+! at sun.proxy.$Proxy67.prepareStatement(Unknown Source) ~[na:na]
+! at org.skife.jdbi.v2.DefaultStatementBuilder.create(DefaultStatementBuilder.java:48) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1292) ~[jdbi-2.48.2.jar:na]
+! ... 54 common frames omitted
+! Causing: org.skife.jdbi.v2.exceptions.UnableToCreateStatementException: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value" [statement:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", located:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", rewritten:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? ) as TimeSlices group by time_slice order by time_slice", arguments:{ positional:{}, named:{definition_id:[100, 6, -118, 6, 60, 3, -25, 66, 100, -55, 97, 68, 105, -96, 127, 32, 60, -42, 104, -80],end_time:null,start_time:io.dropwizard.jdbi.args.JodaDateTimeArgument@38440e16}, finder:[]}]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1296) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.fold(Query.java:171) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:84) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:78) ~[jdbi-2.48.2.jar:na]
+! at com.hpcloud.mon.infrastructure.persistence.StatisticRepositoryImpl.find(StatisticRepositoryImpl.java:60) ~[classes/:na]
+! at com.hpcloud.mon.resource.StatisticResource.get(StatisticResource.java:59) ~[classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$TypeOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:185) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.codahale.metrics.jersey.InstrumentedResourceMethodDispatchProvider$TimedRequestDispatcher.dispatch(InstrumentedResourceMethodDispatchProvider.java:30) ~[metrics-jersey-3.0.1.jar:3.0.1]
+! at io.dropwizard.jersey.guava.OptionalResourceMethodDispatchAdapter$OptionalRequestDispatcher.dispatch(OptionalResourceMethodDispatchAdapter.java:37) ~[dropwizard-jersey-0.7.0.jar:0.7.0]
+! at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.ResourceObjectRule.accept(ResourceObjectRule.java:100) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) [jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) [javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) [dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+ERROR [2014-04-18 02:23:47,031] com.hpcloud.mon.resource.exception.Exceptions: SERVER_ERROR 397c186fb62df7d3 - An internal server error occurred
+! com.vertica.util.ServerException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! ... 73 common frames omitted
+! Causing: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! at com.vertica.util.ServerErrorData.buildException(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.io.ProtocolStream.readExpectedMessage(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepareImpl(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SPreparedStatement.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VerticaPreparedStatementImpl.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VJDBCObjectFactory.createPreparedStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SConnection.prepareStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at org.apache.tomcat.jdbc.pool.ProxyConnection.invoke(ProxyConnection.java:126) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.JdbcInterceptor.invoke(JdbcInterceptor.java:109) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.DisposableConnectionFacade.invoke(DisposableConnectionFacade.java:80) ~[tomcat-jdbc-7.0.50.jar:na]
+! at sun.proxy.$Proxy67.prepareStatement(Unknown Source) ~[na:na]
+! at org.skife.jdbi.v2.DefaultStatementBuilder.create(DefaultStatementBuilder.java:48) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1292) ~[jdbi-2.48.2.jar:na]
+! ... 54 common frames omitted
+! Causing: org.skife.jdbi.v2.exceptions.UnableToCreateStatementException: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value" [statement:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", located:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", rewritten:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? ) as TimeSlices group by time_slice order by time_slice", arguments:{ positional:{}, named:{definition_id:[75, -15, 121, 8, 32, 37, -110, -39, 73, 48, -69, -4, 55, -51, -53, 110, 111, -14, -85, -81],end_time:null,start_time:io.dropwizard.jdbi.args.JodaDateTimeArgument@6c448b39}, finder:[]}]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1296) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.fold(Query.java:171) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:84) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:78) ~[jdbi-2.48.2.jar:na]
+! at com.hpcloud.mon.infrastructure.persistence.StatisticRepositoryImpl.find(StatisticRepositoryImpl.java:60) ~[classes/:na]
+! at com.hpcloud.mon.resource.StatisticResource.get(StatisticResource.java:59) ~[classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$TypeOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:185) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.codahale.metrics.jersey.InstrumentedResourceMethodDispatchProvider$TimedRequestDispatcher.dispatch(InstrumentedResourceMethodDispatchProvider.java:30) ~[metrics-jersey-3.0.1.jar:3.0.1]
+! at io.dropwizard.jersey.guava.OptionalResourceMethodDispatchAdapter$OptionalRequestDispatcher.dispatch(OptionalResourceMethodDispatchAdapter.java:37) ~[dropwizard-jersey-0.7.0.jar:0.7.0]
+! at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.ResourceObjectRule.accept(ResourceObjectRule.java:100) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) [jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) [javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) [dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+INFO  [2014-04-18 02:27:34,283] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:27:34,418] org.eclipse.jetty.setuid.SetUIDListener: Opened application@2e7170a7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:27:34,418] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@199afbc3{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:27:34,421] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:27:35,180] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:27:35,290] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:27:35,687] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@7d72c934{/,null,AVAILABLE}
+INFO  [2014-04-18 02:27:35,688] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:27:35,694] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@5bc4ba4c{/,null,AVAILABLE}
+INFO  [2014-04-18 02:27:35,706] org.eclipse.jetty.server.ServerConnector: Started application@2e7170a7{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:27:35,707] org.eclipse.jetty.server.ServerConnector: Started admin@199afbc3{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:27:51,813] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:27:51,950] org.eclipse.jetty.setuid.SetUIDListener: Opened application@26b02ff8{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:27:51,951] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@791d569f{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:27:51,954] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:27:53,256] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:27:53,374] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:27:53,809] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@29e919d4{/,null,AVAILABLE}
+INFO  [2014-04-18 02:27:53,811] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:27:53,817] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@44edbc6d{/,null,AVAILABLE}
+INFO  [2014-04-18 02:27:53,836] org.eclipse.jetty.server.ServerConnector: Started application@26b02ff8{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:27:53,837] org.eclipse.jetty.server.ServerConnector: Started admin@791d569f{HTTP/1.1}{0.0.0.0:8081}
+ERROR [2014-04-18 02:35:57,992] com.hpcloud.mon.resource.exception.Exceptions: SERVER_ERROR ae1b13f4efdfdfbf - An internal server error occurred
+! com.vertica.util.ServerException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! ... 73 common frames omitted
+! Causing: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! at com.vertica.util.ServerErrorData.buildException(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.io.ProtocolStream.readExpectedMessage(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepareImpl(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SPreparedStatement.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VerticaPreparedStatementImpl.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VJDBCObjectFactory.createPreparedStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SConnection.prepareStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at org.apache.tomcat.jdbc.pool.ProxyConnection.invoke(ProxyConnection.java:126) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.JdbcInterceptor.invoke(JdbcInterceptor.java:109) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.DisposableConnectionFacade.invoke(DisposableConnectionFacade.java:80) ~[tomcat-jdbc-7.0.50.jar:na]
+! at sun.proxy.$Proxy67.prepareStatement(Unknown Source) ~[na:na]
+! at org.skife.jdbi.v2.DefaultStatementBuilder.create(DefaultStatementBuilder.java:48) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1292) ~[jdbi-2.48.2.jar:na]
+! ... 54 common frames omitted
+! Causing: org.skife.jdbi.v2.exceptions.UnableToCreateStatementException: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value" [statement:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", located:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", rewritten:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? ) as TimeSlices group by time_slice order by time_slice", arguments:{ positional:{}, named:{definition_id:[75, -15, 121, 8, 32, 37, -110, -39, 73, 48, -69, -4, 55, -51, -53, 110, 111, -14, -85, -81],end_time:null,start_time:io.dropwizard.jdbi.args.JodaDateTimeArgument@7d695ee2}, finder:[]}]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1296) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.fold(Query.java:171) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:84) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:78) ~[jdbi-2.48.2.jar:na]
+! at com.hpcloud.mon.infrastructure.persistence.StatisticRepositoryImpl.find(StatisticRepositoryImpl.java:60) ~[classes/:na]
+! at com.hpcloud.mon.resource.StatisticResource.get(StatisticResource.java:59) ~[classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$TypeOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:185) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.codahale.metrics.jersey.InstrumentedResourceMethodDispatchProvider$TimedRequestDispatcher.dispatch(InstrumentedResourceMethodDispatchProvider.java:30) ~[metrics-jersey-3.0.1.jar:3.0.1]
+! at io.dropwizard.jersey.guava.OptionalResourceMethodDispatchAdapter$OptionalRequestDispatcher.dispatch(OptionalResourceMethodDispatchAdapter.java:37) ~[dropwizard-jersey-0.7.0.jar:0.7.0]
+! at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.ResourceObjectRule.accept(ResourceObjectRule.java:100) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) [jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) [javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) [dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+INFO  [2014-04-18 02:37:41,196] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:37:41,318] org.eclipse.jetty.setuid.SetUIDListener: Opened application@936db0f{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:37:41,319] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@7067ba82{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:37:41,321] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:37:42,082] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:37:42,191] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:37:42,588] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@57e80d16{/,null,AVAILABLE}
+INFO  [2014-04-18 02:37:42,590] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:37:42,596] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@44831670{/,null,AVAILABLE}
+INFO  [2014-04-18 02:37:42,608] org.eclipse.jetty.server.ServerConnector: Started application@936db0f{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:37:42,609] org.eclipse.jetty.server.ServerConnector: Started admin@7067ba82{HTTP/1.1}{0.0.0.0:8081}
+ERROR [2014-04-18 02:38:40,037] com.hpcloud.mon.resource.exception.Exceptions: SERVER_ERROR ab54b136c1c40b7c - An internal server error occurred
+! com.vertica.util.ServerException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! ... 73 common frames omitted
+! Causing: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value"
+! at com.vertica.util.ServerErrorData.buildException(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.io.ProtocolStream.readExpectedMessage(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepareImpl(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.dataengine.VDataEngine.prepare(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SPreparedStatement.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VerticaPreparedStatementImpl.<init>(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.VJDBCObjectFactory.createPreparedStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at com.vertica.jdbc.SConnection.prepareStatement(Unknown Source) ~[vertica-jdbc-6.1.0.jar:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at org.apache.tomcat.jdbc.pool.ProxyConnection.invoke(ProxyConnection.java:126) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.JdbcInterceptor.invoke(JdbcInterceptor.java:109) ~[tomcat-jdbc-7.0.50.jar:na]
+! at org.apache.tomcat.jdbc.pool.DisposableConnectionFacade.invoke(DisposableConnectionFacade.java:80) ~[tomcat-jdbc-7.0.50.jar:na]
+! at sun.proxy.$Proxy67.prepareStatement(Unknown Source) ~[na:na]
+! at org.skife.jdbi.v2.DefaultStatementBuilder.create(DefaultStatementBuilder.java:48) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1292) ~[jdbi-2.48.2.jar:na]
+! ... 54 common frames omitted
+! Causing: org.skife.jdbi.v2.exceptions.UnableToCreateStatementException: java.sql.SQLException: [Vertica][VJDBC](4856) ERROR: Syntax error at or near "value" [statement:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", located:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = :definition_id AND time_stamp >= :start_time ) as TimeSlices group by time_slice order by time_slice", rewritten:"SELECT timestamp(value) as timestamp ,avg(value) as avg ,sum(value) as sum ,min(value) as min ,max(value) as max ,MIN(time_stamp) as time_interval  FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - (select mod((select extract('epoch' from time_stamp)  from MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? order by time_stamp limit 1),900)))/900) AS time_slice, time_stamp, value  FROM MonMetrics.Measurements WHERE definition_dimensions_id = ? AND time_stamp >= ? ) as TimeSlices group by time_slice order by time_slice", arguments:{ positional:{}, named:{definition_id:[12, -107, -57, -77, 93, 15, 27, -15, -64, -115, -25, -57, -17, -120, -96, -96, 92, 16, 24, -107],end_time:null,start_time:io.dropwizard.jdbi.args.JodaDateTimeArgument@68eb63f4}, finder:[]}]
+! at org.skife.jdbi.v2.SQLStatement.internalExecute(SQLStatement.java:1296) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.fold(Query.java:171) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:84) ~[jdbi-2.48.2.jar:na]
+! at org.skife.jdbi.v2.Query.list(Query.java:78) ~[jdbi-2.48.2.jar:na]
+! at com.hpcloud.mon.infrastructure.persistence.StatisticRepositoryImpl.find(StatisticRepositoryImpl.java:60) ~[classes/:na]
+! at com.hpcloud.mon.resource.StatisticResource.get(StatisticResource.java:59) ~[classes/:na]
+! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_13]
+! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_13]
+! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_13]
+! at java.lang.reflect.Method.invoke(Method.java:601) ~[na:1.7.0_13]
+! at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$TypeOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:185) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.codahale.metrics.jersey.InstrumentedResourceMethodDispatchProvider$TimedRequestDispatcher.dispatch(InstrumentedResourceMethodDispatchProvider.java:30) ~[metrics-jersey-3.0.1.jar:3.0.1]
+! at io.dropwizard.jersey.guava.OptionalResourceMethodDispatchAdapter$OptionalRequestDispatcher.dispatch(OptionalResourceMethodDispatchAdapter.java:37) ~[dropwizard-jersey-0.7.0.jar:0.7.0]
+! at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.ResourceObjectRule.accept(ResourceObjectRule.java:100) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84) ~[jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409) [jersey-server-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:540) [jersey-servlet-1.18.1.jar:1.18.1]
+! at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:715) [jersey-servlet-1.18.1.jar:1.18.1]
+! at javax.servlet.http.HttpServlet.service(HttpServlet.java:848) [javax.servlet-3.0.0.v201112011016.jar:na]
+! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1515) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.UserAgentFilter.doFilter(UserAgentFilter.java:83) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlets.GzipFilter.doFilter(GzipFilter.java:348) [jetty-servlets-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.jetty.BiDiGzipFilter.doFilter(BiDiGzipFilter.java:127) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:29) [dropwizard-servlets-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1486) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:519) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1097) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:448) [jetty-servlet-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1031) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:173) [metrics-jetty9-3.0.1.jar:3.0.1]
+! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:51) [dropwizard-jetty-0.7.0.jar:0.7.0]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:92) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:162) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.Server.handle(Server.java:446) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:271) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:246) [jetty-server-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:358) [jetty-io-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:601) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:532) [jetty-util-9.0.7.v20131107.jar:9.0.7.v20131107]
+! at java.lang.Thread.run(Thread.java:722) [na:1.7.0_13]
+INFO  [2014-04-18 02:38:56,610] io.dropwizard.server.ServerFactory: Starting HP Cloud Monitoring
+INFO  [2014-04-18 02:38:56,733] org.eclipse.jetty.setuid.SetUIDListener: Opened application@936db0f{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:38:56,733] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@7067ba82{HTTP/1.1}{0.0.0.0:8081}
+INFO  [2014-04-18 02:38:56,736] org.eclipse.jetty.server.Server: jetty-9.0.7.v20131107
+INFO  [2014-04-18 02:38:57,500] com.sun.jersey.server.impl.application.WebApplicationImpl: Initiating Jersey application, version 'Jersey: 1.18.1 02/19/2014 03:28 AM'
+INFO  [2014-04-18 02:38:57,608] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     / (com.hpcloud.mon.resource.VersionResource)
+    GET     /{version_id} (com.hpcloud.mon.resource.VersionResource)
+    DELETE  /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/alarms/{alarm_id}/history (com.hpcloud.mon.resource.AlarmResource)
+    PATCH   /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    POST    /v2.0/alarms (com.hpcloud.mon.resource.AlarmResource)
+    PUT     /v2.0/alarms/{alarm_id} (com.hpcloud.mon.resource.AlarmResource)
+    GET     /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    POST    /v2.0/metrics (com.hpcloud.mon.resource.MetricResource)
+    GET     /v2.0/metrics/measurements (com.hpcloud.mon.resource.MeasurementResource)
+    GET     /v2.0/metrics/statistics (com.hpcloud.mon.resource.StatisticResource)
+    DELETE  /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    POST    /v2.0/notification-methods (com.hpcloud.mon.resource.NotificationMethodResource)
+    PUT     /v2.0/notification-methods/{notification_method_id} (com.hpcloud.mon.resource.NotificationMethodResource)
+    GET     /api-docs (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+    GET     /api-docs/{route: .+} (com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON)
+
+INFO  [2014-04-18 02:38:57,995] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@305f6fc9{/,null,AVAILABLE}
+INFO  [2014-04-18 02:38:57,996] io.dropwizard.setup.AdminEnvironment: tasks = 
+
+    POST    /tasks/gc (io.dropwizard.servlets.tasks.GarbageCollectionTask)
+
+INFO  [2014-04-18 02:38:58,010] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@6dfd4209{/,null,AVAILABLE}
+INFO  [2014-04-18 02:38:58,014] org.eclipse.jetty.server.ServerConnector: Started application@936db0f{HTTP/1.1}{0.0.0.0:8080}
+INFO  [2014-04-18 02:38:58,015] org.eclipse.jetty.server.ServerConnector: Started admin@7067ba82{HTTP/1.1}{0.0.0.0:8081}
