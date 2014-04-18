@@ -4,6 +4,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -116,7 +117,7 @@ public class AlarmServiceTest {
     Alarm expected = new Alarm(alarm.getId(), "foo bar baz", "foo bar baz", newExprStr,
         AlarmState.ALARM, false, newAlarmActions, newOkActions, newUndeterminedActions);
     assertEquals(expected, alarm);
-    verify(producer).send(any(KeyedMessage.class));
+    verify(producer, times(2)).send(any(KeyedMessage.class));
   }
 
   public void testOldAndNewSubExpressionsFor() {

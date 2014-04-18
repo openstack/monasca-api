@@ -24,6 +24,7 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
 import com.hpcloud.mon.common.event.AlarmCreatedEvent;
 import com.hpcloud.mon.common.event.AlarmDeletedEvent;
+import com.hpcloud.mon.common.event.AlarmStateTransitionedEvent;
 import com.hpcloud.mon.common.event.AlarmUpdatedEvent;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
@@ -139,11 +140,11 @@ public class AlarmService {
    */
   public Alarm update(String tenantId, String alarmId, AlarmExpression alarmExpression,
       UpdateAlarmCommand command) {
-    assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
+    Alarm alarm = assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
         command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
-        alarmExpression, command.state, command.actionsEnabled, command.alarmActions,
-        command.okActions, command.undeterminedActions);
+        alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
+        command.alarmActions, command.okActions, command.undeterminedActions);
     return new Alarm(alarmId, command.name, command.description, command.expression, command.state,
         command.actionsEnabled, command.alarmActions, command.okActions,
         command.undeterminedActions);
@@ -167,8 +168,8 @@ public class AlarmService {
     state = state == null ? alarm.getState() : state;
     enabled = enabled == null ? alarm.isActionsEnabled() : enabled;
 
-    updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression, state,
-        enabled, alarmActions, okActions, undeterminedActions);
+    updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression,
+        alarm.getState(), state, enabled, alarmActions, okActions, undeterminedActions);
 
     return new Alarm(alarmId, name, description, expression, state, enabled,
         alarmActions == null ? alarm.getAlarmActions() : alarmActions,
@@ -177,22 +178,30 @@ public class AlarmService {
   }
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
-      String description, String expression, AlarmExpression alarmExpression, AlarmState state,
-      Boolean enabled, List<String> alarmActions, List<String> okActions,
+      String description, String expression, AlarmExpression alarmExpression, AlarmState oldState,
+      AlarmState newState, Boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     SubExpressions subExpressions = subExpressionsFor(alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, state, enabled,
+      repo.update(tenantId, alarmId, patch, name, description, expression, newState, enabled,
           subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
           subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of updated alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          description, expression, state, enabled, subExpressions.oldAlarmSubExpressions,
+          description, expression, newState, enabled, subExpressions.oldAlarmSubExpressions,
           subExpressions.changedSubExpressions, subExpressions.newAlarmSubExpressions));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+
+      // Notify interested parties of transitioned alarm state
+      if (!oldState.equals(newState)) {
+        event = Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
+            description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
+            System.currentTimeMillis()));
+        producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+      }
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
     }
@@ -240,6 +249,10 @@ public class AlarmService {
     subExpressions.changedSubExpressions = changedExpressions;
     subExpressions.newAlarmSubExpressions = newExpressions;
     return subExpressions;
+  }
+
+  private String stateChangeReasonFor(AlarmState oldState, AlarmState newState) {
+    return "State changed via API";
   }
 
   /**
