@@ -18,6 +18,7 @@ public class MonApiConfiguration extends Configuration {
   @NotNull public Boolean accessedViaHttps;
   @NotEmpty public String metricsTopic = "metrics";
   @NotEmpty public String eventsTopic = "events";
+  @NotEmpty public String alarmStateTransitionsTopic = "alarm-state-transitions";
 
   @Valid @NotNull public DataSourceFactory mysql;
   @Valid @NotNull public DataSourceFactory vertica;
