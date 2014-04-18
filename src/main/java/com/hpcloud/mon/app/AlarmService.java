@@ -200,7 +200,7 @@ public class AlarmService {
         event = Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
             description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
             System.currentTimeMillis()));
-        producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+        producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
