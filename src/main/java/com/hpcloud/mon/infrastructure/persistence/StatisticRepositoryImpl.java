@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
+
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
@@ -34,13 +35,11 @@ public class StatisticRepositoryImpl implements StatisticRepository {
   @Override
   public List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, DateTime endTime, List<String> statistics, int period) {
-
     Handle h = db.open();
     List<Statistic> listStats = new ArrayList<>();
     List<String> copyStatistics = createColumns(statistics);
 
     try {
-
       Map<byte[], Statistic> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
 
       for (byte[] bufferId : byteMap.keySet()) {
@@ -98,11 +97,9 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
   private Map<byte[], Statistic> findDefIds(Handle h, String tenantId, String name,
       Map<String, String> dimensions, DateTime startTime, DateTime endTime) {
-
     List<byte[]> bytes = new ArrayList<>();
 
     // Build query
-
     StringBuilder sbWhere = new StringBuilder();
 
     if (name != null)
@@ -127,32 +124,23 @@ public class StatisticRepositoryImpl implements StatisticRepository {
       query.bind("endTime", new Timestamp(endTime.getMillis()));
     }
 
-    if (dimensions != null) {
-      int i = 0;
-      for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
-        Map.Entry<String, String> entry = it.next();
-        query.bind("dname" + i, entry.getKey());
-        query.bind("dvalue" + i, entry.getValue());
-      }
-    }
+    MetricQueries.bindDimensionsToQuery(query, dimensions);
 
     // Execute
     List<Map<String, Object>> rows = query.list();
 
     Map<byte[], Statistic> byteIdMap = new HashMap<>();
-    // Build results
 
+    // Build results
     byte[] currentId = null;
     Map<String, String> dims = null;
     for (Map<String, Object> row : rows) {
       byte[] defId = (byte[]) row.get("id");
-
       String defName = (String) row.get("name");
       String demName = (String) row.get("dname");
       String demValue = (String) row.get("dvalue");
 
       if (defId == null || !Arrays.equals(currentId, defId)) {
-
         currentId = defId;
         dims = new HashMap<>();
         dims.put(demName, demValue);
