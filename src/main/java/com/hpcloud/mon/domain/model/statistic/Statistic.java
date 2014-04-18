@@ -1,7 +1,5 @@
 package com.hpcloud.mon.domain.model.statistic;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +19,10 @@ public class Statistic {
     values = new ArrayList<>();
   }
 
+  public void addValues(List<Object> value) {
+    values.add(value);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -35,15 +37,15 @@ public class Statistic {
         return false;
     } else if (!dimensions.equals(other.dimensions))
       return false;
-    if(columns==null) {
-      if(other.columns!=null)
+    if (columns == null) {
+      if (other.columns != null)
         return false;
-    } else if(!columns.equals(other.columns))
+    } else if (!columns.equals(other.columns))
       return false;
-    if(values==null) {
-      if(other.values!=null)
+    if (values == null) {
+      if (other.values != null)
         return false;
-    } else if(!values.equals(other.values))
+    } else if (!values.equals(other.values))
       return false;
     if (name == null) {
       if (other.name != null)
@@ -54,6 +56,10 @@ public class Statistic {
     return true;
   }
 
+  public List<String> getColumns() {
+    return columns;
+  }
+
   public Map<String, String> getDimensions() {
     return dimensions;
   }
@@ -62,9 +68,9 @@ public class Statistic {
     return name;
   }
 
-  public List<String> getColumns() { return columns;}
-  public List<List<Object>> getValues() { return values;}
-
+  public List<List<Object>> getValues() {
+    return values;
+  }
 
   @Override
   public int hashCode() {
@@ -72,9 +78,13 @@ public class Statistic {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((values == null) ?  0 : values.hashCode());
+    result = prime * result + ((values == null) ? 0 : values.hashCode());
     result = prime * result + ((columns == null) ? 0 : columns.hashCode());
     return result;
+  }
+
+  public void setColumns(List<String> columns) {
+    this.columns = columns;
   }
 
   public void setDimensions(Map<String, String> dimensions) {
@@ -85,12 +95,8 @@ public class Statistic {
     this.name = name;
   }
 
-  public void setColumns(List<String> columns) { this.columns =columns;}
-
-  public void setValues(List<List<Object>> values) { this.values = values;}
-
-  public void addValues(List<Object> value) {
-    values.add(value);
+  public void setValues(List<List<Object>> values) {
+    this.values = values;
   }
 
   @Override

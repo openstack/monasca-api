@@ -3,10 +3,8 @@ package com.hpcloud.mon.infrastructure.persistence;
 import java.sql.Timestamp;
 import java.util.*;
 
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
 
 import com.hpcloud.mon.domain.model.statistic.Statistic;
 
@@ -24,19 +22,18 @@ public class StatisticRepositoryImpl implements StatisticRepository {
   private final DBI db;
 
   private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
-    + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
-    + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
-    + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
+      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
+      + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
+      + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
 
   @Inject
   public StatisticRepositoryImpl(@Named("vertica") DBI db) {
     this.db = db;
-
   }
 
   @Override
   public List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
-                              DateTime startTime, DateTime endTime, List<String> statistics, int period) {
+      DateTime startTime, DateTime endTime, List<String> statistics, int period) {
 
     Handle h = db.open();
     List<Statistic> listStats = new ArrayList<>();
@@ -46,42 +43,43 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
       Map<byte[], Statistic> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
 
-      for(byte[] bufferId:byteMap.keySet()) {
+      for (byte[] bufferId : byteMap.keySet()) {
 
-        Query<Map<String, Object>> query =  h.createQuery(createQuery(period,startTime,endTime,statistics))
-          .bind("definition_id", bufferId)
-          .bind("start_time", startTime)
-          .bind("end_time", endTime);
+        Query<Map<String, Object>> query = h.createQuery(
+            createQuery(period, startTime, endTime, statistics))
+            .bind("definition_id", bufferId)
+            .bind("start_time", startTime)
+            .bind("end_time", endTime);
 
         // Execute
         List<Map<String, Object>> rows = query.list();
         List<Object> statisticsRow = new ArrayList<Object>();
 
         for (Map<String, Object> row : rows) {
-          Double sum = (Double)row.get("sum");
+          Double sum = (Double) row.get("sum");
           Double average = (Double) row.get("avg");
           Double min = (Double) row.get("min");
           Double max = (Double) row.get("max");
           Long count = (Long) row.get("count");
-          Timestamp time_stamp = (Timestamp)row.get("time_interval");
+          Timestamp time_stamp = (Timestamp) row.get("time_interval");
 
-          if(time_stamp != null) {
+          if (time_stamp != null) {
             statisticsRow.add(time_stamp.getTime());
           }
 
-          if(average != null) {
+          if (average != null) {
             statisticsRow.add(average);
           }
-          if(count != null) {
+          if (count != null) {
             statisticsRow.add(count);
           }
-          if(max != null) {
+          if (max != null) {
             statisticsRow.add(max);
           }
-          if(min != null) {
+          if (min != null) {
             statisticsRow.add(min);
           }
-          if(sum != null) {
+          if (sum != null) {
             statisticsRow.add(sum);
           }
           byteMap.get(bufferId).addValues(statisticsRow);
@@ -98,9 +96,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     return listStats;
   }
 
-
   private Map<byte[], Statistic> findDefIds(Handle h, String tenantId, String name,
-                                            Map<String, String> dimensions, DateTime startTime, DateTime endTime) {
+      Map<String, String> dimensions, DateTime startTime, DateTime endTime) {
 
     List<byte[]> bytes = new ArrayList<>();
 
@@ -115,16 +112,18 @@ public class StatisticRepositoryImpl implements StatisticRepository {
       sbWhere.append(" and m.time_stamp <= :endTime");
     }
 
-    String sql =  String.format(FIND_BY_METRIC_DEF_SQL,
-      MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+    String sql = String.format(FIND_BY_METRIC_DEF_SQL,
+        MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
-    Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId).bind("startTime", startTime);
+    Query<Map<String, Object>> query = h.createQuery(sql)
+        .bind("tenantId", tenantId)
+        .bind("startTime", startTime);
 
     if (name != null) {
       query.bind("name", name);
     }
 
-    if(endTime != null) {
+    if (endTime != null) {
       query.bind("endTime", new Timestamp(endTime.getMillis()));
     }
 
@@ -140,8 +139,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     // Execute
     List<Map<String, Object>> rows = query.list();
 
-
-    Map<byte[], Statistic> byteIdMap = new HashMap();
+    Map<byte[], Statistic> byteIdMap = new HashMap<>();
     // Build results
 
     byte[] currentId = null;
@@ -150,7 +148,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
       byte[] defId = (byte[]) row.get("id");
 
       String defName = (String) row.get("name");
-      String demName  = (String) row.get("dname");
+      String demName = (String) row.get("dname");
       String demValue = (String) row.get("dvalue");
 
       if (defId == null || !Arrays.equals(currentId, defId)) {
@@ -174,7 +172,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
 
   List<String> createColumns(List<String> list) {
     List<String> copy = new ArrayList<>();
-    for(String string:list) {
+    for (String string : list) {
       copy.add(string);
     }
     Collections.sort(copy);
@@ -183,15 +181,16 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     return copy;
   }
 
-  private String createQuery(int period, DateTime startTime, DateTime endTime, List<String> statistics) {
+  private String createQuery(int period, DateTime startTime, DateTime endTime,
+      List<String> statistics) {
     StringBuilder builder = new StringBuilder();
 
     builder.append("SELECT " + getColumns(statistics));
 
-    if (period>=1) {
+    if (period >= 1) {
       builder.append(",MIN(time_stamp) as time_interval ");
       builder.append(" FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - ");
-      builder.append(createOffset(period,startTime,endTime));
+      builder.append(createOffset(period, startTime, endTime));
       builder.append(" AS time_slice, time_stamp, value ");
     }
 
@@ -199,13 +198,11 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     builder.append("WHERE definition_dimensions_id = :definition_id ");
     builder.append(createWhereClause(startTime, endTime));
 
-
-    if (period >=1) {
+    if (period >= 1) {
       builder.append(") as TimeSlices group by time_slice order by time_slice");
     }
     return builder.toString();
   }
-
 
   private String createWhereClause(DateTime startTime, DateTime endTime) {
     String clause = "";
@@ -225,7 +222,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     offset.append(createWhereClause(startTime, endTime));
     offset.append("order by time_stamp limit 1");
     offset.append("),");
-    offset.append(period+")))/"+period+")");
+    offset.append(period + ")))/" + period + ")");
 
     return offset.toString();
   }
