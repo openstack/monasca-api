@@ -12,17 +12,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import com.hpcloud.mon.domain.model.statistic.Statistic;
+import com.hpcloud.mon.domain.model.statistic.Statistics;
 import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
-//import com.hpcloud.util.stats.Statistic;
+//import com.hpcloud.util.stats.Statistics;
 
 /**
- * Statistic resource implementation.
+ * Statistics resource implementation.
  * 
  * @author Jonathan Halterman
  */
@@ -40,7 +40,7 @@ public class StatisticResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Statistic> get(@HeaderParam("X-Tenant-Id") String tenantId,
+  public List<Statistics> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
