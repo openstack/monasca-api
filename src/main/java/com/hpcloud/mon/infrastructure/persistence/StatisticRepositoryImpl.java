@@ -6,7 +6,7 @@ import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.hpcloud.mon.domain.model.statistic.Statistic;
+import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
@@ -33,14 +33,14 @@ public class StatisticRepositoryImpl implements StatisticRepository {
   }
 
   @Override
-  public List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
+  public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, DateTime endTime, List<String> statistics, int period) {
     Handle h = db.open();
-    List<Statistic> listStats = new ArrayList<>();
+    List<Statistics> listStats = new ArrayList<>();
     List<String> copyStatistics = createColumns(statistics);
 
     try {
-      Map<byte[], Statistic> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
+      Map<byte[], Statistics> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
 
       for (byte[] bufferId : byteMap.keySet()) {
 
@@ -95,7 +95,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     return listStats;
   }
 
-  private Map<byte[], Statistic> findDefIds(Handle h, String tenantId, String name,
+  private Map<byte[], Statistics> findDefIds(Handle h, String tenantId, String name,
       Map<String, String> dimensions, DateTime startTime, DateTime endTime) {
     List<byte[]> bytes = new ArrayList<>();
 
@@ -129,7 +129,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     // Execute
     List<Map<String, Object>> rows = query.list();
 
-    Map<byte[], Statistic> byteIdMap = new HashMap<>();
+    Map<byte[], Statistics> byteIdMap = new HashMap<>();
 
     // Build results
     byte[] currentId = null;
@@ -145,10 +145,10 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         dims = new HashMap<>();
         dims.put(demName, demValue);
 
-        Statistic statistic = new Statistic();
-        statistic.setName(defName);
-        statistic.setDimensions(dims);
-        byteIdMap.put(currentId, statistic);
+        Statistics statistics = new Statistics();
+        statistics.setName(defName);
+        statistics.setDimensions(dims);
+        byteIdMap.put(currentId, statistics);
       } else
         dims.put(demName, demValue);
     }

@@ -9,18 +9,18 @@ import java.util.Map;
  * 
  * @author Jonathan Halterman
  */
-public class Statistic {
+public class Statistics {
   private String name;
   private Map<String, String> dimensions;
   private List<String> columns;
-  private List<List<Object>> values;
+  private List<List<Object>> statistics;
 
-  public Statistic() {
-    values = new ArrayList<>();
+  public Statistics() {
+    statistics = new ArrayList<>();
   }
 
   public void addValues(List<Object> value) {
-    values.add(value);
+    statistics.add(value);
   }
 
   @Override
@@ -31,7 +31,7 @@ public class Statistic {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Statistic other = (Statistic) obj;
+    Statistics other = (Statistics) obj;
     if (dimensions == null) {
       if (other.dimensions != null)
         return false;
@@ -42,10 +42,10 @@ public class Statistic {
         return false;
     } else if (!columns.equals(other.columns))
       return false;
-    if (values == null) {
-      if (other.values != null)
+    if (statistics == null) {
+      if (other.statistics != null)
         return false;
-    } else if (!values.equals(other.values))
+    } else if (!statistics.equals(other.statistics))
       return false;
     if (name == null) {
       if (other.name != null)
@@ -68,8 +68,8 @@ public class Statistic {
     return name;
   }
 
-  public List<List<Object>> getValues() {
-    return values;
+  public List<List<Object>> getStatistics() {
+    return statistics;
   }
 
   @Override
@@ -78,7 +78,7 @@ public class Statistic {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((values == null) ? 0 : values.hashCode());
+    result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
     result = prime * result + ((columns == null) ? 0 : columns.hashCode());
     return result;
   }
@@ -95,13 +95,13 @@ public class Statistic {
     this.name = name;
   }
 
-  public void setValues(List<List<Object>> values) {
-    this.values = values;
+  public void setStatistics(List<List<Object>> statistics) {
+    this.statistics = statistics;
   }
 
   @Override
   public String toString() {
-    return String.format("Statistic [name=%s, dimensions=%s,statistics=%s]", name, dimensions,
-        values);
+    return String.format("Statistics [name=%s, dimensions=%s,statistics=%s]", name, dimensions,
+        statistics);
   }
 }
