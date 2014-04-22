@@ -33,8 +33,8 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
-import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistory;
-import com.hpcloud.mon.domain.model.alarmhistory.AlarmHistoryRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
 import com.hpcloud.mon.resource.annotation.PATCH;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -52,11 +52,11 @@ import com.wordnik.swagger.annotations.ApiResponses;
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
-  private final AlarmHistoryRepository alarmHistoryRepo;
+  private final AlarmStateHistoryRepository alarmHistoryRepo;
 
   @Inject
   public AlarmResource(AlarmService service, AlarmRepository repo,
-      AlarmHistoryRepository alarmHistoryRepo) {
+      AlarmStateHistoryRepository alarmHistoryRepo) {
     this.service = service;
     this.repo = repo;
     this.alarmHistoryRepo = alarmHistoryRepo;
@@ -101,7 +101,7 @@ public class AlarmResource {
   @Timed
   @Path("{alarm_id}/history")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<AlarmHistory> getHistory(@Context UriInfo uriInfo,
+  public List<AlarmStateHistory> getHistory(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
     return Links.hydrate(alarmHistoryRepo.findById(tenantId, alarmId), uriInfo);
   }
@@ -130,7 +130,7 @@ public class AlarmResource {
       throws JsonMappingException {
     String name = (String) fields.get("name");
     String description = (String) fields.get("description");
-    String expression = (String) fields.get("name");
+    String expression = (String) fields.get("expression");
     String stateStr = (String) fields.get("state");
     AlarmState state = stateStr == null ? null : Validation.parseAndValidate(AlarmState.class,
         stateStr);
