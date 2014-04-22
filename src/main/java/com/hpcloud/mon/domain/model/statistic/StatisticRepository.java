@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import org.joda.time.DateTime;
 
-//import com.hpcloud.util.stats.Statistic;
+//import com.hpcloud.util.stats.Statistics;
 
 /**
  * Repository for statistics.
@@ -18,6 +18,6 @@ public interface StatisticRepository {
   /**
    * Finds statistics for the given criteria.
    */
-  List<Statistic> find(String tenantId, String name, Map<String, String> dimensions,
+  List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, @Nullable DateTime endTime, List<String> statistics, int period);
 }
