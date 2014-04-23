@@ -12,14 +12,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import com.hpcloud.mon.domain.model.statistic.Statistics;
 import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
+import com.hpcloud.mon.domain.model.statistic.Statistics;
 //import com.hpcloud.util.stats.Statistics;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * Statistics resource implementation.
@@ -27,6 +29,7 @@ import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
  * @author Jonathan Halterman
  */
 @Path("/v2.0/metrics/statistics")
+@Api(value = "/v2.0/statistics", description = "Operations for accessing statistics")
 public class StatisticResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
@@ -40,6 +43,7 @@ public class StatisticResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get statistics", response = Statistics.class, responseContainer = "List")
   public List<Statistics> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,

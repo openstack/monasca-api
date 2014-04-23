@@ -1,34 +1,41 @@
 package com.hpcloud.mon;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.hp.csbu.cc.middleware.TokenAuth;
-import com.hpcloud.messaging.kafka.KafkaHealthCheck;
-import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
-import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
-import com.hpcloud.mon.resource.*;
-import com.hpcloud.mon.resource.exception.*;
-import com.hpcloud.util.Injector;
-import com.wordnik.swagger.config.ConfigFactory;
-import com.wordnik.swagger.config.ScannerFactory;
-import com.wordnik.swagger.config.SwaggerConfig;
-import com.wordnik.swagger.jaxrs.config.DefaultJaxrsScanner;
-import com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider;
-import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
-import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
-import com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader;
-import com.wordnik.swagger.reader.ClassReaders;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.ws.rs.ext.ExceptionMapper;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.servlet.FilterRegistration.Dynamic;
+import javax.ws.rs.ext.ExceptionMapper;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.hp.csbu.cc.middleware.TokenAuth;
+import com.hpcloud.messaging.kafka.KafkaHealthCheck;
+import com.hpcloud.mon.bundle.SwaggerBundle;
+import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
+import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
+import com.hpcloud.mon.resource.AlarmResource;
+import com.hpcloud.mon.resource.MeasurementResource;
+import com.hpcloud.mon.resource.MetricResource;
+import com.hpcloud.mon.resource.NotificationMethodResource;
+import com.hpcloud.mon.resource.StatisticResource;
+import com.hpcloud.mon.resource.VersionResource;
+import com.hpcloud.mon.resource.exception.ConstraintViolationExceptionMapper;
+import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
+import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
+import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
+import com.hpcloud.mon.resource.exception.InvalidEntityExceptionMapper;
+import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
+import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
+import com.hpcloud.mon.resource.exception.ResourceNotFoundExceptionMapper;
+import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
+import com.hpcloud.util.Injector;
 
 /**
  * Monitoring API application.
@@ -44,6 +51,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
   public void initialize(Bootstrap<MonApiConfiguration> bootstrap) {
     /** Configure bundles */
     bootstrap.addBundle(new DBIExceptionsBundle());
+    bootstrap.addBundle(new SwaggerBundle());
   }
 
   @Override
@@ -116,22 +124,8 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
           .addMappingForUrlPatterns(null, true, "/*");
     }
 
-    environment.jersey().register(new ApiListingResourceJSON());
-
-    // Swagger providers
-    environment.jersey().register(new ApiDeclarationProvider());
-    environment.jersey().register(new ResourceListingProvider());
-
-    // Swagger Scanner, which finds all the resources for @Api Annotations
-    ScannerFactory.setScanner(new DefaultJaxrsScanner());
-
-    // Add the reader, which scans the resources and extracts the resource information
-    ClassReaders.setReader(new DefaultJaxrsApiReader());
-
-    // Set the swagger config options
-    SwaggerConfig swaggerConfig = ConfigFactory.config();
-    swaggerConfig.setApiVersion("1.0.1");
-    swaggerConfig.setBasePath("http://localhost:8000");
+    /** Configure swagger */
+    SwaggerBundle.configure(config);
   }
 
   private void removeExceptionMappers(Set<Object> items) {
