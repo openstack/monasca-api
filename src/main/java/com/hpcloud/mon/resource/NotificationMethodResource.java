@@ -23,6 +23,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.hpcloud.mon.app.command.CreateNotificationMethodCommand;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * Notification Method resource implementation.
@@ -30,6 +32,8 @@ import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodReposit
  * @author Jonathan Halterman
  */
 @Path("/v2.0/notification-methods")
+@Api(value = "/v2.0/notification-methods",
+    description = "Operations for working with notification methods")
 public class NotificationMethodResource {
   private final NotificationMethodRepository repo;
 
@@ -42,6 +46,7 @@ public class NotificationMethodResource {
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Create notification method", response = NotificationMethod.class)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @Valid CreateNotificationMethodCommand command) {
     command.validate();
@@ -56,6 +61,8 @@ public class NotificationMethodResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List notification methods", response = NotificationMethod.class,
+      responseContainer = "List")
   public List<NotificationMethod> list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId) {
     return Links.hydrate(repo.find(tenantId), uriInfo);
@@ -63,8 +70,9 @@ public class NotificationMethodResource {
 
   @GET
   @Timed
-  @Path("{notification_method_id}")
+  @Path("/{notification_method_id}")
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get notification method", response = NotificationMethod.class)
   public NotificationMethod get(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
@@ -73,9 +81,10 @@ public class NotificationMethodResource {
 
   @PUT
   @Timed
-  @Path("{notification_method_id}")
+  @Path("/{notification_method_id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Update notification method", response = NotificationMethod.class)
   public NotificationMethod update(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId,
@@ -89,7 +98,8 @@ public class NotificationMethodResource {
 
   @DELETE
   @Timed
-  @Path("{notification_method_id}")
+  @Path("/{notification_method_id}")
+  @ApiOperation(value = "Delete notification method")
   public void delete(@HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
     repo.deleteById(tenantId, notificationMethodId);

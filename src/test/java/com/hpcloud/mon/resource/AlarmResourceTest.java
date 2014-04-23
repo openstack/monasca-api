@@ -68,7 +68,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
     when(repo.find(anyString())).thenReturn(Arrays.asList(alarmItem));
 
-    addResources(new AlarmResource(service, repo, null));
+    addResources(new AlarmResource(service, repo));
   }
 
   @SuppressWarnings("unchecked")

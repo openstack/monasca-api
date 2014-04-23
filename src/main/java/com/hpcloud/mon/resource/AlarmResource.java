@@ -33,8 +33,6 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
 import com.hpcloud.mon.resource.annotation.PATCH;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -48,24 +46,22 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Jonathan Halterman
  */
 @Path("/v2.0/alarms")
-@Api(value = "/v2.0/alarms", description = "Operations about alarms")
+@Api(value = "/v2.0/alarms", description = "Operations for working with alarms")
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
-  private final AlarmStateHistoryRepository alarmHistoryRepo;
 
   @Inject
-  public AlarmResource(AlarmService service, AlarmRepository repo,
-      AlarmStateHistoryRepository alarmHistoryRepo) {
+  public AlarmResource(AlarmService service, AlarmRepository repo) {
     this.service = service;
     this.repo = repo;
-    this.alarmHistoryRepo = alarmHistoryRepo;
   }
 
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Create alarm", response = Alarm.class)
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @Valid CreateAlarmCommand command) {
     command.validate();
@@ -79,16 +75,16 @@ public class AlarmResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List alarms", response = Alarm.class, responseContainer = "List")
   public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId) {
     return Links.hydrate(repo.find(tenantId), uriInfo, "history");
   }
 
   @GET
   @Timed
-  @Path("{alarm_id}")
+  @Path("/{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Find by alarm ID", notes = "More notes about this method",
-      response = Alarm.class)
+  @ApiOperation(value = "Get alarm", response = Alarm.class)
   @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
       @ApiResponse(code = 404, message = "Alarm not found") })
   public Alarm get(
@@ -97,20 +93,12 @@ public class AlarmResource {
     return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo, "history");
   }
 
-  @GET
-  @Timed
-  @Path("{alarm_id}/history")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<AlarmStateHistory> getHistory(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
-    return Links.hydrate(alarmHistoryRepo.findById(tenantId, alarmId), uriInfo);
-  }
-
   @PUT
   @Timed
-  @Path("{alarm_id}")
+  @Path("/{alarm_id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Update alarm", response = Alarm.class)
   public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
     command.validate();
@@ -121,7 +109,7 @@ public class AlarmResource {
 
   @PATCH
   @Timed
-  @Path("{alarm_id}")
+  @Path("/{alarm_id}")
   @Consumes("application/json-patch+json")
   @Produces(MediaType.APPLICATION_JSON)
   @SuppressWarnings("unchecked")
@@ -149,7 +137,8 @@ public class AlarmResource {
 
   @DELETE
   @Timed
-  @Path("{alarm_id}")
+  @Path("/{alarm_id}")
+  @ApiOperation(value = "Delete alarm")
   public void delete(@HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
     service.delete(tenantId, alarmId);
