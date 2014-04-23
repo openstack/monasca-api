@@ -29,6 +29,8 @@ import com.hpcloud.mon.common.model.metric.Metric;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.resource.exception.Exceptions;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * Metric resource implementation.
@@ -36,6 +38,7 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * @author Jonathan Halterman
  */
 @Path("/v2.0/metrics")
+@Api(value = "/v2.0/metrics", description = "Operations for accessing metrics")
 public class MetricResource {
   private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
@@ -52,6 +55,7 @@ public class MetricResource {
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Create metrics")
   public void create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @HeaderParam("X-Roles") String roles, @QueryParam("tenant_id") String crossTenantId,
       @Valid CreateMetricCommand[] commands) {
@@ -80,6 +84,8 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get metrics", response = MetricDefinition.class,
+      responseContainer = "List")
   public List<MetricDefinition> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr) {
     Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
