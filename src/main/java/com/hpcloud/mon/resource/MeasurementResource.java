@@ -18,6 +18,8 @@ import com.google.common.base.Strings;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * Measurement resource implementation.
@@ -25,6 +27,7 @@ import com.hpcloud.mon.domain.model.measurement.Measurements;
  * @author Jonathan Halterman
  */
 @Path("/v2.0/metrics/measurements")
+@Api(value = "/v2.0/measurements", description = "Operations for accessing measurements")
 public class MeasurementResource {
   private final MeasurementRepository repo;
 
@@ -36,6 +39,8 @@ public class MeasurementResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get measurements", response = Measurements.class,
+      responseContainer = "List")
   public Collection<Measurements> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
