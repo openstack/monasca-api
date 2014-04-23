@@ -1,17 +1,17 @@
-package com.hpcloud.mon.domain.model.alarmhistory;
+package com.hpcloud.mon.domain.model.alarmstatehistory;
 
 import java.util.List;
 
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 
 /**
- * Repository for alarm history.
+ * Repository for alarm state history.
  * 
  * @author Jonathan Halterman
  */
-public interface AlarmHistoryRepository {
+public interface AlarmStateHistoryRepository {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
    */
-  List<AlarmHistory> findById(String tenantId, String alarmId);
+  List<AlarmStateHistory> findById(String tenantId, String alarmId);
 }
