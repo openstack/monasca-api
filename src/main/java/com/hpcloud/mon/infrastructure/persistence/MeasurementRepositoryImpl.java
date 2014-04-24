@@ -41,9 +41,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
   @Override
   public Collection<Measurements> find(String tenantId, String name,
       Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       // Build sql
       StringBuilder sbWhere = new StringBuilder();
       if (name != null)
@@ -83,12 +81,10 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
           results.put(defId, measurements);
         }
 
-        measurements.addMeasurement(new Object[]{measurementId, timestamp, value});
+        measurements.addMeasurement(new Object[] { measurementId, timestamp, value });
       }
 
       return results.values();
-    } finally {
-      h.close();
     }
   }
 }

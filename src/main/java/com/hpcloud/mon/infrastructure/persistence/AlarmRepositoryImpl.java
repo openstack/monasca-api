@@ -74,39 +74,29 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public void deleteById(String tenantId, String alarmId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       if (h.update(
           "update alarm set deleted_at = NOW() where tenant_id = ? and id = ? and deleted_at is NULL",
           tenantId, alarmId) == 0)
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public boolean exists(String tenantId, String name) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       return h.createQuery(
           "select exists(select 1 from alarm where tenant_id = :tenantId and name = :name and deleted_at is NULL)")
           .bind("tenantId", tenantId)
           .bind("name", name)
           .mapTo(Boolean.TYPE)
           .first();
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public List<Alarm> find(String tenantId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       List<Alarm> alarms = h.createQuery(
           "select * from alarm where tenant_id = :tenantId and deleted_at is NULL")
           .bind("tenantId", tenantId)
@@ -116,16 +106,12 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       for (Alarm alarm : alarms)
         hydrateRelationships(h, alarm);
       return alarms;
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public Alarm findById(String tenantId, String alarmId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       Alarm alarm = h.createQuery(
           "select * from alarm where tenant_id = :tenantId and id = :id and deleted_at is NULL")
           .bind("tenantId", tenantId)
@@ -138,16 +124,12 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
       hydrateRelationships(h, alarm);
       return alarm;
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public Map<String, MetricDefinition> findSubAlarmMetricDefinitions(String alarmId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       List<Map<String, Object>> rows = h.createQuery(SUB_ALARM_SQL).bind("alarmId", alarmId).list();
       Map<String, MetricDefinition> subAlarmMetricDefs = new HashMap<>();
       for (Map<String, Object> row : rows) {
@@ -158,16 +140,12 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       }
 
       return subAlarmMetricDefs;
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public Map<String, AlarmSubExpression> findSubExpressions(String alarmId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       List<Map<String, Object>> rows = h.createQuery(SUB_ALARM_SQL).bind("alarmId", alarmId).list();
       Map<String, AlarmSubExpression> subExpressions = new HashMap<>();
       for (Map<String, Object> row : rows) {
@@ -184,8 +162,6 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       }
 
       return subExpressions;
-    } finally {
-      h.close();
     }
   }
 

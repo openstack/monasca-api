@@ -39,59 +39,40 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
       throw new EntityExistsException("Notification method %s \"%s\" %s \"%s\" already exists.",
           tenantId, name, type, address);
 
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       String id = UUID.randomUUID().toString();
-      h.begin();
       h.insert(
           "insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values (?, ?, ?, ?, ?, NOW(), NOW())",
           id, tenantId, name, type.toString(), address);
-      h.commit();
       LOG.debug("Creating notification method {} for {}", name, tenantId);
       return new NotificationMethod(id, name, type, address);
-    } catch (RuntimeException e) {
-      h.rollback();
-      throw e;
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public void deleteById(String tenantId, String notificationMethodId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       if (h.update("delete from notification_method where tenant_id = ? and id = ?", tenantId,
           notificationMethodId) == 0)
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public boolean exists(String tenantId, String notificationMethodId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       return h.createQuery(
           "select exists(select 1 from notification_method where tenant_id = :tenantId and id = :notificationMethodId)")
           .bind("tenantId", tenantId)
           .bind("notificationMethodId", notificationMethodId)
           .mapTo(Boolean.TYPE)
           .first();
-    } finally {
-      h.close();
     }
   }
 
   public boolean exists(String tenantId, String name, NotificationMethodType type, String address) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       return h.createQuery(
           "select exists(select 1 from notification_method where tenant_id = :tenantId and name = :name and type = :type and address = :address)")
           .bind("tenantId", tenantId)
@@ -100,30 +81,22 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
           .bind("address", address)
           .mapTo(Boolean.TYPE)
           .first();
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public List<NotificationMethod> find(String tenantId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       return h.createQuery("select * from notification_method where tenant_id = :tenantId")
           .bind("tenantId", tenantId)
           .map(new BeanMapper<NotificationMethod>(NotificationMethod.class))
           .list();
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public NotificationMethod findById(String tenantId, String notificationMethodId) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       NotificationMethod notificationMethod = h.createQuery(
           "select * from notification_method where tenant_id = :tenantId and id = :id")
           .bind("tenantId", tenantId)
@@ -136,25 +109,19 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
             notificationMethodId);
 
       return notificationMethod;
-    } finally {
-      h.close();
     }
   }
 
   @Override
   public NotificationMethod update(String tenantId, String notificationMethodId, String name,
       NotificationMethodType type, String address) {
-    Handle h = db.open();
-
-    try {
+    try (Handle h = db.open()) {
       if (h.update(
           "update notification_method set name = ?, type = ?, address = ? where tenant_id = ? and id = ?",
           name, type.name(), address, tenantId, notificationMethodId) == 0)
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
       return new NotificationMethod(notificationMethodId, name, type, address);
-    } finally {
-      h.close();
     }
   }
 }
