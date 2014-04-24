@@ -27,6 +27,8 @@ import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
@@ -42,6 +44,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private Alarm alarmItem;
   private AlarmService service;
   private AlarmRepository repo;
+  private AlarmStateHistoryRepository stateHistoryRepo;
   private List<String> alarmActions;
 
   @Override
@@ -68,7 +71,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
     when(repo.find(anyString())).thenReturn(Arrays.asList(alarmItem));
 
-    addResources(new AlarmResource(service, repo));
+    stateHistoryRepo = mock(AlarmStateHistoryRepository.class);
+
+    addResources(new AlarmResource(service, repo, stateHistoryRepo));
   }
 
   @SuppressWarnings("unchecked")
@@ -207,7 +212,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .matches(
             "unprocessable_entity",
             422,
-            "Name 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 must be 250 characters or less");
+            "Name 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 must be 255 characters or less");
   }
 
   public void shouldErrorOnCreateWithTooLongAlarmAction() {
@@ -298,6 +303,21 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .header("X-Tenant-Id", "abc")
         .get(Alarm.class)
         .getLinks(), links);
+  }
+
+  public void shouldGetAlarmStateHistory() {
+    AlarmStateHistory history1 = new AlarmStateHistory("123", AlarmState.OK, AlarmState.ALARM,
+        "foo", "foobar", System.currentTimeMillis() / 1000);
+    AlarmStateHistory history2 = new AlarmStateHistory("123", AlarmState.ALARM, AlarmState.OK,
+        "foo", "foobar", System.currentTimeMillis() / 1000);
+    List<AlarmStateHistory> expected = Arrays.asList(history1, history2);
+
+    when(stateHistoryRepo.findById(eq("abc"), eq("123"))).thenReturn(expected);
+
+    assertEquals(client().resource("/v2.0/alarms/123/state-history")
+        .header("X-Tenant-Id", "abc")
+        .get(new GenericType<List<AlarmStateHistory>>() {
+        }), expected);
   }
 
   private ClientResponse createResponseFor(Object request) {

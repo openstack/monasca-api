@@ -111,11 +111,11 @@ public final class DimensionValidation {
         throw Exceptions.unprocessableEntity("Dimension name cannot be empty");
       if (Strings.isNullOrEmpty(value))
         throw Exceptions.unprocessableEntity("Dimension %s cannot have an empty value", name);
-      if (name.length() > 50)
-        throw Exceptions.unprocessableEntity("Dimension name %s must be 50 characters or less",
+      if (name.length() > 255)
+        throw Exceptions.unprocessableEntity("Dimension name %s must be 255 characters or less",
             name);
-      if (value.length() > 300)
-        throw Exceptions.unprocessableEntity("Dimension value %s must be 300 characters or less",
+      if (value.length() > 255)
+        throw Exceptions.unprocessableEntity("Dimension value %s must be 255 characters or less",
             value);
       if (!VALID_DIMENSION_NAME.matcher(name).matches())
         throw Exceptions.unprocessableEntity(

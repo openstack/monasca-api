@@ -52,7 +52,7 @@ public class NotificationMethodResource {
     command.validate();
 
     NotificationMethod notificationMethod = Links.hydrate(
-        repo.create(tenantId, command.name, command.type, command.address), uriInfo);
+        repo.create(tenantId, command.name, command.type, command.address), uriInfo, false);
     return Response.created(URI.create(notificationMethod.getId()))
         .entity(notificationMethod)
         .build();
@@ -76,7 +76,7 @@ public class NotificationMethodResource {
   public NotificationMethod get(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("notification_method_id") String notificationMethodId) {
-    return Links.hydrate(repo.findById(tenantId, notificationMethodId), uriInfo);
+    return Links.hydrate(repo.findById(tenantId, notificationMethodId), uriInfo, true);
   }
 
   @PUT
@@ -93,7 +93,7 @@ public class NotificationMethodResource {
 
     return Links.hydrate(
         repo.update(tenantId, notificationMethodId, command.name, command.type, command.address),
-        uriInfo);
+        uriInfo, true);
   }
 
   @DELETE

@@ -26,6 +26,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.MonApiModule;
 import com.hpcloud.mon.app.AlarmService;
@@ -34,7 +35,9 @@ import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.infrastructure.persistence.AlarmRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.AlarmStateHistoryRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.NotificationMethodRepositoryImpl;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.AlarmResource;
@@ -46,28 +49,32 @@ import com.sun.jersey.api.client.ClientResponse;
 @Test(groups = "integration", enabled = false)
 public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   private static final String TENANT_ID = "alarm-test";
-  private DBI db;
+  private DBI mysqlDb;
+  private DBI verticaDb;
   private Alarm alarm;
   private AlarmService service;
   private MonApiConfiguration config;
   private Producer<String, String> producer;
   private AlarmRepository repo;
+  AlarmStateHistoryRepository stateHistoryRepo;
   private Map<String, String> dimensions;
   private List<String> alarmActions;
 
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
-    Handle handle = db.open();
+    
+    Handle handle = mysqlDb.open();
     handle.execute("truncate table alarm");
     handle.execute("truncate table notification_method");
     handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
     handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
-    db.close(handle);
+    mysqlDb.close(handle);
 
-    repo = new AlarmRepositoryImpl(db);
-    service = new AlarmService(config, producer, repo, new NotificationMethodRepositoryImpl(db));
-    addResources(new AlarmResource(service, repo));
+    repo = new AlarmRepositoryImpl(mysqlDb);
+    service = new AlarmService(config, producer, repo, new AlarmStateHistoryRepositoryImpl(
+        verticaDb), new NotificationMethodRepositoryImpl(mysqlDb));
+    addResources(new AlarmResource(service, repo, null));
   }
 
   @BeforeTest
@@ -76,8 +83,9 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     Injector injector = Guice.createInjector(new MonApiModule(environment, config));
     producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {
     }));
-    db = injector.getInstance(DBI.class);
-    Handle handle = db.open();
+    mysqlDb = injector.getInstance(Key.get(DBI.class, Names.named("mysql")));
+    verticaDb = injector.getInstance(Key.get(DBI.class, Names.named("vertica")));
+    Handle handle = mysqlDb.open();
     handle.execute(Resources.toString(
         NotificationMethodRepositoryImpl.class.getResource("alarm.sql"), Charset.defaultCharset()));
     handle.execute(Resources.toString(

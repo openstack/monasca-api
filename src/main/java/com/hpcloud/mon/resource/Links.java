@@ -38,18 +38,23 @@ public final class Links {
     // Safe since this path should not be specific to a resource
     String absolutePath = prefixForHttps(uriInfo.getAbsolutePath().toString());
     for (T resource : resources)
-      hydrate(resource, absolutePath, children);
+      hydrate(resource, absolutePath, false, children);
     return resources;
   }
 
   /**
    * Hydrates the {@code resource} with links for the {@code uriInfo}.
    * 
+   * @param resource to obtain id from
+   * @param uriInfo to obtain path from
+   * @param uriInfoForSpecificResource whether the uriInfo is for a specific resource
+   * @param children child link elements to create
    * @throws NullPointerException if {@code resource} is null
    */
   public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo,
-      String... children) {
-    return hydrate(resource, prefixForHttps(uriInfo.getAbsolutePath().toString()), children);
+      boolean uriInfoForSpecificResource, String... children) {
+    return hydrate(resource, prefixForHttps(uriInfo.getAbsolutePath().toString()),
+        uriInfoForSpecificResource, children);
   }
 
   /**
@@ -67,11 +72,11 @@ public final class Links {
    * @throws NullPointerException if {@code resource} is null
    */
   private static <T extends AbstractEntity & Linked> T hydrate(T resource, String path,
-      String... children) {
+      boolean pathForSpecificResource, String... children) {
     Preconditions.checkNotNull(resource, "resource");
 
     List<Link> links = new ArrayList<>(children.length + 1);
-    if (!path.endsWith(resource.getId())) {
+    if (!pathForSpecificResource) {
       boolean pathEndsInSlash = path.length() > 0 && path.charAt(path.length() - 1) == '/';
       if (!pathEndsInSlash)
         path += "/";
