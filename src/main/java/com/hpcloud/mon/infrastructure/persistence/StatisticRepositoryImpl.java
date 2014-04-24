@@ -35,11 +35,10 @@ public class StatisticRepositoryImpl implements StatisticRepository {
   @Override
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
       DateTime startTime, DateTime endTime, List<String> statistics, int period) {
-    Handle h = db.open();
     List<Statistics> listStats = new ArrayList<>();
     List<String> copyStatistics = createColumns(statistics);
 
-    try {
+    try (Handle h = db.open()) {
       Map<byte[], Statistics> byteMap = findDefIds(h, tenantId, name, dimensions, startTime, endTime);
 
       for (byte[] bufferId : byteMap.keySet()) {
@@ -88,9 +87,6 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         byteMap.get(bufferId).setColumns(copyStatistics);
         listStats.add(byteMap.get(bufferId));
       }
-
-    } finally {
-      h.close();
     }
     return listStats;
   }
