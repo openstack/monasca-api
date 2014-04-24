@@ -1,25 +1,127 @@
 package com.hpcloud.mon.domain.model.alarmstatehistory;
 
-import java.util.List;
+import com.hpcloud.mon.common.model.alarm.AlarmState;
 
-import com.hpcloud.mon.domain.common.AbstractEntity;
-import com.hpcloud.mon.domain.model.common.Link;
-import com.hpcloud.mon.domain.model.common.Linked;
-
-public class AlarmStateHistory extends AbstractEntity implements Linked {
-  private List<Link> links;
-
+public class AlarmStateHistory {
+  private String alarmId;
+  private AlarmState oldState;
+  private AlarmState newState;
+  private String reason;
+  private String reasonData;
+  /** POSIX timestamp */
+  private long timestamp;
 
   public AlarmStateHistory() {
   }
 
-  @Override
-  public List<Link> getLinks() {
-    return links;
+  public AlarmStateHistory(String alarmId, AlarmState oldState, AlarmState newState, String reason,
+      String reasonData, long timestamp) {
+    this.alarmId = alarmId;
+    this.oldState = oldState;
+    this.newState = newState;
+    this.reason = reason;
+    this.reasonData = reasonData;
+    this.timestamp = timestamp;
   }
 
   @Override
-  public void setLinks(List<Link> links) {
-    this.links = links;
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    AlarmStateHistory other = (AlarmStateHistory) obj;
+    if (alarmId == null) {
+      if (other.alarmId != null)
+        return false;
+    } else if (!alarmId.equals(other.alarmId))
+      return false;
+    if (newState != other.newState)
+      return false;
+    if (oldState != other.oldState)
+      return false;
+    if (reason == null) {
+      if (other.reason != null)
+        return false;
+    } else if (!reason.equals(other.reason))
+      return false;
+    if (reasonData == null) {
+      if (other.reasonData != null)
+        return false;
+    } else if (!reasonData.equals(other.reasonData))
+      return false;
+    if (timestamp != other.timestamp)
+      return false;
+    return true;
+  }
+
+  public String getAlarmId() {
+    return alarmId;
+  }
+
+  public AlarmState getNewState() {
+    return newState;
+  }
+
+  public AlarmState getOldState() {
+    return oldState;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public String getReasonData() {
+    return reasonData;
+  }
+
+  public long getTimestamp() {
+    return timestamp;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((alarmId == null) ? 0 : alarmId.hashCode());
+    result = prime * result + ((newState == null) ? 0 : newState.hashCode());
+    result = prime * result + ((oldState == null) ? 0 : oldState.hashCode());
+    result = prime * result + ((reason == null) ? 0 : reason.hashCode());
+    result = prime * result + ((reasonData == null) ? 0 : reasonData.hashCode());
+    result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+    return result;
+  }
+
+  public void setAlarmId(String alarmId) {
+    this.alarmId = alarmId;
+  }
+
+  public void setNewState(AlarmState newState) {
+    this.newState = newState;
+  }
+
+  public void setOldState(AlarmState oldState) {
+    this.oldState = oldState;
+  }
+
+  public void setReason(String reason) {
+    this.reason = reason;
+  }
+
+  public void setReasonData(String reasonData) {
+    this.reasonData = reasonData;
+  }
+
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "AlarmStateHistory [alarmId=%s, oldState=%s, newState=%s, reason=%s, reasonData=%s, timestamp=%s]",
+        alarmId, oldState, newState, reason, reasonData, timestamp);
   }
 }

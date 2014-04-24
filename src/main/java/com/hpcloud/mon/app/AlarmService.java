@@ -14,6 +14,8 @@ import javax.inject.Inject;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.exception.InvalidEntityException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.util.Exceptions;
 import com.hpcloud.util.Serialization;
@@ -50,14 +53,17 @@ public class AlarmService {
   private final MonApiConfiguration config;
   private final Producer<String, String> producer;
   private final AlarmRepository repo;
+  private final AlarmStateHistoryRepository stateHistoryRepo;
   private final NotificationMethodRepository notificationMethodRepo;
 
   @Inject
   public AlarmService(MonApiConfiguration config, Producer<String, String> producer,
-      AlarmRepository repo, NotificationMethodRepository notificationMethodRepo) {
+      AlarmRepository repo, AlarmStateHistoryRepository stateHistoryRepo,
+      NotificationMethodRepository notificationMethodRepo) {
     this.config = config;
     this.producer = producer;
     this.repo = repo;
+    this.stateHistoryRepo = stateHistoryRepo;
     this.notificationMethodRepo = notificationMethodRepo;
   }
 
@@ -188,6 +194,9 @@ public class AlarmService {
       repo.update(tenantId, alarmId, patch, name, description, expression, newState, enabled,
           subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
           subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
+      if (!oldState.equals(newState))
+        stateHistoryRepo.create(tenantId, alarmId, oldState, newState,
+            "Alarm state updated via API", "", new DateTime(DateTimeZone.UTC));
 
       // Notify interested parties of updated alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,

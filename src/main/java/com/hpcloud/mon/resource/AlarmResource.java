@@ -33,6 +33,8 @@ import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.resource.annotation.PATCH;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -50,11 +52,14 @@ import com.wordnik.swagger.annotations.ApiResponses;
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
+  private final AlarmStateHistoryRepository stateHistoryRepo;
 
   @Inject
-  public AlarmResource(AlarmService service, AlarmRepository repo) {
+  public AlarmResource(AlarmService service, AlarmRepository repo,
+      AlarmStateHistoryRepository stateHistoryRepo) {
     this.service = service;
     this.repo = repo;
+    this.stateHistoryRepo = stateHistoryRepo;
   }
 
   @POST
@@ -68,7 +73,7 @@ public class AlarmResource {
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
         command.expression, alarmExpression, command.alarmActions, command.okActions,
-        command.undeterminedActions), uriInfo, "history");
+        command.undeterminedActions), uriInfo, false, "history");
     return Response.created(URI.create(alarm.getId())).entity(alarm).build();
   }
 
@@ -90,7 +95,7 @@ public class AlarmResource {
   public Alarm get(
       @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
-    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo, "history");
+    return Links.hydrate(repo.findById(tenantId, alarmId), uriInfo, true, "history");
   }
 
   @PUT
@@ -104,7 +109,7 @@ public class AlarmResource {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     return Links.hydrate(service.update(tenantId, alarmId, alarmExpression, command), uriInfo,
-        "history");
+        true, "history");
   }
 
   @PATCH
@@ -132,7 +137,7 @@ public class AlarmResource {
 
     return Links.hydrate(service.patch(tenantId, alarmId, name, description, expression,
         alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
-        "history");
+        true, "history");
   }
 
   @DELETE
@@ -142,5 +147,16 @@ public class AlarmResource {
   public void delete(@HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
     service.delete(tenantId, alarmId);
+  }
+
+  @GET
+  @Timed
+  @Path("/{alarm_id}/state-history")
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get alarm state history", response = AlarmStateHistory.class,
+      responseContainer = "List")
+  public List<AlarmStateHistory> getStateHistory(@Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
+    return stateHistoryRepo.findById(tenantId, alarmId);
   }
 }

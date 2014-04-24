@@ -24,10 +24,10 @@ public final class AlarmValidation {
    */
   public static void validate(String name, String description, List<String> alarmActions,
       List<String> okActions, List<String> undeterminedActions) {
-    if (name != null && name.length() > 250)
-      throw Exceptions.unprocessableEntity("Name %s must be 250 characters or less", name);
-    if (description != null && description.length() > 250)
-      throw Exceptions.unprocessableEntity("Description %s must be 250 characters or less",
+    if (name != null && name.length() > 255)
+      throw Exceptions.unprocessableEntity("Name %s must be 255 characters or less", name);
+    if (description != null && description.length() > 255)
+      throw Exceptions.unprocessableEntity("Description %s must be 255 characters or less",
           description);
     if (alarmActions != null)
       for (String action : alarmActions)

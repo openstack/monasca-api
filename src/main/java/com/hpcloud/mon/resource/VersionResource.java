@@ -45,6 +45,6 @@ public class VersionResource {
   @Path("{version_id}")
   @ApiOperation(value = "Get version", response = Version.class)
   public Version get(@Context UriInfo uriInfo, @PathParam("version_id") String versionId) {
-    return Links.hydrate(repository.findById(versionId), uriInfo);
+    return Links.hydrate(repository.findById(versionId), uriInfo, true);
   }
 }

@@ -32,6 +32,7 @@ import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 
 /**
@@ -43,6 +44,7 @@ public class AlarmServiceTest {
   MonApiConfiguration config;
   Producer<String, String> producer;
   AlarmRepository repo;
+  AlarmStateHistoryRepository stateHistoryRepo;
   NotificationMethodRepository notificationMethodRepo;
 
   @BeforeMethod
@@ -51,8 +53,9 @@ public class AlarmServiceTest {
     config = new MonApiConfiguration();
     producer = mock(Producer.class);
     repo = mock(AlarmRepository.class);
+    stateHistoryRepo = mock(AlarmStateHistoryRepository.class);
     notificationMethodRepo = mock(NotificationMethodRepository.class);
-    service = new AlarmService(config, producer, repo, notificationMethodRepo);
+    service = new AlarmService(config, producer, repo, stateHistoryRepo, notificationMethodRepo);
 
     when(
         repo.create(anyString(), anyString(), anyString(), anyString(), anyString(),
