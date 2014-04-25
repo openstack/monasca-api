@@ -16,6 +16,7 @@ import org.joda.time.DateTime;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.mon.domain.model.statistic.Statistics;
@@ -57,8 +58,8 @@ public class StatisticResource {
     Validation.validateNotNullOrEmpty(statisticsStr, "statistics");
     int period = Validation.parseAndValidateNumber(periodStr, "period");
     List<String> statistics = Validation.parseValidateAndNormalizeStatistics(COMMA_SPLITTER.split(statisticsStr));
-    Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions(name,
-        dimensionsStr);
+    Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
+        : Validation.parseAndValidateNameAndDimensions(name, dimensionsStr);
 
     return repo.find(tenantId, name, dimensions, startTime, endTime, statistics, period);
   }
