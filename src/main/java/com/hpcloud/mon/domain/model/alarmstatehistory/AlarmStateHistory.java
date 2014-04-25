@@ -1,5 +1,7 @@
 package com.hpcloud.mon.domain.model.alarmstatehistory;
 
+import org.joda.time.DateTime;
+
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 
 public class AlarmStateHistory {
@@ -8,14 +10,13 @@ public class AlarmStateHistory {
   private AlarmState newState;
   private String reason;
   private String reasonData;
-  /** POSIX timestamp */
-  private long timestamp;
+  private DateTime timestamp;
 
   public AlarmStateHistory() {
   }
 
   public AlarmStateHistory(String alarmId, AlarmState oldState, AlarmState newState, String reason,
-      String reasonData, long timestamp) {
+      String reasonData, DateTime timestamp) {
     this.alarmId = alarmId;
     this.oldState = oldState;
     this.newState = newState;
@@ -52,7 +53,10 @@ public class AlarmStateHistory {
         return false;
     } else if (!reasonData.equals(other.reasonData))
       return false;
-    if (timestamp != other.timestamp)
+    if (timestamp == null) {
+      if (other.timestamp != null)
+        return false;
+    } else if (!timestamp.equals(other.timestamp))
       return false;
     return true;
   }
@@ -77,7 +81,7 @@ public class AlarmStateHistory {
     return reasonData;
   }
 
-  public long getTimestamp() {
+  public DateTime getTimestamp() {
     return timestamp;
   }
 
@@ -90,7 +94,7 @@ public class AlarmStateHistory {
     result = prime * result + ((oldState == null) ? 0 : oldState.hashCode());
     result = prime * result + ((reason == null) ? 0 : reason.hashCode());
     result = prime * result + ((reasonData == null) ? 0 : reasonData.hashCode());
-    result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+    result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
     return result;
   }
 
@@ -114,7 +118,7 @@ public class AlarmStateHistory {
     this.reasonData = reasonData;
   }
 
-  public void setTimestamp(long timestamp) {
+  public void setTimestamp(DateTime timestamp) {
     this.timestamp = timestamp;
   }
 

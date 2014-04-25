@@ -15,6 +15,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hp.csbu.cc.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.bundle.SwaggerBundle;
@@ -89,6 +90,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     environment.getObjectMapper().setPropertyNamingStrategy(
         PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
     environment.getObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    environment.getObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     /** Configure health checks */
     environment.healthChecks().register("kafka", new KafkaHealthCheck(config.kafka));

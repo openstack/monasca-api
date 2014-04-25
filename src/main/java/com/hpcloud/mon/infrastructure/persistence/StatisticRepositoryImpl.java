@@ -9,6 +9,8 @@ import javax.inject.Named;
 import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.DBI;
 
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
@@ -20,13 +22,15 @@ import org.skife.jdbi.v2.Query;
  * Vertica statistic repository implementation.
  */
 public class StatisticRepositoryImpl implements StatisticRepository {
-  private final DBI db;
-
+  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
+      .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
       + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
       + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
 
+  private final DBI db;
+  
   @Inject
   public StatisticRepositoryImpl(@Named("vertica") DBI db) {
     this.db = db;
@@ -62,7 +66,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
           Timestamp time_stamp = (Timestamp) row.get("time_interval");
 
           if (time_stamp != null) {
-            statisticsRow.add(time_stamp.getTime());
+            statisticsRow.add(DATETIME_FORMATTER.print(time_stamp.getTime()));
           }
 
           if (average != null) {

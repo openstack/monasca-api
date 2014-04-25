@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
@@ -26,6 +28,8 @@ import com.hpcloud.mon.domain.model.measurement.Measurements;
  * @author Jonathan Halterman
  */
 public class MeasurementRepositoryImpl implements MeasurementRepository {
+  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
+      .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd%s "
       + "where m.definition_dimensions_id = dd.id and def.id = dd.definition_id "
@@ -71,7 +75,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
         byte[] dimSetIdBytes = (byte[]) row.get("dimension_set_id");
         ByteBuffer defId = ByteBuffer.wrap(defIdBytes);
         long measurementId = (Long) row.get("id");
-        long timestamp = ((Timestamp) row.get("time_stamp")).getTime() / 1000;
+        String timestamp = DATETIME_FORMATTER.print(((Timestamp) row.get("time_stamp")).getTime());
         double value = (double) row.get("value");
 
         Measurements measurements = results.get(defId);
