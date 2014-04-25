@@ -17,6 +17,8 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.app.AlarmService;
@@ -307,9 +309,9 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldGetAlarmStateHistory() {
     AlarmStateHistory history1 = new AlarmStateHistory("123", AlarmState.OK, AlarmState.ALARM,
-        "foo", "foobar", System.currentTimeMillis() / 1000);
+        "foo", "foobar", new DateTime(2014, 1, 1, 1, 1, DateTimeZone.UTC));
     AlarmStateHistory history2 = new AlarmStateHistory("123", AlarmState.ALARM, AlarmState.OK,
-        "foo", "foobar", System.currentTimeMillis() / 1000);
+        "foo", "foobar", new DateTime(2014, 1, 1, 1, 1, DateTimeZone.UTC));
     List<AlarmStateHistory> expected = Arrays.asList(history1, history2);
 
     when(stateHistoryRepo.findById(eq("abc"), eq("123"))).thenReturn(expected);

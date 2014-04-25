@@ -15,7 +15,7 @@
   <properties>
     <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion>
     <computedName>${project.artifactId}-${computedVersion}</computedName>
-    <mon.common.version>1.0.0.36</mon.common.version>
+    <mon.common.version>1.0.0.40</mon.common.version>
     <dropwizard.version>0.7.0</dropwizard.version>
 
     <skipITs>true</skipITs>
