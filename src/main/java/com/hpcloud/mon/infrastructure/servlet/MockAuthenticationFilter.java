@@ -43,7 +43,7 @@ public class MockAuthenticationFilter implements Filter {
       @Override
       public String getHeader(String name) {
         if (name.equalsIgnoreCase(X_TENANT_ID_HEADER))
-          return request.getHeader(X_AUTH_TOKEN_HEADER).toString();
+          return request.getHeader(X_AUTH_TOKEN_HEADER);
         return super.getHeader(name);
       }
 
@@ -56,9 +56,11 @@ public class MockAuthenticationFilter implements Filter {
 
       @Override
       public Enumeration<String> getHeaders(String name) {
-        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER))
-          return Collections.enumeration(Collections.singleton(request.getHeader(
-              X_AUTH_TOKEN_HEADER).toString()));
+        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER)) {
+          String authToken = request.getHeader(X_AUTH_TOKEN_HEADER);
+          return authToken == null ? Collections.<String>emptyEnumeration()
+              : Collections.enumeration(Collections.singleton(authToken));
+        }
         return super.getHeaders(name);
       }
     };
