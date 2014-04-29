@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hp.csbu.cc.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.bundle.SwaggerBundle;
+import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
 import com.hpcloud.mon.resource.AlarmResource;
@@ -123,6 +124,10 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       filter.setInitParameters(authInitParams);
       environment.servlets()
           .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
+          .addMappingForUrlPatterns(null, true, "/*");
+    } else {
+      environment.servlets()
+          .addFilter("mock-auth", new MockAuthenticationFilter())
           .addMappingForUrlPatterns(null, true, "/*");
     }
 
