@@ -1,5 +1,7 @@
 package com.hpcloud.mon.infrastructure.middleware;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -29,5 +31,5 @@ public class MiddlewareConfiguration {
   @NotEmpty @JsonProperty public String connPoolMinIdleTime;
   @NotEmpty @JsonProperty public String connRetryTimes;
   @NotEmpty @JsonProperty public String connRetryInterval;
-  @NotNull @JsonProperty public String[] rolesToMatch;
+  @NotNull @JsonProperty public List<String> rolesToMatch;
 }

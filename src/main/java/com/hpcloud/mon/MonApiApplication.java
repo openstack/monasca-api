@@ -5,6 +5,7 @@ import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,6 +17,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.hp.csbu.cc.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.bundle.SwaggerBundle;
@@ -37,6 +39,7 @@ import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
 import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
 import com.hpcloud.mon.resource.exception.ResourceNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
+import com.hpcloud.mon.resource.serialization.SubAlarmExpressionSerializer;
 import com.hpcloud.util.Injector;
 
 /**
@@ -92,11 +95,17 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
         PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
     environment.getObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
     environment.getObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    SimpleModule module = new SimpleModule("SerializationModule");
+    module.addSerializer(new SubAlarmExpressionSerializer());
+    environment.getObjectMapper().registerModule(module);
 
     /** Configure health checks */
     environment.healthChecks().register("kafka", new KafkaHealthCheck(config.kafka));
 
     /** Configure auth filters */
+    environment.servlets()
+        .addFilter("pre-auth", new PreAuthenticationFilter())
+        .addMappingForUrlPatterns(null, true, "/*");
     if (config.middleware.enabled) {
       Map<String, String> authInitParams = new HashMap<String, String>();
       authInitParams.put("ServiceIds", config.middleware.serviceIds);
@@ -116,20 +125,17 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
 
-      environment.servlets()
-          .addFilter("pre-auth", new PreAuthenticationFilter())
-          .addMappingForUrlPatterns(null, true, "/*");
       Dynamic filter = environment.servlets().addFilter("token-auth", new TokenAuth());
       filter.addMappingForUrlPatterns(null, true, "/*");
       filter.setInitParameters(authInitParams);
-      environment.servlets()
-          .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch))
-          .addMappingForUrlPatterns(null, true, "/*");
     } else {
       environment.servlets()
           .addFilter("mock-auth", new MockAuthenticationFilter())
           .addMappingForUrlPatterns(null, true, "/*");
     }
+    environment.servlets()
+        .addFilter("post-auth", new PostAuthenticationFilter(Collections.<String>singletonList("")))
+        .addMappingForUrlPatterns(null, true, "/*");
 
     /** Configure swagger */
     SwaggerBundle.configure(config);
