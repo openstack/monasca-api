@@ -1,15 +1,17 @@
 package com.hpcloud.mon.domain.model.alarm;
 
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.common.AbstractEntity;
 import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.domain.model.common.Linked;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
 
 @ApiModel(value = "An alarm is a devops's best friend")
 @XmlRootElement(name = "Alarm")
@@ -18,6 +20,7 @@ public class Alarm extends AbstractEntity implements Linked {
   private String name;
   private String description = "";
   private String expression;
+  private Object expressionData;
   private AlarmState state;
   private boolean actionsEnabled;
   private List<String> alarmActions;
@@ -104,6 +107,10 @@ public class Alarm extends AbstractEntity implements Linked {
     return expression;
   }
 
+  public Object getExpressionData() {
+    return expressionData;
+  }
+
   public String getId() {
     return id;
   }
@@ -162,6 +169,11 @@ public class Alarm extends AbstractEntity implements Linked {
 
   public void setExpression(String expression) {
     this.expression = expression;
+    setExpressionData(AlarmExpression.of(expression).getExpressionTree());
+  }
+
+  public void setExpressionData(Object expressionData) {
+    this.expressionData = expressionData;
   }
 
   @XmlElement(name = "id")

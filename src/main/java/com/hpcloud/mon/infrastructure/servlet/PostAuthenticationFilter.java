@@ -30,15 +30,15 @@ import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter.ErrorCaptu
  * @author Michael Sun
  */
 public class PostAuthenticationFilter implements Filter {
-  private static final String CONFIRMED_STATUS = "CONFIRMED";
-  private static final String X_ROLES_ATTRIBUTE = "X-ROLES";
-  private static final String X_IDENTITY_STATUS_ATTRIBUTE = "X-IDENTITY-STATUS";
+  static final String CONFIRMED_STATUS = "CONFIRMED";
+  static final String X_ROLES_ATTRIBUTE = "X-ROLES";
+  static final String X_IDENTITY_STATUS_ATTRIBUTE = "X-IDENTITY-STATUS";
   private static final String X_TENANT_ID_ATTRIBUTE = "X-TENANT-ID";
-  private static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
+  static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
 
   private final List<String> rolesToMatch = new ArrayList<String>();
 
-  public PostAuthenticationFilter(String[] rolesToMatch) {
+  public PostAuthenticationFilter(List<String> rolesToMatch) {
     for (String role : rolesToMatch)
       this.rolesToMatch.add(role.toLowerCase());
   }

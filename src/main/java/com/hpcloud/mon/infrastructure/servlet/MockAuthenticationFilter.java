@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class MockAuthenticationFilter implements Filter {
   private static final String X_AUTH_TOKEN_HEADER = "X-Auth-Token";
-  private static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
 
   @Override
   public void destroy() {
@@ -35,14 +34,31 @@ public class MockAuthenticationFilter implements Filter {
     chain.doFilter(wrapper, response);
   }
 
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
+  }
+
   /**
    * Returns an HttpServletRequestWrapper that serves tenant id headers from request attributes.
    */
   private HttpServletRequestWrapper requestWrapperFor(final HttpServletRequest request) {
     return new HttpServletRequestWrapper(request) {
       @Override
+      public Object getAttribute(String name) {
+        if (name.equalsIgnoreCase(PostAuthenticationFilter.X_TENANT_ID_HEADER)) {
+          String tenantId = request.getHeader(PostAuthenticationFilter.X_TENANT_ID_HEADER);
+          return tenantId == null ? request.getHeader(X_AUTH_TOKEN_HEADER) : tenantId;
+        }
+        if (name.equalsIgnoreCase(PostAuthenticationFilter.X_IDENTITY_STATUS_ATTRIBUTE))
+          return PostAuthenticationFilter.CONFIRMED_STATUS;
+        if (name.equalsIgnoreCase(PostAuthenticationFilter.X_ROLES_ATTRIBUTE))
+          return "";
+        return super.getAttribute(name);
+      }
+
+      @Override
       public String getHeader(String name) {
-        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER))
+        if (name.equalsIgnoreCase(PostAuthenticationFilter.X_TENANT_ID_HEADER))
           return request.getHeader(X_AUTH_TOKEN_HEADER);
         return super.getHeader(name);
       }
@@ -50,13 +66,13 @@ public class MockAuthenticationFilter implements Filter {
       @Override
       public Enumeration<String> getHeaderNames() {
         List<String> names = Collections.list(super.getHeaderNames());
-        names.add(X_TENANT_ID_HEADER);
+        names.add(PostAuthenticationFilter.X_TENANT_ID_HEADER);
         return Collections.enumeration(names);
       }
 
       @Override
       public Enumeration<String> getHeaders(String name) {
-        if (name.equalsIgnoreCase(X_TENANT_ID_HEADER)) {
+        if (name.equalsIgnoreCase(PostAuthenticationFilter.X_TENANT_ID_HEADER)) {
           String authToken = request.getHeader(X_AUTH_TOKEN_HEADER);
           return authToken == null ? Collections.<String>emptyEnumeration()
               : Collections.enumeration(Collections.singleton(authToken));
@@ -64,9 +80,5 @@ public class MockAuthenticationFilter implements Filter {
         return super.getHeaders(name);
       }
     };
-  }
-
-  @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
   }
 }
