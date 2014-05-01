@@ -4,9 +4,6 @@ import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class LinksTest {
   public void shouldPrefixForHttps() {

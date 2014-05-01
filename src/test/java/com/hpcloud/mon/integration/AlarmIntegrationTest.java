@@ -43,9 +43,6 @@ import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.AlarmResource;
 import com.sun.jersey.api.client.ClientResponse;
 
-/**
- * @author Jonathan Halterman
- */
 @Test(groups = "integration", enabled = false)
 public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   private static final String TENANT_ID = "alarm-test";
@@ -63,7 +60,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
-    
+
     Handle handle = mysqlDb.open();
     handle.execute("truncate table alarm");
     handle.execute("truncate table notification_method");

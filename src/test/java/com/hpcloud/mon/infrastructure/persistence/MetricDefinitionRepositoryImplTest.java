@@ -16,9 +16,6 @@ import org.testng.annotations.Test;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 
-/**
- * @author Jonathan Halterman
- */
 @Test(groups = "database")
 public class MetricDefinitionRepositoryImplTest {
   private DBI db;

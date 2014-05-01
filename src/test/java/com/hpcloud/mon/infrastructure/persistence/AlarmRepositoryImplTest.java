@@ -32,9 +32,6 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class AlarmRepositoryImplTest {
   private DBI db;
@@ -134,12 +131,14 @@ public class AlarmRepositoryImplTest {
         .put("555", newSubExpression)
         .build();
 
-    repo.update("bob", "234", false, "90% CPU", null, "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
+    repo.update("bob", "234", false, "90% CPU", null,
+        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
         AlarmState.ALARM, false, oldSubAlarmIds, changedSubExpressions, newSubExpressions,
         alarmActions, null, null);
 
     Alarm alarm = repo.findById("bob", "234");
-    Alarm expected = new Alarm("234", "90% CPU", null, "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
+    Alarm expected = new Alarm("234", "90% CPU", null,
+        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
         AlarmState.ALARM, false, alarmActions, Collections.<String>emptyList(),
         Collections.<String>emptyList());
     assertEquals(expected, alarm);

@@ -36,9 +36,6 @@ import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private String expression;

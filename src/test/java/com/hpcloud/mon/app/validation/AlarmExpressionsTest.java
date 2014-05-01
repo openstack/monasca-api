@@ -10,9 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class AlarmExpressionsTest {
   public void shouldNormalizeFields() {

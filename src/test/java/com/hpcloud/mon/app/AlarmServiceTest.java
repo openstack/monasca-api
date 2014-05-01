@@ -35,9 +35,6 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class AlarmServiceTest {
   AlarmService service;

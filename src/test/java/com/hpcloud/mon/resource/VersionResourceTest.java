@@ -11,9 +11,9 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
@@ -23,9 +23,6 @@ import com.hpcloud.mon.domain.model.version.Version.VersionStatus;
 import com.hpcloud.mon.domain.model.version.VersionRepository;
 import com.sun.jersey.api.client.GenericType;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class VersionResourceTest extends AbstractMonApiResourceTest {
   private Version version;
@@ -34,7 +31,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
-    version = new Version("v2.0", VersionStatus.CURRENT, new Date(1355253328));
+    version = new Version("v2.0", VersionStatus.CURRENT, new DateTime(1355253328));
     version.setLinks(Arrays.asList(new Link("self",
         "https://region-a.geo-1.maas.hpcloudsvc.com/v2.0")));
 
