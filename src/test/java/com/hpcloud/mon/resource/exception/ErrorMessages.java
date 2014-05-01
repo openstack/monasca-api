@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Error message utilities.
- * 
- * @author Jonathan Halterman
  */
 public final class ErrorMessages {
   private static final ObjectMapper MAPPER = new ObjectMapper();

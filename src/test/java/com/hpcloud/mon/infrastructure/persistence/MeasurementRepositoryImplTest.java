@@ -17,9 +17,6 @@ import org.testng.annotations.Test;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
 
-/**
- * @author Jonathan Halterman
- */
 @Test(groups = "database")
 public class MeasurementRepositoryImplTest {
   private DBI db;

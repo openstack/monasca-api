@@ -29,9 +29,6 @@ import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.MetricResource;
 import com.sun.jersey.api.client.ClientResponse;
 
-/**
- * @author Todd Walk
- */
 @Test(groups = "integration", enabled = false)
 public class MetricIntegrationTest extends AbstractMonApiResourceTest {
   private static final String TENANT_ID = "metric-test";

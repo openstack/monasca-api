@@ -29,9 +29,6 @@ import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.NotificationMethodResource;
 import com.sun.jersey.api.client.ClientResponse;
 
-/**
- * @author Jonathan Halterman
- */
 @Test(groups = "integration")
 public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTest {
   private static final String TENANT_ID = "notification-method-test";

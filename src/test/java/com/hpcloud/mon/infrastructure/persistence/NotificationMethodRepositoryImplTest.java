@@ -21,9 +21,6 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class NotificationMethodRepositoryImplTest {
   private DBI db;

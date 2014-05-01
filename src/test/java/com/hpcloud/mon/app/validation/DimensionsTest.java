@@ -9,9 +9,6 @@ import javax.ws.rs.WebApplicationException;
 
 import org.testng.annotations.Test;
 
-/**
- * @author Jonathan Halterman
- */
 @Test
 public class DimensionsTest {
   @SuppressWarnings("serial")

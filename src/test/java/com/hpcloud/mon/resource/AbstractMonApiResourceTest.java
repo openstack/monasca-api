@@ -15,8 +15,6 @@ import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
 
 /**
  * Support class for monitoring resource tests.
- * 
- * @author Jonathan Halterman
  */
 public abstract class AbstractMonApiResourceTest extends AbstractResourceTest {
   @Override

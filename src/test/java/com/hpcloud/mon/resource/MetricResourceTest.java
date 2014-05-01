@@ -24,9 +24,6 @@ import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 
-/**
- * @author Todd Walk
- */
 @Test
 public class MetricResourceTest extends AbstractMonApiResourceTest {
   private Map<String, String> dimensions;

@@ -16,9 +16,6 @@ import org.testng.annotations.Test;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.sun.jersey.api.client.ClientResponse;
 
-/**
- * @author Todd Walk
- */
 @Test
 public class StatisticResourceTest extends AbstractMonApiResourceTest {
   private StatisticRepository statisticRepo;
