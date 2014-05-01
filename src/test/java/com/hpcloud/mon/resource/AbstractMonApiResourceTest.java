@@ -10,7 +10,6 @@ import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
 import com.hpcloud.mon.resource.exception.InvalidEntityExceptionMapper;
 import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
 import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
-import com.hpcloud.mon.resource.exception.ResourceNotFoundExceptionMapper;
 import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
 
 /**
@@ -20,10 +19,9 @@ public abstract class AbstractMonApiResourceTest extends AbstractResourceTest {
   @Override
   protected void setupResources() throws Exception {
     addSingletons(new EntityExistsExceptionMapper(), new EntityNotFoundExceptionMapper(),
-        new ResourceNotFoundExceptionMapper(), new IllegalArgumentExceptionMapper(),
-        new InvalidEntityExceptionMapper(), new JsonProcessingExceptionMapper(),
-        new JsonMappingExceptionManager(), new ConstraintViolationExceptionMapper(),
-        new ThrowableExceptionMapper<Throwable>() {
+        new IllegalArgumentExceptionMapper(), new InvalidEntityExceptionMapper(),
+        new JsonProcessingExceptionMapper(), new JsonMappingExceptionManager(),
+        new ConstraintViolationExceptionMapper(), new ThrowableExceptionMapper<Throwable>() {
         });
 
     objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
