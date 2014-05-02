@@ -1,7 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import static org.testng.Assert.assertEquals;
-
+import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -10,12 +10,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import static org.testng.Assert.assertEquals;
 
-/**
- * @author Jonathan Halterman
- */
 @Test(groups = "database")
 public class AlarmStateHistoryRepositoryImplTest {
   private DBI db;
