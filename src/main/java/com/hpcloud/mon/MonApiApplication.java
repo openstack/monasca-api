@@ -147,7 +147,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     }
     environment.servlets()
         .addFilter("post-auth", new PostAuthenticationFilter(Collections.<String>singletonList("")))
-        .addMappingForUrlPatterns(null, true, "/*");
+        .addMappingForUrlPatterns(null, true, "/v2.0/*");
 
     /** Configure swagger */
     SwaggerBundle.configure(config);
