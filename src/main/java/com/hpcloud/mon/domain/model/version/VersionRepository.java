@@ -16,14 +16,12 @@
  */
 package com.hpcloud.mon.domain.model.version;
 
-import java.util.List;
-
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
+
+import java.util.List;
 
 /**
  * Repository for versions.
- * 
- * @author Jonathan Halterman
  */
 public interface VersionRepository {
   List<Version> find();
