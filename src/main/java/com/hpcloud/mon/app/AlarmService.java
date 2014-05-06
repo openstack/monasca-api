@@ -222,7 +222,7 @@ public class AlarmService {
       if (!oldState.equals(newState)) {
         event = Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
             description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
-            System.currentTimeMillis()));
+            System.currentTimeMillis()/1000));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
     } catch (Exception e) {
