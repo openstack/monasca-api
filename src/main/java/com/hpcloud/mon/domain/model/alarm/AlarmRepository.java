@@ -33,8 +33,8 @@ public interface AlarmRepository {
    * Creates and returns a new alarm for the criteria.
    */
   Alarm create(String tenantId, String id, String name, String description, String expression,
-      Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions);
+    Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+    List<String> okActions, List<String> undeterminedActions);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
@@ -49,7 +49,7 @@ public interface AlarmRepository {
   /**
    * Returns alarms for the {@code tenantId}.
    */
-  List<Alarm> find(String tenantId);
+  List<Alarm> find(String tenantId, Map<String, String> dimensions, String state);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
@@ -70,8 +70,8 @@ public interface AlarmRepository {
    * Updates and returns an alarm for the criteria.
    */
   void update(String tenantId, String id, boolean patch, String name, String description,
-      String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
-      Map<String, AlarmSubExpression> changedSubAlarms,
-      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions);
+    String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
+    Map<String, AlarmSubExpression> changedSubAlarms,
+    Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+    List<String> okActions, List<String> undeterminedActions);
 }
