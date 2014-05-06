@@ -222,7 +222,7 @@ public class AlarmRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<Alarm> alarms = repo.find("bob");
+    List<Alarm> alarms = repo.find("bob",null,null);
 
     assertEquals(
         alarms,
