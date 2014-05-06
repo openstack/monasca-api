@@ -43,7 +43,8 @@ public final class Validation {
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
   private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
   private static final List<String> VALID_STATISTICS = Arrays.asList("avg", "min", "max", "sum",
-      "count");
+    "count");
+  private static final List<String> VALID_ALARM_STATE = Arrays.asList("undetermined", "ok", "alarmed");
 
   private Validation() {
   }
@@ -52,7 +53,7 @@ public final class Validation {
    * @throws JsonMappingException if the {@code value} is not valid for the {@code type}
    */
   public static <T extends Enum<T>> T parseAndValidate(Class<T> type, String value)
-      throws JsonMappingException {
+    throws JsonMappingException {
     for (T constant : type.getEnumConstants())
       if (constant.name().equalsIgnoreCase(value))
         return constant;
@@ -84,7 +85,7 @@ public final class Validation {
    * @throws WebApplicationException if the {@code value} is null or empty.
    */
   public static Map<String, String> parseAndValidateNameAndDimensions(String name,
-      String dimensionsStr) {
+    String dimensionsStr) {
     Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
 
     Map<String, String> dimensions = new HashMap<String, String>();
@@ -96,6 +97,24 @@ public final class Validation {
 
     String service = dimensions.get(Services.SERVICE_DIMENSION);
     MetricNameValidation.validate(name, service);
+    DimensionValidation.validate(dimensions, service);
+    return dimensions;
+  }
+
+  /**
+   * @throws WebApplicationException if the {@code value} is null or empty.
+   */
+  public static Map<String, String> parseAndValidateDimensions(String dimensionsStr) {
+    Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
+
+    Map<String, String> dimensions = new HashMap<String, String>();
+    for (String dimensionStr : COMMA_SPLITTER.split(dimensionsStr)) {
+      String[] dimensionArr = Iterables.toArray(COLON_SPLITTER.split(dimensionStr), String.class);
+      if (dimensionArr.length == 2)
+        dimensions.put(dimensionArr[0], dimensionArr[1]);
+    }
+
+    String service = dimensions.get(Services.SERVICE_DIMENSION);
     DimensionValidation.validate(dimensions, service);
     return dimensions;
   }
@@ -127,6 +146,16 @@ public final class Validation {
       throw Exceptions.unprocessableEntity("Statistics are required");
 
     return validStats;
+  }
+
+  /**
+   * @throws WebApplicationException if the {@code statistics} empty or invalid.
+   */
+  public static void validateAlarmState(String state) {
+    String stateLower = state.toLowerCase();
+    if (!VALID_ALARM_STATE.contains(stateLower)) {
+      throw Exceptions.unprocessableEntity("%s is not a valid state", state);
+    }
   }
 
   /**
