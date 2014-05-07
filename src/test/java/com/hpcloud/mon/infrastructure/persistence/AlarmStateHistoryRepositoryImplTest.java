@@ -1,7 +1,10 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
+import java.sql.Timestamp;
+
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -36,8 +39,18 @@ public class AlarmStateHistoryRepositoryImplTest {
     handle.execute("truncate table MonAlarms.StateHistory");
   }
 
+  public void create(String tenantId, String alarmId, AlarmState oldState, AlarmState newState,
+      String reason, String reasonData, DateTime timestamp) {
+    try (Handle h = db.open()) {
+      h.insert(
+          "insert into MonAlarms.StateHistory (tenant_id, alarm_id, old_state, new_state, reason, reason_data, time_stamp) values (?, ?, ?, ?, ?, ?, ?)",
+          tenantId, alarmId, oldState.name(), newState.name(), reason, reasonData, new Timestamp(
+              timestamp.getMillis()));
+    }
+  }
+
   public void shouldCreateAndFind() {
-    repo.create("bob", "123", AlarmState.UNDETERMINED, AlarmState.ALARM, "foo", "bar",
+    create("bob", "123", AlarmState.UNDETERMINED, AlarmState.ALARM, "foo", "bar",
         new DateTime());
     assertEquals(repo.findById("bob", "123").size(), 1);
   }
