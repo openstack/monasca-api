@@ -46,7 +46,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private AlarmStateHistoryRepository stateHistoryRepo;
   private List<String> alarmActions;
 
-  @Override
+  /*@Override
   @SuppressWarnings("unchecked")
   protected void setupResources() throws Exception {
     super.setupResources();
@@ -324,5 +324,5 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .header("X-Tenant-Id", "abc")
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, request);
-  }
+  }  */
 }
