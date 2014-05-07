@@ -33,3 +33,5 @@ Requests flow through the following architectural layers from top to bottom:
 When running mon-api the API docs along with the API test interface can be accessed via:
 
 [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/)
+
+Note: the trailing "/" is necessary for the Swagger UI to work properly.
