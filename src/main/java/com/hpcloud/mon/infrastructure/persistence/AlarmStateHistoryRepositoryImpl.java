@@ -46,7 +46,7 @@ public class AlarmStateHistoryRepositoryImpl implements AlarmStateHistoryReposit
   public List<AlarmStateHistory> findById(String tenantId, String alarmId) {
     try (Handle h = db.open()) {
       return h.createQuery(
-          "select alarm_id, old_state, new_state, reason, reason_data, time_stamp as timestamp from MonAlarms.StateHistory where tenant_id = :tenantId and alarm_id = :alarmId")
+          "select alarm_id, old_state, new_state, reason, reason_data, time_stamp as timestamp from MonAlarms.StateHistory where tenant_id = :tenantId and alarm_id = :alarmId order by time_stamp desc")
           .bind("tenantId", tenantId)
           .bind("alarmId", alarmId)
           .map(new BeanMapper<>(AlarmStateHistory.class))
