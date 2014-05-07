@@ -15,7 +15,6 @@ final class SubAlarmQueries {
   private SubAlarmQueries() {
   }
 
-//  sub_alarm_dimension dim on sub.id=dim.sub_alarm_id
   static String buildJoinClauseFor(Map<String, String> dimensions) {
     StringBuilder sbJoin = null;
     if (dimensions != null) {
@@ -34,13 +33,7 @@ final class SubAlarmQueries {
           .append(" and dim.sub_alarm_id = d")
           .append(i)
           .append(".sub_alarm_id");
-       /* if(i==0) {
-          sbJoin.append(" and sub.id=d0.sub_alarm_id");
-        }*/
       }
-        /*  .append(" and dd.sub_alarm_id = d")
-          .append(i)
-          .append(".sub_alarm_id");*/
     }
 
     return sbJoin == null ? "" : sbJoin.toString();
@@ -57,8 +50,4 @@ final class SubAlarmQueries {
     }
   }
 
-  /*static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
-    return SqlQueries.keyValuesFor(handle,
-      "select name, value from MonMetrics.Dimensions where dimension_set_id = ?", dimensionSetId);
-  } */
 }
