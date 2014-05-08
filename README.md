@@ -35,3 +35,20 @@ When running mon-api the API docs along with the API test interface can be acces
 [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/)
 
 Note: the trailing "/" is necessary for the Swagger UI to work properly.
+
+# License
+
+Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied.
+See the License for the specific language governing permissions and
+limitations under the License.
