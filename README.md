@@ -28,11 +28,13 @@ Requests flow through the following architectural layers from top to bottom:
   
 ## Documentation
 
-When running mon-api the API docs along with the API test interface can be accessed via:
+There are several forms of documentation for the Monitoring API.
 
-[http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/)
+* Overview: [/docs/mon-api-overview.md](/docs/mon-api-overview.md). This describes some of the concepts in the Monitoring API.
 
-Note: the trailing "/" is necessary for the Swagger UI to work properly.
+* API Specification: [/docs/mon-api-spec.md](/docs/mon-api-spec.md). This is the RESTful API specification.
+
+* swagger-ui: When running mon-api the API docs along with the API test interface can be accessed at, [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/). Note: the trailing "/" is necessary for the Swagger UI to work properly.
 
 # License
 

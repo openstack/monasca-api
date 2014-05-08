@@ -26,7 +26,7 @@ public class AlarmStateHistoryRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.8/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new AlarmStateHistoryRepositoryImpl(db);
+    repo = new AlarmStateHistoryRepositoryImpl(null, db);
   }
 
   @AfterClass
