@@ -76,7 +76,7 @@ public class AlarmRepositoryImplTest {
     handle.execute("insert into alarm_action values ('123', 'ALARM', '77778687')");
 
     handle.execute("insert into alarm (id, tenant_id, name, expression, state, actions_enabled, created_at, updated_at, deleted_at) "
-        + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute{flavor_id=777}) < 100', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
+        + "values ('234', 'bob', '50% CPU', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
     handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
         + "values ('222', '234', 'avg', 'hpcs.compute', 'GT', 20, 60, 1, 'UNDETERMINED', NOW(), NOW())");
     handle.execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
@@ -84,7 +84,6 @@ public class AlarmRepositoryImplTest {
     handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
     handle.execute("insert into sub_alarm_dimension values ('222', 'image_id', '888')");
     handle.execute("insert into sub_alarm_dimension values ('222', 'metric_name', 'mem')");
-    handle.execute("insert into sub_alarm_dimension values ('223', 'flavor_id', '777')");
     handle.execute("insert into alarm_action values ('234', 'ALARM', '29387234')");
     handle.execute("insert into alarm_action values ('234', 'ALARM', '77778687')");
   }
@@ -122,7 +121,7 @@ public class AlarmRepositoryImplTest {
     beforeMethod();
 
     List<String> oldSubAlarmIds = Arrays.asList("222");
-    AlarmSubExpression changedSubExpression = AlarmSubExpression.of("avg(hpcs.compute{flavor_id=777}) <= 200");
+    AlarmSubExpression changedSubExpression = AlarmSubExpression.of("avg(hpcs.compute) <= 200");
     Map<String, AlarmSubExpression> changedSubExpressions = ImmutableMap.<String, AlarmSubExpression>builder()
         .put("223", changedSubExpression)
         .build();
@@ -132,13 +131,13 @@ public class AlarmRepositoryImplTest {
         .build();
 
     repo.update("bob", "234", false, "90% CPU", null,
-        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
+        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute) <= 200",
         AlarmState.ALARM, false, oldSubAlarmIds, changedSubExpressions, newSubExpressions,
         alarmActions, null, null);
 
     Alarm alarm = repo.findById("bob", "234");
     Alarm expected = new Alarm("234", "90% CPU", null,
-        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
+        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute) <= 200",
         AlarmState.ALARM, false, alarmActions, Collections.<String>emptyList(),
         Collections.<String>emptyList());
     assertEquals(expected, alarm);
@@ -203,13 +202,10 @@ public class AlarmRepositoryImplTest {
                 .put("device", "1")
                 .build()), AlarmOperator.GT, 10, 60, 1));
 
-    assertEquals(repo.findSubExpressions("234").get("222"), new AlarmSubExpression(
+    assertEquals(repo.findSubExpressions("234").get("223"), new AlarmSubExpression(
         AggregateFunction.AVG, new MetricDefinition("hpcs.compute",
             ImmutableMap.<String, String>builder()
-                .put("flavor_id", "777")
-                .put("image_id", "888")
-                .put("metric_name", "mem")
-                .build()), AlarmOperator.GT, 20, 60, 1));
+                .build()), AlarmOperator.LT, 100, 60, 1));
 
     assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
   }
@@ -235,7 +231,7 @@ public class AlarmRepositoryImplTest {
                 "234",
                 "50% CPU",
                 null,
-                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute{flavor_id=777}) < 100",
+                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100",
                 AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
                 Collections.<String>emptyList(), Collections.<String>emptyList())));
   }
