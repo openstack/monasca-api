@@ -25,6 +25,7 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.persistence.BeanMapper;
+
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
@@ -32,6 +33,7 @@ import org.skife.jdbi.v2.util.StringMapper;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.util.*;
 
 /**
@@ -39,8 +41,8 @@ import java.util.*;
  */
 public class AlarmRepositoryImpl implements AlarmRepository {
   private static final String SUB_ALARM_SQL = "select sa.*, sad.dimensions from sub_alarm as sa, "
-    + "(select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id) as sad "
-    + "where sa.id = sad.sub_alarm_id and sa.alarm_id = :alarmId";
+      + "(select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id) as sad "
+      + "where sa.id = sad.sub_alarm_id and sa.alarm_id = :alarmId";
 
   private final DBI db;
 
@@ -51,15 +53,15 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public Alarm create(String tenantId, String id, String name, String description,
-    String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
-    List<String> okActions, List<String> undeterminedActions) {
+      String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-        "insert into alarm (id, tenant_id, name, description, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
-        id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
+          "insert into alarm (id, tenant_id, name, description, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+          id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
       createSubExpressions(h, id, subExpressions);
@@ -71,8 +73,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
       h.commit();
       return new Alarm(id, name, description, expression, AlarmState.UNDETERMINED, true,
-        alarmActions, okActions == null ? Collections.<String>emptyList() : okActions,
-        undeterminedActions == null ? Collections.<String>emptyList() : undeterminedActions);
+          alarmActions, okActions == null ? Collections.<String>emptyList() : okActions,
+          undeterminedActions == null ? Collections.<String>emptyList() : undeterminedActions);
     } catch (RuntimeException e) {
       h.rollback();
       throw e;
@@ -85,8 +87,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   public void deleteById(String tenantId, String alarmId) {
     try (Handle h = db.open()) {
       if (h.update(
-        "update alarm set deleted_at = NOW() where tenant_id = ? and id = ? and deleted_at is NULL",
-        tenantId, alarmId) == 0)
+          "update alarm set deleted_at = NOW() where tenant_id = ? and id = ? and deleted_at is NULL",
+          tenantId, alarmId) == 0)
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
     }
   }
@@ -95,15 +97,16 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   public boolean exists(String tenantId, String name) {
     try (Handle h = db.open()) {
       return h.createQuery(
-        "select exists(select 1 from alarm where tenant_id = :tenantId and name = :name and deleted_at is NULL)")
-        .bind("tenantId", tenantId)
-        .bind("name", name)
-        .mapTo(Boolean.TYPE)
-        .first();
+          "select exists(select 1 from alarm where tenant_id = :tenantId and name = :name and deleted_at is NULL)")
+          .bind("tenantId", tenantId)
+          .bind("name", name)
+          .mapTo(Boolean.TYPE)
+          .first();
     }
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Alarm> find(String tenantId, Map<String, String> dimensions, String state) {
     try (Handle h = db.open()) {
 
@@ -115,16 +118,16 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       }
 
       String sql = String.format(query, SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere);
-      Query q = h.createQuery(sql).bind("tenantId", tenantId);
+      Query<?> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (state != null) {
         q.bind("state", state);
       }
 
       q = q.map(new BeanMapper<Alarm>(Alarm.class));
-      SubAlarmQueries.bindDimensionsToQuery(q, dimensions);
+      DimensionQueries.bindDimensionsToQuery(q, dimensions);
 
-      List<Alarm> alarms = q.list();
+      List<Alarm> alarms = (List<Alarm>) q.list();
 
       for (Alarm alarm : alarms)
         hydrateRelationships(h, alarm);
@@ -136,11 +139,11 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   public Alarm findById(String tenantId, String alarmId) {
     try (Handle h = db.open()) {
       Alarm alarm = h.createQuery(
-        "select * from alarm where tenant_id = :tenantId and id = :id and deleted_at is NULL")
-        .bind("tenantId", tenantId)
-        .bind("id", alarmId)
-        .map(new BeanMapper<Alarm>(Alarm.class))
-        .first();
+          "select * from alarm where tenant_id = :tenantId and id = :id and deleted_at is NULL")
+          .bind("tenantId", tenantId)
+          .bind("id", alarmId)
+          .map(new BeanMapper<Alarm>(Alarm.class))
+          .first();
 
       if (alarm == null)
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
@@ -181,7 +184,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         Integer periods = (Integer) row.get("periods");
         Map<String, String> dimensions = dimensionsFor((String) row.get("dimensions"));
         subExpressions.put(id, new AlarmSubExpression(function, new MetricDefinition(metricName,
-          dimensions), operator, threshold, period, periods));
+            dimensions), operator, threshold, period, periods));
       }
 
       return subExpressions;
@@ -190,17 +193,17 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public void update(String tenantId, String id, boolean patch, String name, String description,
-    String expression, AlarmState state, boolean actionsEnabled,
-    Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
-    Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
-    List<String> okActions, List<String> undeterminedActions) {
+      String expression, AlarmState state, boolean actionsEnabled,
+      Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
+      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-        "update alarm set name = ?, description = ?, expression = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
-        name, description, expression, state.name(), actionsEnabled, tenantId, id);
+          "update alarm set name = ?, description = ?, expression = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
+          name, description, expression, state.name(), actionsEnabled, tenantId, id);
 
       // Delete old sub-alarms
       if (oldSubAlarmIds != null)
@@ -212,8 +215,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         for (Map.Entry<String, AlarmSubExpression> entry : changedSubAlarms.entrySet()) {
           AlarmSubExpression sa = entry.getValue();
           h.execute(
-            "update sub_alarm set operator = ?, threshold = ?, updated_at = NOW() where id = ?",
-            sa.getOperator().name(), sa.getThreshold(), entry.getKey());
+              "update sub_alarm set operator = ?, threshold = ?, updated_at = NOW() where id = ?",
+              sa.getOperator().name(), sa.getThreshold(), entry.getKey());
         }
 
       // Insert new sub-alarms
@@ -244,7 +247,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   private void deleteActions(Handle handle, String id, AlarmState alarmState, List<String> actions) {
     if (actions != null)
       handle.execute("delete from alarm_action where alarm_id = ? and alarm_state = ?", id,
-        alarmState.name());
+          alarmState.name());
   }
 
   private Map<String, String> dimensionsFor(String dimensionSet) {
@@ -264,11 +267,11 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   private List<String> findActionsById(Handle handle, String alarmId, AlarmState state) {
     return handle.createQuery(
-      "select action_id from alarm_action where alarm_id = :alarmId and alarm_state = :alarmState")
-      .bind("alarmId", alarmId)
-      .bind("alarmState", state.name())
-      .map(StringMapper.FIRST)
-      .list();
+        "select action_id from alarm_action where alarm_id = :alarmId and alarm_state = :alarmState")
+        .bind("alarmId", alarmId)
+        .bind("alarmState", state.name())
+        .map(StringMapper.FIRST)
+        .list();
   }
 
   private void persistActions(Handle handle, String id, AlarmState alarmState, List<String> actions) {
@@ -284,7 +287,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   }
 
   private void createSubExpressions(Handle handle, String id,
-    Map<String, AlarmSubExpression> alarmSubExpressions) {
+      Map<String, AlarmSubExpression> alarmSubExpressions) {
     if (alarmSubExpressions != null)
       for (Map.Entry<String, AlarmSubExpression> subEntry : alarmSubExpressions.entrySet()) {
         String subAlarmId = subEntry.getKey();
@@ -293,17 +296,17 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
         // Persist sub-alarm
         handle.insert(
-          "insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
-            + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", subAlarmId, id,
-          subExpr.getFunction().name(), metricDef.name, subExpr.getOperator().name(),
-          subExpr.getThreshold(), subExpr.getPeriod(), subExpr.getPeriods(),
-          AlarmState.UNDETERMINED.toString());
+            "insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
+                + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", subAlarmId, id,
+            subExpr.getFunction().name(), metricDef.name, subExpr.getOperator().name(),
+            subExpr.getThreshold(), subExpr.getPeriod(), subExpr.getPeriods(),
+            AlarmState.UNDETERMINED.toString());
 
         // Persist sub-alarm dimensions
         if (metricDef.dimensions != null && !metricDef.dimensions.isEmpty())
           for (Map.Entry<String, String> dimEntry : metricDef.dimensions.entrySet())
             handle.insert("insert into sub_alarm_dimension values (?, ?, ?)", subAlarmId,
-              dimEntry.getKey(), dimEntry.getValue());
+                dimEntry.getKey(), dimEntry.getValue());
       }
   }
 }

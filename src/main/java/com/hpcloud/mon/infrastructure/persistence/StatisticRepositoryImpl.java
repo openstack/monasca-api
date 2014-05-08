@@ -17,22 +17,25 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.DBI;
-
-import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
-
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
+
+import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
+import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 /**
  * Vertica statistic repository implementation.
@@ -140,7 +143,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
       query.bind("endTime", new Timestamp(endTime.getMillis()));
     }
 
-    MetricQueries.bindDimensionsToQuery(query, dimensions);
+    DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
     // Execute
     List<Map<String, Object>> rows = query.list();

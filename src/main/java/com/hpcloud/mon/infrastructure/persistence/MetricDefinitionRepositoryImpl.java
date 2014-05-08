@@ -62,7 +62,7 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       if (name != null)
         query.bind("name", name);
-      MetricQueries.bindDimensionsToQuery(query, dimensions);
+      DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       // Execute query
       List<Map<String, Object>> rows = query.list();
