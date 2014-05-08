@@ -26,7 +26,7 @@ Requests flow through the following architectural layers from top to bottom:
 * Infrastructure
   * Contains technology specific implementations of domain services.
   
-## Docs and Test Interface
+## Documentation
 
 When running mon-api the API docs along with the API test interface can be accessed via:
 
