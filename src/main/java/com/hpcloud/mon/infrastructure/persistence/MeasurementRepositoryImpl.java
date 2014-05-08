@@ -77,7 +77,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
         query.bind("name", name);
       if (endTime != null)
         query.bind("endTime", new Timestamp(endTime.getMillis()));
-      MetricQueries.bindDimensionsToQuery(query, dimensions);
+      DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       // Execute query
       List<Map<String, Object>> rows = query.list();
