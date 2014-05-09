@@ -70,7 +70,7 @@ public interface AlarmRepository {
    * Updates and returns an alarm for the criteria.
    */
   void update(String tenantId, String id, boolean patch, String name, String description,
-    String expression, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
+    String expression, String severity, AlarmState state, boolean enabled, Collection<String> oldSubAlarmIds,
     Map<String, AlarmSubExpression> changedSubAlarms,
     Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
     List<String> okActions, List<String> undeterminedActions);

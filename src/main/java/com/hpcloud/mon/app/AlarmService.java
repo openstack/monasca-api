@@ -164,7 +164,7 @@ public class AlarmService {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
         command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
-        alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
+        command.severity, alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
         command.alarmActions, command.okActions, command.undeterminedActions);
     return new Alarm(alarmId, command.name, command.description, command.severity, command.expression, command.state,
         command.actionsEnabled, command.alarmActions, command.okActions,
@@ -190,7 +190,7 @@ public class AlarmService {
     state = state == null ? alarm.getState() : state;
     enabled = enabled == null ? alarm.isActionsEnabled() : enabled;
 
-    updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression,
+    updateInternal(tenantId, alarmId, true, name, description, expression, severity, alarmExpression,
         alarm.getState(), state, enabled, alarmActions, okActions, undeterminedActions);
 
     return new Alarm(alarmId, name, description, severity, expression, state, enabled,
@@ -200,14 +200,14 @@ public class AlarmService {
   }
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
-      String description, String expression, AlarmExpression alarmExpression, AlarmState oldState,
+      String description, String expression, String severity, AlarmExpression alarmExpression, AlarmState oldState,
       AlarmState newState, Boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     SubExpressions subExpressions = subExpressionsFor(alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, newState, enabled,
+      repo.update(tenantId, alarmId, patch, name, description, expression, severity, newState, enabled,
           subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
           subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
       if (!oldState.equals(newState))
