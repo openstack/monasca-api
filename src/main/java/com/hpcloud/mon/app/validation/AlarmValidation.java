@@ -16,6 +16,7 @@
  */
 package com.hpcloud.mon.app.validation;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -30,13 +31,15 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  * Utilities for validating AlarmExpressions.
  */
 public final class AlarmValidation {
+
+  private static final List<String> VALID_ALARM_SERVERITY = Arrays.asList("low", "medium", "high", "critical");
   private AlarmValidation() {
   }
 
   /**
    * @throws WebApplicationException if validation fails
    */
-  public static void validate(String name, String description, List<String> alarmActions,
+  public static void validate(String name, String description, String severity, List<String> alarmActions,
       List<String> okActions, List<String> undeterminedActions) {
     if (name != null && name.length() > 255)
       throw Exceptions.unprocessableEntity("Name %s must be 255 characters or less", name);
@@ -57,6 +60,10 @@ public final class AlarmValidation {
         if (action.length() > 50)
           throw Exceptions.unprocessableEntity(
               "Undetermined action %s must be 50 characters or less", action);
+    String severityLower = severity.toLowerCase();
+    if (!VALID_ALARM_SERVERITY.contains(severityLower)) {
+      throw Exceptions.unprocessableEntity("%s is not a valid severity", severity);
+    }
   }
 
   /**

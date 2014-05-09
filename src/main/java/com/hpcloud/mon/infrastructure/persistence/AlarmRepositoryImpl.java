@@ -56,7 +56,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   }
 
   @Override
-  public Alarm create(String tenantId, String id, String name, String description,
+  public Alarm create(String tenantId, String id, String name, String description, String severity,
     String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
     List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
@@ -64,8 +64,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     try {
       h.begin();
       h.insert(
-        "insert into alarm (id, tenant_id, name, description, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
-        id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
+        "insert into alarm (id, tenant_id, name, description, severity, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+        id, tenantId, name, description, severity, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
       createSubExpressions(h, id, subExpressions);
@@ -76,7 +76,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       persistActions(h, id, AlarmState.UNDETERMINED, undeterminedActions);
 
       h.commit();
-      return new Alarm(id, name, description, expression, AlarmState.UNDETERMINED, true,
+      return new Alarm(id, name, description, severity, expression, AlarmState.UNDETERMINED, true,
         alarmActions, okActions == null ? Collections.<String>emptyList() : okActions,
         undeterminedActions == null ? Collections.<String>emptyList() : undeterminedActions);
     } catch (RuntimeException e) {
@@ -113,7 +113,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   public List<Alarm> find(String tenantId, Map<String, String> dimensions, String state) {
     try (Handle h = db.open()) {
 
-      String query = "select distinct alarm.id, alarm.description,alarm.tenant_id, alarm.expression,alarm.state,alarm.name,alarm.actions_enabled,alarm.created_at, alarm.updated_at, alarm.deleted_at from alarm left outer join sub_alarm sub on alarm.id=sub.alarm_id left outer join sub_alarm_dimension dim on sub.id=dim.sub_alarm_id%s where tenant_id = :tenantId and deleted_at is NULL %s";
+      String query = "select distinct alarm.id, alarm.description, alarm.tenant_id, alarm.expression, alarm.state, alarm.name, alarm.severity, alarm.actions_enabled,alarm.created_at, alarm.updated_at, alarm.deleted_at from alarm left outer join sub_alarm sub on alarm.id=sub.alarm_id left outer join sub_alarm_dimension dim on sub.id=dim.sub_alarm_id%s where tenant_id = :tenantId and deleted_at is NULL %s";
       StringBuilder sbWhere = new StringBuilder();
 
       if (state != null) {

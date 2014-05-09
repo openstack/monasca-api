@@ -1,8 +1,6 @@
 package com.hpcloud.mon.resource;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,9 +9,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.ws.rs.core.MediaType;
 
@@ -46,29 +42,29 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   private AlarmStateHistoryRepository stateHistoryRepo;
   private List<String> alarmActions;
 
-  /*@Override
+  @Override
   @SuppressWarnings("unchecked")
   protected void setupResources() throws Exception {
     super.setupResources();
 
     expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937}) >= 90";
-    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK,
+    alarmItem = new Alarm("123", "Disk Exceeds 1k Operations", null, "LOW", expression, AlarmState.OK,
         true, null, null, null);
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new Alarm("123", "Disk Exceeds 1k Operations", null, expression, AlarmState.OK, true,
+    alarm = new Alarm("123", "Disk Exceeds 1k Operations", null, "LOW", expression, AlarmState.OK, true,
         alarmActions, null, null);
 
     service = mock(AlarmService.class);
     when(
         service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
-            eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
+            eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
             any(List.class))).thenReturn(alarm);
 
     repo = mock(AlarmRepository.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
-    when(repo.find(anyString(),null,null)).thenReturn(Arrays.asList(alarmItem));
+    when(repo.find(anyString(),(Map<String,String>)anyMap(),any(String.class))).thenReturn(Arrays.asList(alarmItem));
 
     stateHistoryRepo = mock(AlarmStateHistoryRepository.class);
 
@@ -78,7 +74,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   @SuppressWarnings("unchecked")
   public void shouldCreate() {
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+      "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     assertEquals(response.getStatus(), 201);
     Alarm newAlarm = response.getEntity(Alarm.class);
@@ -86,8 +82,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     assertEquals(location, "/v2.0/alarms/" + newAlarm.getId());
     assertEquals(newAlarm, alarm);
     verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
-        eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
-        any(List.class));
+        eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)), any(List.class),
+        any(List.class), any(List.class));
   }
 
   public void shouldUpdate() {
@@ -99,7 +95,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .put(
             ClientResponse.class,
-            new UpdateAlarmCommand("Disk Exceeds 1k Operations", null, expression,
+            new UpdateAlarmCommand("Disk Exceeds 1k Operations", null, expression, "LOW",
                 AlarmState.ALARM, true, alarmActions, null, null));
 
     assertEquals(response.getStatus(), 200);
@@ -110,7 +106,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithInvalidMetricName() {
     String expression = "avg(foo{service=hpcs.compute, instance_id=937}) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "foo is not a valid metric name for namespace hpcs.compute");
@@ -119,7 +115,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithInvalidDimensions() {
     String expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937, foo=bar}) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "foo is not a valid dimension name for service hpcs.compute");
@@ -128,7 +124,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithDuplicateDimensions() {
     String expression = "avg(hpcs.compute{instance_id=937, instance_id=123, az=2, instance_uuid=abc123, metric_name=disk_read_ops}) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "The alarm expression is invalid",
@@ -140,10 +136,10 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     String expression = "avg(foo{metric_name=bar}) >= 90";
     when(
         service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
-            eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
+            eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)), any(List.class), any(List.class),
             any(List.class))).thenReturn(alarm);
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
     assertEquals(response.getStatus(), 201);
   }
 
@@ -157,7 +153,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithInvalidOperator() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) & 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "The alarm expression is invalid", "Syntax Error");
@@ -166,7 +162,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWith0Period() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops},0) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Period must not be 0");
@@ -175,7 +171,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithNonMod60Period() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops},61) >= 90";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Period 61 must be a multiple of 60");
@@ -184,7 +180,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithPeriodsLessThan1() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) >= 90 times 0";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Periods 0 must be greater than or equal to 1");
@@ -193,7 +189,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithPeriodTimesPeriodsGT2Weeks() {
     String expression = "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops},60) >= 90 times 20161";
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, expression, "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Period 60 times 20161 must total less than 2 weeks in seconds (1209600)");
@@ -205,7 +201,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
-        null, expression, alarmActions, null, null));
+        null, "LOW", expression, alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class))
         .matches(
@@ -218,7 +214,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     alarmActions = new ArrayList<String>();
     alarmActions.add("012345678901234567890123456789012345678901234567890");
     ClientResponse response = createResponseFor(new CreateAlarmCommand(
-        "Disk Exceeds 1k Operations", null, expression, alarmActions, null, null));
+        "Disk Exceeds 1k Operations", null, "LOW", expression, alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class))
         .matches("unprocessable_entity", 422,
@@ -232,7 +228,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         });
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"),null,null);
+    verify(repo).find(eq("abc"),(Map<String,String>)anyMap(),any(String.class));
   }
 
   public void shouldGet() {
@@ -273,7 +269,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should500OnInternalException() {
-    doThrow(new RuntimeException("")).when(repo).find(anyString(),null,null);
+    doThrow(new RuntimeException("")).when(repo).find(anyString(),(Map<String,String>)anyObject(), (String)anyObject());
 
     try {
       client().resource("/v2.0/alarms").header("X-Tenant-Id", "abc").get(List.class);
@@ -324,5 +320,5 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .header("X-Tenant-Id", "abc")
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, request);
-  }  */
+  }
 }

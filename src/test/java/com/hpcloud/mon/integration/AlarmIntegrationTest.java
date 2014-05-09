@@ -96,7 +96,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new Alarm("123", "90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
+    alarm = new Alarm("123", "90% CPU", null, null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
         AlarmState.OK, true, alarmActions, null, null);
   }
 
@@ -111,7 +111,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(
             ClientResponse.class,
-            new CreateAlarmCommand("90% CPU", null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
+            new CreateAlarmCommand("90% CPU", null, null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
                 alarmActions, null, null));
 
     Alarm newAlarm = response.getEntity(Alarm.class);
@@ -124,14 +124,14 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
 
   public void shouldCreateCaseInsensitiveAndKeywords() throws Exception {
     Alarm alarm_local;
-    alarm_local = new Alarm("123", "90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
+    alarm_local = new Alarm("123", "90% CPU", null, null, "AvG(avg:cpu:{instance_id=123} gT 10",
         AlarmState.OK, true, alarmActions, null, null);
     ClientResponse response = client().resource("/v2.0/alarms")
         .header("X-Tenant-Id", TENANT_ID)
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .post(
             ClientResponse.class,
-            new CreateAlarmCommand("90% CPU", null, "AvG(avg:cpu:{instance_id=123} gT 10",
+            new CreateAlarmCommand("90% CPU", null, null, "AvG(avg:cpu:{instance_id=123} gT 10",
                 alarmActions, null, null));
 
     Alarm newAlarm = response.getEntity(Alarm.class);
@@ -143,7 +143,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldDelete() {
-    Alarm newAlarm = repo.create(TENANT_ID, "123", alarm.getName(), alarm.getName(),
+    Alarm newAlarm = repo.create(TENANT_ID, "123", alarm.getName(), null, alarm.getName(),
         alarm.getExpression(), null, alarm.getAlarmActions(), alarm.getOkActions(),
         alarm.getUndeterminedActions());
     assertNotNull(repo.findById(TENANT_ID, newAlarm.getId()));
