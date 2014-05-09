@@ -132,12 +132,12 @@ public class AlarmRepositoryImplTest {
         .build();
 
     repo.update("bob", "234", false, "90% CPU", null,
-        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
+        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200", "HIGH",
         AlarmState.ALARM, false, oldSubAlarmIds, changedSubExpressions, newSubExpressions,
         alarmActions, null, null);
 
     Alarm alarm = repo.findById("bob", "234");
-    Alarm expected = new Alarm("234", "90% CPU", null, "LOW",
+    Alarm expected = new Alarm("234", "90% CPU", null, "HIGH",
         "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute{flavor_id=777}) <= 200",
         AlarmState.ALARM, false, alarmActions, Collections.<String>emptyList(),
         Collections.<String>emptyList());

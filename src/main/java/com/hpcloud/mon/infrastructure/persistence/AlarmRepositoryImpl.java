@@ -196,7 +196,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public void update(String tenantId, String id, boolean patch, String name, String description,
-    String expression, AlarmState state, boolean actionsEnabled,
+    String expression, String severity, AlarmState state, boolean actionsEnabled,
     Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
     Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
     List<String> okActions, List<String> undeterminedActions) {
@@ -205,8 +205,8 @@ public class AlarmRepositoryImpl implements AlarmRepository {
     try {
       h.begin();
       h.insert(
-        "update alarm set name = ?, description = ?, expression = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
-        name, description, expression, state.name(), actionsEnabled, tenantId, id);
+        "update alarm set name = ?, description = ?, expression = ?, severity = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
+        name, description, expression, severity, state.name(), actionsEnabled, tenantId, id);
 
       // Delete old sub-alarms
       if (oldSubAlarmIds != null)
