@@ -110,7 +110,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   public List<Alarm> find(String tenantId, Map<String, String> dimensions, String state) {
     try (Handle h = db.open()) {
 
-      String query = "select distinct alarm.id, alarm.description,alarm.tenant_id, alarm.expression,alarm.state,alarm.name,alarm.actions_enabled,alarm.created_at, alarm.updated_at, alarm.deleted_at from alarm join sub_alarm sub on alarm.id=sub.alarm_id left outer join sub_alarm_dimension dim on sub.id=dim.sub_alarm_id%s where tenant_id = :tenantId and deleted_at is NULL %s";
+      String query = "select distinct alarm.id, alarm.description,alarm.tenant_id, alarm.severity, alarm.expression,alarm.state,alarm.name,alarm.actions_enabled,alarm.created_at, alarm.updated_at, alarm.deleted_at from alarm join sub_alarm sub on alarm.id=sub.alarm_id left outer join sub_alarm_dimension dim on sub.id=dim.sub_alarm_id%s where tenant_id = :tenantId and deleted_at is NULL %s";
       StringBuilder sbWhere = new StringBuilder();
 
       if (state != null) {
