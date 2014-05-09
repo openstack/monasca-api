@@ -228,17 +228,16 @@ public class AlarmRepositoryImplTest {
     assertEquals(
         alarms,
       Arrays.asList(
-            new Alarm("123", "90% CPU", null, "LOW",
-                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-                AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
-                Collections.<String>emptyList(), Collections.<String>emptyList()),
-            new Alarm(
-                "234",
-                "50% CPU",
-                null, "LOW",
-                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute{flavor_id=777}) < 100",
-                AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
-                Collections.<String>emptyList(), Collections.<String>emptyList())));
+        new Alarm(
+          "234",
+          "50% CPU",
+          null, "LOW",
+          "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute{flavor_id=777}) < 100",
+          AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
+        Collections.<String>emptyList(), Collections.<String>emptyList()),new Alarm("123", "90% CPU", null, "LOW",
+        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
+        AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"),
+        Collections.<String>emptyList(), Collections.<String>emptyList())));
   }
 
   public void shouldDeleteById() {
