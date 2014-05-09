@@ -52,15 +52,15 @@ public class AlarmServiceTest {
     service = new AlarmService(config, producer, repo, notificationMethodRepo);
 
     when(
-        repo.create(anyString(), anyString(), anyString(), anyString(), anyString(),
+        repo.create(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(),
             any(Map.class), any(List.class), any(List.class), any(List.class))).thenAnswer(
         new Answer<Alarm>() {
           @Override
           public Alarm answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return new Alarm((String) args[0], (String) args[2], (String) args[3],
-                (String) args[4], AlarmState.UNDETERMINED, true, (List<String>) args[6],
-                (List<String>) args[7], (List<String>) args[8]);
+            return new Alarm((String) args[0], (String) args[2], (String) args[3], (String) args[4],
+                (String) args[5], AlarmState.UNDETERMINED, true, (List<String>) args[7],
+                (List<String>) args[8], (List<String>) args[9]);
           }
         });
   }
@@ -74,13 +74,13 @@ public class AlarmServiceTest {
 
     when(notificationMethodRepo.exists(eq("bob"), anyString())).thenReturn(true);
 
-    Alarm alarm = service.create("bob", "90% CPU", "foo", exprStr, AlarmExpression.of(exprStr),
+    Alarm alarm = service.create("bob", "90% CPU", "foo", "LOW", exprStr, AlarmExpression.of(exprStr),
         alarmActions, okActions, undeterminedActions);
 
-    Alarm expected = new Alarm(alarm.getId(), "90% CPU", "foo", exprStr, AlarmState.UNDETERMINED,
+    Alarm expected = new Alarm(alarm.getId(), "90% CPU", "foo", "LOW", exprStr, AlarmState.UNDETERMINED,
         true, alarmActions, okActions, undeterminedActions);
     assertEquals(expected, alarm);
-    verify(repo).create(eq("bob"), anyString(), eq("90% CPU"), eq("foo"), eq(exprStr),
+    verify(repo).create(eq("bob"), anyString(), eq("90% CPU"), eq("foo"), eq("LOW"), eq(exprStr),
         any(Map.class), eq(alarmActions), eq(okActions), eq(undeterminedActions));
     verify(producer).send(any(KeyedMessage.class));
   }
@@ -92,7 +92,7 @@ public class AlarmServiceTest {
     List<String> okActions = Arrays.asList("2", "3");
     List<String> undeterminedActions = Arrays.asList("3");
 
-    Alarm oldAlarm = new Alarm("123", "foo bar", "foo bar", exprStr, AlarmState.OK, true,
+    Alarm oldAlarm = new Alarm("123", "foo bar", "foo bar", "LOW", exprStr, AlarmState.OK, true,
         alarmActions, okActions, undeterminedActions);
     Map<String, AlarmSubExpression> oldSubExpressions = new HashMap<>();
     oldSubExpressions.put("444", AlarmSubExpression.of("avg(foo{instance_id=123}) > 90"));
@@ -107,11 +107,11 @@ public class AlarmServiceTest {
     List<String> newOkActions = Arrays.asList("6", "7");
     List<String> newUndeterminedActions = Arrays.asList("7");
     UpdateAlarmCommand command = new UpdateAlarmCommand("foo bar baz", "foo bar baz", newExprStr,
-        AlarmState.ALARM, false, newAlarmActions, newOkActions, newUndeterminedActions);
+         "LOW", AlarmState.ALARM, false, newAlarmActions, newOkActions, newUndeterminedActions);
 
     Alarm alarm = service.update("bob", "123", AlarmExpression.of(newExprStr), command);
 
-    Alarm expected = new Alarm(alarm.getId(), "foo bar baz", "foo bar baz", newExprStr,
+    Alarm expected = new Alarm(alarm.getId(), "foo bar baz", "foo bar baz", "LOW", newExprStr,
         AlarmState.ALARM, false, newAlarmActions, newOkActions, newUndeterminedActions);
     assertEquals(expected, alarm);
     verify(producer, times(2)).send(any(KeyedMessage.class));

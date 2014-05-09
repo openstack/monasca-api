@@ -28,14 +28,17 @@ public class CreateAlarmCommand {
   @NotEmpty public String name;
   public String description;
   @NotEmpty public String expression;
+  public String severity;
   public List<String> alarmActions;
   public List<String> okActions;
   public List<String> undeterminedActions;
 
+
   public CreateAlarmCommand() {
+    this.severity = "LOW";
   }
 
-  public CreateAlarmCommand(String name, @Nullable String description, String expression,
+  public CreateAlarmCommand(String name, @Nullable String description, String expression, String severity,
       List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     this.name = name;
     this.description = description;
@@ -43,6 +46,7 @@ public class CreateAlarmCommand {
     this.alarmActions = alarmActions;
     this.okActions = okActions;
     this.undeterminedActions = undeterminedActions;
+    this.severity = severity == null ? "LOW" : severity;
   }
 
   @Override
@@ -71,6 +75,6 @@ public class CreateAlarmCommand {
   }
 
   public void validate() {
-    AlarmValidation.validate(name, description, alarmActions, okActions, undeterminedActions);
+    AlarmValidation.validate(name, description, severity, alarmActions, okActions, undeterminedActions);
   }
 }

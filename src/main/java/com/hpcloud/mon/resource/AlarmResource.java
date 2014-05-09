@@ -89,9 +89,9 @@ public class AlarmResource {
       @Valid CreateAlarmCommand command) {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
-    Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description,
-        command.expression, alarmExpression, command.alarmActions, command.okActions,
-        command.undeterminedActions), uriInfo, false, "history");
+    Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description, command.severity,
+      command.expression, alarmExpression, command.alarmActions, command.okActions,
+      command.undeterminedActions), uriInfo, false, "history");
     return Response.created(URI.create(alarm.getId())).entity(alarm).build();
   }
 
@@ -170,6 +170,7 @@ public class AlarmResource {
       throws JsonMappingException {
     String name = (String) fields.get("name");
     String description = (String) fields.get("description");
+    String severity = (String) fields.get("severity");
     String expression = (String) fields.get("expression");
     String stateStr = (String) fields.get("state");
     AlarmState state = stateStr == null ? null : Validation.parseAndValidate(AlarmState.class,
@@ -178,13 +179,13 @@ public class AlarmResource {
     List<String> alarmActions = (List<String>) fields.get("alarm_actions");
     List<String> okActions = (List<String>) fields.get("ok_actions");
     List<String> undeterminedActions = (List<String>) fields.get("undetermined_actions");
-    AlarmValidation.validate(name, description, alarmActions, okActions, undeterminedActions);
+    AlarmValidation.validate(name, description, severity, alarmActions, okActions, undeterminedActions);
     AlarmExpression alarmExpression = expression == null ? null
         : AlarmValidation.validateNormalizeAndGet(expression);
 
-    return Links.hydrate(service.patch(tenantId, alarmId, name, description, expression,
-        alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
-        true, "history");
+    return Links.hydrate(service.patch(tenantId, alarmId, name, description, severity, expression,
+      alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
+      true, "history");
   }
 
   @DELETE
