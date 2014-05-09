@@ -4,6 +4,7 @@ CREATE TABLE `alarm` (
   `name` varchar(250) DEFAULT NULL,
   `description` varchar(250) DEFAULT NULL,
   `expression` mediumtext,
+  `severity` varchar(20) NOT NULL check severity in ('LOW','MEDIUM','HIGH','CRITICAL'),
   `state` varchar(20) NOT NULL check state in ('UNDETERMINED','OK','ALARM'),
   `actions_enabled` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,

@@ -32,8 +32,8 @@ public interface AlarmRepository {
   /**
    * Creates and returns a new alarm for the criteria.
    */
-  Alarm create(String tenantId, String id, String name, String description, String expression,
-    Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+  Alarm create(String tenantId, String id, String name, String description, String severity,
+    String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
     List<String> okActions, List<String> undeterminedActions);
 
   /**
