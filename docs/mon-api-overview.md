@@ -3,11 +3,17 @@
  
 ## 1. Overview
 
-This document describes the Monitoring API, which allows you to monitor resources.
+This document provides an overview of the Monitoring API.
 
 ## 2. Architecture View
 
-Monitoring as a Service provides APIs for managing metric consumption endpoints, metric subscriptions, alarms, contact methods, and publishing user defined metrics.
+Monitoring as a Service provides APIs for the following:
+
+* Posting and querying metrics.
+* Querying statistics about metrics.
+* Creating notification methods.
+* Creating and updating alarms.
+* Querying the state of alarms and the alrm state history.
 
 ### 2.1 Overview
 
@@ -17,20 +23,19 @@ The API supports a number of resources. These include:
 
 + Versions - Provides information about the supported Monitoring API versions.
 
-+ Metrics: The metric resource allows the insertion of user defined metrics.
++ Metrics: The metric resource allows the storage of metrics.
 
-+ Measurements: Operations for accessing measurements.
++ Measurements: Operations for accessing measurements of metrics.
 
 + Statistics: Operations for accessing statistics about metrics.
 
 + Alarms: The alarm resource identifies a one or more metrics scoped by name and dimensions, which should trigger a set of actions when the value of a threshold is exceeded.
 
-+ Notification Methods: The notification method resource represents a method through which notifications can be sent.
-
++ Notification Methods: The notification method resource represents a method, such as email, which can be associated with an alarm via an action. When an alarm is triggered notification methods associated with the alarm are triggered. 
 
 #### 2.1.1 High Level and Usage
 
-Before using the API, you must first get a valid auth token. All API operations require anauth token specified in the header 
+Before using the API, you must first get a valid auth token. All API operations require auth token specified in the header of the http request.
 
 ##### 2.1.1.1 Sending metrics
 
@@ -44,7 +49,7 @@ Defines the name of a metric.
 
 ##### 2.1.2.2 Dimensions
 
-Places restrictions on the namespace to further narrow what is monitored.
+Additional data associated with a metric that is used to identiy it.
 
 Dimensions may only use the characters from: a-z A-Z 0-9 . \_. The dimension value may only use the characters from: a-z A-Z 0-9 . - \_.
 
@@ -109,3 +114,21 @@ The metric is a complex identifier that says the name and optional dimensions.
 Larger example:
 
 	(avg(cpu_perc:{hostname=hostname.domain.com}) > 90 ) or ( avg(disk_read_ops:{hostname=hostname.domain.com,device=vda,120) > 1000 times 3)
+	
+# License
+
+Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied.
+See the License for the specific language governing permissions and
+limitations under the License.	
+	
