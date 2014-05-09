@@ -38,6 +38,7 @@ public class Alarm extends AbstractEntity implements Linked {
   private String expression;
   private Object expressionData;
   private AlarmState state;
+  private String severity;
   private boolean actionsEnabled;
   private List<String> alarmActions;
   private List<String> okActions;
@@ -46,12 +47,13 @@ public class Alarm extends AbstractEntity implements Linked {
   public Alarm() {
   }
 
-  public Alarm(String id, String name, String description, String expression, AlarmState state,
-      boolean actionsEnabled, List<String> alarmActions, List<String> okActions,
+  public Alarm(String id, String name, String description, String severity, String expression,
+      AlarmState state, boolean actionsEnabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     this.id = id;
     this.name = name;
     setDescription(description);
+    setSeverity(severity);
     setExpression(expression);
     setState(state);
     setActionsEnabled(actionsEnabled);
@@ -78,6 +80,11 @@ public class Alarm extends AbstractEntity implements Linked {
       if (other.description != null)
         return false;
     } else if (!description.equals(other.description))
+      return false;
+    if (severity == null) {
+      if (other.severity != null)
+        return false;
+    } else if (!severity.equals(other.severity))
       return false;
     if (actionsEnabled != other.actionsEnabled)
       return false;
@@ -119,6 +126,8 @@ public class Alarm extends AbstractEntity implements Linked {
     return description;
   }
 
+  public String getSeverity() { return severity; }
+
   public String getExpression() {
     return expression;
   }
@@ -157,6 +166,7 @@ public class Alarm extends AbstractEntity implements Linked {
     int result = super.hashCode();
     result = prime * result + ((alarmActions == null) ? 0 : alarmActions.hashCode());
     result = prime * result + ((description == null) ? 0 : description.hashCode());
+    result = prime * result + ((severity == null) ? 0 : severity.hashCode());
     result = prime * result + (actionsEnabled ? 1231 : 1237);
     result = prime * result + ((expression == null) ? 0 : expression.hashCode());
     result = prime * result + ((links == null) ? 0 : links.hashCode());
@@ -214,6 +224,8 @@ public class Alarm extends AbstractEntity implements Linked {
   public void setState(AlarmState state) {
     this.state = state;
   }
+
+  public void setSeverity(String severity) { this.severity = severity;}
 
   public void setUndeterminedActions(List<String> undeterminedActions) {
     this.undeterminedActions = undeterminedActions;

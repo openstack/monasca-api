@@ -93,7 +93,8 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm create(String tenantId, String name, @Nullable String description,
-      String expression, AlarmExpression alarmExpression, List<String> alarmActions,
+      String severity, String expression, AlarmExpression alarmExpression,
+      List<String> alarmActions,
       @Nullable List<String> okActions, @Nullable List<String> undeterminedActions) {
     // Assert no alarm exists by the name
     if (repo.exists(tenantId, name))
@@ -113,7 +114,7 @@ public class AlarmService {
 
     try {
       LOG.debug("Creating alarm {} for tenant {}", name, tenantId);
-      alarm = repo.create(tenantId, alarmId, name, description, expression, subAlarms,
+      alarm = repo.create(tenantId, alarmId, name, description, severity, expression, subAlarms,
           alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of new alarm
@@ -158,9 +159,9 @@ public class AlarmService {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
         command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
-        alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
+        command.severity, alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
         command.alarmActions, command.okActions, command.undeterminedActions);
-    return new Alarm(alarmId, command.name, command.description, command.expression, command.state,
+    return new Alarm(alarmId, command.name, command.description, command.severity, command.expression, command.state,
         command.actionsEnabled, command.alarmActions, command.okActions,
         command.undeterminedActions);
   }
@@ -173,34 +174,35 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, String name, String description,
-      String expression, AlarmExpression alarmExpression, AlarmState state, Boolean enabled,
+      String severity, String expression, AlarmExpression alarmExpression, AlarmState state, Boolean enabled,
       List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
     name = name == null ? alarm.getName() : name;
     description = description == null ? alarm.getDescription() : description;
     expression = expression == null ? alarm.getExpression() : expression;
+    severity = severity == null ? alarm.getSeverity() : severity;
     alarmExpression = alarmExpression == null ? AlarmExpression.of(expression) : alarmExpression;
     state = state == null ? alarm.getState() : state;
     enabled = enabled == null ? alarm.isActionsEnabled() : enabled;
 
-    updateInternal(tenantId, alarmId, true, name, description, expression, alarmExpression,
+    updateInternal(tenantId, alarmId, true, name, description, expression, severity, alarmExpression,
         alarm.getState(), state, enabled, alarmActions, okActions, undeterminedActions);
 
-    return new Alarm(alarmId, name, description, expression, state, enabled,
+    return new Alarm(alarmId, name, description, severity, expression, state, enabled,
         alarmActions == null ? alarm.getAlarmActions() : alarmActions,
         okActions == null ? alarm.getOkActions() : okActions,
         undeterminedActions == null ? alarm.getUndeterminedActions() : undeterminedActions);
   }
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
-      String description, String expression, AlarmExpression alarmExpression, AlarmState oldState,
+      String description, String expression, String severity, AlarmExpression alarmExpression, AlarmState oldState,
       AlarmState newState, Boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
     SubExpressions subExpressions = subExpressionsFor(alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, newState, enabled,
+      repo.update(tenantId, alarmId, patch, name, description, expression, severity, newState, enabled,
           subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
           subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
 

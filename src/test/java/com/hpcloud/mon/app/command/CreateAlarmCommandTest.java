@@ -16,8 +16,8 @@ import com.hpcloud.mon.domain.model.AbstractModelTest;
 public class CreateAlarmCommandTest extends AbstractModelTest {
   public void shouldDeserializeFromJson() throws Exception {
     Map<String, String> dimensions = new HashMap<String, String>();
-    dimensions.put("instanceId", "392633");
-    CreateAlarmCommand newAlarm = new CreateAlarmCommand("Disk Exceeds 1k Operations", null,
+    dimensions.put("instanceId", "392633");                 /** todo: Check the null value to get works **/
+    CreateAlarmCommand newAlarm = new CreateAlarmCommand("Disk Exceeds 1k Operations", null, null,
         "avg(hpcs.compute:cpu:1:{instance_id=5}) > 5", Arrays.asList("123345345", "23423"), null,
         null);
 

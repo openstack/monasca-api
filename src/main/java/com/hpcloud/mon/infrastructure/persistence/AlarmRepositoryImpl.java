@@ -52,16 +52,16 @@ public class AlarmRepositoryImpl implements AlarmRepository {
   }
 
   @Override
-  public Alarm create(String tenantId, String id, String name, String description,
-      String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions) {
+  public Alarm create(String tenantId, String id, String name, String description, String severity,
+    String expression, Map<String, AlarmSubExpression> subExpressions, List<String> alarmActions,
+    List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-          "insert into alarm (id, tenant_id, name, description, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
-          id, tenantId, name, description, expression, AlarmState.UNDETERMINED.toString(), true);
+        "insert into alarm (id, tenant_id, name, description, severity, expression, state, actions_enabled, created_at, updated_at, deleted_at) values (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NULL)",
+        id, tenantId, name, description, severity, expression, AlarmState.UNDETERMINED.toString(), true);
 
       // Persist sub-alarms
       createSubExpressions(h, id, subExpressions);
@@ -72,9 +72,9 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       persistActions(h, id, AlarmState.UNDETERMINED, undeterminedActions);
 
       h.commit();
-      return new Alarm(id, name, description, expression, AlarmState.UNDETERMINED, true,
-          alarmActions, okActions == null ? Collections.<String>emptyList() : okActions,
-          undeterminedActions == null ? Collections.<String>emptyList() : undeterminedActions);
+      return new Alarm(id, name, description, severity, expression, AlarmState.UNDETERMINED, true,
+        alarmActions, okActions == null ? Collections.<String>emptyList() : okActions,
+        undeterminedActions == null ? Collections.<String>emptyList() : undeterminedActions);
     } catch (RuntimeException e) {
       h.rollback();
       throw e;
@@ -193,17 +193,17 @@ public class AlarmRepositoryImpl implements AlarmRepository {
 
   @Override
   public void update(String tenantId, String id, boolean patch, String name, String description,
-      String expression, AlarmState state, boolean actionsEnabled,
-      Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
-      Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions) {
+    String expression, String severity, AlarmState state, boolean actionsEnabled,
+    Collection<String> oldSubAlarmIds, Map<String, AlarmSubExpression> changedSubAlarms,
+    Map<String, AlarmSubExpression> newSubAlarms, List<String> alarmActions,
+    List<String> okActions, List<String> undeterminedActions) {
     Handle h = db.open();
 
     try {
       h.begin();
       h.insert(
-          "update alarm set name = ?, description = ?, expression = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
-          name, description, expression, state.name(), actionsEnabled, tenantId, id);
+        "update alarm set name = ?, description = ?, expression = ?, severity = ?, state = ?, actions_enabled = ?, updated_at = NOW() where tenant_id = ? and id = ?",
+        name, description, expression, severity, state.name(), actionsEnabled, tenantId, id);
 
       // Delete old sub-alarms
       if (oldSubAlarmIds != null)
