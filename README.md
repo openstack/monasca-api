@@ -34,7 +34,7 @@ There are several forms of documentation for the Monitoring API.
 
 * API Specification: [/docs/mon-api-spec.md](/docs/mon-api-spec.md). This is the RESTful API specification.
 
-* swagger-ui: When running mon-api the API docs along with the API test interface can be accessed at, [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/). Note: the trailing "/" is necessary for the Swagger UI to work properly.
+* swagger-ui: When running mon-api the API docs along with the API test interface can be accessed at, [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/). Note: the trailing "/" is necessary for the Swagger UI to work properly. Currently, this is the best way to review the specification.
 
 # License
 
