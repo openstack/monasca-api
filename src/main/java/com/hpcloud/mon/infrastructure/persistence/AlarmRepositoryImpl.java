@@ -40,15 +40,10 @@ import java.util.*;
  * Alarm repository implementation.
  */
 public class AlarmRepositoryImpl implements AlarmRepository {
-<<<<<<< HEAD
-  private static final String SUB_ALARM_SQL = "select sa.*, sad.dimensions from sub_alarm as sa, "
-      + "(select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id) as sad "
-      + "where sa.id = sad.sub_alarm_id and sa.alarm_id = :alarmId";
-=======
+
   private static final String SUB_ALARM_SQL = "select sa.*, sad.dimensions from sub_alarm as sa "
     + "left join (select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id ) as sad "
     + "on sad.sub_alarm_id = sa.id where sa.alarm_id = :alarmId";
->>>>>>> 9a37a4276b92dde20c1a568b3a73b621aa2c6dac
 
   private final DBI db;
 
