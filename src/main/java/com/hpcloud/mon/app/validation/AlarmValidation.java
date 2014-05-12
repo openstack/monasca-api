@@ -60,8 +60,7 @@ public final class AlarmValidation {
         if (action.length() > 50)
           throw Exceptions.unprocessableEntity(
               "Undetermined action %s must be 50 characters or less", action);
-    String severityLower = severity.toLowerCase();
-    if (!VALID_ALARM_SERVERITY.contains(severityLower)) {
+    if (severity != null && !VALID_ALARM_SERVERITY.contains(severity.toLowerCase())) {
       throw Exceptions.unprocessableEntity("%s is not a valid severity", severity);
     }
   }
