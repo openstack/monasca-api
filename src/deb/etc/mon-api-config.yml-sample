@@ -25,6 +25,7 @@ mysql:
   minSize: 4
   maxSize: 32
   checkConnectionWhileIdle: false
+  checkConnectionOnBorrow: true
 
 vertica:
   driverClass: com.vertica.jdbc.Driver
