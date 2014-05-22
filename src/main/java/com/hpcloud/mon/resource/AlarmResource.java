@@ -175,7 +175,7 @@ public class AlarmResource {
     String stateStr = (String) fields.get("state");
     AlarmState state = stateStr == null ? null : Validation.parseAndValidate(AlarmState.class,
         stateStr);
-    Boolean enabled = (Boolean) fields.get("enabled");
+    Boolean enabled = (Boolean) fields.get("actions_enabled");
     List<String> alarmActions = (List<String>) fields.get("alarm_actions");
     List<String> okActions = (List<String>) fields.get("ok_actions");
     List<String> undeterminedActions = (List<String>) fields.get("undetermined_actions");
