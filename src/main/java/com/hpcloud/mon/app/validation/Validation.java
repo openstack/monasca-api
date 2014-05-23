@@ -44,7 +44,7 @@ public final class Validation {
   private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
   private static final List<String> VALID_STATISTICS = Arrays.asList("avg", "min", "max", "sum",
     "count");
-  private static final List<String> VALID_ALARM_STATE = Arrays.asList("undetermined", "ok", "alarmed");
+    private static final List<String> VALID_ALARM_STATE = Arrays.asList("undetermined", "ok", "alarm");
 
   private Validation() {
   }
