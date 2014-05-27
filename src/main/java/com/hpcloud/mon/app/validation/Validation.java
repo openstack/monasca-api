@@ -137,7 +137,7 @@ public final class Validation {
     List<String> validStats = new ArrayList<String>(5);
     for (String statistic : statistics) {
       String statisticLower = statistic.toLowerCase();
-      if (!VALID_STATISTICS.contains(statistic))
+      if (!VALID_STATISTICS.contains(statisticLower))
         throw Exceptions.unprocessableEntity("%s is not a valid statistic", statistic);
       validStats.add(statisticLower);
     }
