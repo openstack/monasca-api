@@ -124,10 +124,6 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     if (name != null)
       sbWhere.append(" and def.name = :name");
 
-    if (endTime != null) {
-      sbWhere.append(" and m.time_stamp <= :endTime");
-    }
-
     String sql = String.format(FIND_BY_METRIC_DEF_SQL,
         MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
