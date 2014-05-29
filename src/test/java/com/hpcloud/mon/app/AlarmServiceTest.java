@@ -137,6 +137,10 @@ public class AlarmServiceTest {
     assertEquals(expressions.changedSubExpressions,
         Collections.singletonMap("222", AlarmSubExpression.of("avg(foo{instance_id=456}) <= 22")));
 
+    // Assert unchanged expressions
+    assertEquals(expressions.unchangedSubExpressions,
+        Collections.singletonMap("111", AlarmSubExpression.of("avg(foo{instance_id=123}) > 1")));
+
     // Assert new expressions
     assertTrue(expressions.newAlarmSubExpressions.containsValue(AlarmSubExpression.of("avg(foo{instance_id=444}) > 4")));
   }

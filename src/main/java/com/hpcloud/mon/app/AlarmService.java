@@ -80,6 +80,8 @@ public class AlarmService {
     Map<String, AlarmSubExpression> oldAlarmSubExpressions;
     /** Sub expressions which have had their operator or threshold changed. */
     Map<String, AlarmSubExpression> changedSubExpressions;
+    /** Sub expressions which have not changed. */
+    Map<String, AlarmSubExpression> unchangedSubExpressions;
     /** Sub expressions which have been added to an updated alarm expression. */
     Map<String, AlarmSubExpression> newAlarmSubExpressions;
   }
@@ -207,8 +209,9 @@ public class AlarmService {
 
       // Notify interested parties of updated alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          description, expression, newState, enabled, subExpressions.oldAlarmSubExpressions,
-          subExpressions.changedSubExpressions, subExpressions.newAlarmSubExpressions));
+          description, expression, newState, oldState, enabled, subExpressions.oldAlarmSubExpressions,
+          subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
+          subExpressions.newAlarmSubExpressions));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       // Notify interested parties of transitioned alarm state
@@ -252,6 +255,11 @@ public class AlarmService {
       }
     }
 
+    // Create the list of unchanged expressions
+    BiMap<String, AlarmSubExpression> unchangedExpressions = HashBiMap.create(oldExpressions);
+    unchangedExpressions.values().removeAll(oldOrChangedExpressions);
+    unchangedExpressions.keySet().removeAll(changedExpressions.keySet());
+
     // Remove old sub expressions
     oldExpressions.values().retainAll(oldOrChangedExpressions);
 
@@ -263,6 +271,7 @@ public class AlarmService {
     SubExpressions subExpressions = new SubExpressions();
     subExpressions.oldAlarmSubExpressions = oldExpressions;
     subExpressions.changedSubExpressions = changedExpressions;
+    subExpressions.unchangedSubExpressions = unchangedExpressions;
     subExpressions.newAlarmSubExpressions = newExpressions;
     return subExpressions;
   }
