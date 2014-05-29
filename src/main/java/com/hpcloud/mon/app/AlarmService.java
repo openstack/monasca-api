@@ -68,8 +68,7 @@ public class AlarmService {
 
   @Inject
   public AlarmService(MonApiConfiguration config, Producer<String, String> producer,
-      AlarmRepository repo,
-      NotificationMethodRepository notificationMethodRepo) {
+      AlarmRepository repo, NotificationMethodRepository notificationMethodRepo) {
     this.config = config;
     this.producer = producer;
     this.repo = repo;
@@ -92,18 +91,15 @@ public class AlarmService {
    * @throws EntityExistsException if an alarm already exists for the name
    * @throws InvalidEntityException if one of the actions cannot be found
    */
-  public Alarm create(String tenantId, String name, @Nullable String description,
-      String severity, String expression, AlarmExpression alarmExpression,
-      List<String> alarmActions,
+  public Alarm create(String tenantId, String name, @Nullable String description, String severity,
+      String expression, AlarmExpression alarmExpression, List<String> alarmActions,
       @Nullable List<String> okActions, @Nullable List<String> undeterminedActions) {
     // Assert no alarm exists by the name
     if (repo.exists(tenantId, name))
       throw new EntityExistsException("An alarm already exists for project / tenant: %s named: %s",
           tenantId, name);
 
-    assertActionsExist(tenantId, alarmActions);
-    assertActionsExist(tenantId, okActions);
-    assertActionsExist(tenantId, undeterminedActions);
+    assertActionsExist(tenantId, alarmActions, okActions, undeterminedActions);
 
     Map<String, AlarmSubExpression> subAlarms = new HashMap<String, AlarmSubExpression>();
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions())
@@ -161,9 +157,9 @@ public class AlarmService {
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
         command.severity, alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
         command.alarmActions, command.okActions, command.undeterminedActions);
-    return new Alarm(alarmId, command.name, command.description, command.severity, command.expression, command.state,
-        command.actionsEnabled, command.alarmActions, command.okActions,
-        command.undeterminedActions);
+    return new Alarm(alarmId, command.name, command.description, command.severity,
+        command.expression, command.state, command.actionsEnabled, command.alarmActions,
+        command.okActions, command.undeterminedActions);
   }
 
   /**
@@ -174,8 +170,9 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, String name, String description,
-      String severity, String expression, AlarmExpression alarmExpression, AlarmState state, Boolean enabled,
-      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
+      String severity, String expression, AlarmExpression alarmExpression, AlarmState state,
+      Boolean enabled, List<String> alarmActions, List<String> okActions,
+      List<String> undeterminedActions) {
     Alarm alarm = assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
     name = name == null ? alarm.getName() : name;
     description = description == null ? alarm.getDescription() : description;
@@ -185,8 +182,9 @@ public class AlarmService {
     state = state == null ? alarm.getState() : state;
     enabled = enabled == null ? alarm.isActionsEnabled() : enabled;
 
-    updateInternal(tenantId, alarmId, true, name, description, expression, severity, alarmExpression,
-        alarm.getState(), state, enabled, alarmActions, okActions, undeterminedActions);
+    updateInternal(tenantId, alarmId, true, name, description, expression, severity,
+        alarmExpression, alarm.getState(), state, enabled, alarmActions, okActions,
+        undeterminedActions);
 
     return new Alarm(alarmId, name, description, severity, expression, state, enabled,
         alarmActions == null ? alarm.getAlarmActions() : alarmActions,
@@ -195,16 +193,17 @@ public class AlarmService {
   }
 
   private void updateInternal(String tenantId, String alarmId, boolean patch, String name,
-      String description, String expression, String severity, AlarmExpression alarmExpression, AlarmState oldState,
-      AlarmState newState, Boolean enabled, List<String> alarmActions, List<String> okActions,
-      List<String> undeterminedActions) {
+      String description, String expression, String severity, AlarmExpression alarmExpression,
+      AlarmState oldState, AlarmState newState, Boolean enabled, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
     SubExpressions subExpressions = subExpressionsFor(alarmId, alarmExpression);
 
     try {
       LOG.debug("Updating alarm {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmId, patch, name, description, expression, severity, newState, enabled,
-          subExpressions.oldAlarmSubExpressions.keySet(), subExpressions.changedSubExpressions,
-          subExpressions.newAlarmSubExpressions, alarmActions, okActions, undeterminedActions);
+      repo.update(tenantId, alarmId, patch, name, description, expression, severity, newState,
+          enabled, subExpressions.oldAlarmSubExpressions.keySet(),
+          subExpressions.changedSubExpressions, subExpressions.newAlarmSubExpressions,
+          alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of updated alarm
       String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
@@ -216,7 +215,7 @@ public class AlarmService {
       if (!oldState.equals(newState)) {
         event = Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
             description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
-            System.currentTimeMillis()/1000));
+            System.currentTimeMillis() / 1000));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
     } catch (Exception e) {
@@ -290,14 +289,20 @@ public class AlarmService {
   private Alarm assertAlarmExists(String tenantId, String alarmId, List<String> alarmActions,
       List<String> okActions, List<String> undeterminedActions) {
     Alarm alarm = repo.findById(tenantId, alarmId);
-    assertActionsExist(tenantId, alarmActions);
-    assertActionsExist(tenantId, okActions);
-    assertActionsExist(tenantId, undeterminedActions);
+    assertActionsExist(tenantId, alarmActions, okActions, undeterminedActions);
     return alarm;
   }
 
-  private void assertActionsExist(String tenantId, List<String> actions) {
-    if (actions != null)
+  private void assertActionsExist(String tenantId, List<String> alarmActions,
+      List<String> okActions, List<String> undeterminedActions) {
+    Set<String> actions = new HashSet<>();
+    if (alarmActions != null)
+      actions.addAll(alarmActions);
+    if (okActions != null)
+      actions.addAll(okActions);
+    if (undeterminedActions != null)
+      actions.addAll(undeterminedActions);
+    if (!actions.isEmpty())
       for (String action : actions)
         if (!notificationMethodRepo.exists(tenantId, action))
           throw new InvalidEntityException("No notification method exists for action %s", action);
