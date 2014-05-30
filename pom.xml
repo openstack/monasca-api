@@ -5,7 +5,7 @@
   <groupId>com.hpcloud</groupId>
   <artifactId>mon-api</artifactId>
   <version>0.1.0</version>
-  <url>http://hpcloud.net</url>
+  <url>http://github.com/hpcloud-mon/mon-api</url>
   <packaging>jar</packaging>
 
   <prerequisites>
@@ -15,7 +15,7 @@
   <properties>
     <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion>
     <computedName>${project.artifactId}-${computedVersion}</computedName>
-    <mon.common.version>1.0.0.51</mon.common.version>
+    <mon.common.version>1.0.0-SNAPSHOT</mon.common.version>
     <dropwizard.version>0.7.0</dropwizard.version>
 
     <skipITs>true</skipITs>
@@ -24,8 +24,8 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git@git.hpcloud.net:mon/mon-api.git</connection>
-    <developerConnection>scm:git:git@git.hpcloud.net:mon/mon-api.git</developerConnection>
+    <connection>scm:git:git@github.com:hpcloud-mon/mon-api</connection>
+    <developerConnection>scm:git:git@github.com:hpcloud-mon/mon-api</developerConnection>
   </scm>
 
   <repositories>

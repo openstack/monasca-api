@@ -2,10 +2,17 @@
 
 `mon-api` is a RESTful API server that is designed with a layered architecture [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
 
-## Usage
+## Build
+
+Requires mon-common from https://github.com/hpcloud-mon/mon-common. Download and do mvn install
 
 ```
 mvn package
+```
+
+## Usage
+
+```
 java -jar target/mon-api.jar server config-file.yml
 ```
 
