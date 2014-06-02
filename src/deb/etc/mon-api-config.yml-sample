@@ -1,3 +1,6 @@
+# The region for which all metrics passing through this server will be persisted
+region: region-a
+
 # Whether this server is running on a secure port
 accessedViaHttps: false
 

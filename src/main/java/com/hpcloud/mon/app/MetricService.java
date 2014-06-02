@@ -52,7 +52,7 @@ public class MetricService {
 
   public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId) {
     Builder<String, Object> metaBuilder = new ImmutableMap.Builder<String, Object>().put(
-        "tenantId", tenantId);
+        "tenantId", tenantId).put("region", config.region);
     if (crossTenantId != null)
       metaBuilder.put("crossTenantId", crossTenantId);
     ImmutableMap<String, Object> meta = metaBuilder.build();
