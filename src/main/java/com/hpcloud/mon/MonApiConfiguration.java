@@ -28,6 +28,7 @@ import com.hpcloud.messaging.kafka.KafkaConfiguration;
 import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
 
 public class MonApiConfiguration extends Configuration {
+  @NotEmpty public String region;
   @NotNull public Boolean accessedViaHttps;
   @NotEmpty public String metricsTopic = "metrics";
   @NotEmpty public String eventsTopic = "events";
