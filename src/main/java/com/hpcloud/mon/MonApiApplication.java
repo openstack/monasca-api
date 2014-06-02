@@ -120,6 +120,8 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnPoolMinIdleTime", config.middleware.connPoolMinIdleTime);
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
+      authInitParams.put("AdminToken", config.middleware.adminToken);
+
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");
@@ -131,8 +133,10 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
+    ArrayList<String> list = new ArrayList();
+    list.add("heat_stack_owner");
     Dynamic postAuthenticationFilter = environment.servlets()
-        .addFilter("post-auth", new PostAuthenticationFilter(Collections.<String>singletonList("")));
+        .addFilter("post-auth", new PostAuthenticationFilter(list));//Collections.<String>singletonList("")));
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 

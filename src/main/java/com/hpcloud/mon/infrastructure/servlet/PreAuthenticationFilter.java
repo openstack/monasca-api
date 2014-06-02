@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hpcloud.mon.resource.exception.Exceptions;
 import com.hpcloud.mon.resource.exception.Exceptions.FaultType;
+import com.hp.csbu.cc.middleware.ExceptionHandler.*;
 
 /**
  * Authenticates requests using header information from the CsMiddleware. Provides the X-TENANT-ID
@@ -95,9 +96,27 @@ public class PreAuthenticationFilter implements Filter {
       res.setContentType(MediaType.APPLICATION_JSON);
       res.setStatus(responseWrapper.statusCode);
       String output = Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED,
-          responseWrapper.errorMessage, null, responseWrapper.exception);
+        responseWrapper.errorMessage, null, responseWrapper.exception);
       out.print(output);
-    } catch (Exception e) {
+    }catch(IllegalArgumentException e) {
+      //CSMiddleware is throwing this error for invalid tokens.
+      //This problem appears to be fixed in other versions, but they are not approved yet.
+      try {
+      String output = Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED,
+        "invalid authToken", null, responseWrapper.exception);
+      out.print(output);
+      }
+      catch (Exception x) {
+        LOG.error("Error while writing failed authentication HTTP response", x);
+      } finally {
+        if (out != null)
+          try {
+            out.close();
+          } catch (IOException ignore) {
+          }
+      }
+    }
+    catch (Exception e) {
       LOG.error("Error while writing failed authentication HTTP response", e);
     } finally {
       if (out != null)
