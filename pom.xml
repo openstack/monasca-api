@@ -119,11 +119,43 @@
       <artifactId>jsr305</artifactId>
       <version>2.0.0</version>
     </dependency>
-    <dependency>
+<!-- <dependency>
       <groupId>com.hp.csbu.cc</groupId>
       <artifactId>CsMiddleware</artifactId>
       <version>3.34.0</version>
+    </dependency> --> 
+<!-- removing CSMiddleware --> 
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.3.3</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.2.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+      <version>1.6</version>
+    </dependency>
+    
+    <dependency>
+  <groupId>org.apache.thrift</groupId>
+  <artifactId>libthrift</artifactId>
+  <version>0.9.0</version>
+    </dependency>
+
+   <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.0</version>
+   </dependency>
+
+    <!-- removing CSMiddleware --> 
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>

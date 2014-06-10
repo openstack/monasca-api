@@ -1,0 +1,95 @@
+package com.hp.csbu.cc.middleware;
+
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.hp.csbu.cc.middleware.AuthConstants.IdentityStatus;
+import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
+import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
+
+public class S3SignatureAuth implements Filter, AuthConstants {
+
+	private final Config appConfig = Config.getInstance();
+	private FilterConfig filterConfig;
+
+	// Thee faithful logger
+	private static final Logger logger = LoggerFactory
+			.getLogger(S3SignatureAuth.class);
+
+	private static final String SIGNATURE_NOT_FOUND = "Invalid Credentials: Token or Signature not found in the request";
+
+	@Override
+	public void destroy() {
+		FilterUtils.destroyFilter();
+	}
+
+	@Override
+	public void doFilter(ServletRequest req, ServletResponse resp,
+			FilterChain chain) throws IOException, ServletException {
+		AuthResponse auth = null;
+		if (!appConfig.isInitialized()) {
+			appConfig.initialize(filterConfig);
+		}
+		// Flow has reached here by setting DelayAuthDecision.
+		// Check if the token validation has failed and then continue to 
+		// signatue validation.
+		if (req.getAttribute(AUTH_IDENTITY_STATUS).equals(
+				IdentityStatus.Invalid.toString())) {
+			HPS3Signer s3Signer = new HPS3Signer();
+			if (isS3Request(req)) {
+				AuthClient client = null;
+				try {
+					SigAuthRequest signedRequest = s3Signer.sign(req,
+							appConfig.getServiceIds(),
+							appConfig.getEndpointIds());
+					client = appConfig.getFactory().getClient();
+					auth = client.validateSignature(signedRequest);
+
+					// Return to connection pool for re-use
+					appConfig.getFactory().recycle(client);
+				} catch (Exception ex) {
+					if (client != null)
+						appConfig.getFactory().discard(client);
+					SignatureExceptionHandler handler = ExceptionHandlerUtil
+							.lookUpSignatureException(ex);
+					handler.onException(ex, resp);
+				}
+			} else {
+				logger.error(HttpServletResponse.SC_UNAUTHORIZED
+						+ SIGNATURE_NOT_FOUND);
+				((HttpServletResponse) resp).sendError(
+						HttpServletResponse.SC_UNAUTHORIZED,
+						SIGNATURE_NOT_FOUND);
+			}
+			req = FilterUtils.wrapRequest(req, auth);
+		}
+		// Continue in the filter chain as DelayAuthDecision has been set.
+		chain.doFilter(req, resp);
+	}
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {		
+		this.filterConfig = filterConfig;	
+	}
+
+	private boolean isS3Request(ServletRequest req) {
+		if (((HttpServletRequest) req).getHeader("Authorization") != null
+				|| ((req.getParameter("AWSAccessKeyId")) != null && req
+						.getParameter("Signature") != null)) {
+			return true;
+		}
+		return false;
+	}
+
+}

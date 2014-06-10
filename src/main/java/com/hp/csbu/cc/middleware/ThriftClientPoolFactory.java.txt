@@ -1,0 +1,71 @@
+package com.hp.csbu.cc.middleware;
+
+import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSSLTransportFactory;
+import org.apache.thrift.transport.TSocket;
+
+import com.hp.csbu.cc.security.cs.thrift.service.CsThriftService;
+
+/**
+ * ThriftConnection pool factory. Based on Apache Commons Pool.
+ * 
+ * @author liemmn
+ * 
+ */
+public class ThriftClientPoolFactory extends BasePoolableObjectFactory {
+	private static final String PROTOCOL = "TLS";
+	private static final String[] CIPHER_SUITES = new String[] {
+			"TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+			"SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
+			"TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
+			"TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+			"SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA" };
+	
+	private String host;
+	private int port;
+	private int timeout;
+	private boolean clientAuth;
+	private String keyStore;
+	private String keyPass;
+	private String trustStore;
+	private String trustPass;
+	
+
+	public ThriftClientPoolFactory(String host, int port, int timeout,
+			boolean clientAuth, String keyStore, String keyPass,
+			String trustStore, String trustPass) {
+		this.host = host;
+		this.port = port;
+		this.timeout = timeout;
+		this.clientAuth = clientAuth;
+		this.keyStore = keyStore;
+		this.keyPass = keyPass;
+		this.trustStore = trustStore;
+		this.trustPass = trustPass;
+	}
+
+	@Override
+	public AuthClient makeObject() {
+		TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters(
+				PROTOCOL, CIPHER_SUITES, clientAuth);
+		params.setKeyStore(keyStore, keyPass);
+		params.setTrustStore(trustStore, trustPass);
+
+		try {
+			TSocket clientSocket = TSSLTransportFactory.getClientSocket(host,
+					port, timeout, params);
+			TProtocol proto = new TCompactProtocol(clientSocket);
+			return new ThriftAuthClient(new CsThriftService.Client(proto));
+		} catch (Exception e) {
+			throw new AuthConnectionException("Failed to open socket " + e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void destroyObject(Object o) {
+		((ThriftAuthClient) o).close();
+		o = null;
+	}
+}

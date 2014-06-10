@@ -1,0 +1,68 @@
+package com.hp.csbu.cc.middleware;
+
+import java.util.Map;
+
+import org.apache.thrift.TException;
+
+import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
+//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponseV2;
+//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponseV3;
+import com.hp.csbu.cc.security.cs.thrift.service.CsThriftService.Client;
+import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
+import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
+
+/**
+ * An AuthClient adapter for Thrift.
+ * 
+ * @author liemmn
+ * 
+ */
+public class ThriftAuthClient implements AuthClient {
+	private Client thrift;
+
+	public ThriftAuthClient(Client client) {
+		this.thrift = client;
+	}
+
+	public void close() {
+		thrift.getInputProtocol().getTransport().close();
+		thrift.getOutputProtocol().getTransport().close();
+		thrift = null;
+	}
+
+	@Override
+	public AuthResponse validateSignature(SigAuthRequest request)
+			throws ResourceException, TException {
+		return thrift.validateSignature(request);
+	}
+
+	@Override
+	/*public AuthResponseV2 validateTokenForServiceEndpointV2(String token,
+			String serviceIds, String endpointIds, boolean includeCatalog)
+			throws ResourceException, TException {
+		return thrift.validateTokenForEndpointWithCatalog(token, null,
+				serviceIds, endpointIds, includeCatalog);
+
+	} */
+  public Object validateTokenForServiceEndpointV2(String token,
+    String serviceIds, String endpointIds, boolean includeCatalog)
+    throws ResourceException, TException {
+    return null;
+  }
+
+
+
+	@Override
+	/*public AuthResponseV3 validateTokenForServiceEndpointV3(String token,
+			Map<String, String> inputParams)
+			throws ResourceException, TException {
+		return thrift.validateTokenApiForEndpoint(token, inputParams);
+	} */
+
+  public Object validateTokenForServiceEndpointV3(String token,
+    Map<String, String> inputParams)
+    throws ResourceException, TException {
+    return null;
+  }
+
+}

@@ -1,0 +1,19 @@
+package com.hp.csbu.cc.middleware;
+
+import org.apache.commons.pool.impl.GenericObjectPool;
+
+/**
+ * A Thrift factory.
+ * 
+ * @author liemmn
+ *
+ */
+public class ThriftClientFactory extends AuthClientFactory {
+	
+	ThriftClientFactory(String host, int port,
+			int timeout, boolean clientAuth, String keyStore, String keyPass,
+			String trustStore, String trustPass) {
+		pool = new GenericObjectPool(new ThriftClientPoolFactory(host, port,
+				timeout, clientAuth, keyStore, keyPass, trustStore, trustPass));
+	}
+}

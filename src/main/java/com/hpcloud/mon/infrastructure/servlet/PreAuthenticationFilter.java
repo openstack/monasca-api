@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hpcloud.mon.resource.exception.Exceptions;
 import com.hpcloud.mon.resource.exception.Exceptions.FaultType;
-import com.hp.csbu.cc.middleware.ExceptionHandler.*;
+//import com.hp.csbu.cc.middleware.ExceptionHandler.*;
 
 /**
  * Authenticates requests using header information from the CsMiddleware. Provides the X-TENANT-ID
