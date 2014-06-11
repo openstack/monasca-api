@@ -4,10 +4,11 @@
 
 ## Build
 
-Requires mon-common from https://github.com/hpcloud-mon/mon-common. Download and do mvn install
+Requires mon-common from https://github.com/hpcloud-mon/mon-common. Download and do mvn install from within the java directory.
 
 ```
-mvn package
+cd java
+mvn clean install
 ```
 
 ## Usage
