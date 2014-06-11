@@ -7,7 +7,7 @@
 Requires mon-common from https://github.com/hpcloud-mon/mon-common. Download and do mvn install 
 
 ```
-mvn clean install
+mvn clean package
 ```
 
 ## Usage
