@@ -17,6 +17,7 @@
 package com.hpcloud.mon.infrastructure;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.ProvisionException;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
@@ -57,7 +58,7 @@ public class InfrastructureModule extends AbstractModule {
             System.err.println("Unknown database type encountered: " + config.databaseConfiguration.getDatabaseType());
             System.err.println("Supported databases are 'vertica' and 'influxdb'");
             System.err.println("Check your config file.");
-            System.exit(1);
+            throw new ProvisionException("Failed to detect supported database. Supported databases are 'vertica' and 'influxdb'. Check your config file.");
         }
 
         bind(NotificationMethodRepository.class).to(NotificationMethodRepositoryImpl.class).in(
