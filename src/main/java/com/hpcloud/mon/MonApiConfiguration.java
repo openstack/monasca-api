@@ -16,26 +16,48 @@
  */
 package com.hpcloud.mon;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hpcloud.messaging.kafka.KafkaConfiguration;
+import com.hpcloud.mon.Config.DatabaseConfiguration;
+import com.hpcloud.mon.Config.InfluxDBConfig;
+import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.hpcloud.messaging.kafka.KafkaConfiguration;
-import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
-
 public class MonApiConfiguration extends Configuration {
-  @NotEmpty public String region;
-  @NotNull public Boolean accessedViaHttps;
-  @NotEmpty public String metricsTopic = "metrics";
-  @NotEmpty public String eventsTopic = "events";
-  @NotEmpty public String alarmStateTransitionsTopic = "alarm-state-transitions";
+    @NotEmpty
+    public String region;
+    @NotNull
+    public Boolean accessedViaHttps;
+    @NotEmpty
+    public String metricsTopic = "metrics";
+    @NotEmpty
+    public String eventsTopic = "events";
+    @NotEmpty
+    public String alarmStateTransitionsTopic = "alarm-state-transitions";
 
-  @Valid @NotNull public DataSourceFactory mysql;
-  @Valid @NotNull public DataSourceFactory vertica;
-  @Valid @NotNull public KafkaConfiguration kafka;
-  @Valid @NotNull public MiddlewareConfiguration middleware;
+    @Valid
+    @NotNull
+    public DataSourceFactory mysql;
+    @Valid
+    @NotNull
+    public DataSourceFactory vertica;
+    @Valid
+    @NotNull
+    public KafkaConfiguration kafka;
+    @Valid
+    @NotNull
+    public MiddlewareConfiguration middleware;
+    @Valid
+    @NotNull
+    public InfluxDBConfig influxDB;
+    @Valid
+    @NotNull
+    @JsonProperty
+    public DatabaseConfiguration databaseConfiguration;
+
 }
