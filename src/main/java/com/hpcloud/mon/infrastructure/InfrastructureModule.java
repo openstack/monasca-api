@@ -55,9 +55,6 @@ public class InfrastructureModule extends AbstractModule {
             bind(MeasurementRepository.class).to(MeasurementInfluxDBRepositoryImpl.class).in(Singleton.class);
             bind(StatisticRepository.class).to(StatisticInfluxDBRepositoryImpl.class).in(Singleton.class);
         } else {
-            System.err.println("Unknown database type encountered: " + config.databaseConfiguration.getDatabaseType());
-            System.err.println("Supported databases are 'vertica' and 'influxdb'");
-            System.err.println("Check your config file.");
             throw new ProvisionException("Failed to detect supported database. Supported databases are 'vertica' and 'influxdb'. Check your config file.");
         }
 
