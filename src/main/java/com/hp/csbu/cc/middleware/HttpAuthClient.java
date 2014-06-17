@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
+import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -288,9 +290,9 @@ public class HttpAuthClient implements AuthClient {
 	public void reset() {
 	}
 
-/*	@Override
+@Override
 	public AuthResponse validateSignature(SigAuthRequest request) {
 		// TODO Auto-generated method stub
 		return null;
-	}*/
+	}
 }

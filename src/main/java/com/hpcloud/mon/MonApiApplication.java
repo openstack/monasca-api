@@ -121,6 +121,10 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
       authInitParams.put("AdminToken", config.middleware.adminToken);
+      authInitParams.put("AdminAuthMethod", config.middleware.adminToken);
+      authInitParams.put("AdminUser", "admin");
+      authInitParams.put("AdminPassword", "password");
+
 
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
