@@ -84,18 +84,19 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
     private String buildAlarmsPart(List<String> alarmIds) {
 
-        String s = "";
+        StringBuilder sb = new StringBuilder();
         for (String alarmId : alarmIds) {
-            if (s.length() > 0) {
-                s += " or ";
+            if (sb.length() > 0) {
+                sb.append(" or ");
             }
-            s += String.format(" alarm_id = '%1$s' ", alarmId);
+            sb.append(String.format(" alarm_id = '%1$s' ", alarmId));
         }
 
-        if (s.length() > 0) {
-            s = String.format(" and (%1$s)", s);
+        if (sb.length() > 0) {
+            sb.insert(0, " and (");
+            sb.insert(sb.length(), ")");
         }
-        return s;
+        return sb.toString();
     }
 
     private String buildTimePart(DateTime startTime, DateTime endTime) {
