@@ -16,18 +16,8 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -35,8 +25,12 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
-import com.hpcloud.mon.domain.model.measurement.Measurements;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * Vertica measurement repository implementation.
@@ -44,7 +38,7 @@ import com.hpcloud.mon.domain.model.measurement.Measurements;
 public class MeasurementRepositoryImpl implements MeasurementRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
-  private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
+  private static final String FIND_BY_METRIC_DEF_SQL = "select def.name, m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd%s "
       + "where m.definition_dimensions_id = dd.id and def.id = dd.definition_id "
       + "and def.tenant_id = :tenantId and m.time_stamp >= :startTime%s order by dd.id";
@@ -85,6 +79,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
       // Build results
       Map<ByteBuffer, Measurements> results = new LinkedHashMap<>();
       for (Map<String, Object> row : rows) {
+        String metricName = (String) row.get("name");
         byte[] defIdBytes = (byte[]) row.get("definition_dimensions_id");
         byte[] dimSetIdBytes = (byte[]) row.get("dimension_set_id");
         ByteBuffer defId = ByteBuffer.wrap(defIdBytes);
@@ -94,7 +89,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
 
         Measurements measurements = results.get(defId);
         if (measurements == null) {
-          measurements = new Measurements(name, MetricQueries.dimensionsFor(h, dimSetIdBytes),
+          measurements = new Measurements(metricName, MetricQueries.dimensionsFor(h, dimSetIdBytes),
               new ArrayList<Object[]>());
           results.put(defId, measurements);
         }
