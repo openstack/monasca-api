@@ -53,7 +53,6 @@ public class MonApiConfiguration extends Configuration {
     @NotNull
     public MiddlewareConfiguration middleware;
     @Valid
-    @NotNull
     public InfluxDBConfig influxDB;
     @Valid
     @NotNull
