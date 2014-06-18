@@ -1,11 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import static org.testng.Assert.assertEquals;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -14,11 +10,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
-import com.hpcloud.mon.domain.model.measurement.Measurements;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 
 @Test(groups = "database")
-public class MeasurementRepositoryImplTest {
+public class MeasurementVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private MeasurementRepository repo;
@@ -28,7 +27,7 @@ public class MeasurementRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.8/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MeasurementRepositoryImpl(db);
+    repo = new MeasurementVerticaRepositoryImpl(db);
   }
 
   @AfterClass

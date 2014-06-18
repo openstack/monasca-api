@@ -45,10 +45,10 @@ public class InfrastructureModule extends AbstractModule {
         // Bind repositories
         bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
         if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("vertica")) {
-            bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryRepositoryImpl.class).in(Singleton.class);
-            bind(MetricDefinitionRepository.class).to(MetricDefinitionRepositoryImpl.class).in(Singleton.class);
-            bind(MeasurementRepository.class).to(MeasurementRepositoryImpl.class).in(Singleton.class);
-            bind(StatisticRepository.class).to(StatisticRepositoryImpl.class).in(Singleton.class);
+            bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryVerticaRepositoryImpl.class).in(Singleton.class);
+            bind(MetricDefinitionRepository.class).to(MetricDefinitionVerticaRepositoryImpl.class).in(Singleton.class);
+            bind(MeasurementRepository.class).to(MeasurementVerticaRepositoryImpl.class).in(Singleton.class);
+            bind(StatisticRepository.class).to(StatisticVerticaRepositoryImpl.class).in(Singleton.class);
         } else if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("influxdb")) {
             bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryInfluxDBRepositoryImpl.class).in(Singleton.class);
             bind(MetricDefinitionRepository.class).to(MetricDefinitionInfluxDBRepositoryImpl.class).in(Singleton.class);

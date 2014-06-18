@@ -16,26 +16,20 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
-import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.*;
 
 /**
  * Vertica metric definition repository implementation.
  */
-public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepository {
+public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
       + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
@@ -44,7 +38,7 @@ public class MetricDefinitionRepositoryImpl implements MetricDefinitionRepositor
   private final DBI db;
 
   @Inject
-  public MetricDefinitionRepositoryImpl(@Named("vertica") DBI db) {
+  public MetricDefinitionVerticaRepositoryImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 

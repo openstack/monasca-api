@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * Vertica statistic repository implementation.
  */
-public class StatisticRepositoryImpl implements StatisticRepository {
+public class StatisticVerticaRepositoryImpl implements StatisticRepository {
     public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
             .withZoneUTC();
     private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
@@ -44,7 +44,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     private final DBI db;
 
     @Inject
-    public StatisticRepositoryImpl(@Named("vertica") DBI db) {
+    public StatisticVerticaRepositoryImpl(@Named("vertica") DBI db) {
         this.db = db;
     }
 

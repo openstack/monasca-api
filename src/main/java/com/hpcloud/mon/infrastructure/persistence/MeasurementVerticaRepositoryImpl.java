@@ -16,18 +16,8 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -35,13 +25,17 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
-import com.hpcloud.mon.domain.model.measurement.Measurements;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * Vertica measurement repository implementation.
  */
-public class MeasurementRepositoryImpl implements MeasurementRepository {
+public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
@@ -52,7 +46,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
   private final DBI db;
 
   @Inject
-  public MeasurementRepositoryImpl(@Named("vertica") DBI db) {
+  public MeasurementVerticaRepositoryImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 
