@@ -1,10 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.sql.Timestamp;
-
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -13,10 +10,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.sql.Timestamp;
+
 import static org.testng.Assert.assertEquals;
 
 @Test(groups = "database")
-public class AlarmStateHistoryRepositoryImplTest {
+public class AlarmStateHistoryVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private AlarmStateHistoryRepository repo;
@@ -26,7 +25,7 @@ public class AlarmStateHistoryRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.8/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new AlarmStateHistoryRepositoryImpl(null, db);
+    repo = new AlarmStateHistoryVerticaRepositoryImpl(null, db);
   }
 
   @AfterClass

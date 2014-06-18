@@ -1,11 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import static org.testng.Assert.assertEquals;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.testng.annotations.AfterClass;
@@ -13,11 +9,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
-import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 
 @Test(groups = "database")
-public class MetricDefinitionRepositoryImplTest {
+public class MetricDefinitionVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private MetricDefinitionRepository repo;
@@ -27,7 +26,7 @@ public class MetricDefinitionRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.8/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MetricDefinitionRepositoryImpl(db);
+    repo = new MetricDefinitionVerticaRepositoryImpl(db);
   }
 
   @AfterClass

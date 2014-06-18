@@ -16,16 +16,9 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.persistence.BeanMapper;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -34,14 +27,19 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.util.StringMapper;
 
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.persistence.BeanMapper;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Alarm repository implementation.
  */
-public class AlarmStateHistoryRepositoryImpl implements AlarmStateHistoryRepository {
+public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistoryRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a "
@@ -55,7 +53,7 @@ public class AlarmStateHistoryRepositoryImpl implements AlarmStateHistoryReposit
   private final DBI vertica;
 
   @Inject
-  public AlarmStateHistoryRepositoryImpl(@Named("mysql") DBI mysql, @Named("vertica") DBI vertica) {
+  public AlarmStateHistoryVerticaRepositoryImpl(@Named("mysql") DBI mysql, @Named("vertica") DBI vertica) {
     this.mysql = mysql;
     this.vertica = vertica;
   }

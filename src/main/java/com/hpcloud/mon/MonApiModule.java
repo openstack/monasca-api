@@ -61,7 +61,7 @@ public class MonApiModule extends AbstractModule {
 
     install(new ApplicationModule());
     install(new DomainModule());
-    install(new InfrastructureModule());
+    install(new InfrastructureModule(this.config));
   }
 
   @Provides

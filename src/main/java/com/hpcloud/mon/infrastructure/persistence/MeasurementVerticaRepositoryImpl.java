@@ -35,7 +35,7 @@ import java.util.*;
 /**
  * Vertica measurement repository implementation.
  */
-public class MeasurementRepositoryImpl implements MeasurementRepository {
+public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL = "select def.name, m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
@@ -46,7 +46,7 @@ public class MeasurementRepositoryImpl implements MeasurementRepository {
   private final DBI db;
 
   @Inject
-  public MeasurementRepositoryImpl(@Named("vertica") DBI db) {
+  public MeasurementVerticaRepositoryImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 
