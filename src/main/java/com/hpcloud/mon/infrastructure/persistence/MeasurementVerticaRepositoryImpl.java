@@ -38,7 +38,7 @@ import java.util.*;
 public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
-  private static final String FIND_BY_METRIC_DEF_SQL = "select m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
+  private static final String FIND_BY_METRIC_DEF_SQL = "select def.name, m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd%s "
       + "where m.definition_dimensions_id = dd.id and def.id = dd.definition_id "
       + "and def.tenant_id = :tenantId and m.time_stamp >= :startTime%s order by dd.id";
@@ -79,6 +79,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
       // Build results
       Map<ByteBuffer, Measurements> results = new LinkedHashMap<>();
       for (Map<String, Object> row : rows) {
+        String metricName = (String) row.get("name");
         byte[] defIdBytes = (byte[]) row.get("definition_dimensions_id");
         byte[] dimSetIdBytes = (byte[]) row.get("dimension_set_id");
         ByteBuffer defId = ByteBuffer.wrap(defIdBytes);
@@ -88,7 +89,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
 
         Measurements measurements = results.get(defId);
         if (measurements == null) {
-          measurements = new Measurements(name, MetricQueries.dimensionsFor(h, dimSetIdBytes),
+          measurements = new Measurements(metricName, MetricQueries.dimensionsFor(h, dimSetIdBytes),
               new ArrayList<Object[]>());
           results.put(defId, measurements);
         }
