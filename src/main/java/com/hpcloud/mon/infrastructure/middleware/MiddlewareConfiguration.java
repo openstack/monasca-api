@@ -46,5 +46,6 @@ public class MiddlewareConfiguration {
   @NotEmpty @JsonProperty public String connRetryTimes;
   @NotEmpty @JsonProperty public String connRetryInterval;
   @NotEmpty @JsonProperty public String adminToken;
-  @NotNull @JsonProperty public List<String> rolesToMatch;
+  @NotNull  @JsonProperty public List<String> rolesToMatch;
+  @JsonProperty public String timeToCacheToken;
 }

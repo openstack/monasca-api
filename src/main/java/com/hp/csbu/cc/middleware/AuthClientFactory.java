@@ -79,6 +79,7 @@ public abstract class AuthClientFactory {
 						adminToken, maxActive, timeBetweenEvictionRunsMillis, 
 						minEvictableIdleTimeMillis);
 		//	}
+
 			// Pool tweaking
 			pool.setMaxActive(maxActive);
 			pool.setMaxIdle(maxIdle);

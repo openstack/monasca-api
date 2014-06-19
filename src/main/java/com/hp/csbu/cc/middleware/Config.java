@@ -3,15 +3,18 @@ package com.hp.csbu.cc.middleware;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class Config implements AuthConstants {
 
 	// Thee faithful logger
-	private static final Logger logger = LoggerFactory
-			.getLogger(Config.class);
+  private static final Logger logger = LoggerFactory
+    .getLogger(Config.class);
 
 	private static final Config instance = new Config();
 	
@@ -23,7 +26,7 @@ public class Config implements AuthConstants {
 
 	// Memcache client--There shall only be one
 	///private MemcacheCrypt client = null;
-
+  //
   private TokenCache<String, String> client = null;
 
 	// Auth client factory
@@ -37,6 +40,9 @@ public class Config implements AuthConstants {
 
 	// Memcache timeout value
 	private long memCacheTimeOut;
+
+  //the time to cache token
+  private long timeToCacheToken;
 
 	// flag to set if auth decision can be delegated to next filter
 	private boolean delayAuthDecision;
@@ -69,26 +75,20 @@ public class Config implements AuthConstants {
 		return instance;
 	}
 
-	public synchronized void initialize(FilterConfig config) throws ServletException {
+	public synchronized void initialize(FilterConfig config, ServletRequest req, Map<String,String> map) throws ServletException {
 		this.context = config.getServletContext();
     this.filterConfig = config;
 
 		try {
 			// Initialize serviceIds...
-			//serviceIds = context.getInitParameter(SERVICE_IDS);
-			  serviceIds = filterConfig.getInitParameter(SERVICE_IDS);
+
+      serviceIds = filterConfig.getInitParameter(SERVICE_IDS);
 			// Initialize endpointIds...
-      //endpointIds = context.getInitParameter(ENDPOINT_IDS);
-      endpointIds = filterConfig.getInitParameter(ENDPOINT_IDS);
+          endpointIds = filterConfig.getInitParameter(ENDPOINT_IDS);
 
-      String somthing = context
-        .getInitParameter(SERVER_PORT);
-			// Initialize auth server connection parameters...
-			//String host = context.getInitParameter(SERVER_VIP);
+      // Initialize auth server connection parameters...
+
       String host = filterConfig.getInitParameter(SERVER_VIP);
-
-      //int port = Integer.parseInt(context
-      //  .getInitParameter(SERVER_PORT));
 
       int port = Integer.parseInt(filterConfig.getInitParameter(SERVER_PORT));
 			
@@ -111,19 +111,16 @@ public class Config implements AuthConstants {
 				this.client = new MemcacheCrypt(cacheHosts, isEncrypted);
 			}*/
 
-      this.client = new TokenCache<>(getValue(MEMCACHE_TIMEOUT,2000L));
+
+
 			// Initialize Certificates
-			/*String keyStore = context.getInitParameter(KEYSTORE);
-      String keyPass = context.getInitParameter(KEYSTORE_PASS);
-      String trustStore = context.getInitParameter(TRUSTSTORE);
-      String trustPass = context.getInitParameter(TRUSTSTORE_PASS);*/
 
       String keyStore = filterConfig.getInitParameter(KEYSTORE);
       String keyPass =  filterConfig.getInitParameter(KEYSTORE_PASS);
       String trustStore = filterConfig.getInitParameter(TRUSTSTORE);
       String trustPass = filterConfig.getInitParameter(TRUSTSTORE_PASS);
 
-			String adminToken = getValue(ADMIN_TOKEN, "");
+      String adminToken = getValue(ADMIN_TOKEN, "");
 			int timeout = getValue(CONN_TIMEOUT, 0);
 			boolean clientAuth = getValue(CONN_SSL_CLIENT_AUTH, true);
 			int maxActive = getValue(CONN_POOL_MAX_ACTIVE, 3);
@@ -140,6 +137,7 @@ public class Config implements AuthConstants {
 					clientAuth, keyStore, keyPass, trustStore, trustPass,
 					maxActive, maxIdle, evictPeriod, minIdleTime, adminToken);
 			verifyRequiredParamsForAuthMethod();
+      this.client = new TokenCache<>(20,map);
 			logger.info("Auth host (2-way SSL: " + clientAuth + "): " + host);
 			logger.info("Read Servlet Initialization Parameters ");
 			initialized = true;
@@ -214,18 +212,14 @@ public class Config implements AuthConstants {
 
 	// Is caching enabled?
 	protected boolean isCaching() {
-		//return this.client != null;
-    return false;
-	}
+		return this.client != null;
+  }
 
 	protected ServletContext getConfig() {
 		return context;
 	}
 
-	/*protected MemcacheCrypt getClient() {
-		return client;
-	}*/
-  protected TokenCache getClient() {
+  protected TokenCache<String,String> getClient() {
     return client;
   }
 
@@ -253,9 +247,14 @@ public class Config implements AuthConstants {
 		return pauseTime;
 	}
 
+  public long getTimeToCacheToken() { return timeToCacheToken; }
+
+  public void setTimeToCacheToken(long timeToCachedToken) {
+    this.timeToCacheToken = timeToCachedToken;
+  }
 	private <T> T getValue(String paramName, T defaultValue) {
 		Class type = defaultValue.getClass();
-		//String initparamValue = context.getInitParameter(paramName);
+
     String initparamValue = filterConfig.getInitParameter(paramName);
 		if (initparamValue != null && !initparamValue.isEmpty()) {
 			if (type.equals(Integer.class)) {

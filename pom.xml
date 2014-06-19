@@ -124,7 +124,12 @@
       <artifactId>CsMiddleware</artifactId>
       <version>3.34.0</version>
     </dependency> --> 
-<!-- removing CSMiddleware --> 
+<!-- removing CSMiddleware   -->
+     <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>17.0</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>

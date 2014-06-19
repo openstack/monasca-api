@@ -152,8 +152,15 @@ public class FilterUtils {
 		JsonArray roles = token.getAsJsonArray("roles");
 		if (roles != null) {
 			Iterator<JsonElement> it = roles.iterator();
-			while (it.hasNext()) {
-				JsonObject role = it.next().getAsJsonObject();
+			StringBuilder roleBuilder = new StringBuilder();
+      while (it.hasNext()) {
+
+        //Changed to meet my purposes
+        JsonObject role = it.next().getAsJsonObject();
+        String currentRole = role.get("name").getAsString();
+        roleBuilder.append(currentRole).append(",");
+
+        /*JsonObject role = it.next().getAsJsonObject();
 				if (role.get("HP-IDM") != null) {
 					JsonObject hpIdm = role.get("HP-IDM").getAsJsonObject();
 					if (hpIdm.get("projectId") != null) {
@@ -163,8 +170,10 @@ public class FilterUtils {
 						nonTenants.append(",");
 						nonTenants.append(role.get("name").getAsString());
 					}
-				}
+				} */
 			}
+      //My changes to meet my needs
+      req.setAttribute(AUTH_ROLES, roleBuilder.toString());
 		}
 		String tenantRoles = (tenants.length() > 0) ? tenants.substring(1)
 				: tenants.toString();
@@ -256,17 +265,17 @@ public class FilterUtils {
 		}
 		req.setAttribute(AUTH_IDENTITY_STATUS,
 				IdentityStatus.Confirmed.toString());
-		//if (data instanceof String) {
+		if (data instanceof String) {
 			wrapRequestFromHttpResponse(req, ((String) data));
-		//} else {
-		//	wrapRequestFromThriftResponse(req, data);
-		//}
+		} else {
+			wrapRequestFromThriftResponse(req, data);
+		}
 		return req;
 	}
 
-	/*private static void wrapRequestFromThriftResponse(ServletRequest req,
+	private static void wrapRequestFromThriftResponse(ServletRequest req,
 			Object data) {
-		StringBuilder tenants = new StringBuilder();
+		/*StringBuilder tenants = new StringBuilder();
 		StringBuilder nonTenants = new StringBuilder();
 		if (data instanceof AuthResponseV2) {
 			AuthResponseV2 auth = (AuthResponseV2) data;
@@ -339,10 +348,10 @@ public class FilterUtils {
 			}
 
 			setDeprecatedHeaders(req, auth, tenantRoles);
-		}
-	}  */
-
-	/*private static List<CatalogV3> buildServiceCatalogV3(
+		}*/
+	}
+  /*
+	private static List<CatalogV3> buildServiceCatalogV3(
 			List<ServiceForCatalogV3> catalogs) {
 		List<CatalogV3> v3Catalogs = new ArrayList<CatalogV3>();
 		for (ServiceForCatalogV3 catalog : catalogs) {
@@ -374,8 +383,8 @@ public class FilterUtils {
 			v3Catalogs.add(catalogv3);
 		}
 		return v3Catalogs;
-	}  */
-
+	}
+   /*
 	// Method will be removed after keystone removes the deprecated headers.
 	/*private static void setDeprecatedHeaders(ServletRequest req,
 			AuthResponseV3 auth, String tenantRoles) {
@@ -397,7 +406,7 @@ public class FilterUtils {
 	// Insert token into cache
 	public static void cacheToken(String token, Object auth) {
 		if (isCaching()) {
-      appConfig.getClient().put(token, auth);
+      appConfig.getClient().put(token, (String) auth);
 			/*try {
 				appConfig.getClient().putToken(token, auth);
 			} catch (TimeoutException e) {

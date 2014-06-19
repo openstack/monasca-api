@@ -155,7 +155,7 @@
 /*     */ 
 /*     */   public void setFieldValue(_Fields field, Object value)
 /*     */   {
-/* 246 */     switch (field.ordinal()) {//1.$SwitchMap$com$hp$csbu$cc$security$cs$thrift$service$ResourceException$_Fields[field.ordinal()]) {
+/* 246 */     switch (field.ordinal()) {
 /*     */     case 1:
 /* 248 */       if (value == null)
 /* 249 */         unsetCode();
@@ -181,7 +181,7 @@
 /*     */ 
 /*     */   public Object getFieldValue(_Fields field)
 /*     */   {
-/* 275 */     switch (field.ordinal()) {//1.$SwitchMap$com$hp$csbu$cc$security$cs$thrift$service$ResourceException$_Fields[field.ordinal()]) {
+/* 275 */     switch (field.ordinal()) {
 /*     */     case 1:
 /* 277 */       return Integer.valueOf(getCode());
 /*     */     case 2:
@@ -199,7 +199,7 @@
 /* 292 */       throw new IllegalArgumentException();
 /*     */     }
 /*     */ 
-/* 295 */     switch (field.ordinal()) {//1.$SwitchMap$com$hp$csbu$cc$security$cs$thrift$service$ResourceException$_Fields[field.ordinal()]) {
+/* 295 */     switch (field.ordinal()) {
 /*     */     case 1:
 /* 297 */       return isSetCode();
 /*     */     case 2:

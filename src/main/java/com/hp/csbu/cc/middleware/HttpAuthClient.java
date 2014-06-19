@@ -141,9 +141,9 @@ public class HttpAuthClient implements AuthClient {
 				get.setHeader(header);
 			}
 		}
-		if (!appConfig.getAdminAuthMethod().isEmpty()) {
-			get.setHeader(new BasicHeader(TOKEN, getAdminToken()));
-		}
+		//if (!appConfig.getAdminAuthMethod().isEmpty()) {
+			get.setHeader(new BasicHeader(TOKEN, "password"));//getAdminToken()));
+		//}
 		try {
 			response = client.execute(get);
 		} catch (IOException e) {
@@ -198,7 +198,7 @@ public class HttpAuthClient implements AuthClient {
 				adminToken = token.get("id").getAsString();
 				adminTokenExpiry = token.get("expires").getAsString();
 			} else {
-				StringEntity params = getUnscopedV3AdminTokenRequest();
+          StringEntity params = getUnscopedV3AdminTokenRequest();
 				String authUri = uri + "/v3/auth/tokens";
 				response = sendPost(authUri, params);
 				adminToken = response.getFirstHeader(AUTH_SUBJECT_TOKEN)

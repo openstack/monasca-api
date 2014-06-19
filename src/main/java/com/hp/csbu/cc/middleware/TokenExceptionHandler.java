@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.TException;
-//import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
+import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
 
 public enum TokenExceptionHandler {
 
@@ -62,7 +62,7 @@ public enum TokenExceptionHandler {
 			}
 		}
 	},
-	/*ResourceException {
+	ResourceException {
 		@Override
 		public void onException(Exception e, ServletResponse resp, String token) {
 			ResourceException re = (ResourceException) e;
@@ -81,8 +81,7 @@ public enum TokenExceptionHandler {
 						+ ie.getMessage() + " " + ie);
 			}
 		}
-	},*/
-	
+	},
 	AuthException {
 		@Override
 		public void onException(Exception e, ServletResponse resp, String token) {

@@ -47,7 +47,7 @@ public class TokenAuth implements Filter, AuthConstants {
 	private static final String SERVICE_CATALOG_PARAM = "includeCatalog";
 	private static final String API_VERSION_PARAM = "apiVersion";
 
-	private final Config appConfig = Config.getInstance();
+  private final Config appConfig = Config.getInstance();
 	
 	private FilterConfig filterConfig;
 
@@ -76,14 +76,14 @@ public class TokenAuth implements Filter, AuthConstants {
 		Object auth = null;
 		int numberOfTries = 0;		
 		if (!appConfig.isInitialized()) {
-			appConfig.initialize(filterConfig);
+			appConfig.initialize(filterConfig,req,getInputParams());
 		}		
 		int retries = appConfig.getRetries();
 		long pauseTime = appConfig.getPauseTime();
-		AuthClientFactory factory = appConfig.getFactory();
+    AuthClientFactory factory = appConfig.getFactory();
 
 		// Extract credential
-		String token = ((HttpServletRequest) req).getHeader(TOKEN);
+    String token = ((HttpServletRequest) req).getHeader(TOKEN);
 
 		if (token == null) {
 			if (!appConfig.isDelayAuthDecision()) {
@@ -103,20 +103,25 @@ public class TokenAuth implements Filter, AuthConstants {
 				AuthClient client = null;
 				do {
 					try {
+            auth = FilterUtils.getCachedToken(token);
 						client = factory.getClient();
-						if (appConfig.getAuthVersion().equalsIgnoreCase("v2.0")) {
-						auth = client.validateTokenForServiceEndpointV2(token, appConfig.getServiceIds(),
-								appConfig.getEndpointIds(), appConfig.isIncludeCatalog());
+            /*if (appConfig.getAuthVersion().equalsIgnoreCase("v2.0")) {
+                    auth = client.validateTokenForServiceEndpointV2((token, appConfig.getServiceIds(),
+              appConfig.getEndpointIds(), appConfig.isIncludeCatalog());
+
 						} else {
-							auth = client.validateTokenForServiceEndpointV3(token, getInputParams());
-						}
-						// Cache token
-						FilterUtils.cacheToken(token, auth);
+							//auth = client.validateTokenForServiceEndpointV3(token, getInputParams());
+              auth =  new TokenCache<String,String>(appConfig.getTimeToCacheToken(),getInputParams());
+						} */
+            // Cache token
+            //FilterUtils.cacheToken(token, auth);
 						// Return to connection pool for re-use
-						factory.recycle(client);
+
+            factory.recycle(client);
+
 						logger.debug("Successful Authentication");
 						break;
-					} catch (TTransportException t) {
+					}/* catch (TTransportException t) {
 						if (client != null)
 							factory.discard(client);
 						if (numberOfTries < retries) {
@@ -148,7 +153,7 @@ public class TokenAuth implements Filter, AuthConstants {
 							handler.onException(c, resp, token);
 						}
 						return;
-					}catch (Exception ex) {
+					}*/catch (Exception ex) {
 						if (client != null)
 							factory.recycle(client);
 						TokenExceptionHandler handler = ExceptionHandlerUtil
