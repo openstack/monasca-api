@@ -50,7 +50,8 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
 
         String dimWhereClause = buildDimWherePart(dimensions);
 
-        String query = String.format("select time from /.*/ where tenant_id = '%1$s' %2$s", tenantId, dimWhereClause);
+        // name is not used in the query.
+        String query = String.format("select first(value) from /.*/ where tenant_id = '%1$s' %2$s", tenantId, dimWhereClause);
 
         logger.debug("Query string: {}", query);
 
