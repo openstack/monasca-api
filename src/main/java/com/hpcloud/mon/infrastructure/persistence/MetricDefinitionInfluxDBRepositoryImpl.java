@@ -46,12 +46,12 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
     }
 
     @Override
-    public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) {
+    public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) throws Exception {
 
         String dimWhereClause = buildDimWherePart(dimensions);
 
         // name is not used in the query.
-        String query = String.format("select first(value) from /.*/ where tenant_id = '%1$s' %2$s", tenantId, dimWhereClause);
+        String query = String.format("select first(value) from /.*/ where tenant_id = '%1$s' %2$s", SQLSanitizer.sanitize(tenantId), dimWhereClause);
 
         logger.debug("Query string: {}", query);
 
@@ -69,7 +69,7 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
         return metricDefinitionList;
     }
 
-    private String buildDimWherePart(Map<String, String> dimensions) {
+    private String buildDimWherePart(Map<String, String> dimensions) throws Exception {
 
         String dimWhereClause = "";
         boolean first = true;
@@ -80,7 +80,7 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
                 } else {
                     dimWhereClause += " and";
                 }
-                dimWhereClause += String.format(" %1$s = '%2$s'", colName, dimensions.get(colName));
+                dimWhereClause += String.format(" %1$s = '%2$s'", SQLSanitizer.sanitize(colName), SQLSanitizer.sanitize(dimensions.get(colName)));
 
             }
             if (dimWhereClause.length() > 0) {

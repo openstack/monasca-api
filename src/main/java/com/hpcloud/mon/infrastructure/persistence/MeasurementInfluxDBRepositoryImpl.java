@@ -51,12 +51,12 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
     }
 
     @Override
-    public Collection<Measurements> find(String tenantId, String name, Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) {
+    public Collection<Measurements> find(String tenantId, String name, Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) throws Exception {
 
         String dimWhereClause = "";
         if (dimensions != null) {
             for (String colName : dimensions.keySet()) {
-                dimWhereClause += String.format(" and %1$s = '%2$s'", colName, dimensions.get(colName));
+                dimWhereClause += String.format(" and %1$s = '%2$s'", SQLSanitizer.sanitize(colName), SQLSanitizer.sanitize(dimensions.get(colName)));
 
             }
         }
@@ -65,7 +65,7 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
         String query = String.format("select value " +
                         "from %1$s " +
                         "where tenant_id = '%2$s' %3$s %4$s",
-                name, tenantId, timePart, dimWhereClause);
+                SQLSanitizer.sanitize(name), SQLSanitizer.sanitize(tenantId), timePart, dimWhereClause);
 
         logger.debug("Query string: {}", query);
 

@@ -16,19 +16,6 @@
  */
 package com.hpcloud.mon.resource;
 
-import java.util.Collection;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
-import org.joda.time.DateTime;
-
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Strings;
 import com.hpcloud.mon.app.validation.Validation;
@@ -36,6 +23,13 @@ import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.joda.time.DateTime;
+
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Measurement resource implementation.
@@ -57,7 +51,7 @@ public class MeasurementResource {
       responseContainer = "List")
   public Collection<Measurements> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);

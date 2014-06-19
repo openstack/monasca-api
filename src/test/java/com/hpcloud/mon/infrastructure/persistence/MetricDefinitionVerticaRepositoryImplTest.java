@@ -62,12 +62,12 @@ public class MetricDefinitionVerticaRepositoryImplTest {
     handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:01:00', 8)");
   }
 
-  public void shouldFindWithoutDimensions() {
+  public void shouldFindWithoutDimensions() throws Exception {
     List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null);
     assertEquals(defs.size(), 3);
   }
 
-  public void shouldFindWithDimensions() {
+  public void shouldFindWithDimensions() throws Exception {
     Map<String, String> dims = new HashMap<>();
     dims.put("service", "compute");
     dims.put("instance_id", "123");

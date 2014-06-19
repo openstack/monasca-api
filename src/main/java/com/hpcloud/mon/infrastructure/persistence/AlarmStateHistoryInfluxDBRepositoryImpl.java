@@ -61,18 +61,18 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
     }
 
     @Override
-    public List<AlarmStateHistory> findById(String tenantId, String alarmId) {
+    public List<AlarmStateHistory> findById(String tenantId, String alarmId) throws Exception {
 
         // InfluxDB orders queries by time stamp desc by default.
         String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
                 "from alarm_state_history " +
-                "where tenant_id = '%1$s' and alarm_id = '%2$s'", tenantId, alarmId);
+                "where tenant_id = '%1$s' and alarm_id = '%2$s'", SQLSanitizer.sanitize(tenantId), SQLSanitizer.sanitize(alarmId));
 
         return queryInfluxDBForAlarmStateHistory(query);
     }
 
     @Override
-    public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) {
+    public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) throws Exception {
 
         List<String> alarmIds = null;
         // Find alarm Ids for dimensions
@@ -92,7 +92,7 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
         String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
                 "from alarm_state_history " +
-                "where tenant_id = '%1$s' %2$s %3$s", tenantId, timePart, alarmsPart);
+                "where tenant_id = '%1$s' %2$s %3$s", SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
 
         return queryInfluxDBForAlarmStateHistory(query);
 

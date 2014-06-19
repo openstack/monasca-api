@@ -63,13 +63,13 @@ public class MeasurementVerticaRepositoryImplTest {
     handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:01:00', 8)");
   }
 
-  public void shouldFindWithoutDimensions() {
+  public void shouldFindWithoutDimensions() throws Exception {
     Collection<Measurements> measurements = repo.find("bob", "cpu_utilization", null, new DateTime(
         2014, 1, 1, 0, 0, 0), null);
     assertEquals(measurements.size(), 3);
   }
 
-  public void shouldFindWithDimensions() {
+  public void shouldFindWithDimensions() throws Exception {
     Map<String, String> dims = new HashMap<>();
     dims.put("service", "compute");
     dims.put("instance_id", "123");

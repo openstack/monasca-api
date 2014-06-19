@@ -16,31 +16,6 @@
  */
 package com.hpcloud.mon.resource;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
-import org.hibernate.validator.constraints.NotEmpty;
-import org.joda.time.DateTime;
-
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
@@ -56,11 +31,21 @@ import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.resource.annotation.PATCH;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.joda.time.DateTime;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Alarm resource implementation.
@@ -119,7 +104,7 @@ public class AlarmResource {
       responseContainer = "List")
   public Collection<AlarmStateHistory> listStateHistory(
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) {
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", false);
@@ -204,7 +189,7 @@ public class AlarmResource {
   @ApiOperation(value = "Get alarm state history", response = AlarmStateHistory.class,
       responseContainer = "List")
   public List<AlarmStateHistory> getStateHistory(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) throws Exception {
     return stateHistoryRepo.findById(tenantId, alarmId);
   }
 }

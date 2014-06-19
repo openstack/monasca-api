@@ -16,10 +16,10 @@
  */
 package com.hpcloud.mon.domain.model.metric;
 
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+
 import java.util.List;
 import java.util.Map;
-
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
 
 /**
  * Repository for metrics.
@@ -28,5 +28,5 @@ public interface MetricDefinitionRepository {
   /**
    * Finds metrics for the given criteria.
    */
-  List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions);
+  List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) throws Exception;
 }

@@ -57,7 +57,7 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
     @Override
     public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
                                  DateTime startTime, @Nullable DateTime endTime,
-                                 List<String> statistics, int period) {
+                                 List<String> statistics, int period) throws Exception {
 
         String statsPart = buildStatsPart(statistics);
         String timePart = buildTimePart(startTime, endTime);
@@ -65,7 +65,7 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
         String periodPart = buildPeriodPart(period);
 
         String query = String.format("select time %1$s from %2$s where tenant_id = '%3$s' %4$s %5$s %6$s",
-                statsPart, name, tenantId, timePart, dimsPart, periodPart);
+                statsPart, SQLSanitizer.sanitize(name), SQLSanitizer.sanitize(tenantId), timePart, dimsPart, periodPart);
 
         logger.debug("Query string: {}", query);
 
@@ -109,7 +109,7 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
         return s;
     }
 
-    private String buildDimPart(Map<String, String> dims) {
+    private String buildDimPart(Map<String, String> dims) throws Exception {
 
         String s = "";
         if (dims != null) {
@@ -117,7 +117,7 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
                 if (s.length() > 0) {
                     s += " and";
                 }
-                s += String.format(" %1$s = '%2$s'", colName, dims.get(colName));
+                s += String.format(" %1$s = '%2$s'", SQLSanitizer.sanitize(colName), SQLSanitizer.sanitize(dims.get(colName)));
             }
 
             if (s.length() > 0) {

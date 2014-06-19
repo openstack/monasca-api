@@ -16,15 +16,13 @@
  */
 package com.hpcloud.mon.domain.model.alarmstatehistory;
 
+import com.hpcloud.mon.domain.exception.EntityNotFoundException;
+import org.joda.time.DateTime;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.joda.time.DateTime;
-
-import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 
 /**
  * Repository for alarm state history.
@@ -33,11 +31,11 @@ public interface AlarmStateHistoryRepository {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
    */
-  List<AlarmStateHistory> findById(String tenantId, String alarmId);
+  List<AlarmStateHistory> findById(String tenantId, String alarmId) throws Exception;
 
   /**
    * Finds AlarmStateHistory for the given criteria.
    */
   Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime);
+      DateTime startTime, @Nullable DateTime endTime) throws Exception;
 }

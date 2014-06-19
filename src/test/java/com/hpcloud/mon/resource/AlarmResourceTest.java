@@ -1,22 +1,5 @@
 package com.hpcloud.mon.resource;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
-import java.util.*;
-
-import javax.ws.rs.core.MediaType;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.testng.annotations.Test;
-
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
@@ -31,6 +14,23 @@ import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.testng.annotations.Test;
+
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.*;
 
 @Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
@@ -300,7 +300,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
         .getLinks(), links);
   }
 
-  public void shouldGetAlarmStateHistory() {
+  public void shouldGetAlarmStateHistory() throws Exception {
     AlarmStateHistory history1 = new AlarmStateHistory("123", AlarmState.OK, AlarmState.ALARM,
         "foo", "foobar", new DateTime(2014, 1, 1, 1, 1, DateTimeZone.UTC));
     AlarmStateHistory history2 = new AlarmStateHistory("123", AlarmState.ALARM, AlarmState.OK,

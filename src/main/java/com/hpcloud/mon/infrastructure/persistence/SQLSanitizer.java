@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hpcloud.mon.domain.model.measurement;
+package com.hpcloud.mon.infrastructure.persistence;
 
-import org.joda.time.DateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Map;
+public class SQLSanitizer {
 
-/**
- * Repository for measurements.
- */
-public interface MeasurementRepository {
-  /**
-   * Finds measurements for the given criteria.
-   */
-  Collection<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime) throws Exception;
+    private static final Pattern p = Pattern.compile("^(\\w|-|\\.)+$");
+
+    static String sanitize(String taintedString) throws Exception {
+
+        Matcher m = p.matcher(taintedString);
+        if (!m.matches()) {
+            throw new Exception(String.format("Input from user contains non-word chars[ %1$s ]. Only word chars [a-zA-Z_0-9], dash [-], and dot [.] allowed. ", taintedString));
+        }
+
+        return taintedString;
+    }
 }

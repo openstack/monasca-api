@@ -16,29 +16,23 @@
  */
 package com.hpcloud.mon.resource;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
-import org.joda.time.DateTime;
-
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.hpcloud.mon.app.validation.Validation;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.mon.domain.model.statistic.Statistics;
-//import com.hpcloud.util.stats.Statistics;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.joda.time.DateTime;
+
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.Map;
+
+//import com.hpcloud.util.stats.Statistics;
 
 /**
  * Statistics resource implementation.
@@ -63,7 +57,7 @@ public class StatisticResource {
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
-      @DefaultValue("300") @QueryParam("period") String periodStr) {
+      @DefaultValue("300") @QueryParam("period") String periodStr) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
