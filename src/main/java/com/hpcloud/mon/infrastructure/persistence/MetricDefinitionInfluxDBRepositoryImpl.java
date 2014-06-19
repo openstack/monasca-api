@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -47,26 +48,9 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
     @Override
     public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) {
 
-        String dimWhereClause = "";
-        String dimColNames = "";
-        boolean first = true;
-        if (dimensions != null) {
-            for (String colName : dimensions.keySet()) {
-                if (first) {
-                    first = false;
-                } else {
-                    dimWhereClause += " and";
-                    dimColNames += ",";
-                }
-                dimWhereClause += String.format(" %1$s = '%2$s'", colName, dimensions.get(colName));
-                dimColNames += colName;
+        String dimWhereClause = buildDimWherePart(dimensions);
 
-            }
-            if (dimWhereClause.length() > 0) {
-                dimWhereClause = String.format(" and %1$s", dimWhereClause);
-            }
-        }
-        String query = String.format("select %1$s from /.*/ where tenant_id = '%2$s' %3$s", dimColNames, tenantId, dimWhereClause);
+        String query = String.format("select time from /.*/ where tenant_id = '%1$s' %2$s", tenantId, dimWhereClause);
 
         logger.debug("Query string: {}", query);
 
@@ -77,10 +61,31 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
 
             MetricDefinition metricDefinition = new MetricDefinition();
             metricDefinition.name = serie.getName();
-            metricDefinition.setDimensions(dimensions);
+            metricDefinition.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
             metricDefinitionList.add(metricDefinition);
         }
 
         return metricDefinitionList;
+    }
+
+    private String buildDimWherePart(Map<String, String> dimensions) {
+
+        String dimWhereClause = "";
+        boolean first = true;
+        if (dimensions != null) {
+            for (String colName : dimensions.keySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    dimWhereClause += " and";
+                }
+                dimWhereClause += String.format(" %1$s = '%2$s'", colName, dimensions.get(colName));
+
+            }
+            if (dimWhereClause.length() > 0) {
+                dimWhereClause = String.format(" and %1$s", dimWhereClause);
+            }
+        }
+        return dimWhereClause;
     }
 }
