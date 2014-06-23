@@ -50,13 +50,13 @@ public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRe
       if (name != null)
         sbWhere.append(" and def.name = :name");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL,
-          MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+          Utils.MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
       // Build query
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       if (name != null)
         query.bind("name", name);
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       // Execute query
       List<Map<String, Object>> rows = query.list();

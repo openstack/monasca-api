@@ -118,7 +118,7 @@ public class StatisticVerticaRepositoryImpl implements StatisticRepository {
             sbWhere.append(" and def.name = :name");
 
         String sql = String.format(FIND_BY_METRIC_DEF_SQL,
-                MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+                Utils.MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
         Query<Map<String, Object>> query = h.createQuery(sql)
                 .bind("tenantId", tenantId)
@@ -132,7 +132,7 @@ public class StatisticVerticaRepositoryImpl implements StatisticRepository {
             query.bind("endTime", new Timestamp(endTime.getMillis()));
         }
 
-        DimensionQueries.bindDimensionsToQuery(query, dimensions);
+        Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
         // Execute
         List<Map<String, Object>> rows = query.list();

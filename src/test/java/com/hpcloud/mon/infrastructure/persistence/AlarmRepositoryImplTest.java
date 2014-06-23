@@ -1,26 +1,5 @@
 package com.hpcloud.mon.infrastructure.persistence;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.util.StringMapper;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.hpcloud.mon.common.model.alarm.AggregateFunction;
@@ -31,6 +10,18 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.util.StringMapper;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.nio.charset.Charset;
+import java.util.*;
+
+import static org.testng.Assert.*;
 
 @Test
 public class AlarmRepositoryImplTest {
@@ -115,7 +106,7 @@ public class AlarmRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldUpdate() {
-    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
+    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmRepositoryImpl(db);
     beforeMethod();
@@ -162,7 +153,7 @@ public class AlarmRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldFindSubAlarmMetricDefinitions() {
-    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
+    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmRepositoryImpl(db);
     beforeMethod();
@@ -189,7 +180,7 @@ public class AlarmRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldFindSubExpressions() {
-    db = new DBI("jdbc:mysql://localhost/mon", "root", "");
+    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmRepositoryImpl(db);
     beforeMethod();

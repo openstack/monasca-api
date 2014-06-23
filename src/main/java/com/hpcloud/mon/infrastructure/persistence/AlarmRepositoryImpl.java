@@ -25,7 +25,6 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.persistence.BeanMapper;
-
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
@@ -33,7 +32,6 @@ import org.skife.jdbi.v2.util.StringMapper;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.*;
 
 /**
@@ -118,7 +116,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
         sbWhere.append(" and alarm.state = :state");
       }
 
-      String sql = String.format(query, SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere);
+      String sql = String.format(query, Utils.SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere);
       Query<?> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (state != null) {
@@ -126,7 +124,7 @@ public class AlarmRepositoryImpl implements AlarmRepository {
       }
 
       q = q.map(new BeanMapper<Alarm>(Alarm.class));
-      DimensionQueries.bindDimensionsToQuery(q, dimensions);
+      Utils.DimensionQueries.bindDimensionsToQuery(q, dimensions);
 
       List<Alarm> alarms = (List<Alarm>) q.list();
 

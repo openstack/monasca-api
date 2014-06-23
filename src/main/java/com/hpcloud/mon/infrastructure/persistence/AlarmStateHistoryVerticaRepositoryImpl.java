@@ -77,9 +77,9 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
 
     // Find alarm Ids for dimensions
     try (Handle h = mysql.open()) {
-      String sql = String.format(FIND_ALARMS_SQL, SubAlarmQueries.buildJoinClauseFor(dimensions));
+      String sql = String.format(FIND_ALARMS_SQL, Utils.SubAlarmQueries.buildJoinClauseFor(dimensions));
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
       alarmIds = query.map(StringMapper.FIRST).list();
     }
 
@@ -109,7 +109,7 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
         query.bind("startTime", new Timestamp(startTime.getMillis()));
       if (endTime != null)
         query.bind("endTime", new Timestamp(endTime.getMillis()));
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
       return query.map(new BeanMapper<>(AlarmStateHistory.class)).list();
     }
   }

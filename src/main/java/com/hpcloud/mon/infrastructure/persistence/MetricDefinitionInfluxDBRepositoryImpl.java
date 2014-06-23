@@ -33,60 +33,46 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionRepository {
-    private static final Logger logger = LoggerFactory.getLogger(AlarmStateHistoryInfluxDBRepositoryImpl.class);
+  private static final Logger logger = LoggerFactory.getLogger
+      (AlarmStateHistoryInfluxDBRepositoryImpl.class);
 
-    private final MonApiConfiguration config;
-    private final InfluxDB influxDB;
+  private final MonApiConfiguration config;
+  private final InfluxDB influxDB;
 
-    @Inject
-    public MetricDefinitionInfluxDBRepositoryImpl(MonApiConfiguration config) {
-        this.config = config;
-        this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(), this.config.influxDB.getUser(),
-                this.config.influxDB.getPassword());
+  @Inject
+  public MetricDefinitionInfluxDBRepositoryImpl(MonApiConfiguration config) {
+    this.config = config;
+    this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
+        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
+  }
+
+  @Override
+  public List<MetricDefinition> find(String tenantId, String name, Map<String,
+      String> dimensions) throws Exception {
+
+    String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
+
+    // name is not used in the query.
+    String query = String.format("select first(value) from /.*/ where tenant_id = '%1$s' %2$s",
+        Utils.SQLSanitizer.sanitize(tenantId), dimsPart);
+
+    logger.debug("Query string: {}", query);
+
+    List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
+        TimeUnit.SECONDS);
+
+    List<MetricDefinition> metricDefinitionList = new ArrayList<>();
+    for (Serie serie : result) {
+
+      MetricDefinition metricDefinition = new MetricDefinition();
+      metricDefinition.name = serie.getName();
+      metricDefinition.setDimensions(dimensions == null ? new HashMap<String,
+          String>() : dimensions);
+      metricDefinitionList.add(metricDefinition);
     }
 
-    @Override
-    public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) throws Exception {
+    return metricDefinitionList;
+  }
 
-        String dimWhereClause = buildDimWherePart(dimensions);
 
-        // name is not used in the query.
-        String query = String.format("select first(value) from /.*/ where tenant_id = '%1$s' %2$s", SQLSanitizer.sanitize(tenantId), dimWhereClause);
-
-        logger.debug("Query string: {}", query);
-
-        List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.SECONDS);
-
-        List<MetricDefinition> metricDefinitionList = new ArrayList<>();
-        for (Serie serie : result) {
-
-            MetricDefinition metricDefinition = new MetricDefinition();
-            metricDefinition.name = serie.getName();
-            metricDefinition.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
-            metricDefinitionList.add(metricDefinition);
-        }
-
-        return metricDefinitionList;
-    }
-
-    private String buildDimWherePart(Map<String, String> dimensions) throws Exception {
-
-        String dimWhereClause = "";
-        boolean first = true;
-        if (dimensions != null) {
-            for (String colName : dimensions.keySet()) {
-                if (first) {
-                    first = false;
-                } else {
-                    dimWhereClause += " and";
-                }
-                dimWhereClause += String.format(" %1$s = '%2$s'", SQLSanitizer.sanitize(colName), SQLSanitizer.sanitize(dimensions.get(colName)));
-
-            }
-            if (dimWhereClause.length() > 0) {
-                dimWhereClause = String.format(" and %1$s", dimWhereClause);
-            }
-        }
-        return dimWhereClause;
-    }
 }

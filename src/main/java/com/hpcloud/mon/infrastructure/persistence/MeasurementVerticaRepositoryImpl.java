@@ -61,7 +61,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
       if (endTime != null)
         sbWhere.append(" and m.time_stamp <= :endTime");
       String sql = String.format(FIND_BY_METRIC_DEF_SQL,
-          MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+          Utils.MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
 
       // Build query
       Query<Map<String, Object>> query = h.createQuery(sql)
@@ -71,7 +71,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
         query.bind("name", name);
       if (endTime != null)
         query.bind("endTime", new Timestamp(endTime.getMillis()));
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       // Execute query
       List<Map<String, Object>> rows = query.list();
@@ -89,7 +89,8 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
 
         Measurements measurements = results.get(defId);
         if (measurements == null) {
-          measurements = new Measurements(metricName, MetricQueries.dimensionsFor(h, dimSetIdBytes),
+          measurements = new Measurements(metricName, Utils.MetricQueries.dimensionsFor(h,
+              dimSetIdBytes),
               new ArrayList<Object[]>());
           results.put(defId, measurements);
         }
