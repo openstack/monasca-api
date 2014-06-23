@@ -17,6 +17,7 @@
 package com.hpcloud.mon.infrastructure;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
@@ -26,6 +27,8 @@ import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.mon.infrastructure.persistence.*;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
 
 import javax.inject.Singleton;
 
@@ -34,31 +37,49 @@ import javax.inject.Singleton;
  */
 public class InfrastructureModule extends AbstractModule {
 
-    private MonApiConfiguration config;
+  private MonApiConfiguration config;
 
-    public InfrastructureModule(MonApiConfiguration config) {
-        this.config = config;
+  public InfrastructureModule(MonApiConfiguration config) {
+    this.config = config;
+  }
+
+  @Override
+  protected void configure() {
+    // Bind repositories
+    bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
+    if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("vertica")) {
+      bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryVerticaRepositoryImpl.class).in
+          (Singleton.class);
+      bind(MetricDefinitionRepository.class).to(MetricDefinitionVerticaRepositoryImpl.class).in
+          (Singleton.class);
+      bind(MeasurementRepository.class).to(MeasurementVerticaRepositoryImpl.class).in(Singleton
+          .class);
+      bind(StatisticRepository.class).to(StatisticVerticaRepositoryImpl.class).in(Singleton.class);
+    } else if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals
+        ("influxdb")) {
+      bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryInfluxDBRepositoryImpl.class)
+          .in(Singleton.class);
+      bind(MetricDefinitionRepository.class).to(MetricDefinitionInfluxDBRepositoryImpl.class).in
+          (Singleton.class);
+      bind(MeasurementRepository.class).to(MeasurementInfluxDBRepositoryImpl.class).in(Singleton
+          .class);
+      bind(StatisticRepository.class).to(StatisticInfluxDBRepositoryImpl.class).in(Singleton.class);
+    } else {
+      throw new ProvisionException("Failed to detect supported database. Supported databases are " +
+          "'vertica' and 'influxdb'. Check your config file.");
     }
 
-    @Override
-    protected void configure() {
-        // Bind repositories
-        bind(AlarmRepository.class).to(AlarmRepositoryImpl.class).in(Singleton.class);
-        if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("vertica")) {
-            bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryVerticaRepositoryImpl.class).in(Singleton.class);
-            bind(MetricDefinitionRepository.class).to(MetricDefinitionVerticaRepositoryImpl.class).in(Singleton.class);
-            bind(MeasurementRepository.class).to(MeasurementVerticaRepositoryImpl.class).in(Singleton.class);
-            bind(StatisticRepository.class).to(StatisticVerticaRepositoryImpl.class).in(Singleton.class);
-        } else if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("influxdb")) {
-            bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryInfluxDBRepositoryImpl.class).in(Singleton.class);
-            bind(MetricDefinitionRepository.class).to(MetricDefinitionInfluxDBRepositoryImpl.class).in(Singleton.class);
-            bind(MeasurementRepository.class).to(MeasurementInfluxDBRepositoryImpl.class).in(Singleton.class);
-            bind(StatisticRepository.class).to(StatisticInfluxDBRepositoryImpl.class).in(Singleton.class);
-        } else {
-            throw new ProvisionException("Failed to detect supported database. Supported databases are 'vertica' and 'influxdb'. Check your config file.");
-        }
+    bind(NotificationMethodRepository.class).to(NotificationMethodRepositoryImpl.class).in
+        (Singleton.class);
 
-        bind(NotificationMethodRepository.class).to(NotificationMethodRepositoryImpl.class).in(
-                Singleton.class);
-    }
+
+  }
+
+  @Provides
+  InfluxDB provideInfluxDB() {
+    InfluxDB influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
+        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
+    return influxDB;
+  }
+
 }

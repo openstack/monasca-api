@@ -22,7 +22,6 @@ import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -54,12 +53,10 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
   @Inject
   public AlarmStateHistoryInfluxDBRepositoryImpl(@Named("mysql") DBI mysql,
-                                                 MonApiConfiguration config) {
+                                                 MonApiConfiguration config, InfluxDB influxDB) {
     this.mysql = mysql;
     this.config = config;
-
-    this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
-        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
+    this.influxDB = influxDB;
   }
 
   @Override
@@ -67,9 +64,9 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
     // InfluxDB orders queries by time stamp desc by default.
     String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
-        "from alarm_state_history " +
-        "where tenant_id = '%1$s' and alarm_id = '%2$s'", Utils.SQLSanitizer.sanitize(tenantId),
-        Utils.SQLSanitizer.sanitize(alarmId));
+            "from alarm_state_history " +
+            "where tenant_id = '%1$s' and alarm_id = '%2$s'", Utils.SQLSanitizer.sanitize
+        (tenantId), Utils.SQLSanitizer.sanitize(alarmId));
 
     return queryInfluxDBForAlarmStateHistory(query);
   }
@@ -82,7 +79,8 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
     List<String> alarmIds = null;
     // Find alarm Ids for dimensions
     try (Handle h = mysql.open()) {
-      String sql = String.format(FIND_ALARMS_SQL, Utils.SubAlarmQueries.buildJoinClauseFor(dimensions));
+      String sql = String.format(FIND_ALARMS_SQL, Utils.SubAlarmQueries.buildJoinClauseFor
+          (dimensions));
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
       alarmIds = query.map(StringMapper.FIRST).list();
@@ -97,8 +95,8 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
     String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
             "from alarm_state_history " +
-            "where tenant_id = '%1$s' %2$s %3$s", Utils.SQLSanitizer.sanitize(tenantId), timePart,
-        alarmsPart);
+            "where tenant_id = '%1$s' %2$s %3$s", Utils.SQLSanitizer.sanitize(tenantId),
+        timePart, alarmsPart);
 
     return queryInfluxDBForAlarmStateHistory(query);
 

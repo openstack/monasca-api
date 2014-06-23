@@ -21,7 +21,6 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
 import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -44,11 +43,10 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis();
 
   @Inject
-  public MeasurementInfluxDBRepositoryImpl(MonApiConfiguration config) {
+  public MeasurementInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
 
-    this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
-        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
+    this.influxDB = influxDB;
   }
 
   @Override

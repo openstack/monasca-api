@@ -21,7 +21,6 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.mon.domain.model.statistic.Statistics;
 import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -47,12 +46,9 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis();
 
   @Inject
-  public StatisticInfluxDBRepositoryImpl(MonApiConfiguration config) {
+  public StatisticInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
-
-    this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
-        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
-
+    this.influxDB = influxDB;
   }
 
   @Override
@@ -65,8 +61,8 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
     String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
     String periodPart = buildPeriodPart(period);
 
-    String query = String.format("select time %1$s from %2$s where tenant_id = '%3$s' %4$s %5$s " +
-        "%6$s", statsPart, Utils.SQLSanitizer.sanitize(name), Utils.SQLSanitizer.sanitize
+    String query = String.format("select time %1$s from %2$s where tenant_id = '%3$s' %4$s %5$s "
+        + "%6$s", statsPart, Utils.SQLSanitizer.sanitize(name), Utils.SQLSanitizer.sanitize
         (tenantId), timePart, dimsPart, periodPart);
 
     logger.debug("Query string: {}", query);

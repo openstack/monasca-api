@@ -21,7 +21,6 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +39,9 @@ public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionR
   private final InfluxDB influxDB;
 
   @Inject
-  public MetricDefinitionInfluxDBRepositoryImpl(MonApiConfiguration config) {
+  public MetricDefinitionInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
-    this.influxDB = InfluxDBFactory.connect(this.config.influxDB.getUrl(),
-        this.config.influxDB.getUser(), this.config.influxDB.getPassword());
+    this.influxDB = influxDB;
   }
 
   @Override
