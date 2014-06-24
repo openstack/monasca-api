@@ -63,12 +63,16 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
   public List<AlarmStateHistory> findById(String tenantId, String alarmId) throws Exception {
 
     // InfluxDB orders queries by time stamp desc by default.
-    String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
-            "from alarm_state_history " +
-            "where tenant_id = '%1$s' and alarm_id = '%2$s'", Utils.SQLSanitizer.sanitize
-        (tenantId), Utils.SQLSanitizer.sanitize(alarmId));
-
+    String query = buildQueryForFindById(tenantId, alarmId);
     return queryInfluxDBForAlarmStateHistory(query);
+  }
+
+  String buildQueryForFindById(String tenantId, String alarmId) throws Exception {
+
+    return String.format("select alarm_id, old_state, new_state, reason, reason_data " +
+        "from alarm_state_history " +
+        "where tenant_id = '%1$s' and alarm_id = '%2$s'", Utils.SQLSanitizer.sanitize(tenantId),
+        Utils.SQLSanitizer.sanitize(alarmId));
   }
 
   @Override
@@ -90,19 +94,27 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
       return Collections.emptyList();
     }
 
-    String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+    String timePart = buildTimePart(startTime, endTime);
     String alarmsPart = buildAlarmsPart(alarmIds);
 
-    String query = String.format("select alarm_id, old_state, new_state, reason, reason_data " +
-            "from alarm_state_history " +
-            "where tenant_id = '%1$s' %2$s %3$s", Utils.SQLSanitizer.sanitize(tenantId),
-        timePart, alarmsPart);
+    String query = buildQueryForFind(tenantId, timePart, alarmsPart);
 
     return queryInfluxDBForAlarmStateHistory(query);
 
   }
 
-  private String buildAlarmsPart(List<String> alarmIds) {
+   String buildTimePart(DateTime startTime, DateTime endTime) {
+    return Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+  }
+
+  String buildQueryForFind(String tenantId, String timePart, String alarmsPart) throws Exception {
+    return String.format("select alarm_id, old_state, new_state, reason, reason_data " +
+            "from alarm_state_history " +
+            "where tenant_id = '%1$s' %2$s %3$s", Utils.SQLSanitizer.sanitize(tenantId),
+        timePart, alarmsPart);
+  }
+
+   String buildAlarmsPart(List<String> alarmIds) {
 
     StringBuilder sb = new StringBuilder();
     for (String alarmId : alarmIds) {

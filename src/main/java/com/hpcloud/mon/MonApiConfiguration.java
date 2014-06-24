@@ -29,34 +29,34 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 public class MonApiConfiguration extends Configuration {
-    @NotEmpty
-    public String region;
-    @NotNull
-    public Boolean accessedViaHttps;
-    @NotEmpty
-    public String metricsTopic = "metrics";
-    @NotEmpty
-    public String eventsTopic = "events";
-    @NotEmpty
-    public String alarmStateTransitionsTopic = "alarm-state-transitions";
+  @NotEmpty
+  public String region;
+  @NotNull
+  public Boolean accessedViaHttps;
+  @NotEmpty
+  public String metricsTopic = "metrics";
+  @NotEmpty
+  public String eventsTopic = "events";
+  @NotEmpty
+  public String alarmStateTransitionsTopic = "alarm-state-transitions";
 
-    @Valid
-    @NotNull
-    public DataSourceFactory mysql;
-    @Valid
-    @NotNull
-    public DataSourceFactory vertica;
-    @Valid
-    @NotNull
-    public KafkaConfiguration kafka;
-    @Valid
-    @NotNull
-    public MiddlewareConfiguration middleware;
-    @Valid
-    public InfluxDBConfig influxDB;
-    @Valid
-    @NotNull
-    @JsonProperty
-    public DatabaseConfiguration databaseConfiguration;
+  @Valid
+  @NotNull
+  public DataSourceFactory mysql;
+  @Valid
+  @NotNull
+  public DataSourceFactory vertica;
+  @Valid
+  @NotNull
+  public KafkaConfiguration kafka;
+  @Valid
+  @NotNull
+  public MiddlewareConfiguration middleware;
+  @Valid
+  public InfluxDBConfig influxDB;
+  @Valid
+  @NotNull
+  @JsonProperty
+  public DatabaseConfiguration databaseConfiguration;
 
 }
