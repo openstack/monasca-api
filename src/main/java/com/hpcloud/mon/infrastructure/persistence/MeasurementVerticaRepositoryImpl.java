@@ -41,7 +41,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   private static final String FIND_BY_METRIC_DEF_SQL = "select def.name, m.definition_dimensions_id, dd.dimension_set_id, m.id, m.time_stamp, m.value "
       + "from MonMetrics.Measurements m, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd%s "
       + "where m.definition_dimensions_id = dd.id and def.id = dd.definition_id "
-      + "and def.tenant_id = :tenantId and m.time_stamp >= :startTime%s order by dd.id";
+      + "and def.tenant_id = :tenantId and m.time_stamp >= :startTime%s order by dd.id, m.time_stamp, m.id";
 
   private final DBI db;
 
