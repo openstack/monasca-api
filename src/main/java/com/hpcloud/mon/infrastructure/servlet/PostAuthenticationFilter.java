@@ -45,7 +45,7 @@ public class PostAuthenticationFilter implements Filter {
   static final String CONFIRMED_STATUS = "CONFIRMED";
   static final String X_ROLES_ATTRIBUTE = "X-ROLES";
   static final String X_IDENTITY_STATUS_ATTRIBUTE = "X-IDENTITY-STATUS";
-  private static final String X_TENANT_ID_ATTRIBUTE = "X-TENANT-ID";
+  private static final String X_TENANT_ID_ATTRIBUTE = "X-PROJECT-ID";//X-TENANT-ID";
   static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
 
   private final List<String> rolesToMatch = new ArrayList<String>();
@@ -67,6 +67,14 @@ public class PostAuthenticationFilter implements Filter {
 
     try {
       Object tenantId = request.getAttribute(X_TENANT_ID_ATTRIBUTE);
+      Object projectId = request.getAttribute("X-PROJECT-ID");
+      tenantId= projectId;
+      /*while(request.getAttributeNames().hasMoreElements()) {
+        System.out.println(request.getAttributeNames().nextElement());
+
+    } */
+      System.out.println("this is the project id:"+projectId);
+      System.out.println("This is the tenantId"+tenantId);
       if (tenantId == null)
         sendAuthError(res, null, null, null);
       tenantIdStr = tenantId.toString();
