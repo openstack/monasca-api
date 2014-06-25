@@ -21,7 +21,7 @@ public class TokenCache<K,V> {
     .getLogger(TokenCache.class);
 
 
-  public TokenCache(final long timeToExpire, final Map<String,String> map) {
+  public TokenCache(final long maxSize, final long timeToExpire, final Map<String,String> map) {
     factory = appConfig.getFactory();
 
 

@@ -16,6 +16,7 @@
  */
 package com.hpcloud.mon;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 
@@ -37,4 +38,5 @@ public class MonApiConfiguration extends Configuration {
   @Valid @NotNull public DataSourceFactory vertica;
   @Valid @NotNull public KafkaConfiguration kafka;
   @Valid @NotNull public MiddlewareConfiguration middleware;
+
 }

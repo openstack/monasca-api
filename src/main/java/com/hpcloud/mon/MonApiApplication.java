@@ -125,6 +125,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("AdminAuthMethod", config.middleware.adminAuthMethod);
       authInitParams.put("AdminUser", config.middleware.adminUser);
       authInitParams.put("AdminPassword", config.middleware.adminPassword);
+      authInitParams.put("MaxTokenCacheSize",config.middleware.maxTokenCacheSize);
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");

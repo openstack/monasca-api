@@ -78,6 +78,7 @@ public interface AuthConstants {
 
 	// ============================== CACHING ==================================
   public static final String TIME_TO_CACHE_TOKEN ="TimeToCacheToken";
+  public static final String MAX_TOKEN_CACHE_SIZE="MaxTokenCacheSize";
 
 	/** Number of connection timeout retries **/
 	public static final String CONN_TIMEOUT_RETRIES = "ConnRetryTimes";

@@ -51,5 +51,6 @@ public class MiddlewareConfiguration {
   @JsonProperty public String adminUser;
   @NotEmpty @JsonProperty public String adminToken;
   @JsonProperty public String adminPassword;
-  @JsonProperty public String adminUserAccess;
+  @JsonProperty
+  public String maxTokenCacheSize = "1048576";
 }
