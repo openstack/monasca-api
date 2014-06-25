@@ -137,10 +137,9 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
-    ArrayList<String> list = new ArrayList();
-    list.add("heat_stack_owner");
+
     Dynamic postAuthenticationFilter = environment.servlets()
-        .addFilter("post-auth", new PostAuthenticationFilter(list));//Collections.<String>singletonList("")));
+        .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch));
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
