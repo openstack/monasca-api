@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -89,6 +90,7 @@ public class HttpAuthClient implements AuthClient {
           instream.close();
           throw new AuthException("Authorization failed for token: " + token);
         }
+
         if (code != 200) {
           adminToken = null;
           instream = entity.getContent();
@@ -165,7 +167,11 @@ public class HttpAuthClient implements AuthClient {
 		try {
 			response = client.execute(get);
 
-		} catch (IOException e) {
+		}catch(ConnectException c) {
+      get.abort();
+      throw new UnavailableException(c.getMessage());
+    }
+    catch (IOException e) {
 			get.abort();
 
       throw new ClientProtocolException(

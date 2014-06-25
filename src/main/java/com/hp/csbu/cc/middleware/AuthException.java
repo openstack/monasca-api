@@ -7,7 +7,6 @@ package com.hp.csbu.cc.middleware;
  *
  */
 public class AuthException extends RuntimeException {
-	private static final long serialVersionUID = 2287073516214658461L;
 
 	public AuthException(String msg) {
 		super(msg);

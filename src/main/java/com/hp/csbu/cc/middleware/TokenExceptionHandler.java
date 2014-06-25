@@ -45,7 +45,7 @@ public enum TokenExceptionHandler {
 			}
 		}	
 	},
-	ClientProtocolException {
+  ClientProtocolException {
 		@Override
 		public void onException(Exception e, ServletResponse resp, String token) {
 			ClientProtocolException t = (ClientProtocolException) e;
@@ -61,25 +61,43 @@ public enum TokenExceptionHandler {
 			}
 		}
 	},
-	AuthException {
-		@Override
-		public void onException(Exception e, ServletResponse resp, String token) {
-			AuthException ae = (AuthException) e;
-			logger.error(ae.getMessage() + " " + ae);
-			String statusText = ae.getMessage();
-			if (statusText == null || statusText.isEmpty()) {
-				statusText = ExceptionHandlerUtil.getStatusText(HttpServletResponse.SC_UNAUTHORIZED);
-			}
-			try {
-				((HttpServletResponse) resp).sendError(
-						HttpServletResponse.SC_UNAUTHORIZED,
-						statusText + " " + token);
-			} catch (IOException ie) {
-				logger.debug("Error in writing the HTTP response "
-						+ ie.getMessage() + " " + ie);
-			}
-		}
-	};
+  AuthException {
+    @Override
+    public void onException(Exception e, ServletResponse resp, String token) {
+      AuthException ae = (AuthException) e;
+      logger.error(ae.getMessage() + " " + ae);
+      String statusText = ae.getMessage();
+      if (statusText == null || statusText.isEmpty()) {
+        statusText = ExceptionHandlerUtil.getStatusText(HttpServletResponse.SC_UNAUTHORIZED);
+      }
+      try {
+        ((HttpServletResponse) resp).sendError(
+          HttpServletResponse.SC_UNAUTHORIZED,
+          statusText + " " + token);
+      } catch (IOException ie) {
+        logger.debug("Error in writing the HTTP response "
+          + ie.getMessage() + " " + ie);
+      }
+    }
+  }, ServiceUnavailableException {
+    @Override
+    public void onException(Exception e, ServletResponse resp, String token) {
+      AuthException ae = (AuthException) e;
+      logger.error(ae.getMessage() + " " + ae);
+      String statusText = ae.getMessage();
+      if (statusText == null || statusText.isEmpty()) {
+        statusText = ExceptionHandlerUtil.getStatusText(HttpServletResponse.SC_UNAUTHORIZED);
+      }
+      try {
+        ((HttpServletResponse) resp).sendError(
+          HttpServletResponse.SC_UNAUTHORIZED,
+          statusText + " " + token);
+      } catch (IOException ie) {
+        logger.debug("Error in writing the HTTP response "
+          + ie.getMessage() + " " + ie);
+      }
+    }
+  };
 	
 	final Logger logger = LoggerFactory.getLogger(TokenExceptionHandler.class);
 	abstract void onException(Exception e, ServletResponse resp, String token);

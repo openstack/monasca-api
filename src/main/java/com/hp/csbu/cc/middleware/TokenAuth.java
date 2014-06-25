@@ -14,7 +14,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,87 +94,32 @@ public class TokenAuth implements Filter, AuthConstants {
 			} else {
 				logger.info("No token found...Skipping");
 			}
-		} else {
-      // Retrieve from cache
-      //AuthClient client = null;
-      //try {
-      auth = FilterUtils.getCachedToken(token);
-      //if (auth == null) {
+    } else {
+      do {
+        try {
+          auth = FilterUtils.getCachedToken(token);
+        }catch(UnavailableException e) {
+          TokenExceptionHandler handler = TokenExceptionHandler
+            .valueOf("UnavailableException");
+          handler.onException(e,resp,token);
+        }
+        catch(ClientProtocolException e) {
+          if (numberOfTries < retries) {
+            FilterUtils.pause(pauseTime);
+            logger.debug("Retrying connection after "
+              + pauseTime + " seconds.");
+            numberOfTries++;
+            continue;
+          } else {
+            logger.debug("Exhausted retries..");
+            TokenExceptionHandler handler = TokenExceptionHandler
+              .valueOf("ClientProtocolException");
+            handler.onException(e, resp, token);
+          }
+          return;
+        }
 
-      // Validate credential
-
-      //  do {
-
-      //auth = FilterUtils.getCachedToken(token);
-      //client = factory.getClient();
-      //factory.recycle(client);
-            /*if (appConfig.getAuthVersion().equalsIgnoreCase("v2.0")) {
-                    auth = client.validateTokenForServiceEndpointV2((token, appConfig.getServiceIds(),
-              appConfig.getEndpointIds(), appConfig.isIncludeCatalog());
-
-						} else {
-							//auth = client.validateTokenForServiceEndpointV3(token, getInputParams());
-              auth =  new TokenCache<String,String>(appConfig.getTimeToCacheToken(),getInputParams());
-						} */
-      // Cache token
-      //FilterUtils.cacheToken(token, auth);
-      // Return to connection pool for re-use
-           /*if(auth==null)
-             throw new TTransportException();
-            factory.recycle(client);
-            */
-      //			logger.debug("Successful Authentication");
-      //			break;
-					/*} catch (TTransportException t) {
-						if (client != null)
-							factory.discard(client);
-						if (numberOfTries < retries) {
-							FilterUtils.pause(pauseTime);
-							logger.debug("Retrying connection after "
-									+ pauseTime + " seconds.");
-							numberOfTries++;
-							continue;
-
-						} else {
-							TokenExceptionHandler handler = TokenExceptionHandler
-									.valueOf("TException");
-							handler.onException(t, resp, token);
-						}
-						return;
-					} */ /*}catch (ClientProtocolException c) {
-						if (client != null){
-
-							factory.discard(client);
-						/*if (numberOfTries < retries) {
-							FilterUtils.pause(pauseTime);
-							logger.debug("Retrying connection after "
-									+ pauseTime + " seconds.");
-							numberOfTries++;
-							continue;
-              */
-              //return;
-						/*} else {
-							TokenExceptionHandler handler = TokenExceptionHandler
-									.valueOf("ClientProtocolException");
-							handler.onException(c, resp, token);
-						} */
-						//return;
-					//}
-
-     /* }catch (Exception ex) {
-						if (client != null)
-							factory.recycle(client);
-						TokenExceptionHandler handler = ExceptionHandlerUtil
-								.lookUpTokenException(ex);
-						handler.onException(ex, resp, token);
-						return;
-					}*/
-      //} while (numberOfTries <= retries);
-			/*} else {
-				// Got a cached token!
-				logger.debug("Got cached token: " + token);
-			}
-		}*/
+      }while(auth==null && numberOfTries<=retries);
     }
 		req = FilterUtils.wrapRequest(req, auth);
 		logger.debug("TokenAuth: Forwarding down stream to next filter/servlet");
