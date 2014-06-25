@@ -15,8 +15,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
-//import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,16 +23,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
-//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
-//import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 
 public class HttpAuthClient implements AuthClient {
 	private static final String ACCESSKEY = "accesskey";
@@ -279,26 +271,6 @@ public class HttpAuthClient implements AuthClient {
 			bfr.append(appConfig.getAdminPassword());
       bfr.append("\",\"domain\": {\"id\": \"default\"");
       bfr.append("}}}}}}");
-
-			//if (appConfig.getAdminProject() != null && !appConfig.getAdminProject().isEmpty()) {
-				/*bfr.append("\"},\"scope\": { \"domain\": { \"id\": \"");
-				bfr.append("\"default\"");//appConfig.getAdminProject());
-				bfr.append("\"}}}}}}");
-			//} else {
-				bfr.append("\"}}}}}");
-			//}
-		} else if (appConfig.getAdminAuthMethod().equalsIgnoreCase(ACCESSKEY)) {
-			bfr.append("{\"auth\": {\"identity\": {\"methods\": [\"accessKey\"], \"accessKey\": { \"accessKey\": \"");
-      bfr.append(appConfig.getAdminAccessKey());
-			bfr.append("\", \"secretKey\": \"");
-			bfr.append(appConfig.getAdminSecretKey());
-			if (appConfig.getAdminProject() != null && !appConfig.getAdminProject().isEmpty()) {
-				bfr.append("\"},\"scope\": { \"project\": { \"id\": \"");
-				bfr.append(appConfig.getAdminProject());
-				bfr.append("\"}}}}}");
-			} else {
-				bfr.append("\"}}}}");
-			}*/
 		} else {
 			String msg = String.format("Admin auth method %s not supported",appConfig.getAdminAuthMethod());
 			throw new AuthException(msg);

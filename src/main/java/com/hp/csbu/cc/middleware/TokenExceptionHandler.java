@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.TException;
-//import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
 
 public enum TokenExceptionHandler {
 
@@ -61,27 +60,7 @@ public enum TokenExceptionHandler {
 						+ ie.getMessage() + " " + ie);
 			}
 		}
-	}/*,
-	ResourceException {
-		@Override
-		public void onException(Exception e, ServletResponse resp, String token) {
-			ResourceException re = (ResourceException) e;
-			logger.error(HttpServletResponse.SC_UNAUTHORIZED + " " + token
-					+ " " + re);
-			String statusText = re.getDetail();
-			if (statusText == null || statusText.isEmpty()) {
-				statusText = ExceptionHandlerUtil.getStatusText(HttpServletResponse.SC_UNAUTHORIZED);
-			}
-			try {
-				((HttpServletResponse) resp).sendError(
-						HttpServletResponse.SC_UNAUTHORIZED, statusText + " "
-								+ token);
-			} catch (IOException ie) {
-				logger.debug("Error in writing the HTTP response "
-						+ ie.getMessage() + " " + ie);
-			}
-		}
-	}, */,
+	},
 	AuthException {
 		@Override
 		public void onException(Exception e, ServletResponse resp, String token) {
