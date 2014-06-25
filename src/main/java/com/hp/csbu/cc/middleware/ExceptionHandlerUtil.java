@@ -31,12 +31,4 @@ public class ExceptionHandlerUtil {
 		}
 	}
 
-	/*public static SignatureExceptionHandler lookUpSignatureException(Exception ex) {
-		try {
-			return SignatureExceptionHandler.valueOf(ex.getClass().getSimpleName());
-		} catch (IllegalArgumentException iae) {
-			return SignatureExceptionHandler.valueOf("ResourceException");
-		}
-	} */
-
 }

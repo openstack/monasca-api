@@ -77,12 +77,7 @@ public interface AuthConstants {
 	public static final String CONN_POOL_MIN_IDLE_TIME = "ConnPoolMinIdleTime";
 
 	// ============================== CACHING ==================================
-	/** Memcache hosts */
-	public static final String MEMCACHE_HOSTS = "MemcacheHosts";
-	/** Memcache connection timeout */
-	public static final String MEMCACHE_TIMEOUT = "MemcacheTimeout";
-	/** Memcache encryption */
-	public static final String MEMCACHE_ENCRYPT = "MemcacheEncrypt";
+  public static final String TIME_TO_CACHE_TOKEN ="TimeToCacheToken";
 
 	/** Number of connection timeout retries **/
 	public static final String CONN_TIMEOUT_RETRIES = "ConnRetryTimes";
@@ -93,7 +88,7 @@ public interface AuthConstants {
 
 	public static final String SIGNATURE_METHOD = "HmacSHA1";
 
-  public static final String TIME_TO_CACHE_TOKEN ="TimeToCacheToken";
+
 	/** Version of CS to authenticate the credentials **/
 	public static final String AUTH_VERSION = "AuthVersion";
 

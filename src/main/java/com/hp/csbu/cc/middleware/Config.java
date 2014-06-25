@@ -24,9 +24,6 @@ public class Config implements AuthConstants {
 	// Application wide init param -- ServletContext
 	private ServletContext context = null;
 
-	// Memcache client--There shall only be one
-	///private MemcacheCrypt client = null;
-  //
   private TokenCache<String, String> client = null;
 
 	// Auth client factory
@@ -37,9 +34,6 @@ public class Config implements AuthConstants {
 
 	// The optional endpoint IDs that this filter serves
 	private String endpointIds;
-
-	// Memcache timeout value
-//	private long memCacheTimeOut;
 
   //the time to cache token
   private long timeToCacheToken;
@@ -102,16 +96,7 @@ public class Config implements AuthConstants {
 				throw new Throwable("Need to specify " + SERVICE_IDS);
 			}
 
-			// Initialize memcache...
-			String cacheHosts = context.getInitParameter(MEMCACHE_HOSTS);
-			/*boolean isEncrypted = Boolean.valueOf(context
-					.getInitParameter(MEMCACHE_ENCRYPT));
-			memCacheTimeOut = getValue(MEMCACHE_TIMEOUT, 2000L);*/
-		/*	if (cacheHosts != null && !cacheHosts.isEmpty()) {
-				this.client = new MemcacheCrypt(cacheHosts, isEncrypted);
-			}*/
-
-			// Initialize Certificates
+      // Initialize Certificates
 
       String keyStore = filterConfig.getInitParameter(KEYSTORE);
       String keyPass =  filterConfig.getInitParameter(KEYSTORE_PASS);
@@ -132,9 +117,7 @@ public class Config implements AuthConstants {
 			adminAuthMethod = getValue(ADMIN_AUTH_METHOD, "");
 			adminProjectId = getValue(ADMIN_PROJECT_ID, "");
       timeToCacheToken = getValue(TIME_TO_CACHE_TOKEN,600);
-			/*this.factory = AuthClientFactory.build(host, port, timeout,
-					clientAuth, keyStore, keyPass, trustStore, trustPass,
-					maxActive, maxIdle, evictPeriod, minIdleTime, adminToken);*/
+
 
       this.factory = AuthClientFactory.build(host, port, timeout,
         clientAuth, null, null, trustStore, trustPass,
@@ -208,22 +191,10 @@ public class Config implements AuthConstants {
 		return includeCatalog;
 	}
 
-	/*protected long getMemCacheTimeOut() {
-		return memCacheTimeOut;
-	} */
 
 	protected String getAuthVersion() {
 		return authVersion;
 	}
-
-	/*protected void setMemCacheTimeOut(long memCacheTimeOut) {
-		this.memCacheTimeOut = memCacheTimeOut;
-	}*/
-
-	// Is caching enabled?
-	/*protected boolean isCaching() {
-		return this.client != null;
-  }*/
 
 	protected ServletContext getConfig() {
 		return context;

@@ -31,7 +31,7 @@ public class TokenCache<K,V> {
     cache = CacheBuilder.newBuilder().maximumSize(10000)
       .expireAfterWrite(timeToExpire, TimeUnit.SECONDS)
       .build(new CacheLoader<K, V>() {
-        public V load(K key) throws TException,ClientProtocolException {//,ResourceException {
+        public V load(K key) throws TException,ClientProtocolException {
 
           V value = null;
           AuthClient client = null;

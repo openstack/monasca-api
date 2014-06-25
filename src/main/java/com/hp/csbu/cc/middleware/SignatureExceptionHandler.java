@@ -73,26 +73,7 @@ public enum SignatureExceptionHandler {
 			}
 		}
 	};
-	/*ResourceException {
-		@Override
-		public void onException(Exception e, ServletResponse resp) {
-		//	ResourceException re = (ResourceException) e;
-			logger.error(HttpServletResponse.SC_UNAUTHORIZED
-					+ " " + re);
-			String statusText = re.getDetail();
-			if (statusText == null || statusText.isEmpty()) {
-				statusText = ExceptionHandlerUtil.getStatusText(HttpServletResponse.SC_UNAUTHORIZED);
-			}
-			try {
-				((HttpServletResponse) resp).sendError(
-						HttpServletResponse.SC_UNAUTHORIZED, statusText);
-			} catch (IOException ie) {
-				logger.debug("Error in writing the HTTP response "
-						+ ie.getMessage() + " " + ie);
-			}
-		}
-	};  */
-	
+
 	final Logger logger = LoggerFactory.getLogger(SignatureExceptionHandler.class);
 	abstract void onException(Exception e, ServletResponse resp);
 

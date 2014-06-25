@@ -70,15 +70,11 @@ public abstract class AuthClientFactory {
 			long minEvictableIdleTimeMillis, String adminToken)
 			throws Exception {
 		if (instance == null) {
-			/*if (port == 9543) {
-				instance = new ThriftClientFactory(host, port, timeout,
-						clientAuth, keyStore, keyPass, trustStore, trustPass);
-			} else {*/
+
 				instance = new HttpClientFactory(host, port, timeout,
 						clientAuth, keyStore, keyPass, trustStore, trustPass,
 						adminToken, maxActive, timeBetweenEvictionRunsMillis,
 						minEvictableIdleTimeMillis);
-		//	}
 
 			// Pool tweaking
 			pool.setMaxActive(maxActive);
@@ -113,10 +109,7 @@ public abstract class AuthClientFactory {
 	 */
 	public void recycle(AuthClient client) {
 		try {
-      //int nonIdle = pool.getNumActive();
-      //if(nonIdle >1)
       pool.returnObject(client);
-
     } catch (Exception e) {
 			throw new AuthConnectionException("Failed to recycle client", e);
 		}
