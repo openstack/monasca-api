@@ -41,6 +41,7 @@ import javax.servlet.ServletRequest;
 
 //import net.rubyeye.xmemcached.exception.MemcachedException;
 
+//import com.hp.csbu.cc.security.cs.thrift.service.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +78,10 @@ public class FilterUtils {
 				logger.warn("Failed to shutdown memcache", e);
 			}
 		}   */
+    TokenCache<String,String> client = appConfig.getClient();
+
+    if(client !=null)
+      appConfig.setClient(null);
 
 		AuthClientFactory factory = appConfig.getFactory();
 		// Shutdown factory
@@ -405,7 +410,7 @@ public class FilterUtils {
 
 	// Insert token into cache
 	public static void cacheToken(String token, Object auth) {
-		if (isCaching()) {
+		///if (isCaching()) {
       appConfig.getClient().put(token, (String) auth);
 			/*try {
 				appConfig.getClient().putToken(token, auth);
@@ -416,12 +421,12 @@ public class FilterUtils {
 			} catch (MemcachedException e) {
 				logger.error("Error memcache", e);
 			} */
-		}
+		//}
 	}
 
 	// Get token from cache
-	public static Object getCachedToken(String token) {
-		if (isCaching()) {
+	public static Object getCachedToken(String token) throws IOException {
+		/*if (isCaching()) {
 			long timeout = appConfig.getMemCacheTimeOut();
 
       /*try {
@@ -432,8 +437,8 @@ public class FilterUtils {
 				logger.error("Error memcache interrupted");
 			} catch (MemcachedException e) {
 				logger.error("Error memcache", e);
-			} */
-		}
+			}
+		}   */
 		return appConfig.getClient().getToken(token);
 	}
 
@@ -447,9 +452,9 @@ public class FilterUtils {
 	}
 
 	// Is caching enabled?
-	private static boolean isCaching() {
+	/*private static boolean isCaching() {
 		return appConfig.getClient() != null;
-	}
+	}*/
 
 	/* private static void getRoles(Object obj, StringBuilder tenants,
 			StringBuilder nonTenants) {

@@ -93,6 +93,7 @@ public interface AuthConstants {
 
 	public static final String SIGNATURE_METHOD = "HmacSHA1";
 
+  public static final String TIME_TO_CACHE_TOKEN ="TimeToCacheToken";
 	/** Version of CS to authenticate the credentials **/
 	public static final String AUTH_VERSION = "AuthVersion";
 

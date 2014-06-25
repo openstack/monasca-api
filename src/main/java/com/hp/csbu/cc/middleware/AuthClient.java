@@ -8,9 +8,9 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TException;
 
 
-import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
-import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
-import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
+//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
+//import com.hp.csbu.cc.security.cs.thrift.service.ResourceException;
+//import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 
 
 /**
@@ -22,10 +22,10 @@ import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 public interface AuthClient {
 	public Object validateTokenForServiceEndpointV2(String token,
 			String serviceIds, String endpointIds, boolean includeCatalog)
-					throws TException, ClientProtocolException; //ResourceException
+					throws TException, ClientProtocolException;//, ResourceException;
 	public Object validateTokenForServiceEndpointV3(String token,
-			Map<String, String> inputParams) throws TException, ClientProtocolException; //ResourceException
+			Map<String, String> inputParams) throws TException, ClientProtocolException;//, ResourceException;
 	
-	public AuthResponse validateSignature(SigAuthRequest request) throws ResourceException, TException;
+	//public AuthResponse validateSignature(SigAuthRequest request) throws ResourceException, TException;
 
 }

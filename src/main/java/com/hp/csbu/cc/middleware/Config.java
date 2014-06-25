@@ -39,7 +39,7 @@ public class Config implements AuthConstants {
 	private String endpointIds;
 
 	// Memcache timeout value
-	private long memCacheTimeOut;
+//	private long memCacheTimeOut;
 
   //the time to cache token
   private long timeToCacheToken;
@@ -104,14 +104,12 @@ public class Config implements AuthConstants {
 
 			// Initialize memcache...
 			String cacheHosts = context.getInitParameter(MEMCACHE_HOSTS);
-			boolean isEncrypted = Boolean.valueOf(context
+			/*boolean isEncrypted = Boolean.valueOf(context
 					.getInitParameter(MEMCACHE_ENCRYPT));
-			memCacheTimeOut = getValue(MEMCACHE_TIMEOUT, 2000L);
+			memCacheTimeOut = getValue(MEMCACHE_TIMEOUT, 2000L);*/
 		/*	if (cacheHosts != null && !cacheHosts.isEmpty()) {
 				this.client = new MemcacheCrypt(cacheHosts, isEncrypted);
 			}*/
-
-
 
 			// Initialize Certificates
 
@@ -125,7 +123,7 @@ public class Config implements AuthConstants {
 			boolean clientAuth = getValue(CONN_SSL_CLIENT_AUTH, true);
 			int maxActive = getValue(CONN_POOL_MAX_ACTIVE, 3);
 			int maxIdle = getValue(CONN_POOL_MAX_IDLE, 3);
-			long evictPeriod = getValue(CONN_POOL_EVICT_PERIOD, 60000L);
+      long evictPeriod = getValue(CONN_POOL_EVICT_PERIOD, 60000L);
 			long minIdleTime = getValue(CONN_POOL_MIN_IDLE_TIME, 90000L);
 			retries = getValue(CONN_TIMEOUT_RETRIES, 3);
 			pauseTime = getValue(PAUSE_BETWEEN_RETRIES, 100);
@@ -133,11 +131,18 @@ public class Config implements AuthConstants {
 			includeCatalog = getValue(INCLUDE_SERVICE_CATALOG, true);
 			adminAuthMethod = getValue(ADMIN_AUTH_METHOD, "");
 			adminProjectId = getValue(ADMIN_PROJECT_ID, "");
-			this.factory = AuthClientFactory.build(host, port, timeout,
+      timeToCacheToken = getValue(TIME_TO_CACHE_TOKEN,600);
+			/*this.factory = AuthClientFactory.build(host, port, timeout,
 					clientAuth, keyStore, keyPass, trustStore, trustPass,
-					maxActive, maxIdle, evictPeriod, minIdleTime, adminToken);
+					maxActive, maxIdle, evictPeriod, minIdleTime, adminToken);*/
+
+      this.factory = AuthClientFactory.build(host, port, timeout,
+        clientAuth, null, null, trustStore, trustPass,
+        maxActive, maxIdle, evictPeriod, minIdleTime, adminToken);
+
+
 			verifyRequiredParamsForAuthMethod();
-      this.client = new TokenCache<>(20,map);
+      this.client = new TokenCache<>(timeToCacheToken,map);
 			logger.info("Auth host (2-way SSL: " + clientAuth + "): " + host);
 			logger.info("Read Servlet Initialization Parameters ");
 			initialized = true;
@@ -166,15 +171,19 @@ public class Config implements AuthConstants {
 		}
 	}
 
-	protected String getAdminSecretKey() {
-		if (context.getAttribute(ADMIN_SECRET_KEY) != null) {
-			return (String) context.getAttribute(ADMIN_SECRET_KEY);
-		} else {
-			return getValue(ADMIN_SECRET_KEY, "");
-		}
-	}
+  protected String getAdminSecretKey() {
+    if (context.getAttribute(ADMIN_SECRET_KEY) != null) {
+      return (String) context.getAttribute(ADMIN_SECRET_KEY);
+    } else {
+      return getValue(ADMIN_SECRET_KEY, "");
+    }
+  }
 
-	protected String getAdminAuthMethod() {
+  protected String getAdminToken() {
+    return getValue(ADMIN_TOKEN, "");
+  }
+
+  protected String getAdminAuthMethod() {
 		return adminAuthMethod;
 	}
 
@@ -188,7 +197,8 @@ public class Config implements AuthConstants {
 
 	protected String getAdminPassword() {
 		if (context.getAttribute(ADMIN_PASSWORD) != null) {
-			return (String) context.getAttribute(ADMIN_PASSWORD);
+      String password = (String) context.getAttribute(ADMIN_PASSWORD);
+			return password;
 		} else {
 			return getValue(ADMIN_PASSWORD, "");
 		}
@@ -198,22 +208,22 @@ public class Config implements AuthConstants {
 		return includeCatalog;
 	}
 
-	protected long getMemCacheTimeOut() {
+	/*protected long getMemCacheTimeOut() {
 		return memCacheTimeOut;
-	}
+	} */
 
 	protected String getAuthVersion() {
 		return authVersion;
 	}
 
-	protected void setMemCacheTimeOut(long memCacheTimeOut) {
+	/*protected void setMemCacheTimeOut(long memCacheTimeOut) {
 		this.memCacheTimeOut = memCacheTimeOut;
-	}
+	}*/
 
 	// Is caching enabled?
-	protected boolean isCaching() {
+	/*protected boolean isCaching() {
 		return this.client != null;
-  }
+  }*/
 
 	protected ServletContext getConfig() {
 		return context;
@@ -252,6 +262,9 @@ public class Config implements AuthConstants {
   public void setTimeToCacheToken(long timeToCachedToken) {
     this.timeToCacheToken = timeToCachedToken;
   }
+
+  public void setClient(TokenCache<String,String> client) { this.client = client;}
+
 	private <T> T getValue(String paramName, T defaultValue) {
 		Class type = defaultValue.getClass();
 

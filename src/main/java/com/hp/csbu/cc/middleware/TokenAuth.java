@@ -96,15 +96,19 @@ public class TokenAuth implements Filter, AuthConstants {
 				logger.info("No token found...Skipping");
 			}
 		} else {
-			// Retrieve from cache
-			auth = FilterUtils.getCachedToken(token);
-			if (auth == null) {
-				// Validate credential
-				AuthClient client = null;
-				do {
-					try {
-            auth = FilterUtils.getCachedToken(token);
-						client = factory.getClient();
+      // Retrieve from cache
+      //AuthClient client = null;
+      //try {
+      auth = FilterUtils.getCachedToken(token);
+      //if (auth == null) {
+
+      // Validate credential
+
+      //  do {
+
+      //auth = FilterUtils.getCachedToken(token);
+      //client = factory.getClient();
+      //factory.recycle(client);
             /*if (appConfig.getAuthVersion().equalsIgnoreCase("v2.0")) {
                     auth = client.validateTokenForServiceEndpointV2((token, appConfig.getServiceIds(),
               appConfig.getEndpointIds(), appConfig.isIncludeCatalog());
@@ -113,15 +117,16 @@ public class TokenAuth implements Filter, AuthConstants {
 							//auth = client.validateTokenForServiceEndpointV3(token, getInputParams());
               auth =  new TokenCache<String,String>(appConfig.getTimeToCacheToken(),getInputParams());
 						} */
-            // Cache token
-            //FilterUtils.cacheToken(token, auth);
-						// Return to connection pool for re-use
-
+      // Cache token
+      //FilterUtils.cacheToken(token, auth);
+      // Return to connection pool for re-use
+           /*if(auth==null)
+             throw new TTransportException();
             factory.recycle(client);
-
-						logger.debug("Successful Authentication");
-						break;
-					}/* catch (TTransportException t) {
+            */
+      //			logger.debug("Successful Authentication");
+      //			break;
+					/*} catch (TTransportException t) {
 						if (client != null)
 							factory.discard(client);
 						if (numberOfTries < retries) {
@@ -137,36 +142,41 @@ public class TokenAuth implements Filter, AuthConstants {
 							handler.onException(t, resp, token);
 						}
 						return;
-					} catch (ClientProtocolException c) {
-						if (client != null)
+					} */ /*}catch (ClientProtocolException c) {
+						if (client != null){
+
 							factory.discard(client);
-						if (numberOfTries < retries) {
+						/*if (numberOfTries < retries) {
 							FilterUtils.pause(pauseTime);
 							logger.debug("Retrying connection after "
 									+ pauseTime + " seconds.");
 							numberOfTries++;
 							continue;
-
-						} else {
+              */
+              //return;
+						/*} else {
 							TokenExceptionHandler handler = TokenExceptionHandler
 									.valueOf("ClientProtocolException");
 							handler.onException(c, resp, token);
-						}
-						return;
-					}*/catch (Exception ex) {
+						} */
+						//return;
+					//}
+
+     /* }catch (Exception ex) {
 						if (client != null)
 							factory.recycle(client);
 						TokenExceptionHandler handler = ExceptionHandlerUtil
 								.lookUpTokenException(ex);
 						handler.onException(ex, resp, token);
 						return;
-					}
-				} while (numberOfTries <= retries);
-			} else {
+					}*/
+      //} while (numberOfTries <= retries);
+			/*} else {
 				// Got a cached token!
 				logger.debug("Got cached token: " + token);
 			}
-		}
+		}*/
+    }
 		req = FilterUtils.wrapRequest(req, auth);
 		logger.debug("TokenAuth: Forwarding down stream to next filter/servlet");
 		// Forward downstream...

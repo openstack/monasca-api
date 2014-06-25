@@ -121,12 +121,10 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
       authInitParams.put("AdminToken", config.middleware.adminToken);
-      authInitParams.put("ExpireCacheToken", config.middleware.timeToCacheToken);
-     /* authInitParams.put("AdminAuthMethod", config.middleware.adminToken);
-      authInitParams.put("AdminUser", "admin");
-      authInitParams.put("AdminPassword", "password");*/
-
-
+      authInitParams.put("TimeToCacheToken", config.middleware.timeToCacheToken);
+      authInitParams.put("AdminAuthMethod", config.middleware.adminAuthMethod);
+      authInitParams.put("AdminUser", config.middleware.adminUser);
+      authInitParams.put("AdminPassword", config.middleware.adminPassword);
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");

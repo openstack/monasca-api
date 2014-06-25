@@ -55,9 +55,10 @@ public class HttpClientPoolFactory extends BasePoolableObjectFactory {
 		}
 		connMgr = new PoolingClientConnectionManager(schemeRegistry, 
 				minEvictableIdleTimeMillis, TimeUnit.MILLISECONDS);
-		connMgr.setMaxTotal(maxActive);
-		connMgr.setDefaultMaxPerRoute(maxActive);
-		
+
+	  connMgr.setMaxTotal(maxActive);
+    connMgr.setDefaultMaxPerRoute(maxActive);
+
 		// Http connection timeout
 		HttpParams params = new BasicHttpParams();
 		params.setParameter(CoreConnectionPNames.SO_TIMEOUT, timeout);
@@ -70,17 +71,17 @@ public class HttpClientPoolFactory extends BasePoolableObjectFactory {
 		cleaner = new HttpPoolCleaner(connMgr, timeBetweenEvictionRunsMillis,
 				minEvictableIdleTimeMillis);
 		new Thread(cleaner).start();
-		
+
 	}
 
 	@Override
 	public Object makeObject() throws Exception {
-		return new HttpAuthClient(client, uri);
+    return new HttpAuthClient(client, uri);
 	}
 	
 	@Override
 	public void passivateObject(Object obj) throws Exception {
-		((HttpAuthClient) obj).reset();
+    ((HttpAuthClient) obj).reset();
 	}
 	
 	@Override

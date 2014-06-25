@@ -15,8 +15,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
-import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
+//import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
+//import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,10 +25,14 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 //import com.hp.csbu.cc.security.cs.thrift.service.AuthResponse;
 //import com.hp.csbu.cc.security.cs.thrift.service.SigAuthRequest;
 
@@ -52,8 +56,8 @@ public class HttpAuthClient implements AuthClient {
 
 	public HttpAuthClient(HttpClient client, URI uri) {
 		this.client = client;
-		this.uri = uri;
-	}
+    this.uri = uri;
+  }
 
 	@Override
 	public Object validateTokenForServiceEndpointV2(String token,
@@ -82,15 +86,32 @@ public class HttpAuthClient implements AuthClient {
 			Header[] header, String serviceIds, String endpointIds)
 			throws ClientProtocolException {
 		HttpResponse response = sendGet(newUri, header, serviceIds, endpointIds);
-		int code = response.getStatusLine().getStatusCode();
-		if (code == 404) {
-			throw new AuthException("Authorization failed for token: " + token);
-		}
-		if (code != 200) {
-			adminToken = null;
-			throw new AuthException("Failed to validate via HTTP " + code
-					+ " " +response.getStatusLine().getReasonPhrase());
-		}
+
+    HttpEntity entity = response.getEntity();
+    int code = response.getStatusLine().getStatusCode();
+
+      InputStream instream = null;
+      try {
+        if (code == 404) {
+          instream = entity.getContent();
+          instream.close();
+          throw new AuthException("Authorization failed for token: " + token);
+        }
+        if (code != 200) {
+          adminToken = null;
+          instream = entity.getContent();
+          instream.close();
+          String reasonPhrase = response.getStatusLine().getReasonPhrase();
+
+          throw new AuthException("Failed to validate via HTTP " + code
+            + " " + reasonPhrase);
+        }
+      } catch(IOException e) {
+        throw new ClientProtocolException(
+          "IO Exception: problem closing stream ", e);
+      }
+
+
 		return parseResponse(response);
 	}
 
@@ -103,7 +124,7 @@ public class HttpAuthClient implements AuthClient {
 		try {
 			post.setEntity(body);
 			response = client.execute(post);
-			int code = response.getStatusLine().getStatusCode();
+      int code = response.getStatusLine().getStatusCode();
 			if (!(code == 201 || code == 200 || code == 203)) {
 				adminToken = null;
 				throw new AuthException(
@@ -112,8 +133,8 @@ public class HttpAuthClient implements AuthClient {
 			}
 		} catch (IOException e) {
 			post.abort();
-			throw new ClientProtocolException(
-					"IO Exception during POST request ", e);
+      throw new ClientProtocolException(
+        "IO Exception during POST request ", e);
 		}
 		return response;
 	}
@@ -141,26 +162,33 @@ public class HttpAuthClient implements AuthClient {
 				get.setHeader(header);
 			}
 		}
-		//if (!appConfig.getAdminAuthMethod().isEmpty()) {
-			get.setHeader(new BasicHeader(TOKEN, "password"));//getAdminToken()));
-		//}
+
+    if(!appConfig.getAdminToken().isEmpty()) {
+      get.setHeader(new BasicHeader(TOKEN, appConfig.getAdminToken()));
+    }
+    else if (!appConfig.getAdminAuthMethod().isEmpty()) {
+      get.setHeader(new BasicHeader(TOKEN, getAdminToken()));
+    }
+
 		try {
 			response = client.execute(get);
+
 		} catch (IOException e) {
 			get.abort();
-			throw new ClientProtocolException(
+
+      throw new ClientProtocolException(
 					"IO Exception during GET request ", e);
 		}
-		return response;
+    return response;
 	}
 
 	private String parseResponse(HttpResponse response) {
 		StringBuffer json = new StringBuffer();
-		HttpEntity entity = response.getEntity();
+    HttpEntity entity = response.getEntity();
 		if (entity != null) {
-			InputStream instream;
+      InputStream instream;
 			try {
-				instream = entity.getContent();
+        instream = entity.getContent();
 
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(instream));
@@ -169,11 +197,14 @@ public class HttpAuthClient implements AuthClient {
 					json.append(line);
 					line = reader.readLine();
 				}
+        instream.close();
+        reader.close();
 			} catch (Exception e) {
 				throw new AuthException("Failed to parse Http Response ", e);
 			}
 		}
-		return json.toString();
+
+    return json.toString();
 	}
 
 	private String getAdminToken() throws ClientProtocolException {
@@ -246,16 +277,19 @@ public class HttpAuthClient implements AuthClient {
 			bfr.append(appConfig.getAdminUser());
 			bfr.append("\",\"password\": \"");
 			bfr.append(appConfig.getAdminPassword());
-			if (appConfig.getAdminProject() != null && !appConfig.getAdminProject().isEmpty()) {
-				bfr.append("\"},\"scope\": { \"project\": { \"id\": \"");
-				bfr.append(appConfig.getAdminProject());
+      bfr.append("\",\"domain\": {\"id\": \"default\"");
+      bfr.append("}}}}}}");
+
+			//if (appConfig.getAdminProject() != null && !appConfig.getAdminProject().isEmpty()) {
+				/*bfr.append("\"},\"scope\": { \"domain\": { \"id\": \"");
+				bfr.append("\"default\"");//appConfig.getAdminProject());
 				bfr.append("\"}}}}}}");
-			} else {
+			//} else {
 				bfr.append("\"}}}}}");
-			}
+			//}
 		} else if (appConfig.getAdminAuthMethod().equalsIgnoreCase(ACCESSKEY)) {
 			bfr.append("{\"auth\": {\"identity\": {\"methods\": [\"accessKey\"], \"accessKey\": { \"accessKey\": \"");
-			bfr.append(appConfig.getAdminAccessKey());
+      bfr.append(appConfig.getAdminAccessKey());
 			bfr.append("\", \"secretKey\": \"");
 			bfr.append(appConfig.getAdminSecretKey());
 			if (appConfig.getAdminProject() != null && !appConfig.getAdminProject().isEmpty()) {
@@ -264,7 +298,7 @@ public class HttpAuthClient implements AuthClient {
 				bfr.append("\"}}}}}");
 			} else {
 				bfr.append("\"}}}}");
-			}
+			}*/
 		} else {
 			String msg = String.format("Admin auth method %s not supported",appConfig.getAdminAuthMethod());
 			throw new AuthException(msg);
@@ -287,12 +321,6 @@ public class HttpAuthClient implements AuthClient {
 		return tokenExpiryDate.getTime() < (current.getTime() + DELTA_TIME_IN_SEC * 1000);
 	}
 
-	public void reset() {
-	}
+	public void reset() {	}
 
-@Override
-	public AuthResponse validateSignature(SigAuthRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

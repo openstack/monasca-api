@@ -76,7 +76,7 @@ public abstract class AuthClientFactory {
 			} else {*/
 				instance = new HttpClientFactory(host, port, timeout,
 						clientAuth, keyStore, keyPass, trustStore, trustPass,
-						adminToken, maxActive, timeBetweenEvictionRunsMillis, 
+						adminToken, maxActive, timeBetweenEvictionRunsMillis,
 						minEvictableIdleTimeMillis);
 		//	}
 
@@ -113,8 +113,11 @@ public abstract class AuthClientFactory {
 	 */
 	public void recycle(AuthClient client) {
 		try {
-			pool.returnObject(client);
-		} catch (Exception e) {
+      //int nonIdle = pool.getNumActive();
+      //if(nonIdle >1)
+      pool.returnObject(client);
+
+    } catch (Exception e) {
 			throw new AuthConnectionException("Failed to recycle client", e);
 		}
 	}
@@ -129,6 +132,7 @@ public abstract class AuthClientFactory {
 		try {
 			pool.invalidateObject(client);
 		} catch (Exception e) {
+      System.out.println("AuthConnection problem destorying");
 			throw new AuthConnectionException("Failed to destroy client", e);
 		}
 	}	
@@ -141,6 +145,6 @@ public abstract class AuthClientFactory {
 			pool.close();
 		} catch (Exception e) {
 			throw new AuthConnectionException("Failed to close client pool", e);
-		}
+    }
 	}
 }
