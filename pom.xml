@@ -224,14 +224,7 @@
       <version>${dropwizard.version}</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>com.hp.csbu.cc</groupId>
-          <artifactId>CsThriftModel</artifactId>
-          <version>1.2-SNAPSHOT</version>
-      </dependency>
   </dependencies>
-
-    </dependencies>
 
     <build>
         <plugins>
