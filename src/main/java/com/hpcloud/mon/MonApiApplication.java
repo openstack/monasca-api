@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.hp.csbu.cc.middleware.TokenAuth;
+import com.hpcloud.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
 import com.hpcloud.mon.bundle.SwaggerBundle;
 import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
@@ -147,6 +147,12 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ConnPoolMinIdleTime", config.middleware.connPoolMinIdleTime);
       authInitParams.put("ConnRetryTimes", config.middleware.connRetryTimes);
       authInitParams.put("ConnRetryInterval", config.middleware.connRetryInterval);
+      authInitParams.put("AdminToken", config.middleware.adminToken);
+      authInitParams.put("TimeToCacheToken", config.middleware.timeToCacheToken);
+      authInitParams.put("AdminAuthMethod", config.middleware.adminAuthMethod);
+      authInitParams.put("AdminUser", config.middleware.adminUser);
+      authInitParams.put("AdminPassword", config.middleware.adminPassword);
+      authInitParams.put("MaxTokenCacheSize",config.middleware.maxTokenCacheSize);
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");
@@ -159,8 +165,8 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
 
-    Dynamic postAuthenticationFilter = environment.servlets().addFilter("post-auth",
-        new PostAuthenticationFilter(Collections.<String>singletonList("")));
+    Dynamic postAuthenticationFilter = environment.servlets()
+        .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch));
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 

@@ -45,5 +45,12 @@ public class MiddlewareConfiguration {
   @NotEmpty @JsonProperty public String connPoolMinIdleTime;
   @NotEmpty @JsonProperty public String connRetryTimes;
   @NotEmpty @JsonProperty public String connRetryInterval;
-  @NotNull @JsonProperty public List<String> rolesToMatch;
+  @NotNull  @JsonProperty public List<String> rolesToMatch;
+  @JsonProperty public String timeToCacheToken;
+  @JsonProperty public String adminAuthMethod;
+  @JsonProperty public String adminUser;
+  @NotEmpty @JsonProperty public String adminToken;
+  @JsonProperty public String adminPassword;
+  @JsonProperty
+  public String maxTokenCacheSize = "1048576";
 }
