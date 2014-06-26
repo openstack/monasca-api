@@ -16,6 +16,22 @@
  */
 package com.hpcloud.mon;
 
+import io.dropwizard.Application;
+import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.FilterRegistration.Dynamic;
+import javax.ws.rs.ext.ExceptionMapper;
+
+import org.eclipse.jetty.servlets.CrossOriginFilter;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -26,18 +42,22 @@ import com.hpcloud.mon.bundle.SwaggerBundle;
 import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
-import com.hpcloud.mon.resource.*;
-import com.hpcloud.mon.resource.exception.*;
+import com.hpcloud.mon.resource.AlarmResource;
+import com.hpcloud.mon.resource.MeasurementResource;
+import com.hpcloud.mon.resource.MetricResource;
+import com.hpcloud.mon.resource.NotificationMethodResource;
+import com.hpcloud.mon.resource.StatisticResource;
+import com.hpcloud.mon.resource.VersionResource;
+import com.hpcloud.mon.resource.exception.ConstraintViolationExceptionMapper;
+import com.hpcloud.mon.resource.exception.EntityExistsExceptionMapper;
+import com.hpcloud.mon.resource.exception.EntityNotFoundExceptionMapper;
+import com.hpcloud.mon.resource.exception.IllegalArgumentExceptionMapper;
+import com.hpcloud.mon.resource.exception.InvalidEntityExceptionMapper;
+import com.hpcloud.mon.resource.exception.JsonMappingExceptionManager;
+import com.hpcloud.mon.resource.exception.JsonProcessingExceptionMapper;
+import com.hpcloud.mon.resource.exception.ThrowableExceptionMapper;
 import com.hpcloud.mon.resource.serialization.SubAlarmExpressionSerializer;
 import com.hpcloud.util.Injector;
-import io.dropwizard.Application;
-import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.ws.rs.ext.ExceptionMapper;
-import java.util.*;
 
 /**
  * Monitoring API application.
@@ -96,9 +116,16 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     /** Configure health checks */
     environment.healthChecks().register("kafka", new KafkaHealthCheck(config.kafka));
 
+    /** Configure CORS filter */
+    Dynamic corsFilter = environment.servlets().addFilter("cors", CrossOriginFilter.class);
+    corsFilter.addMappingForUrlPatterns(null, true, "/*");
+    corsFilter.setInitParameter("allowedOrigins", "*");
+    corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin");
+    corsFilter.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+
     /** Configure auth filters */
-    Dynamic preAuthenticationFilter = environment.servlets()
-        .addFilter("pre-auth", new PreAuthenticationFilter());
+    Dynamic preAuthenticationFilter = environment.servlets().addFilter("pre-auth",
+        new PreAuthenticationFilter());
     preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
     preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
@@ -126,13 +153,14 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
       tokenAuthFilter.setInitParameters(authInitParams);
     } else {
-      Dynamic mockAuthenticationFilter = environment.servlets()
-          .addFilter("mock-auth", new MockAuthenticationFilter());
+      Dynamic mockAuthenticationFilter = environment.servlets().addFilter("mock-auth",
+          new MockAuthenticationFilter());
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
-    Dynamic postAuthenticationFilter = environment.servlets()
-        .addFilter("post-auth", new PostAuthenticationFilter(Collections.<String>singletonList("")));
+
+    Dynamic postAuthenticationFilter = environment.servlets().addFilter("post-auth",
+        new PostAuthenticationFilter(Collections.<String>singletonList("")));
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
     postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
