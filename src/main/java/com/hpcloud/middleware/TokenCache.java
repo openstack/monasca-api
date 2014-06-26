@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
   import com.google.common.cache.*;
     import org.apache.http.client.ClientProtocolException;
@@ -8,7 +8,8 @@ package com.hp.csbu.cc.middleware;
 
   import java.io.IOException;
   import java.util.Map;
-    import java.util.concurrent.TimeUnit;
+  import java.util.concurrent.ExecutionException;
+  import java.util.concurrent.TimeUnit;
 
 
 public class TokenCache<K,V> {
@@ -25,10 +26,10 @@ public class TokenCache<K,V> {
     factory = appConfig.getFactory();
 
 
-    cache = CacheBuilder.newBuilder().maximumSize(10000)
+    cache = CacheBuilder.newBuilder().maximumSize(maxSize)
       .expireAfterWrite(timeToExpire, TimeUnit.SECONDS)
       .build(new CacheLoader<K, V>() {
-        public V load(K key) throws TException,ClientProtocolException, UnavailableException {
+        public V load(K key) throws TException,ClientProtocolException {
 
           V value = null;
           AuthClient client = null;
@@ -45,14 +46,21 @@ public class TokenCache<K,V> {
             if(client!=null)
               factory.recycle(client);
           }
-
           return value;
         }
       });
   }
 
-  public V getToken(K key) throws IOException  {
-    return cache.getUnchecked(key);
+  public V getToken(K key) throws ClientProtocolException {
+    V value = null;
+    try {
+      value = cache.get(key);
+      throw new ClientProtocolException("Testing");
+
+    } catch (ExecutionException e) {
+      logger.debug("had problem caching token");
+    }
+    return value;
   }
 
   public void put(K key, V value) {

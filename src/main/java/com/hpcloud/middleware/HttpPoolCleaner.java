@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 import java.util.concurrent.TimeUnit;
 

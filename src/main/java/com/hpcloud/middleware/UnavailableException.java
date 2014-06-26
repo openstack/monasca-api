@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 /**
  * Created by johnderr on 6/25/14.

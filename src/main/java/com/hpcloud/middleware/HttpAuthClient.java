@@ -1,7 +1,7 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_SUBJECT_TOKEN;
-import static com.hp.csbu.cc.middleware.AuthConstants.TOKEN;
+import static com.hpcloud.middleware.AuthConstants.TOKEN;
+import static com.hpcloud.middleware.AuthConstants.AUTH_SUBJECT_TOKEN;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 /**
  * An exception to indicate any connection issue.

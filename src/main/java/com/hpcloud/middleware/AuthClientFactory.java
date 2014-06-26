@@ -1,8 +1,6 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
-
-//import com.hp.csbu.cc.security.cs.thrift.service.CsThriftService.Client;
 
 /**
  * A factory for building {@link AuthClient}s.

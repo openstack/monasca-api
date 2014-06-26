@@ -1,22 +1,25 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_DOMAIN_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_DOMAIN_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_HP_IDM_ROLES;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_IDENTITY_STATUS;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_PROJECT_DOMAIN_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_PROJECT_DOMAIN_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_PROJECT_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_PROJECT_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_ROLES;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_SERVICE_CATALOG;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_TENANT_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_USER_DOMAIN_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_USER_DOMAIN_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_USER_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_TENANT_ID;
-import static com.hp.csbu.cc.middleware.AuthConstants.AUTH_USER_NAME;
-import static com.hp.csbu.cc.middleware.AuthConstants.IdentityStatus;
+
+import static com.hpcloud.middleware.AuthConstants.AUTH_IDENTITY_STATUS;
+
+import static com.hpcloud.middleware.AuthConstants.AUTH_ROLES;
+import static com.hpcloud.middleware.AuthConstants.AUTH_TENANT_NAME;
+
+import static com.hpcloud.middleware.AuthConstants.AUTH_USER_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_DOMAIN_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_DOMAIN_NAME;
+import static com.hpcloud.middleware.AuthConstants.AUTH_PROJECT_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_PROJECT_NAME;
+import static com.hpcloud.middleware.AuthConstants.AUTH_TENANT_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_USER_NAME;
+import static com.hpcloud.middleware.AuthConstants.IdentityStatus;
+import static com.hpcloud.middleware.AuthConstants.AUTH_PROJECT_DOMAIN_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_PROJECT_DOMAIN_NAME;
+import static com.hpcloud.middleware.AuthConstants.AUTH_USER_DOMAIN_ID;
+import static com.hpcloud.middleware.AuthConstants.AUTH_USER_DOMAIN_NAME;
+import static com.hpcloud.middleware.AuthConstants.AUTH_HP_IDM_ROLES;
+import static com.hpcloud.middleware.AuthConstants.AUTH_SERVICE_CATALOG;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;

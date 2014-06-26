@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;

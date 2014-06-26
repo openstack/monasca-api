@@ -1,4 +1,4 @@
-package com.hp.csbu.cc.middleware;
+package com.hpcloud.middleware;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
 
