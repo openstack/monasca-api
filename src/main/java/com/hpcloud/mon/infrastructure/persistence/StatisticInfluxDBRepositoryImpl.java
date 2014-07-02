@@ -40,7 +40,8 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
 
-  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis();
+  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
+      .withZoneUTC();
 
   @Inject
   public StatisticInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {

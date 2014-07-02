@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +41,8 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
 
-  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis();
+  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
+      .withZoneUTC();
 
   @Inject
   public MeasurementInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
@@ -78,12 +78,12 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
         Object[] objArry = new Object[3];
 
         // sequence_number
-        objArry[0] = BigDecimal.valueOf((Double) valObjArry[i][1]).toPlainString();
+        objArry[0] = ((Double) valObjArry[i][1]).longValue();
         // time
         Double timeDouble = (Double) valObjArry[i][0];
         objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
-        objArry[2] = BigDecimal.valueOf((Double) valObjArry[i][2]).toPlainString();
+        objArry[2] = (Double) valObjArry[i][2];
 
         valObjArryList.add(objArry);
       }
