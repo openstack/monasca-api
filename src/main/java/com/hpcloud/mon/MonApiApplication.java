@@ -120,7 +120,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     Dynamic corsFilter = environment.servlets().addFilter("cors", CrossOriginFilter.class);
     corsFilter.addMappingForUrlPatterns(null, true, "/*");
     corsFilter.setInitParameter("allowedOrigins", "*");
-    corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin");
+    corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin,X-Auth-Token");
     corsFilter.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
 
     /** Configure auth filters */
