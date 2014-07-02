@@ -66,6 +66,12 @@ public class PostAuthenticationFilter implements Filter {
     String tenantIdStr = null;
 
     try {
+      // According to CORS spec OPTIONS method does not pass auth info
+      if (req.getMethod().equals("OPTIONS")) {
+        chain.doFilter(request, response);
+        return;
+      }
+
       Object tenantId = request.getAttribute(X_TENANT_ID_ATTRIBUTE);
 
       if (tenantId == null)
