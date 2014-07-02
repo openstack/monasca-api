@@ -49,16 +49,16 @@ vertica:
 influxDB:
   name: mon
   replicationFactor: 1
-  url: http://127.0.0.1:8086
+  url: http://localhost:8086
   user:  root
   password: root
 
 middleware:
-  enabled: false
+  enabled: true
   serviceIds: 100
   endpointIds: 160
-  serverVIP: region-a.geo-1.identity-admin.hpcloudsvc.com
-  serverPort: 9543
+  serverVIP: 192.168.10.5
+  serverPort: 5000
   connTimeout: 500
   connSSLClientAuth: true
   keystore: /etc/ssl/hpmiddleware-keystore.jks
@@ -71,7 +71,19 @@ middleware:
   connPoolMinIdleTime: 600000
   connRetryTimes: 2
   connRetryInterval: 50
-  rolesToMatch: [user, domainuser, domainadmin]
+  rolesToMatch: [user, domainuser, domainadmin, _member_]
+  adminAuthMethod: password
+  adminUser: admin
+  adminPassword: password
+  adminToken: ADMIN
+  timeToCacheToken: 600
+  maxTokenCacheSize: 1048576
+
+server:
+  applicationConnectors:
+    - type: http
+      maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
+
 
 # Logging settings.
 logging:

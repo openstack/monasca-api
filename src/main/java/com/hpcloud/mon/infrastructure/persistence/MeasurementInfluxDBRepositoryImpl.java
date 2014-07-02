@@ -78,7 +78,8 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
         // sequence_number
         objArry[0] = valObjArry[i][1];
         // time
-        objArry[1] = DATETIME_FORMATTER.print((long) valObjArry[i][0]);
+        Double timeDouble = (Double) valObjArry[i][0];
+        objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
         objArry[2] = valObjArry[i][2];
 
