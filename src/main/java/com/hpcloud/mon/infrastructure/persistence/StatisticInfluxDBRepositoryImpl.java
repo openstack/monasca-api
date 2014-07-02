@@ -29,10 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
@@ -79,14 +76,15 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
       List<String> colNamesList = new LinkedList<>(statistics);
       colNamesList.add(0, "timestamp");
       stat.setColumns(colNamesList);
-      stat.setDimensions(dimensions);
+      stat.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
       List<List<Object>> valObjArryArry = new LinkedList<List<Object>>();
       stat.setStatistics(valObjArryArry);
       Object[][] pointsArryArry = serie.getPoints();
       for (int i = 0; i < pointsArryArry.length; i++) {
         List<Object> valObjArry = new ArrayList<>();
         // First column is always time.
-        valObjArry.add(DATETIME_FORMATTER.print((long) pointsArryArry[i][0]));
+        Double timeDouble = (Double)  pointsArryArry[i][0];
+        valObjArry.add(DATETIME_FORMATTER.print(timeDouble.longValue()));
         for (int j = 1; j < statistics.size() + 1; j++) {
           valObjArry.add(pointsArryArry[i][j]);
         }

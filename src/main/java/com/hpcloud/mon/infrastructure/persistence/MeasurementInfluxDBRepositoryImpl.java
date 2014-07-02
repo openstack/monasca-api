@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +69,7 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
 
     Measurements measurements = new Measurements();
     measurements.setName(name);
-    measurements.setDimensions(dimensions);
+    measurements.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
     List<Object[]> valObjArryList = new LinkedList<>();
     for (Serie serie : result) {
       Object[][] valObjArry = serie.getPoints();
@@ -76,12 +78,12 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
         Object[] objArry = new Object[3];
 
         // sequence_number
-        objArry[0] = valObjArry[i][1];
+        objArry[0] = BigDecimal.valueOf((Double) valObjArry[i][1]).toPlainString();
         // time
         Double timeDouble = (Double) valObjArry[i][0];
         objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
-        objArry[2] = valObjArry[i][2];
+        objArry[2] = BigDecimal.valueOf((Double) valObjArry[i][2]).toPlainString();
 
         valObjArryList.add(objArry);
       }

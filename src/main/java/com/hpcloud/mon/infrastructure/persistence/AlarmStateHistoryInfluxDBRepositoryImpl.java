@@ -136,7 +136,7 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
     logger.debug("Query string: {}", query);
 
     List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
-        TimeUnit.SECONDS);
+        TimeUnit.MILLISECONDS);
 
     List<AlarmStateHistory> alarmStateHistoryList = new LinkedList<>();
 
@@ -147,8 +147,8 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
 
         AlarmStateHistory alarmStateHistory = new AlarmStateHistory();
         // Time is always in position 0.
-        alarmStateHistory.setTimestamp(new DateTime(new Long((Integer) valObjArryArry[i][0]) *
-            1000, DateTimeZone.UTC));
+        Double timeDouble =  (Double) valObjArryArry[i][0];
+        alarmStateHistory.setTimestamp(new DateTime(timeDouble.longValue(), DateTimeZone.UTC));
         // Sequence_number is always in position 1.
         alarmStateHistory.setAlarmId((String) valObjArryArry[i][2]);
         alarmStateHistory.setNewState(AlarmState.valueOf((String) valObjArryArry[i][3]));

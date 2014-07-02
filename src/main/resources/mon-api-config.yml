@@ -89,7 +89,7 @@ server:
 logging:
 
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: INFO
+  level: debug
 
   # Logger-specific levels.
   loggers:
@@ -100,14 +100,14 @@ logging:
 
   appenders:
     - type: console
-      threshold: ALL
+      threshold: debug
       timeZone: UTC
       target: stdout
       logFormat: # TODO
 
     - type: file
       currentLogFilename: /var/log/mon-api/mon-api.log
-      threshold: ALL
+      threshold: debug
       archive: true
       archivedLogFilenamePattern: /var/log/mon-api/mon-api-%d.log.gz
       archivedFileCount: 5
