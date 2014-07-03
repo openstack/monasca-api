@@ -13,7 +13,7 @@ eventsTopic: events
 databaseConfiguration:
 # vertica | influxdb
   #databaseType: influxdb
-  databaseType: influxdb
+  databaseType: vertica
 
 kafka:
   brokerUris:
