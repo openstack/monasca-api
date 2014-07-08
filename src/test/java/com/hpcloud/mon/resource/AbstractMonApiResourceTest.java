@@ -21,10 +21,10 @@ public abstract class AbstractMonApiResourceTest extends AbstractResourceTest {
     addSingletons(new EntityExistsExceptionMapper(), new EntityNotFoundExceptionMapper(),
         new IllegalArgumentExceptionMapper(), new InvalidEntityExceptionMapper(),
         new JsonProcessingExceptionMapper(), new JsonMappingExceptionManager(),
-        new ConstraintViolationExceptionMapper(), new ThrowableExceptionMapper<Throwable>() {
-        });
+        new ConstraintViolationExceptionMapper(), new ThrowableExceptionMapper<Throwable>() {});
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+    objectMapper
+        .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
     objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
   }
 }

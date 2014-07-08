@@ -36,11 +36,12 @@ public class AlarmStateHistoryInfluxDBRepositoryImplTest {
 
   public void buildQueryForFindByIdTest() throws Exception {
 
-    String er = "select alarm_id, old_state, new_state, reason, " +
-        "reason_data from alarm_state_history where tenant_id = 'tenant-id' and alarm_id = " +
-        "'alarm-id'";
-    String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFindById("tenant-id",
-        "alarm-id");
+    String er =
+        "select alarm_id, old_state, new_state, reason, "
+            + "reason_data from alarm_state_history where tenant_id = 'tenant-id' and alarm_id = "
+            + "'alarm-id'";
+    String r =
+        this.alarmStateHistoryInfluxDBRepository.buildQueryForFindById("tenant-id", "alarm-id");
 
     assert (er.equals(r));
 
@@ -48,8 +49,9 @@ public class AlarmStateHistoryInfluxDBRepositoryImplTest {
 
   public void buildTimePartTest() {
     String er = " and time > 1388559600s and time < 1388559601s";
-    String r = this.alarmStateHistoryInfluxDBRepository.buildTimePart(new DateTime(2014, 01, 01,
-        0, 0, 0), new DateTime(2014, 01, 01, 0, 0, 1));
+    String r =
+        this.alarmStateHistoryInfluxDBRepository.buildTimePart(new DateTime(2014, 01, 01, 0, 0, 0),
+            new DateTime(2014, 01, 01, 0, 0, 1));
     assert (er.equals(r));
 
   }
@@ -57,18 +59,21 @@ public class AlarmStateHistoryInfluxDBRepositoryImplTest {
   @SuppressWarnings("unchecked")
   public void buildAlarmsPartTest() {
     String er = " and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' )";
-    String r = this.alarmStateHistoryInfluxDBRepository.buildAlarmsPart(Arrays.asList(new
-        String[]{"id-1", "id-2"}));
+    String r =
+        this.alarmStateHistoryInfluxDBRepository.buildAlarmsPart(Arrays.asList(new String[] {
+            "id-1", "id-2"}));
     assert (er.equals(r));
   }
 
   public void buildQueryForFindTest() throws Exception {
-    String er = "select alarm_id, old_state, new_state, reason, " +
-        "reason_data from alarm_state_history where tenant_id = 'tenant-id'  and time > " +
-        "1388559600s and time < 1388559601s  and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' )";
-    String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFind("tenant-id",
-        " and time > 1388559600s and time < 1388559601s", " and ( alarm_id = 'id-1'  or  " +
-            "alarm_id" + " = 'id-2' )");
+    String er =
+        "select alarm_id, old_state, new_state, reason, "
+            + "reason_data from alarm_state_history where tenant_id = 'tenant-id'  and time > "
+            + "1388559600s and time < 1388559601s  and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' )";
+    String r =
+        this.alarmStateHistoryInfluxDBRepository.buildQueryForFind("tenant-id",
+            " and time > 1388559600s and time < 1388559601s", " and ( alarm_id = 'id-1'  or  "
+                + "alarm_id" + " = 'id-2' )");
 
     assert (er.equals(r));
   }

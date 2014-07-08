@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.resource;
 
@@ -74,9 +71,10 @@ public class AlarmResource {
       @Valid CreateAlarmCommand command) {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
-    Alarm alarm = Links.hydrate(service.create(tenantId, command.name, command.description, command.severity,
-      command.expression, alarmExpression, command.alarmActions, command.okActions,
-      command.undeterminedActions), uriInfo, false, "history");
+    Alarm alarm =
+        Links.hydrate(service.create(tenantId, command.name, command.description, command.severity,
+            command.expression, alarmExpression, command.alarmActions, command.okActions,
+            command.undeterminedActions), uriInfo, false, "history");
     return Response.created(URI.create(alarm.getId())).entity(alarm).build();
   }
 
@@ -87,8 +85,9 @@ public class AlarmResource {
   public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("dimensions") String dimensionsStr, @QueryParam("state") String state) {
 
-    Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
-        : Validation.parseAndValidateDimensions(dimensionsStr);
+    Map<String, String> dimensions =
+        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
+            .parseAndValidateDimensions(dimensionsStr);
     if (state != null) {
       Validation.validateAlarmState(state);
     }
@@ -104,15 +103,17 @@ public class AlarmResource {
       responseContainer = "List")
   public Collection<AlarmStateHistory> listStateHistory(
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr) throws Exception {
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr)
+      throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", false);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     if (startTime != null)
       Validation.validateTimes(startTime, endTime);
-    Map<String, String> dimensions = Strings.isNullOrEmpty(dimensionsStr) ? null
-        : Validation.parseAndValidateDimensions(dimensionsStr);
+    Map<String, String> dimensions =
+        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
+            .parseAndValidateDimensions(dimensionsStr);
 
     return stateHistoryRepo.find(tenantId, dimensions, startTime, endTime);
   }
@@ -122,8 +123,8 @@ public class AlarmResource {
   @Path("/{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
   @ApiOperation(value = "Get alarm", response = Alarm.class)
-  @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
-      @ApiResponse(code = 404, message = "Alarm not found") })
+  @ApiResponses(value = {@ApiResponse(code = 400, message = "Invalid ID supplied"),
+      @ApiResponse(code = 404, message = "Alarm not found")})
   public Alarm get(
       @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) {
@@ -158,19 +159,20 @@ public class AlarmResource {
     String severity = (String) fields.get("severity");
     String expression = (String) fields.get("expression");
     String stateStr = (String) fields.get("state");
-    AlarmState state = stateStr == null ? null : Validation.parseAndValidate(AlarmState.class,
-        stateStr);
+    AlarmState state =
+        stateStr == null ? null : Validation.parseAndValidate(AlarmState.class, stateStr);
     Boolean enabled = (Boolean) fields.get("actions_enabled");
     List<String> alarmActions = (List<String>) fields.get("alarm_actions");
     List<String> okActions = (List<String>) fields.get("ok_actions");
     List<String> undeterminedActions = (List<String>) fields.get("undetermined_actions");
-    AlarmValidation.validate(name, description, severity, alarmActions, okActions, undeterminedActions);
-    AlarmExpression alarmExpression = expression == null ? null
-        : AlarmValidation.validateNormalizeAndGet(expression);
+    AlarmValidation.validate(name, description, severity, alarmActions, okActions,
+        undeterminedActions);
+    AlarmExpression alarmExpression =
+        expression == null ? null : AlarmValidation.validateNormalizeAndGet(expression);
 
     return Links.hydrate(service.patch(tenantId, alarmId, name, description, severity, expression,
-      alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
-      true, "history");
+        alarmExpression, state, enabled, alarmActions, okActions, undeterminedActions), uriInfo,
+        true, "history");
   }
 
   @DELETE
@@ -189,7 +191,8 @@ public class AlarmResource {
   @ApiOperation(value = "Get alarm state history", response = AlarmStateHistory.class,
       responseContainer = "List")
   public List<AlarmStateHistory> getStateHistory(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId) throws Exception {
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId)
+      throws Exception {
     return stateHistoryRepo.findById(tenantId, alarmId);
   }
 }

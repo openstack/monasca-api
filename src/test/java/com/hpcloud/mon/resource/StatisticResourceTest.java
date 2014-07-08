@@ -31,43 +31,47 @@ public class StatisticResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldQueryWithDefaultParams() throws Exception {
-    client().resource(
-        "/v2.0/metrics/statistics?name=cpu_utilization&start_time=2013-11-20T18:43Z&dimensions=service:hpcs.compute,%20instance_id:123&statistics=avg,%20min,%20max&period=60")
-        .header("X-Tenant-Id", "abc")
-        .get(ClientResponse.class);
+    client()
+        .resource(
+            "/v2.0/metrics/statistics?name=cpu_utilization&start_time=2013-11-20T18:43Z&dimensions=service:hpcs.compute,%20instance_id:123&statistics=avg,%20min,%20max&period=60")
+        .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     verify(statisticRepo).find(anyString(), anyString(), any(Map.class), any(DateTime.class),
         any(DateTime.class), any(List.class), anyInt());
   }
 
   public void queryShouldThrowOnInvalidDateFormat() throws Exception {
-    ClientResponse response = client().resource(
-        "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-1120&statistics=avg")
-        .header("X-Tenant-Id", "abc")
-        .get(ClientResponse.class);
+    ClientResponse response =
+        client()
+            .resource(
+                "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-1120&statistics=avg")
+            .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     assertEquals(response.getStatus(), 422);
   }
 
   public void queryShouldThrowOnInvalidPeriodDataType() throws Exception {
-    ClientResponse response = client().resource(
-        "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=avg&period=foo")
-        .header("X-Tenant-Id", "abc")
-        .get(ClientResponse.class);
+    ClientResponse response =
+        client()
+            .resource(
+                "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=avg&period=foo")
+            .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     assertEquals(response.getStatus(), 422);
   }
 
   public void queryShouldThrowOnInvalidStatistics() throws Exception {
-    ClientResponse response = client().resource(
-        "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=foo,bar")
-        .header("X-Tenant-Id", "abc")
-        .get(ClientResponse.class);
+    ClientResponse response =
+        client()
+            .resource(
+                "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=foo,bar")
+            .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     assertEquals(response.getStatus(), 422);
   }
 
   public void queryShouldThrowOnInvalidPeriod() throws Exception {
-    ClientResponse response = client().resource(
-        "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=avg&period=foo")
-        .header("X-Tenant-Id", "abc")
-        .get(ClientResponse.class);
+    ClientResponse response =
+        client()
+            .resource(
+                "/v2.0/metrics/statistics?name=cpu_utilization&dimensions=service:hpcs.compute,%20instance_id:123&start_time=2013-11-20T18:43Z&statistics=avg&period=foo")
+            .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     assertEquals(response.getStatus(), 422);
   }
 }

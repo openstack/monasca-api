@@ -41,12 +41,12 @@ public class AlarmStateHistoryVerticaRepositoryImplTest {
   }
 
   private void create(String tenantId, String alarmId, AlarmState oldState, AlarmState newState,
-                     String reason, String reasonData, DateTime timestamp) {
+      String reason, String reasonData, DateTime timestamp) {
     try (Handle h = db.open()) {
-      h.insert("insert into MonAlarms.StateHistory (tenant_id, alarm_id, old_state, new_state, " +
-          "reason, reason_data, time_stamp) values (?, ?, ?, ?, ?, ?, ?)", tenantId, alarmId,
-          oldState.name(), newState.name(), reason, reasonData, new Timestamp(timestamp.getMillis
-              ()));
+      h.insert("insert into MonAlarms.StateHistory (tenant_id, alarm_id, old_state, new_state, "
+          + "reason, reason_data, time_stamp) values (?, ?, ?, ?, ?, ?, ?)", tenantId, alarmId,
+          oldState.name(), newState.name(), reason, reasonData,
+          new Timestamp(timestamp.getMillis()));
     }
   }
 

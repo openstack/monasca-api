@@ -42,8 +42,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    List<Version> versions = client().resource("/").get(new GenericType<List<Version>>() {
-    });
+    List<Version> versions = client().resource("/").get(new GenericType<List<Version>>() {});
     assertEquals(versions, Arrays.asList(version));
     verify(repo).find();
   }
@@ -68,8 +67,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     doThrow(new RuntimeException("")).when(repo).find();
 
     try {
-      client().resource("/").get(new GenericType<List<Version>>() {
-      });
+      client().resource("/").get(new GenericType<List<Version>>() {});
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("500"));

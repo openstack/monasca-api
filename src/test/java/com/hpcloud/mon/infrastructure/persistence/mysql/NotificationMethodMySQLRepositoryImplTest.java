@@ -45,7 +45,8 @@ public class NotificationMethodMySQLRepositoryImplTest {
   @BeforeMethod
   protected void beforeMethod() {
     handle.execute("truncate table notification_method");
-    handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+    handle
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
   }
 
   public void shouldCreate() {
@@ -72,9 +73,8 @@ public class NotificationMethodMySQLRepositoryImplTest {
   public void shouldFind() {
     List<NotificationMethod> nms = repo.find("444");
 
-    assertEquals(
-        nms,
-        Arrays.asList(new NotificationMethod("123", "MySMS", NotificationMethodType.SMS, "8675309")));
+    assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MySMS",
+        NotificationMethodType.SMS, "8675309")));
   }
 
   public void shouldUpdate() {

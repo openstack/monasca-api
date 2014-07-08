@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.app.validation;
 
@@ -41,19 +38,20 @@ import com.hpcloud.mon.resource.exception.Exceptions;
 public final class Validation {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults();
-  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
+  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat
+      .dateOptionalTimeParser().withZoneUTC();
   private static final List<String> VALID_STATISTICS = Arrays.asList("avg", "min", "max", "sum",
-    "count");
-    private static final List<String> VALID_ALARM_STATE = Arrays.asList("undetermined", "ok", "alarm");
+      "count");
+  private static final List<String> VALID_ALARM_STATE = Arrays
+      .asList("undetermined", "ok", "alarm");
 
-  private Validation() {
-  }
+  private Validation() {}
 
   /**
    * @throws JsonMappingException if the {@code value} is not valid for the {@code type}
    */
   public static <T extends Enum<T>> T parseAndValidate(Class<T> type, String value)
-    throws JsonMappingException {
+      throws JsonMappingException {
     for (T constant : type.getEnumConstants())
       if (constant.name().equalsIgnoreCase(value))
         return constant;
@@ -85,7 +83,7 @@ public final class Validation {
    * @throws WebApplicationException if the {@code value} is null or empty.
    */
   public static Map<String, String> parseAndValidateNameAndDimensions(String name,
-    String dimensionsStr) {
+      String dimensionsStr) {
     Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
 
     Map<String, String> dimensions = new HashMap<String, String>();

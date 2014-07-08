@@ -44,30 +44,37 @@ public class MeasurementVerticaRepositoryImplTest {
     handle.execute("truncate table MonMetrics.Measurements");
     handle.execute("truncate table MonMetrics.DefinitionDimensions");
 
-    handle.execute("insert into MonMetrics.Definitions values ('/1', 'cpu_utilization', 'bob', '1')");
+    handle
+        .execute("insert into MonMetrics.Definitions values ('/1', 'cpu_utilization', 'bob', '1')");
 
     handle.execute("insert into MonMetrics.Dimensions values ('/5', 'service', 'compute')");
     handle.execute("insert into MonMetrics.Dimensions values ('/5', 'instance_id', '123')");
     handle.execute("insert into MonMetrics.Dimensions values ('/5', 'flavor_id', '1')");
     handle.execute("insert into MonMetrics.DefinitionDimensions values ('/1', '/1', '/5')");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/1', '2014-01-01 00:00:00', 10)");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/1', '2014-01-01 00:01:00', 15)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/1', '2014-01-01 00:00:00', 10)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/1', '2014-01-01 00:01:00', 15)");
 
     handle.execute("insert into MonMetrics.Dimensions values ('/8', 'service', 'compute')");
     handle.execute("insert into MonMetrics.Dimensions values ('/8', 'instance_id', '123')");
     handle.execute("insert into MonMetrics.Dimensions values ('/8', 'flavor_id', '2')");
     handle.execute("insert into MonMetrics.DefinitionDimensions values ('/2', '/1', '/8')");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/2', '2014-01-01 00:00:00', 12)");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/2', '2014-01-01 00:01:00', 13)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/2', '2014-01-01 00:00:00', 12)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/2', '2014-01-01 00:01:00', 13)");
 
     handle.execute("insert into MonMetrics.DefinitionDimensions values ('/3', '/1', '')");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:00:00', 4)");
-    handle.execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:01:00', 8)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:00:00', 4)");
+    handle
+        .execute("insert into MonMetrics.Measurements (definition_dimensions_id, time_stamp, value) values ('/3', '2014-01-01 00:01:00', 8)");
   }
 
   public void shouldFindWithoutDimensions() throws Exception {
-    Collection<Measurements> measurements = repo.find("bob", "cpu_utilization", null, new DateTime(
-        2014, 1, 1, 0, 0, 0), null);
+    Collection<Measurements> measurements =
+        repo.find("bob", "cpu_utilization", null, new DateTime(2014, 1, 1, 0, 0, 0), null);
     assertEquals(measurements.size(), 3);
   }
 
@@ -76,8 +83,8 @@ public class MeasurementVerticaRepositoryImplTest {
     dims.put("service", "compute");
     dims.put("instance_id", "123");
 
-    Collection<Measurements> measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(
-        2014, 1, 1, 0, 0), null);
+    Collection<Measurements> measurements =
+        repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null);
     assertEquals(measurements.size(), 2);
 
     dims.put("flavor_id", "2");

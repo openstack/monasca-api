@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.app.validation;
 
@@ -32,15 +29,16 @@ import com.hpcloud.mon.resource.exception.Exceptions;
  */
 public final class AlarmValidation {
 
-  private static final List<String> VALID_ALARM_SERVERITY = Arrays.asList("low", "medium", "high", "critical");
-  private AlarmValidation() {
-  }
+  private static final List<String> VALID_ALARM_SERVERITY = Arrays.asList("low", "medium", "high",
+      "critical");
+
+  private AlarmValidation() {}
 
   /**
    * @throws WebApplicationException if validation fails
    */
-  public static void validate(String name, String description, String severity, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions) {
+  public static void validate(String name, String description, String severity,
+      List<String> alarmActions, List<String> okActions, List<String> undeterminedActions) {
     if (name != null && name.length() > 255)
       throw Exceptions.unprocessableEntity("Name %s must be 255 characters or less", name);
     if (description != null && description.length() > 255)
@@ -54,7 +52,8 @@ public final class AlarmValidation {
     if (okActions != null)
       for (String action : okActions)
         if (action.length() > 50)
-          throw Exceptions.unprocessableEntity("Ok action %s must be 50 characters or less", action);
+          throw Exceptions
+              .unprocessableEntity("Ok action %s must be 50 characters or less", action);
     if (undeterminedActions != null)
       for (String action : undeterminedActions)
         if (action.length() > 50)
@@ -82,8 +81,9 @@ public final class AlarmValidation {
 
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
-      String service = metricDef.dimensions == null ? null
-          : metricDef.dimensions.get(Services.SERVICE_DIMENSION);
+      String service =
+          metricDef.dimensions == null ? null : metricDef.dimensions
+              .get(Services.SERVICE_DIMENSION);
 
       // Normalize and validate namespace
       metricDef.name = MetricNameValidation.normalize(metricDef.name);

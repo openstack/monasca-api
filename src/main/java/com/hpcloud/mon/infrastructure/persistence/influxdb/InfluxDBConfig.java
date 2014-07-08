@@ -52,5 +52,4 @@ public class InfluxDBConfig {
     return password;
   }
 
-
 }
