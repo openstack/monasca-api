@@ -21,7 +21,6 @@ import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,8 +35,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.hpcloud.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
+import com.hpcloud.middleware.TokenAuth;
 import com.hpcloud.mon.bundle.SwaggerBundle;
 import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;

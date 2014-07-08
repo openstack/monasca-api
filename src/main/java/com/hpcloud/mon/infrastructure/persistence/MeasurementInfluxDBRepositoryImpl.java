@@ -16,10 +16,16 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
-import com.google.inject.Inject;
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
-import com.hpcloud.mon.domain.model.measurement.Measurements;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
 import org.joda.time.DateTime;
@@ -28,10 +34,10 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.google.inject.Inject;
+import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 
 public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository {
 
