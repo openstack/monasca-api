@@ -1,20 +1,17 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,8 +38,8 @@ import com.hpcloud.mon.domain.model.measurement.Measurements;
 
 public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository {
 
-  private static final Logger logger = LoggerFactory.getLogger(MeasurementInfluxDBRepositoryImpl
-      .class);
+  private static final Logger logger = LoggerFactory
+      .getLogger(MeasurementInfluxDBRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
@@ -58,20 +55,21 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
   }
 
   @Override
-  public Collection<Measurements> find(String tenantId, String name, Map<String,
-      String> dimensions, DateTime startTime, @Nullable DateTime endTime) throws Exception {
+  public Collection<Measurements> find(String tenantId, String name,
+      Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime)
+      throws Exception {
 
     String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
-    String query = String.format("select value " +
-            "from %1$s " +
-            "where tenant_id = '%2$s' %3$s %4$s", Utils.SQLSanitizer.sanitize(name),
-        Utils.SQLSanitizer.sanitize(tenantId), timePart, dimsPart);
+    String query =
+        String.format("select value " + "from %1$s " + "where tenant_id = '%2$s' %3$s %4$s",
+            Utils.SQLSanitizer.sanitize(name), Utils.SQLSanitizer.sanitize(tenantId), timePart,
+            dimsPart);
 
     logger.debug("Query string: {}", query);
 
-    List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
-        TimeUnit.MILLISECONDS);
+    List<Serie> result =
+        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
 
     Measurements measurements = new Measurements();
     measurements.setName(name);
@@ -99,5 +97,4 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
 
     return Arrays.asList(measurements);
   }
-
 }

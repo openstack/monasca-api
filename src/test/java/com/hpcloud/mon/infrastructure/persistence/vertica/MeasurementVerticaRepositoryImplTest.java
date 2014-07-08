@@ -1,7 +1,10 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.vertica;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
-import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
+import com.hpcloud.mon.infrastructure.persistence.vertica.MeasurementVerticaRepositoryImpl;
+
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.testng.annotations.AfterClass;
@@ -9,24 +12,24 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
 @Test(groups = "database")
-public class MetricDefinitionVerticaRepositoryImplTest {
+public class MeasurementVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private MetricDefinitionRepository repo;
+  private MeasurementRepository repo;
 
   @BeforeClass
   protected void setupClass() throws Exception {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MetricDefinitionVerticaRepositoryImpl(db);
+    repo = new MeasurementVerticaRepositoryImpl(db);
   }
 
   @AfterClass
@@ -63,8 +66,9 @@ public class MetricDefinitionVerticaRepositoryImplTest {
   }
 
   public void shouldFindWithoutDimensions() throws Exception {
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null);
-    assertEquals(defs.size(), 3);
+    Collection<Measurements> measurements = repo.find("bob", "cpu_utilization", null, new DateTime(
+        2014, 1, 1, 0, 0, 0), null);
+    assertEquals(measurements.size(), 3);
   }
 
   public void shouldFindWithDimensions() throws Exception {
@@ -72,11 +76,12 @@ public class MetricDefinitionVerticaRepositoryImplTest {
     dims.put("service", "compute");
     dims.put("instance_id", "123");
 
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", dims);
-    assertEquals(defs.size(), 2);
+    Collection<Measurements> measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(
+        2014, 1, 1, 0, 0), null);
+    assertEquals(measurements.size(), 2);
 
     dims.put("flavor_id", "2");
-    defs = repo.find("bob", "cpu_utilization", dims);
-    assertEquals(defs.size(), 1);
+    measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null);
+    assertEquals(measurements.size(), 1);
   }
 }

@@ -1,4 +1,4 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -20,12 +20,13 @@ import com.google.common.io.Resources;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySQLRepositoryImpl;
 
 @Test
-public class NotificationMethodRepositoryImplTest {
+public class NotificationMethodMySQLRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private NotificationMethodRepositoryImpl repo;
+  private NotificationMethodMySQLRepositoryImpl repo;
 
   @BeforeClass
   protected void beforeClass() throws Exception {
@@ -33,7 +34,7 @@ public class NotificationMethodRepositoryImplTest {
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
-    repo = new NotificationMethodRepositoryImpl(db);
+    repo = new NotificationMethodMySQLRepositoryImpl(db);
   }
 
   @AfterClass

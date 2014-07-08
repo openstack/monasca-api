@@ -1,20 +1,17 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +34,13 @@ import com.hpcloud.persistence.BeanMapper;
 /**
  * Notification method repository implementation.
  */
-public class NotificationMethodRepositoryImpl implements NotificationMethodRepository {
-  private static final Logger LOG = LoggerFactory.getLogger(NotificationMethodRepositoryImpl.class);
+public class NotificationMethodMySQLRepositoryImpl implements NotificationMethodRepository {
+  private static final Logger LOG = LoggerFactory
+      .getLogger(NotificationMethodMySQLRepositoryImpl.class);
   private final DBI db;
 
   @Inject
-  public NotificationMethodRepositoryImpl(@Named("mysql") DBI db) {
+  public NotificationMethodMySQLRepositoryImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 
@@ -76,25 +74,21 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
   @Override
   public boolean exists(String tenantId, String notificationMethodId) {
     try (Handle h = db.open()) {
-      return h.createQuery(
-          "select exists(select 1 from notification_method where tenant_id = :tenantId and id = :notificationMethodId)")
-          .bind("tenantId", tenantId)
-          .bind("notificationMethodId", notificationMethodId)
-          .mapTo(Boolean.TYPE)
-          .first();
+      return h
+          .createQuery(
+              "select exists(select 1 from notification_method where tenant_id = :tenantId and id = :notificationMethodId)")
+          .bind("tenantId", tenantId).bind("notificationMethodId", notificationMethodId)
+          .mapTo(Boolean.TYPE).first();
     }
   }
 
   public boolean exists(String tenantId, String name, NotificationMethodType type, String address) {
     try (Handle h = db.open()) {
-      return h.createQuery(
-          "select exists(select 1 from notification_method where tenant_id = :tenantId and name = :name and type = :type and address = :address)")
-          .bind("tenantId", tenantId)
-          .bind("name", name)
-          .bind("type", type.toString())
-          .bind("address", address)
-          .mapTo(Boolean.TYPE)
-          .first();
+      return h
+          .createQuery(
+              "select exists(select 1 from notification_method where tenant_id = :tenantId and name = :name and type = :type and address = :address)")
+          .bind("tenantId", tenantId).bind("name", name).bind("type", type.toString())
+          .bind("address", address).mapTo(Boolean.TYPE).first();
     }
   }
 
@@ -103,20 +97,18 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
     try (Handle h = db.open()) {
       return h.createQuery("select * from notification_method where tenant_id = :tenantId")
           .bind("tenantId", tenantId)
-          .map(new BeanMapper<NotificationMethod>(NotificationMethod.class))
-          .list();
+          .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
     }
   }
 
   @Override
   public NotificationMethod findById(String tenantId, String notificationMethodId) {
     try (Handle h = db.open()) {
-      NotificationMethod notificationMethod = h.createQuery(
-          "select * from notification_method where tenant_id = :tenantId and id = :id")
-          .bind("tenantId", tenantId)
-          .bind("id", notificationMethodId)
-          .map(new BeanMapper<NotificationMethod>(NotificationMethod.class))
-          .first();
+      NotificationMethod notificationMethod =
+          h.createQuery(
+              "select * from notification_method where tenant_id = :tenantId and id = :id")
+              .bind("tenantId", tenantId).bind("id", notificationMethodId)
+              .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).first();
 
       if (notificationMethod == null)
         throw new EntityNotFoundException("No notification method exists for %s",
@@ -130,9 +122,10 @@ public class NotificationMethodRepositoryImpl implements NotificationMethodRepos
   public NotificationMethod update(String tenantId, String notificationMethodId, String name,
       NotificationMethodType type, String address) {
     try (Handle h = db.open()) {
-      if (h.update(
-          "update notification_method set name = ?, type = ?, address = ? where tenant_id = ? and id = ?",
-          name, type.name(), address, tenantId, notificationMethodId) == 0)
+      if (h
+          .update(
+              "update notification_method set name = ?, type = ?, address = ? where tenant_id = ? and id = ?",
+              name, type.name(), address, tenantId, notificationMethodId) == 0)
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
       return new NotificationMethod(notificationMethodId, name, type, address);

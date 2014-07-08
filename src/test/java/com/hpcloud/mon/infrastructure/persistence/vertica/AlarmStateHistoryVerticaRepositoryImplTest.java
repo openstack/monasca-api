@@ -1,7 +1,9 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.vertica;
 
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.mon.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
+
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;

@@ -1,4 +1,4 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
@@ -10,6 +10,8 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySQLRepositoryImpl;
+
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.StringMapper;
@@ -24,7 +26,7 @@ import java.util.*;
 import static org.testng.Assert.*;
 
 @Test
-public class AlarmRepositoryImplTest {
+public class AlarmMySQLRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private AlarmRepository repo;
@@ -35,7 +37,7 @@ public class AlarmRepositoryImplTest {
     db = new DBI("jdbc:h2:mem:test;MODE=MySQL");
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("alarm.sql"), Charset.defaultCharset()));
-    repo = new AlarmRepositoryImpl(db);
+    repo = new AlarmMySQLRepositoryImpl(db);
 
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
@@ -108,7 +110,7 @@ public class AlarmRepositoryImplTest {
   public void shouldUpdate() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmRepositoryImpl(db);
+    repo = new AlarmMySQLRepositoryImpl(db);
     beforeMethod();
 
     List<String> oldSubAlarmIds = Arrays.asList("222");
@@ -155,7 +157,7 @@ public class AlarmRepositoryImplTest {
   public void shouldFindSubAlarmMetricDefinitions() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmRepositoryImpl(db);
+    repo = new AlarmMySQLRepositoryImpl(db);
     beforeMethod();
 
     assertEquals(
@@ -182,7 +184,7 @@ public class AlarmRepositoryImplTest {
   public void shouldFindSubExpressions() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmRepositoryImpl(db);
+    repo = new AlarmMySQLRepositoryImpl(db);
     beforeMethod();
 
     assertEquals(repo.findSubExpressions("123").get("111"), new AlarmSubExpression(

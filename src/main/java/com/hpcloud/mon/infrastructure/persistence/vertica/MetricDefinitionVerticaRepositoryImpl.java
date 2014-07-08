@@ -1,39 +1,44 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.vertica;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
-import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.*;
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
 
 /**
  * Vertica metric definition repository implementation.
  */
 public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRepository {
-  private static final String FIND_BY_METRIC_DEF_SQL = "select dd.id, def.name, d.name as dname, d.value as dvalue "
-      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
-      + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
-      + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
+  private static final String FIND_BY_METRIC_DEF_SQL =
+      "select dd.id, def.name, d.name as dname, d.value as dvalue "
+          + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
+          + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = dd.dimension_set_id%s "
+          + "where def.id = dd.definition_id and def.tenant_id = :tenantId%s order by dd.id";
 
   private final DBI db;
 
@@ -49,14 +54,15 @@ public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRe
       StringBuilder sbWhere = new StringBuilder();
       if (name != null)
         sbWhere.append(" and def.name = :name");
-      String sql = String.format(FIND_BY_METRIC_DEF_SQL,
-          Utils.MetricQueries.buildJoinClauseFor(dimensions), sbWhere);
+      String sql =
+          String.format(FIND_BY_METRIC_DEF_SQL, MetricQueries.buildJoinClauseFor(dimensions),
+              sbWhere);
 
       // Build query
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       if (name != null)
         query.bind("name", name);
-      Utils.DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       // Execute query
       List<Map<String, Object>> rows = query.list();
