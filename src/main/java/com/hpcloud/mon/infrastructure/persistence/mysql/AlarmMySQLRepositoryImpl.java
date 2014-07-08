@@ -42,7 +42,7 @@ import com.hpcloud.persistence.BeanMapper;
 /**
  * Alarm repository implementation.
  */
-public class AlarmMySQLRepositoryImpl implements AlarmRepository {
+public class AlarmMySqlRepositoryImpl implements AlarmRepository {
   private static final String SUB_ALARM_SQL =
       "select sa.*, sad.dimensions from sub_alarm as sa "
           + "left join (select sub_alarm_id, group_concat(dimension_name, '=', value) as dimensions from sub_alarm_dimension group by sub_alarm_id ) as sad "
@@ -51,7 +51,7 @@ public class AlarmMySQLRepositoryImpl implements AlarmRepository {
   private final DBI db;
 
   @Inject
-  public AlarmMySQLRepositoryImpl(@Named("mysql") DBI db) {
+  public AlarmMySqlRepositoryImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

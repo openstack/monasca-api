@@ -10,7 +10,7 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
-import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySQLRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -26,7 +26,7 @@ import java.util.*;
 import static org.testng.Assert.*;
 
 @Test
-public class AlarmMySQLRepositoryImplTest {
+public class AlarmMySqlRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private AlarmRepository repo;
@@ -38,7 +38,7 @@ public class AlarmMySQLRepositoryImplTest {
     handle = db.open();
     handle
         .execute(Resources.toString(getClass().getResource("alarm.sql"), Charset.defaultCharset()));
-    repo = new AlarmMySQLRepositoryImpl(db);
+    repo = new AlarmMySqlRepositoryImpl(db);
 
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
@@ -118,7 +118,7 @@ public class AlarmMySQLRepositoryImplTest {
   public void shouldUpdate() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmMySQLRepositoryImpl(db);
+    repo = new AlarmMySqlRepositoryImpl(db);
     beforeMethod();
 
     List<String> oldSubAlarmIds = Arrays.asList("222");
@@ -162,7 +162,7 @@ public class AlarmMySQLRepositoryImplTest {
   public void shouldFindSubAlarmMetricDefinitions() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmMySQLRepositoryImpl(db);
+    repo = new AlarmMySqlRepositoryImpl(db);
     beforeMethod();
 
     assertEquals(
@@ -183,7 +183,7 @@ public class AlarmMySQLRepositoryImplTest {
   public void shouldFindSubExpressions() {
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmMySQLRepositoryImpl(db);
+    repo = new AlarmMySqlRepositoryImpl(db);
     beforeMethod();
 
     assertEquals(

@@ -34,13 +34,13 @@ import com.hpcloud.persistence.BeanMapper;
 /**
  * Notification method repository implementation.
  */
-public class NotificationMethodMySQLRepositoryImpl implements NotificationMethodRepository {
+public class NotificationMethodMySqlRepositoryImpl implements NotificationMethodRepository {
   private static final Logger LOG = LoggerFactory
-      .getLogger(NotificationMethodMySQLRepositoryImpl.class);
+      .getLogger(NotificationMethodMySqlRepositoryImpl.class);
   private final DBI db;
 
   @Inject
-  public NotificationMethodMySQLRepositoryImpl(@Named("mysql") DBI db) {
+  public NotificationMethodMySqlRepositoryImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

@@ -36,8 +36,8 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySQLRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySQLRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.AlarmResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -68,9 +68,9 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
         .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
     mysqlDb.close(handle);
 
-    repo = new AlarmMySQLRepositoryImpl(mysqlDb);
+    repo = new AlarmMySqlRepositoryImpl(mysqlDb);
     service =
-        new AlarmService(config, producer, repo, new NotificationMethodMySQLRepositoryImpl(mysqlDb));
+        new AlarmService(config, producer, repo, new NotificationMethodMySqlRepositoryImpl(mysqlDb));
     addResources(new AlarmResource(service, repo, null));
   }
 
@@ -82,10 +82,10 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     mysqlDb = injector.getInstance(Key.get(DBI.class, Names.named("mysql")));
     Handle handle = mysqlDb.open();
     handle.execute(Resources.toString(
-        NotificationMethodMySQLRepositoryImpl.class.getResource("alarm.sql"),
+        NotificationMethodMySqlRepositoryImpl.class.getResource("alarm.sql"),
         Charset.defaultCharset()));
     handle.execute(Resources.toString(
-        NotificationMethodMySQLRepositoryImpl.class.getResource("notification_method.sql"),
+        NotificationMethodMySqlRepositoryImpl.class.getResource("notification_method.sql"),
         Charset.defaultCharset()));
     handle.close();
 

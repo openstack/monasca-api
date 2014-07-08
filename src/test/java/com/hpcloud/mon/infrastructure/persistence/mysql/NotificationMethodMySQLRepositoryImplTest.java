@@ -20,13 +20,13 @@ import com.google.common.io.Resources;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
-import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySQLRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 
 @Test
-public class NotificationMethodMySQLRepositoryImplTest {
+public class NotificationMethodMySqlRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private NotificationMethodMySQLRepositoryImpl repo;
+  private NotificationMethodMySqlRepositoryImpl repo;
 
   @BeforeClass
   protected void beforeClass() throws Exception {
@@ -34,7 +34,7 @@ public class NotificationMethodMySQLRepositoryImplTest {
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
-    repo = new NotificationMethodMySQLRepositoryImpl(db);
+    repo = new NotificationMethodMySqlRepositoryImpl(db);
   }
 
   @AfterClass

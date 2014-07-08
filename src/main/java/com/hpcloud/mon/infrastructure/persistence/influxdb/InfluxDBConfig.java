@@ -15,7 +15,7 @@ package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class InfluxDBConfig {
+public class InfluxDbConfig {
 
   @JsonProperty
   String name;

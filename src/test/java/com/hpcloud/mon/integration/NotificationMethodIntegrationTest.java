@@ -24,7 +24,7 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
-import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySQLRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.NotificationMethodResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -45,7 +45,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
         .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'notification-method-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
     db.close(handle);
 
-    repo = new NotificationMethodMySQLRepositoryImpl(db);
+    repo = new NotificationMethodMySqlRepositoryImpl(db);
     addResources(new NotificationMethodResource(repo));
   }
 
@@ -56,7 +56,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
     db = injector.getInstance(DBI.class);
     Handle handle = db.open();
     handle.execute(Resources.toString(
-        NotificationMethodMySQLRepositoryImpl.class.getResource("notification_method.sql"),
+        NotificationMethodMySqlRepositoryImpl.class.getResource("notification_method.sql"),
         Charset.defaultCharset()));
     handle.close();
 

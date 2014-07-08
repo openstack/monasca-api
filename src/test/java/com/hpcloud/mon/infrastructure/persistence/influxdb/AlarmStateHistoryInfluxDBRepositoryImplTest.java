@@ -1,7 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
 import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfluxDBRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfluxDbRepositoryImpl;
 
 import org.influxdb.InfluxDB;
 import org.joda.time.DateTime;
@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
 import scala.actors.threadpool.Arrays;
 
 @Test
-public class AlarmStateHistoryInfluxDBRepositoryImplTest {
+public class AlarmStateHistoryInfluxDbRepositoryImplTest {
 
   @Mock(name = "mysql")
   private DBI mysql;
@@ -27,7 +27,7 @@ public class AlarmStateHistoryInfluxDBRepositoryImplTest {
   private InfluxDB influxDB;
 
   @InjectMocks
-  private AlarmStateHistoryInfluxDBRepositoryImpl alarmStateHistoryInfluxDBRepository;
+  private AlarmStateHistoryInfluxDbRepositoryImpl alarmStateHistoryInfluxDBRepository;
 
   @BeforeMethod(alwaysRun = true)
   public void initMocks() {

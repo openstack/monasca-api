@@ -42,10 +42,10 @@ import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepositor
 import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
 import com.hpcloud.mon.infrastructure.persistence.SubAlarmQueries;
 
-public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistoryRepository {
+public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistoryRepository {
 
   private static final Logger logger = LoggerFactory
-      .getLogger(AlarmStateHistoryInfluxDBRepositoryImpl.class);
+      .getLogger(AlarmStateHistoryInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
@@ -57,7 +57,7 @@ public class AlarmStateHistoryInfluxDBRepositoryImpl implements AlarmStateHistor
       + "NULL";
 
   @Inject
-  public AlarmStateHistoryInfluxDBRepositoryImpl(@Named("mysql") DBI mysql,
+  public AlarmStateHistoryInfluxDbRepositoryImpl(@Named("mysql") DBI mysql,
       MonApiConfiguration config, InfluxDB influxDB) {
     this.mysql = mysql;
     this.config = config;

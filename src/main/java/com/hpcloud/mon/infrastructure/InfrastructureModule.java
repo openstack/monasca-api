@@ -28,12 +28,12 @@ import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfluxDBRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.MeasurementInfluxDBRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.MetricDefinitionInfluxDBRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.StatisticInfluxDBRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySQLRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySQLRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfluxDbRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.MeasurementInfluxDbRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.MetricDefinitionInfluxDbRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.StatisticInfluxDbRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.vertica.MeasurementVerticaRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.vertica.MetricDefinitionVerticaRepositoryImpl;
@@ -52,7 +52,7 @@ public class InfrastructureModule extends AbstractModule {
   @Override
   protected void configure() {
     // Bind repositories
-    bind(AlarmRepository.class).to(AlarmMySQLRepositoryImpl.class).in(Singleton.class);
+    bind(AlarmRepository.class).to(AlarmMySqlRepositoryImpl.class).in(Singleton.class);
     if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("vertica")) {
       bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryVerticaRepositoryImpl.class).in(
           Singleton.class);
@@ -63,19 +63,19 @@ public class InfrastructureModule extends AbstractModule {
       bind(StatisticRepository.class).to(StatisticVerticaRepositoryImpl.class).in(Singleton.class);
     } else if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase()
         .equals("influxdb")) {
-      bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryInfluxDBRepositoryImpl.class).in(
+      bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryInfluxDbRepositoryImpl.class).in(
           Singleton.class);
-      bind(MetricDefinitionRepository.class).to(MetricDefinitionInfluxDBRepositoryImpl.class).in(
+      bind(MetricDefinitionRepository.class).to(MetricDefinitionInfluxDbRepositoryImpl.class).in(
           Singleton.class);
-      bind(MeasurementRepository.class).to(MeasurementInfluxDBRepositoryImpl.class).in(
+      bind(MeasurementRepository.class).to(MeasurementInfluxDbRepositoryImpl.class).in(
           Singleton.class);
-      bind(StatisticRepository.class).to(StatisticInfluxDBRepositoryImpl.class).in(Singleton.class);
+      bind(StatisticRepository.class).to(StatisticInfluxDbRepositoryImpl.class).in(Singleton.class);
     } else {
       throw new ProvisionException("Failed to detect supported database. Supported databases are "
           + "'vertica' and 'influxdb'. Check your config file.");
     }
 
-    bind(NotificationMethodRepository.class).to(NotificationMethodMySQLRepositoryImpl.class).in(
+    bind(NotificationMethodRepository.class).to(NotificationMethodMySqlRepositoryImpl.class).in(
         Singleton.class);
   }
 

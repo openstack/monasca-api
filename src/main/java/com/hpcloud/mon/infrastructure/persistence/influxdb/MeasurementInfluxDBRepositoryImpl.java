@@ -36,10 +36,10 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.measurement.Measurements;
 
-public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository {
+public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository {
 
   private static final Logger logger = LoggerFactory
-      .getLogger(MeasurementInfluxDBRepositoryImpl.class);
+      .getLogger(MeasurementInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
@@ -48,7 +48,7 @@ public class MeasurementInfluxDBRepositoryImpl implements MeasurementRepository 
       .withZoneUTC();
 
   @Inject
-  public MeasurementInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public MeasurementInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
 
     this.influxDB = influxDB;

@@ -29,15 +29,15 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
 
-public class MetricDefinitionInfluxDBRepositoryImpl implements MetricDefinitionRepository {
+public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
   private static final Logger logger = LoggerFactory
-      .getLogger(AlarmStateHistoryInfluxDBRepositoryImpl.class);
+      .getLogger(AlarmStateHistoryInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
 
   @Inject
-  public MetricDefinitionInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public MetricDefinitionInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
     this.influxDB = influxDB;
   }

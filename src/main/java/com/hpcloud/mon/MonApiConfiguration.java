@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hpcloud.messaging.kafka.KafkaConfiguration;
 import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
 import com.hpcloud.mon.infrastructure.persistence.DatabaseConfiguration;
-import com.hpcloud.mon.infrastructure.persistence.influxdb.InfluxDBConfig;
+import com.hpcloud.mon.infrastructure.persistence.influxdb.InfluxDbConfig;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
@@ -52,7 +52,7 @@ public class MonApiConfiguration extends Configuration {
   @NotNull
   public MiddlewareConfiguration middleware;
   @Valid
-  public InfluxDBConfig influxDB;
+  public InfluxDbConfig influxDB;
   @Valid
   @NotNull
   @JsonProperty

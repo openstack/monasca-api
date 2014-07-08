@@ -35,9 +35,9 @@ import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
 import com.hpcloud.mon.domain.model.statistic.Statistics;
 
-public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
+public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
   private static final Logger logger = LoggerFactory
-      .getLogger(StatisticInfluxDBRepositoryImpl.class);
+      .getLogger(StatisticInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
@@ -46,7 +46,7 @@ public class StatisticInfluxDBRepositoryImpl implements StatisticRepository {
       .withZoneUTC();
 
   @Inject
-  public StatisticInfluxDBRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public StatisticInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
     this.config = config;
     this.influxDB = influxDB;
   }
