@@ -14,11 +14,13 @@ import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.annotations.Test;
 
 import javax.ws.rs.core.MediaType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -248,6 +250,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
             "Alarm action 012345678901234567890123456789012345678901234567890 must be 50 characters or less");
   }
 
+  @SuppressWarnings("unchecked")
   public void shouldList() {
     List<Alarm> alarms =
         client().resource("/v2.0/alarms").header("X-Tenant-Id", "abc")
@@ -293,6 +296,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public void should500OnInternalException() {
     doThrow(new RuntimeException("")).when(repo).find(anyString(),
         (Map<String, String>) anyObject(), (String) anyObject());
