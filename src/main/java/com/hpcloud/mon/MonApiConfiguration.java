@@ -18,11 +18,13 @@ package com.hpcloud.mon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hpcloud.messaging.kafka.KafkaConfiguration;
-import com.hpcloud.mon.Config.DatabaseConfiguration;
-import com.hpcloud.mon.Config.InfluxDBConfig;
 import com.hpcloud.mon.infrastructure.middleware.MiddlewareConfiguration;
+import com.hpcloud.mon.infrastructure.persistence.DatabaseConfiguration;
+import com.hpcloud.mon.infrastructure.persistence.InfluxDBConfig;
+
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;

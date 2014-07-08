@@ -14,46 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hpcloud.mon.Config;
+package com.hpcloud.mon.infrastructure.persistence;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class InfluxDBConfig {
+public class DatabaseConfiguration {
 
-  @JsonProperty
-  String name;
+    @JsonProperty
+    String databaseType;
 
-  public String getName() {
-    return name;
-  }
-
-  @JsonProperty
-  int replicationFactor;
-
-  public int getReplicationFactor() {
-    return replicationFactor;
-  }
-
-  @JsonProperty
-  String url;
-
-  public String getUrl() {
-    return url;
-  }
-
-  @JsonProperty
-  String user;
-
-  public String getUser() {
-    return user;
-  }
-
-  @JsonProperty
-  String password;
-
-  public String getPassword() {
-    return password;
-  }
-
-
+    public String getDatabaseType() { return databaseType; }
 }
