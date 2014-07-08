@@ -44,9 +44,9 @@ public interface AlarmRepository {
   boolean exists(String tenantId, String name);
 
   /**
-   * Returns alarms for the {@code tenantId}.
+   * Returns alarms for the given criteria.
    */
-  List<Alarm> find(String tenantId, Map<String, String> dimensions, String state);
+  List<Alarm> find(String tenantId, String name, Map<String, String> dimensions, String state);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}

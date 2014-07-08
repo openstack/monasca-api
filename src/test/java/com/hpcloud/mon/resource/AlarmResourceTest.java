@@ -1,5 +1,31 @@
 package com.hpcloud.mon.resource;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.testng.annotations.Test;
+
 import com.hpcloud.mon.app.AlarmService;
 import com.hpcloud.mon.app.command.CreateAlarmCommand;
 import com.hpcloud.mon.app.command.UpdateAlarmCommand;
@@ -14,25 +40,6 @@ import com.hpcloud.mon.domain.model.common.Link;
 import com.hpcloud.mon.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.testng.annotations.Test;
-
-import javax.ws.rs.core.MediaType;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
 
 @Test
 public class AlarmResourceTest extends AbstractMonApiResourceTest {
@@ -68,8 +75,8 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
     repo = mock(AlarmRepository.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
-    when(repo.find(anyString(), (Map<String, String>) anyMap(), any(String.class))).thenReturn(
-        Arrays.asList(alarmItem));
+    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), any(String.class)))
+        .thenReturn(Arrays.asList(alarmItem));
 
     stateHistoryRepo = mock(AlarmStateHistoryRepository.class);
 
@@ -257,7 +264,18 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
             .get(new GenericType<List<Alarm>>() {});
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"), (Map<String, String>) anyMap(), any(String.class));
+    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), any(String.class));
+  }
+
+  @SuppressWarnings("unchecked")
+  public void shouldListByName() throws Exception {
+    List<Alarm> alarms =
+        client().resource("/v2.0/alarms?name=" + URLEncoder.encode("foo bar baz", "UTF-8"))
+            .header("X-Tenant-Id", "abc").get(new GenericType<List<Alarm>>() {});
+
+    assertEquals(alarms, Arrays.asList(alarmItem));
+    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(),
+        any(String.class));
   }
 
   public void shouldGet() {
@@ -298,7 +316,7 @@ public class AlarmResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void should500OnInternalException() {
-    doThrow(new RuntimeException("")).when(repo).find(anyString(),
+    doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(),
         (Map<String, String>) anyObject(), (String) anyObject());
 
     try {

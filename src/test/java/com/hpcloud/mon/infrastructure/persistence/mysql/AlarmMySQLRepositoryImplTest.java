@@ -1,5 +1,26 @@
 package com.hpcloud.mon.infrastructure.persistence.mysql;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.util.StringMapper;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.hpcloud.mon.common.model.alarm.AggregateFunction;
@@ -10,20 +31,6 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
-import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
-
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.util.StringMapper;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.nio.charset.Charset;
-import java.util.*;
-
-import static org.testng.Assert.*;
 
 @Test
 public class AlarmMySqlRepositoryImplTest {
@@ -207,7 +214,7 @@ public class AlarmMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<Alarm> alarms = repo.find("bob", null, null);
+    List<Alarm> alarms = repo.find("bob", null, null, null);
 
     assertEquals(
         alarms,
@@ -224,6 +231,15 @@ public class AlarmMySqlRepositoryImplTest {
                 "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100",
                 AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"), Collections
                     .<String>emptyList(), Collections.<String>emptyList())));
+  }
+
+  public void shouldFindByName() {
+    List<Alarm> alarms = repo.find("bob", "90% CPU", null, null);
+
+    assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU", null, "LOW",
+        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
+        AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"), Collections
+            .<String>emptyList(), Collections.<String>emptyList())));
   }
 
   public void shouldDeleteById() {

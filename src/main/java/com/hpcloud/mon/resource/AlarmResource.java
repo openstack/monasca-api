@@ -107,8 +107,7 @@ public class AlarmResource {
     if (state != null) {
       Validation.validateAlarmState(state);
     }
-    return Links.hydrate(repo.find(tenantId, dimensions, state), uriInfo, "history");
-
+    return Links.hydrate(repo.find(tenantId, name, dimensions, state), uriInfo, "history");
   }
 
   @GET
