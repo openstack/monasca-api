@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.testng.annotations.Test;
 
 @Test
@@ -29,9 +30,9 @@ public class UtilsTest {
   }
 
   public void whereClauseBuilderBuildTimePartTest() {
-    String expectedResult = " and time > 1388563261s and time < 1388563262s";
-    DateTime startTime = new DateTime(2014, 01, 01, 01, 01, 01);
-    DateTime endTime = new DateTime(2014, 01, 01, 01, 01, 02);
+    String expectedResult = " and time > 1388538061s and time < 1388538062s";
+    DateTime startTime = new DateTime(2014, 01, 01, 01, 01, 01, DateTimeZone.UTC);
+    DateTime endTime = new DateTime(2014, 01, 01, 01, 01, 02, DateTimeZone.UTC);
 
     assert (expectedResult.equals(Utils.WhereClauseBuilder.buildTimePart(startTime, endTime)));
   }
