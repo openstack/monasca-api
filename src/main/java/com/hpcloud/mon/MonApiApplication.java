@@ -119,12 +119,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
         "X-Requested-With,Content-Type,Accept,Origin,X-Auth-Token");
     corsFilter.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
-    /** Configure auth filters */
-    Dynamic preAuthenticationFilter =
-        environment.servlets().addFilter("pre-auth", new PreAuthenticationFilter());
-    preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
-    preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
-
     if (config.middleware.enabled) {
       Map<String, String> authInitParams = new HashMap<String, String>();
       authInitParams.put("ServiceIds", config.middleware.serviceIds);
@@ -150,22 +144,28 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("AdminPassword", config.middleware.adminPassword);
       authInitParams.put("MaxTokenCacheSize", config.middleware.maxTokenCacheSize);
 
+      /** Configure auth filters */
+      Dynamic preAuthenticationFilter =
+          environment.servlets().addFilter("pre-auth", new PreAuthenticationFilter());
+      preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
+      preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
+
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
       tokenAuthFilter.setInitParameters(authInitParams);
+
+      Dynamic postAuthenticationFilter =
+          environment.servlets().addFilter("post-auth",
+              new PostAuthenticationFilter(config.middleware.rolesToMatch));
+      postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
+      postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     } else {
       Dynamic mockAuthenticationFilter =
           environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
-
-    Dynamic postAuthenticationFilter =
-        environment.servlets().addFilter("post-auth",
-            new PostAuthenticationFilter(config.middleware.rolesToMatch));
-    postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
-    postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
     /** Configure swagger */
     SwaggerBundle.configure(config);
