@@ -1,6 +1,7 @@
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
@@ -52,7 +53,7 @@ public class UtilsTest {
 
   public void whereClauseBuilderBuildDimsPartTest3() throws Exception {
     String expectedResult = " and foo = 'bar' and biz = 'baz'";
-    Map<String, String> dimsMap = new HashMap<>();
+    Map<String, String> dimsMap = new LinkedHashMap<>();
     dimsMap.put("foo", "bar");
     dimsMap.put("biz", "baz");
     assert (expectedResult.equals(Utils.WhereClauseBuilder.buildDimsPart(dimsMap)));
