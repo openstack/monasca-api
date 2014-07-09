@@ -46,7 +46,7 @@ public class PostAuthenticationFilter implements Filter {
   static final String X_ROLES_ATTRIBUTE = "X-ROLES";
   static final String X_IDENTITY_STATUS_ATTRIBUTE = "X-IDENTITY-STATUS";
   private static final String X_TENANT_ID_ATTRIBUTE = "X-PROJECT-ID";
-  static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
+    static final String X_TENANT_ID_HEADER = "X-Tenant-Id";
 
   private final List<String> rolesToMatch = new ArrayList<String>();
 

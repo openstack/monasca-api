@@ -66,7 +66,7 @@ public class MockAuthenticationFilter implements Filter {
         if (name.equalsIgnoreCase(PostAuthenticationFilter.X_IDENTITY_STATUS_ATTRIBUTE))
           return PostAuthenticationFilter.CONFIRMED_STATUS;
         if (name.equalsIgnoreCase(PostAuthenticationFilter.X_ROLES_ATTRIBUTE))
-          return "";
+          return "user";
         return super.getAttribute(name);
       }
 
