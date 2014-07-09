@@ -36,8 +36,8 @@ import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.mon.infrastructure.persistence.AlarmRepositoryImpl;
-import com.hpcloud.mon.infrastructure.persistence.NotificationMethodRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.AlarmResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -62,13 +62,15 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     Handle handle = mysqlDb.open();
     handle.execute("truncate table alarm");
     handle.execute("truncate table notification_method");
-    handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
-    handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+    handle
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+    handle
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
     mysqlDb.close(handle);
 
-    repo = new AlarmRepositoryImpl(mysqlDb);
-    service = new AlarmService(config, producer, repo,
-        new NotificationMethodRepositoryImpl(mysqlDb));
+    repo = new AlarmMySqlRepositoryImpl(mysqlDb);
+    service =
+        new AlarmService(config, producer, repo, new NotificationMethodMySqlRepositoryImpl(mysqlDb));
     addResources(new AlarmResource(service, repo, null));
   }
 
@@ -76,14 +78,14 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   protected void beforeTest() throws Exception {
     config = getConfiguration("config-test.yml", MonApiConfiguration.class);
     Injector injector = Guice.createInjector(new MonApiModule(environment, config));
-    producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {
-    }));
+    producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {}));
     mysqlDb = injector.getInstance(Key.get(DBI.class, Names.named("mysql")));
     Handle handle = mysqlDb.open();
     handle.execute(Resources.toString(
-        NotificationMethodRepositoryImpl.class.getResource("alarm.sql"), Charset.defaultCharset()));
+        NotificationMethodMySqlRepositoryImpl.class.getResource("alarm.sql"),
+        Charset.defaultCharset()));
     handle.execute(Resources.toString(
-        NotificationMethodRepositoryImpl.class.getResource("notification_method.sql"),
+        NotificationMethodMySqlRepositoryImpl.class.getResource("notification_method.sql"),
         Charset.defaultCharset()));
     handle.close();
 
@@ -93,8 +95,9 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
-    alarm = new Alarm("123", "90% CPU", null, null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
-        AlarmState.OK, true, alarmActions, null, null);
+    alarm =
+        new Alarm("123", "90% CPU", null, null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
+            AlarmState.OK, true, alarmActions, null, null);
   }
 
   @AfterTest
@@ -103,13 +106,15 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldCreate() throws Exception {
-    ClientResponse response = client().resource("/v2.0/alarms")
-        .header("X-Tenant-Id", TENANT_ID)
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(
-            ClientResponse.class,
-            new CreateAlarmCommand("90% CPU", null, null, "avg(hpcs.compute:cpu:{instance_id=123} > 10",
-                alarmActions, null, null));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/alarms")
+            .header("X-Tenant-Id", TENANT_ID)
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(
+                ClientResponse.class,
+                new CreateAlarmCommand("90% CPU", null, null,
+                    "avg(hpcs.compute:cpu:{instance_id=123} > 10", alarmActions, null, null));
 
     Alarm newAlarm = response.getEntity(Alarm.class);
     String location = response.getHeaders().get("Location").get(0);
@@ -121,15 +126,18 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
 
   public void shouldCreateCaseInsensitiveAndKeywords() throws Exception {
     Alarm alarm_local;
-    alarm_local = new Alarm("123", "90% CPU", null, null, "AvG(avg:cpu:{instance_id=123} gT 10",
-        AlarmState.OK, true, alarmActions, null, null);
-    ClientResponse response = client().resource("/v2.0/alarms")
-        .header("X-Tenant-Id", TENANT_ID)
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(
-            ClientResponse.class,
-            new CreateAlarmCommand("90% CPU", null, null, "AvG(avg:cpu:{instance_id=123} gT 10",
-                alarmActions, null, null));
+    alarm_local =
+        new Alarm("123", "90% CPU", null, null, "AvG(avg:cpu:{instance_id=123} gT 10",
+            AlarmState.OK, true, alarmActions, null, null);
+    ClientResponse response =
+        client()
+            .resource("/v2.0/alarms")
+            .header("X-Tenant-Id", TENANT_ID)
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(
+                ClientResponse.class,
+                new CreateAlarmCommand("90% CPU", null, null,
+                    "AvG(avg:cpu:{instance_id=123} gT 10", alarmActions, null, null));
 
     Alarm newAlarm = response.getEntity(Alarm.class);
     String location = response.getHeaders().get("Location").get(0);
@@ -140,14 +148,15 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldDelete() {
-    Alarm newAlarm = repo.create(TENANT_ID, "123", alarm.getName(), null, alarm.getName(),
-        alarm.getExpression(), null, alarm.getAlarmActions(), alarm.getOkActions(),
-        alarm.getUndeterminedActions());
+    Alarm newAlarm =
+        repo.create(TENANT_ID, "123", alarm.getName(), null, alarm.getName(),
+            alarm.getExpression(), null, alarm.getAlarmActions(), alarm.getOkActions(),
+            alarm.getUndeterminedActions());
     assertNotNull(repo.findById(TENANT_ID, newAlarm.getId()));
 
-    ClientResponse response = client().resource("/v2.0/alarms/" + newAlarm.getId())
-        .header("X-Tenant-Id", TENANT_ID)
-        .delete(ClientResponse.class);
+    ClientResponse response =
+        client().resource("/v2.0/alarms/" + newAlarm.getId()).header("X-Tenant-Id", TENANT_ID)
+            .delete(ClientResponse.class);
     assertEquals(response.getStatus(), 204);
 
     try {

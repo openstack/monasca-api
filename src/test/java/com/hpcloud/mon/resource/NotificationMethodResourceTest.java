@@ -35,12 +35,12 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
-    notificationMethod = new NotificationMethod("123", "Joe's SMS", NotificationMethodType.SMS,
-        "8675309");
+    notificationMethod =
+        new NotificationMethod("123", "Joe's SMS", NotificationMethodType.SMS, "8675309");
 
     repo = mock(NotificationMethodRepository.class);
-    when(repo.create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString())).thenReturn(
-        notificationMethod);
+    when(repo.create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString()))
+        .thenReturn(notificationMethod);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
     when(repo.find(eq("abc"))).thenReturn(Arrays.asList(notificationMethod));
 
@@ -48,11 +48,13 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldCreate() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "8675309"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "8675309"));
 
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
     String location = response.getHeaders().get("Location").get(0);
@@ -66,11 +68,13 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     when(
         repo.update(eq("abc"), anyString(), anyString(), any(NotificationMethodType.class),
             anyString())).thenReturn(notificationMethod);
-    ClientResponse response = client().resource("/v2.0/notification-methods/123")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .put(ClientResponse.class,
-            new CreateNotificationMethodCommand("Foo", NotificationMethodType.EMAIL, "a@a.com"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods/123")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .put(ClientResponse.class,
+                new CreateNotificationMethodCommand("Foo", NotificationMethodType.EMAIL, "a@a.com"));
 
     assertEquals(response.getStatus(), 200);
     verify(repo).update(eq("abc"), eq("123"), eq("Foo"), eq(NotificationMethodType.EMAIL),
@@ -78,10 +82,13 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should422OnBadEnum() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class, new CreateNotificationMethodCommand("MySMS", null, "8675309"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MySMS", null, "8675309"));
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
@@ -89,64 +96,74 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should422OnIncorrectAddressFormat() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateNotificationMethodCommand("MySMS", NotificationMethodType.EMAIL, "a@"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MySMS", NotificationMethodType.EMAIL, "a@"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Address a@ is not of correct format");
   }
 
   public void should422OnIncorrectAddressFormat2() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateNotificationMethodCommand("MySMS", NotificationMethodType.EMAIL, "a@f ,"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MySMS", NotificationMethodType.EMAIL, "a@f ,"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Address a@f , is not of correct format");
   }
 
   public void should422OnBadAddress() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, ""));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, ""));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[address may not be empty (was )");
   }
 
   public void should422OnTooLongName() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(
-            ClientResponse.class,
-            new CreateNotificationMethodCommand(
-                "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
-                    + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
-                    + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889",
-                NotificationMethodType.SMS, "a@b"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(
+                ClientResponse.class,
+                new CreateNotificationMethodCommand(
+                    "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
+                        + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
+                        + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889",
+                    NotificationMethodType.SMS, "a@b"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[name size must be between 1 and 250");
   }
 
   public void should422OnTooLongAddress() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(
-            ClientResponse.class,
-            new CreateNotificationMethodCommand(
-                "MySMS",
-                NotificationMethodType.SMS,
-                "abcdefghi@0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(
+                ClientResponse.class,
+                new CreateNotificationMethodCommand(
+                    "MySMS",
+                    NotificationMethodType.SMS,
+                    "abcdefghi@0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"));
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
@@ -154,18 +171,16 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    List<NotificationMethod> notificationMethods = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .get(new GenericType<List<NotificationMethod>>() {
-        });
+    List<NotificationMethod> notificationMethods =
+        client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")
+            .get(new GenericType<List<NotificationMethod>>() {});
 
     assertEquals(notificationMethods, Arrays.asList(notificationMethod));
     verify(repo).find(eq("abc"));
   }
 
   public void shouldGet() {
-    assertEquals(client().resource("/v2.0/notification-methods/123")
-        .header("X-Tenant-Id", "abc")
+    assertEquals(client().resource("/v2.0/notification-methods/123").header("X-Tenant-Id", "abc")
         .get(NotificationMethod.class), notificationMethod);
     verify(repo).findById(eq("abc"), eq("123"));
   }
@@ -174,8 +189,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     doThrow(new EntityNotFoundException("Not Found")).when(repo).findById(anyString(), anyString());
 
     try {
-      client().resource("/v2.0/notification-methods/999")
-          .header("X-Tenant-Id", "abc")
+      client().resource("/v2.0/notification-methods/999").header("X-Tenant-Id", "abc")
           .get(NotificationMethod.class);
       fail();
     } catch (Exception e) {
@@ -184,9 +198,9 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldDelete() {
-    ClientResponse response = client().resource("/v2.0/notification-methods/123")
-        .header("X-Tenant-Id", "abc")
-        .delete(ClientResponse.class);
+    ClientResponse response =
+        client().resource("/v2.0/notification-methods/123").header("X-Tenant-Id", "abc")
+            .delete(ClientResponse.class);
     assertEquals(response.getStatus(), 204);
     verify(repo).deleteById(eq("abc"), eq("123"));
   }
@@ -207,10 +221,8 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     doThrow(new RuntimeException("")).when(repo).find(anyString());
 
     try {
-      client().resource("/v2.0/notification-methods")
-          .header("X-Tenant-Id", "abc")
-          .get(new GenericType<List<NotificationMethod>>() {
-          });
+      client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")
+          .get(new GenericType<List<NotificationMethod>>() {});
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("500"));
@@ -219,7 +231,8 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
 
   public void should422OnCreateInvalid() {
     try {
-      client().resource("/v2.0/notification-methods")
+      client()
+          .resource("/v2.0/notification-methods")
           .header("X-Tenant-Id", "abc")
           .header("Content-Type", MediaType.APPLICATION_JSON)
           .post(NotificationMethod.class,
@@ -231,10 +244,9 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldFailNullInput() {
-    ClientResponse response = client().resource("/v2.0/notification-methods")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class, null);
+    ClientResponse response =
+        client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON).post(ClientResponse.class, null);
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "The request entity was empty");

@@ -49,8 +49,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldCreate() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
     verify(service).create(any(List.class), eq("abc"), anyString());
@@ -71,8 +71,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     Map<String, String> dims = new HashMap<String, String>();
     dims.put("instance_id", "937");
     dims.put("service", "foo.compute");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", dims,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dims, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
     verify(service).create(any(List.class), eq("abc"), anyString());
@@ -90,8 +90,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldCreateWithoutDimensions() throws Exception {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", null,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", null, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
     verify(service).create(any(List.class), eq("abc"), anyString());
@@ -99,8 +99,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldCreateWithZeroValue() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, 0.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp, 0.0));
 
     assertEquals(response.getStatus(), 204);
     verify(service).create(any(List.class), eq("abc"), anyString());
@@ -108,8 +108,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldCreateWithZeroTimestamp() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, 0L, 0.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, 0L, 0.0));
 
     assertEquals(response.getStatus(), 204);
     verify(service).create(any(List.class), eq("abc"), anyString());
@@ -117,33 +117,36 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldCreateList() {
     double timestampD = (double) timestamp;
-    double[][] timeValues = { { timestampD, 22.0 }, { timestampD + 1, 23.0 } };
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, timeValues));
+    double[][] timeValues = { {timestampD, 22.0}, {timestampD + 1, 23.0}};
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
+            timeValues));
 
     assertEquals(response.getStatus(), 204);
   }
 
   public void shouldErrorOnPostWithCrossTenant() {
-    ClientResponse response = createResponseForCrossTenant(new CreateMetricCommand(
-        "test_metrictype", dimensions, timestamp, 22.0), "def");
+    ClientResponse response =
+        createResponseForCrossTenant(new CreateMetricCommand("test_metrictype", dimensions,
+            timestamp, 22.0), "def");
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("forbidden", 403,
         "Project abc cannot POST cross tenant");
   }
 
   public void shouldErrorOnCreateWithIllegalCharsInName() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("hpcs@.compute%",
-        dimensions, timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("hpcs@.compute%", dimensions, timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Metric name hpcs@.compute% may only contain: a-z A-Z 0-9 _ - .");
   }
 
   public void shouldErrorOnCreateWithTooLongName() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand(
-        "1234567890123456789012345678901234567890123456789012345678901234567890", dimensions,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand(
+            "1234567890123456789012345678901234567890123456789012345678901234567890", dimensions,
+            timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[name size must be between 1 and 64");
@@ -153,8 +156,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     Map<String, String> dims = new HashMap<>();
     dims.put("instance_id", "937");
     dims.put("service", "hpcs.compute");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("foo", dims, timestamp,
-        22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("foo", dims, timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("forbidden", 403,
         "Project abc cannot POST metrics for the hpcs service");
@@ -179,8 +182,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithBadValue() {
     Map<String, String> dims = new HashMap<String, String>();
     dims.put("blah", "");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", dims,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dims, timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Dimension blah cannot have an empty value");
@@ -192,8 +195,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     dims.put("az", "2");
     dims.put("instance_uuid", "abc123");
     dims.put("flavor_id", "");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", dims,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dims, timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Dimension flavor_id cannot have an empty value");
@@ -209,10 +212,11 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc",
         "abc123");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", dims,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dims, timestamp, 22.0));
 
-    ErrorMessages.assertThat(response.getEntity(String.class))
+    ErrorMessages
+        .assertThat(response.getEntity(String.class))
         .matches(
             "unprocessable_entity",
             422,
@@ -229,10 +233,11 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             + "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc");
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype", dims,
-        timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dims, timestamp, 22.0));
 
-    ErrorMessages.assertThat(response.getEntity(String.class))
+    ErrorMessages
+        .assertThat(response.getEntity(String.class))
         .matches(
             "unprocessable_entity",
             422,
@@ -241,8 +246,9 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithHighTimestamp() {
     long local_timestamp = timestamp + 1000;
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, local_timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, local_timestamp,
+            22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Timestamp " + local_timestamp + " is out of legal range");
@@ -250,24 +256,27 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithLowTimestamp() {
     long local_timestamp = timestamp - 1309600;
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, local_timestamp, 22.0));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, local_timestamp,
+            22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Timestamp " + local_timestamp + " is out of legal range");
   }
 
   public void shouldErrorOnCreateWithHighValue() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, 1.174271e+109));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
+            1.174271e+109));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Value 1.174271E109 is out of legal range");
   }
 
   public void shouldErrorOnCreateWithLowValue() {
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, 8.515920e-110));
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
+            8.515920e-110));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Value 8.51592E-110 is out of legal range");
@@ -275,9 +284,10 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithTimestampHighInTimeValues() {
     double timestampD = (double) timestamp + 1000;
-    double[][] timeValues = { { timestampD, 22.0 }, { timestampD + 1, 23.0 } };
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, timeValues));
+    double[][] timeValues = { {timestampD, 22.0}, {timestampD + 1, 23.0}};
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
+            timeValues));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Timestamp " + (long) timestampD + " is out of legal range");
@@ -285,30 +295,29 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithValueHighInTimeValues() {
     double timestampD = (double) timestamp;
-    double[][] timeValues = { { timestampD, 1.174271e+109 }, { timestampD + 1, 23.0 } };
-    ClientResponse response = createResponseFor(new CreateMetricCommand("test_metrictype",
-        dimensions, timestamp, timeValues));
+    double[][] timeValues = { {timestampD, 1.174271e+109}, {timestampD + 1, 23.0}};
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
+            timeValues));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Value 1.174271E109 is out of legal range");
   }
 
   public void shouldRequireMetricValuesToBeDoubles() throws Exception {
-    ClientResponse response = createResponseFor("{\"namespace\": \"foo\",\"timestamp\": 1380750420,\"value\": \"foo\"}");
+    ClientResponse response =
+        createResponseFor("{\"namespace\": \"foo\",\"timestamp\": 1380750420,\"value\": \"foo\"}");
     assertEquals(response.getStatus(), 400);
   }
 
   private ClientResponse createResponseFor(Object request) {
-    return client().resource("/v2.0/metrics")
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class, request);
+    return client().resource("/v2.0/metrics").header("X-Tenant-Id", "abc")
+        .header("Content-Type", MediaType.APPLICATION_JSON).post(ClientResponse.class, request);
   }
 
   private ClientResponse createResponseForCrossTenant(Object request, String crossTenantId) {
     return client().resource("/v2.0/metrics?tenant_id=" + crossTenantId)
-        .header("X-Tenant-Id", "abc")
-        .header("Content-Type", MediaType.APPLICATION_JSON)
+        .header("X-Tenant-Id", "abc").header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, request);
   }
 }

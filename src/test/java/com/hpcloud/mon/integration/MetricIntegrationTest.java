@@ -54,8 +54,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
   protected void beforeTest() throws Exception {
     config = getConfiguration("config-test.yml", MonApiConfiguration.class);
     Injector injector = Guice.createInjector(new MonApiModule(environment, config));
-    producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {
-    }));
+    producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {}));
   }
 
   @AfterTest
@@ -69,11 +68,13 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     dimensions.put("az", "2");
     dimensions.put("instance_uuid", "abc123");
     long timestamp = System.currentTimeMillis() / 1000;
-    ClientResponse response = client().resource("/v2.0/metrics")
-        .header("X-Tenant-Id", TENANT_ID)
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateMetricCommand("test_namespace", dimensions, timestamp, 22.0));
+    ClientResponse response =
+        client()
+            .resource("/v2.0/metrics")
+            .header("X-Tenant-Id", TENANT_ID)
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateMetricCommand("test_namespace", dimensions, timestamp, 22.0));
 
     assertEquals(response.getStatus(), 204);
   }
@@ -85,12 +86,14 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     dimensions.put("instance_uuid", "abc123");
     long timestamp = System.currentTimeMillis() / 1000;
     double timestampD = (double) timestamp;
-    double[][] timeValues = { { timestampD, 22.0 }, { timestampD + 1, 23.0 } };
-    ClientResponse response = client().resource("/v2.0/metrics")
-        .header("X-Tenant-Id", TENANT_ID)
-        .header("Content-Type", MediaType.APPLICATION_JSON)
-        .post(ClientResponse.class,
-            new CreateMetricCommand("test_namespace", dimensions, timestamp, timeValues));
+    double[][] timeValues = { {timestampD, 22.0}, {timestampD + 1, 23.0}};
+    ClientResponse response =
+        client()
+            .resource("/v2.0/metrics")
+            .header("X-Tenant-Id", TENANT_ID)
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateMetricCommand("test_namespace", dimensions, timestamp, timeValues));
 
     assertEquals(response.getStatus(), 204);
   }

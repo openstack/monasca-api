@@ -18,7 +18,8 @@ public class VersionTest extends AbstractModelTest {
   private final Version version;
 
   public VersionTest() {
-    version = new Version("1.0", VersionStatus.CURRENT, new DateTime(1355253328000L, DateTimeZone.UTC));
+    version =
+        new Version("1.0", VersionStatus.CURRENT, new DateTime(1355253328000L, DateTimeZone.UTC));
     version.setLinks(Arrays.asList(new Link("self",
         "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
   }

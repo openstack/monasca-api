@@ -1,7 +1,9 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.vertica;
 
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.mon.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
+
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -39,12 +41,12 @@ public class AlarmStateHistoryVerticaRepositoryImplTest {
   }
 
   private void create(String tenantId, String alarmId, AlarmState oldState, AlarmState newState,
-                     String reason, String reasonData, DateTime timestamp) {
+      String reason, String reasonData, DateTime timestamp) {
     try (Handle h = db.open()) {
-      h.insert("insert into MonAlarms.StateHistory (tenant_id, alarm_id, old_state, new_state, " +
-          "reason, reason_data, time_stamp) values (?, ?, ?, ?, ?, ?, ?)", tenantId, alarmId,
-          oldState.name(), newState.name(), reason, reasonData, new Timestamp(timestamp.getMillis
-              ()));
+      h.insert("insert into MonAlarms.StateHistory (tenant_id, alarm_id, old_state, new_state, "
+          + "reason, reason_data, time_stamp) values (?, ?, ?, ?, ?, ?, ?)", tenantId, alarmId,
+          oldState.name(), newState.name(), reason, reasonData,
+          new Timestamp(timestamp.getMillis()));
     }
   }
 

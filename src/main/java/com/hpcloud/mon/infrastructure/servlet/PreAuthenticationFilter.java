@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.infrastructure.servlet;
 
@@ -34,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hpcloud.mon.resource.exception.Exceptions;
 import com.hpcloud.mon.resource.exception.Exceptions.FaultType;
-//import com.hp.csbu.cc.middleware.ExceptionHandler.*;
 
 /**
  * Authenticates requests using header information from the CsMiddleware. Provides the X-TENANT-ID
@@ -71,14 +67,13 @@ public class PreAuthenticationFilter implements Filter {
   }
 
   @Override
-  public void destroy() {
-  }
+  public void destroy() {}
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
     HttpServletResponse res = (HttpServletResponse) response;
-    ErrorCapturingServletResponseWrapper responseWrapper = new ErrorCapturingServletResponseWrapper(
-        res);
+    ErrorCapturingServletResponseWrapper responseWrapper =
+        new ErrorCapturingServletResponseWrapper(res);
 
     ServletOutputStream out = null;
 
@@ -95,18 +90,19 @@ public class PreAuthenticationFilter implements Filter {
     try {
       res.setContentType(MediaType.APPLICATION_JSON);
       res.setStatus(responseWrapper.statusCode);
-      String output = Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED,
-        responseWrapper.errorMessage, null, responseWrapper.exception);
+      String output =
+          Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED, responseWrapper.errorMessage,
+              null, responseWrapper.exception);
       out.print(output);
-    }catch(IllegalArgumentException e) {
-      //CSMiddleware is throwing this error for invalid tokens.
-      //This problem appears to be fixed in other versions, but they are not approved yet.
+    } catch (IllegalArgumentException e) {
+      // CSMiddleware is throwing this error for invalid tokens.
+      // This problem appears to be fixed in other versions, but they are not approved yet.
       try {
-      String output = Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED,
-        "invalid authToken", null, responseWrapper.exception);
-      out.print(output);
-      }
-      catch (Exception x) {
+        String output =
+            Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED, "invalid authToken", null,
+                responseWrapper.exception);
+        out.print(output);
+      } catch (Exception x) {
         LOG.error("Error while writing failed authentication HTTP response", x);
       } finally {
         if (out != null)
@@ -115,8 +111,7 @@ public class PreAuthenticationFilter implements Filter {
           } catch (IOException ignore) {
           }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOG.error("Error while writing failed authentication HTTP response", e);
     } finally {
       if (out != null)
@@ -128,6 +123,5 @@ public class PreAuthenticationFilter implements Filter {
   }
 
   @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
-  }
+  public void init(FilterConfig filterConfig) throws ServletException {}
 }

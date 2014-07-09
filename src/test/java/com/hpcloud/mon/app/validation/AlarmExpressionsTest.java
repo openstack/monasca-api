@@ -13,17 +13,16 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 @Test
 public class AlarmExpressionsTest {
   public void shouldNormalizeFields() {
-    AlarmExpression expr = AlarmValidation.validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes{instance_id=5, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, az=1}) > 4");
+    AlarmExpression expr =
+        AlarmValidation
+            .validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes{instance_id=5, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, az=1}) > 4");
     MetricDefinition metricDef = expr.getSubExpressions().get(0).getMetricDefinition();
 
     assertEquals(metricDef.name, "hpcs.compute.net_out_bytes");
     assertEquals(
         metricDef.dimensions,
-        ImmutableMap.builder()
-            .put("instance_id", "5")
-            .put("instance_uuid", "0ff588fc-d298-482f-bb11-4b52d56801a4")
-            .put("az", "1")
-            .build());
+        ImmutableMap.builder().put("instance_id", "5")
+            .put("instance_uuid", "0ff588fc-d298-482f-bb11-4b52d56801a4").put("az", "1").build());
   }
 
   @Test(expectedExceptions = WebApplicationException.class)
@@ -33,7 +32,8 @@ public class AlarmExpressionsTest {
 
   @Test(expectedExceptions = WebApplicationException.class)
   public void shouldThrowOnDuplicateDimensions() throws Exception {
-    AlarmValidation.validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes{instance_id=5, instance_id=4}) > 4");
+    AlarmValidation
+        .validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes{instance_id=5, instance_id=4}) > 4");
   }
 
   @Test(expectedExceptions = WebApplicationException.class)

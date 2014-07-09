@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.bundle;
 
@@ -87,11 +84,12 @@ public class SwaggerBundle extends AssetsBundle {
       LOGGER.info("/var/lib/cloud does not exist, assuming that we are running locally");
       host = "localhost";
     } else {
-      HttpURLConnection urlConnection = (HttpURLConnection) new URL(
-          "http://169.254.169.254/latest/meta-data/public-hostname/").openConnection();
+      HttpURLConnection urlConnection =
+          (HttpURLConnection) new URL("http://169.254.169.254/latest/meta-data/public-hostname/")
+              .openConnection();
       urlConnection.setRequestMethod("GET");
-      try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-          urlConnection.getInputStream()))) {
+      try (BufferedReader reader =
+          new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
         host = reader.readLine();
       }
     }
@@ -105,7 +103,8 @@ public class SwaggerBundle extends AssetsBundle {
         httpConnectorFactory = (HttpConnectorFactory) cf;
       }
     } else if (serverFactory instanceof DefaultServerFactory) {
-      List<ConnectorFactory> applicationConnectors = ((DefaultServerFactory) serverFactory).getApplicationConnectors();
+      List<ConnectorFactory> applicationConnectors =
+          ((DefaultServerFactory) serverFactory).getApplicationConnectors();
       for (ConnectorFactory connectorFactory : applicationConnectors) {
         if (connectorFactory instanceof HttpConnectorFactory) {
           httpConnectorFactory = (HttpConnectorFactory) connectorFactory;

@@ -1,4 +1,4 @@
-package com.hpcloud.mon.infrastructure.persistence;
+package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -20,12 +20,13 @@ import com.google.common.io.Resources;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethod;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodType;
+import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 
 @Test
-public class NotificationMethodRepositoryImplTest {
+public class NotificationMethodMySqlRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private NotificationMethodRepositoryImpl repo;
+  private NotificationMethodMySqlRepositoryImpl repo;
 
   @BeforeClass
   protected void beforeClass() throws Exception {
@@ -33,7 +34,7 @@ public class NotificationMethodRepositoryImplTest {
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
-    repo = new NotificationMethodRepositoryImpl(db);
+    repo = new NotificationMethodMySqlRepositoryImpl(db);
   }
 
   @AfterClass
@@ -44,7 +45,8 @@ public class NotificationMethodRepositoryImplTest {
   @BeforeMethod
   protected void beforeMethod() {
     handle.execute("truncate table notification_method");
-    handle.execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+    handle
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
   }
 
   public void shouldCreate() {
@@ -71,9 +73,8 @@ public class NotificationMethodRepositoryImplTest {
   public void shouldFind() {
     List<NotificationMethod> nms = repo.find("444");
 
-    assertEquals(
-        nms,
-        Arrays.asList(new NotificationMethod("123", "MySMS", NotificationMethodType.SMS, "8675309")));
+    assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MySMS",
+        NotificationMethodType.SMS, "8675309")));
   }
 
   public void shouldUpdate() {

@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon;
 
@@ -21,7 +18,6 @@ import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,8 +32,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.hpcloud.middleware.TokenAuth;
 import com.hpcloud.messaging.kafka.KafkaHealthCheck;
+import com.hpcloud.middleware.TokenAuth;
 import com.hpcloud.mon.bundle.SwaggerBundle;
 import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
@@ -101,8 +97,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     environment.jersey().register(new JsonProcessingExceptionMapper());
     environment.jersey().register(new JsonMappingExceptionManager());
     environment.jersey().register(new ConstraintViolationExceptionMapper());
-    environment.jersey().register(new ThrowableExceptionMapper<Throwable>() {
-    });
+    environment.jersey().register(new ThrowableExceptionMapper<Throwable>() {});
 
     /** Configure Jackson */
     environment.getObjectMapper().setPropertyNamingStrategy(
@@ -120,14 +115,9 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     Dynamic corsFilter = environment.servlets().addFilter("cors", CrossOriginFilter.class);
     corsFilter.addMappingForUrlPatterns(null, true, "/*");
     corsFilter.setInitParameter("allowedOrigins", "*");
-    corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin,X-Auth-Token");
+    corsFilter.setInitParameter("allowedHeaders",
+        "X-Requested-With,Content-Type,Accept,Origin,X-Auth-Token");
     corsFilter.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
-
-    /** Configure auth filters */
-    Dynamic preAuthenticationFilter = environment.servlets().addFilter("pre-auth",
-        new PreAuthenticationFilter());
-    preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
-    preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
     if (config.middleware.enabled) {
       Map<String, String> authInitParams = new HashMap<String, String>();
@@ -152,23 +142,30 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("AdminAuthMethod", config.middleware.adminAuthMethod);
       authInitParams.put("AdminUser", config.middleware.adminUser);
       authInitParams.put("AdminPassword", config.middleware.adminPassword);
-      authInitParams.put("MaxTokenCacheSize",config.middleware.maxTokenCacheSize);
+      authInitParams.put("MaxTokenCacheSize", config.middleware.maxTokenCacheSize);
+
+      /** Configure auth filters */
+      Dynamic preAuthenticationFilter =
+          environment.servlets().addFilter("pre-auth", new PreAuthenticationFilter());
+      preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
+      preAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
       Dynamic tokenAuthFilter = environment.servlets().addFilter("token-auth", new TokenAuth());
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/");
       tokenAuthFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
       tokenAuthFilter.setInitParameters(authInitParams);
+
+      Dynamic postAuthenticationFilter =
+          environment.servlets().addFilter("post-auth",
+              new PostAuthenticationFilter(config.middleware.rolesToMatch));
+      postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
+      postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     } else {
-      Dynamic mockAuthenticationFilter = environment.servlets().addFilter("mock-auth",
-          new MockAuthenticationFilter());
+      Dynamic mockAuthenticationFilter =
+          environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
-
-    Dynamic postAuthenticationFilter = environment.servlets()
-        .addFilter("post-auth", new PostAuthenticationFilter(config.middleware.rolesToMatch));
-    postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
-    postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
     /** Configure swagger */
     SwaggerBundle.configure(config);

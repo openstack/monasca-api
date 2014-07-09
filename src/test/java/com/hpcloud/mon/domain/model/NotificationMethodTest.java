@@ -16,8 +16,8 @@ public class NotificationMethodTest extends AbstractModelTest {
   private final NotificationMethod notificationMethod;
 
   public NotificationMethodTest() {
-    notificationMethod = new NotificationMethod("123", "MySMS", NotificationMethodType.SMS,
-        "9228675309");
+    notificationMethod =
+        new NotificationMethod("123", "MySMS", NotificationMethodType.SMS, "9228675309");
     notificationMethod.setLinks(Arrays.asList(new Link("self",
         "https://region-a.geo-1.maas.hpcloudsvc.com/v1.0")));
   }

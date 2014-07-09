@@ -18,7 +18,8 @@ public abstract class AbstractModelTest {
 
   static {
     MAPPER = new ObjectMapper();
-    MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+    MAPPER
+        .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
     MAPPER.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
     MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     SimpleModule module = new SimpleModule("SerializationModule");

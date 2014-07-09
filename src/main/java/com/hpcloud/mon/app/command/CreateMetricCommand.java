@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.app.command;
 
@@ -37,14 +34,15 @@ public class CreateMetricCommand {
   private static final double VALUE_MIN = 8.515920e-109;
   private static final double VALUE_MAX = 1.174271e+108;
 
-  @NotEmpty @Size(min = 1, max = 64) public String name;
+  @NotEmpty
+  @Size(min = 1, max = 64)
+  public String name;
   public Map<String, String> dimensions;
   public long timestamp;
   public double value;
   public double[][] timeValues;
 
-  public CreateMetricCommand() {
-  }
+  public CreateMetricCommand() {}
 
   public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
       @Nullable Long timestamp, double value) {
@@ -119,8 +117,9 @@ public class CreateMetricCommand {
 
   @JsonProperty
   public void setDimensions(Map<String, String> dimensions) {
-    this.dimensions = dimensions == null || dimensions.isEmpty() ? null
-        : DimensionValidation.normalize(dimensions);
+    this.dimensions =
+        dimensions == null || dimensions.isEmpty() ? null : DimensionValidation
+            .normalize(dimensions);
   }
 
   @JsonProperty
@@ -130,8 +129,9 @@ public class CreateMetricCommand {
 
   @JsonProperty
   public void setTimestamp(Long timestamp) {
-    this.timestamp = timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis() / 1000L
-        : timestamp.longValue();
+    this.timestamp =
+        timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis() / 1000L
+            : timestamp.longValue();
   }
 
   public Metric toMetric() {

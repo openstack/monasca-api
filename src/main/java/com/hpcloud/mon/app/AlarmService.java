@@ -1,18 +1,15 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.hpcloud.mon.app;
 
@@ -112,12 +109,14 @@ public class AlarmService {
 
     try {
       LOG.debug("Creating alarm {} for tenant {}", name, tenantId);
-      alarm = repo.create(tenantId, alarmId, name, description, severity, expression, subAlarms,
-          alarmActions, okActions, undeterminedActions);
+      alarm =
+          repo.create(tenantId, alarmId, name, description, severity, expression, subAlarms,
+              alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of new alarm
-      String event = Serialization.toJson(new AlarmCreatedEvent(tenantId, alarmId, name,
-          expression, subAlarms));
+      String event =
+          Serialization
+              .toJson(new AlarmCreatedEvent(tenantId, alarmId, name, expression, subAlarms));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       return alarm;
@@ -141,7 +140,8 @@ public class AlarmService {
     repo.deleteById(tenantId, alarmId);
 
     // Notify interested parties of alarm deletion
-    String event = Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, subAlarmMetricDefs));
+    String event =
+        Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, subAlarmMetricDefs));
     producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
   }
 
@@ -154,8 +154,9 @@ public class AlarmService {
    */
   public Alarm update(String tenantId, String alarmId, AlarmExpression alarmExpression,
       UpdateAlarmCommand command) {
-    Alarm alarm = assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
-        command.undeterminedActions);
+    Alarm alarm =
+        assertAlarmExists(tenantId, alarmId, command.alarmActions, command.okActions,
+            command.undeterminedActions);
     updateInternal(tenantId, alarmId, false, command.name, command.description, command.expression,
         command.severity, alarmExpression, alarm.getState(), command.state, command.actionsEnabled,
         command.alarmActions, command.okActions, command.undeterminedActions);
@@ -175,7 +176,8 @@ public class AlarmService {
       String severity, String expression, AlarmExpression alarmExpression, AlarmState state,
       Boolean enabled, List<String> alarmActions, List<String> okActions,
       List<String> undeterminedActions) {
-    Alarm alarm = assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
+    Alarm alarm =
+        assertAlarmExists(tenantId, alarmId, alarmActions, okActions, undeterminedActions);
     name = name == null ? alarm.getName() : name;
     description = description == null ? alarm.getDescription() : description;
     expression = expression == null ? alarm.getExpression() : expression;
@@ -208,17 +210,19 @@ public class AlarmService {
           alarmActions, okActions, undeterminedActions);
 
       // Notify interested parties of updated alarm
-      String event = Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name,
-          description, expression, newState, oldState, enabled, subExpressions.oldAlarmSubExpressions,
-          subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
-          subExpressions.newAlarmSubExpressions));
+      String event =
+          Serialization.toJson(new AlarmUpdatedEvent(tenantId, alarmId, name, description,
+              expression, newState, oldState, enabled, subExpressions.oldAlarmSubExpressions,
+              subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
+              subExpressions.newAlarmSubExpressions));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       // Notify interested parties of transitioned alarm state
       if (!oldState.equals(newState)) {
-        event = Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
-            description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
-            System.currentTimeMillis() / 1000));
+        event =
+            Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, name,
+                description, oldState, newState, enabled, stateChangeReasonFor(oldState, newState),
+                System.currentTimeMillis() / 1000));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
     } catch (Exception e) {
@@ -231,15 +235,18 @@ public class AlarmService {
    * {@code alarmExpression} to the existing sub expressions for the {@code alarmId}.
    */
   SubExpressions subExpressionsFor(String alarmId, AlarmExpression alarmExpression) {
-    BiMap<String, AlarmSubExpression> oldExpressions = HashBiMap.create(repo.findSubExpressions(alarmId));
+    BiMap<String, AlarmSubExpression> oldExpressions =
+        HashBiMap.create(repo.findSubExpressions(alarmId));
     Set<AlarmSubExpression> oldSet = oldExpressions.inverse().keySet();
     Set<AlarmSubExpression> newSet = new HashSet<>(alarmExpression.getSubExpressions());
 
     // Identify old or changed expressions
-    Set<AlarmSubExpression> oldOrChangedExpressions = new HashSet<>(Sets.difference(oldSet, newSet));
+    Set<AlarmSubExpression> oldOrChangedExpressions =
+        new HashSet<>(Sets.difference(oldSet, newSet));
 
     // Identify new or changed expressions
-    Set<AlarmSubExpression> newOrChangedExpressions = new HashSet<>(Sets.difference(newSet, oldSet));
+    Set<AlarmSubExpression> newOrChangedExpressions =
+        new HashSet<>(Sets.difference(newSet, oldSet));
 
     // Find changed expressions
     Map<String, AlarmSubExpression> changedExpressions = new HashMap<>();
