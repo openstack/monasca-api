@@ -59,7 +59,18 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
       Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime)
       throws Exception {
 
+    logger.debug("tenantId: {}", tenantId);
+    logger.debug("name: {}", name);
+    if (dimensions != null) {
+      for (String key : dimensions.keySet()) {
+        logger.debug("key: {}, value: {}", key, dimensions.get(key));
+      }
+    }
+    logger.debug("startTime: {}", startTime);
+    logger.debug("endTime: {}", endTime);
+
     String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
+
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
     String query =
         String.format("select value " + "from %1$s " + "where tenant_id = '%2$s' %3$s %4$s",
