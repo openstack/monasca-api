@@ -31,7 +31,7 @@ public class InfluxDBTest {
   private static final String DOCKER_URL = "http://" + DOCKER_IP + ":" + DOCKER_PORT;
   private static final int MAX_CONNECT_PORT_TRIES = 20000;
 
-  private static final String API_JAR = "./target/mon-api-0.1.0-1405013923672-ddd828.jar";
+  private static final String API_JAR = "./target/mon-api-0.1.0-1405114317929-387fb5.jar";
 
   private final static DockerClient dockerClient = new DockerClient(DOCKER_URL);
   private Process apiProcess = null;
