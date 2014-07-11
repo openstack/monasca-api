@@ -5,7 +5,6 @@ import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfl
 
 import org.influxdb.InfluxDB;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,11 +48,10 @@ public class AlarmStateHistoryInfluxDbRepositoryImplTest {
   }
 
   public void buildTimePartTest() {
-    String er = " and time > 1388534400s and time < 1388534401s";
+    String er = " and time > 1388559600s and time < 1388559601s";
     String r =
-        this.alarmStateHistoryInfluxDBRepository.buildTimePart(new DateTime(2014, 01, 01, 0, 0,
-                0, DateTimeZone.UTC),
-            new DateTime(2014, 01, 01, 0, 0, 1, DateTimeZone.UTC));
+        this.alarmStateHistoryInfluxDBRepository.buildTimePart(new DateTime(2014, 01, 01, 0, 0, 0),
+            new DateTime(2014, 01, 01, 0, 0, 1));
     assert (er.equals(r));
 
   }
