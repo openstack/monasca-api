@@ -6,10 +6,13 @@ import com.github.dockerjava.client.model.ContainerCreateResponse;
 import com.github.dockerjava.client.model.ExposedPort;
 import com.github.dockerjava.client.model.Ports;
 import com.sun.jersey.api.client.ClientResponse;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -31,13 +34,12 @@ public class InfluxDBTest {
   private static final String DOCKER_URL = "http://" + DOCKER_IP + ":" + DOCKER_PORT;
   private static final int MAX_CONNECT_PORT_TRIES = 20000;
 
-  private static final String API_JAR = "./target/mon-api-0.1.0-1405114317929-387fb5.jar";
 
   private final static DockerClient dockerClient = new DockerClient(DOCKER_URL);
   private Process apiProcess = null;
-  private ContainerCreateResponse influxDBContainer;
-  private ContainerCreateResponse mysqlContainer;
-  private ContainerCreateResponse kafkaContainer;
+  private ContainerCreateResponse influxDBContainer = null;
+  private ContainerCreateResponse mysqlContainer = null;
+  private ContainerCreateResponse kafkaContainer = null;
 
   @BeforeClass
   public void setup() throws DockerException, IOException {
@@ -54,10 +56,32 @@ public class InfluxDBTest {
 
   private void runAPI() throws IOException {
 
-    apiProcess = Runtime.getRuntime().exec(new String[]{"java", "-cp", API_JAR,
+    String latestShadedJarFileName = getLatestShadedJarFileName();
+    apiProcess = Runtime.getRuntime().exec(new String[]{"java", "-cp", latestShadedJarFileName,
         "com.hpcloud.mon.MonApiApplication", "server", "src/test/resources/mon-api-config.yml"});
 
     waitForPortReady("localhost", 8080);
+  }
+
+  private String getLatestShadedJarFileName() {
+
+    File dir = new File("./target");
+    FileFilter fileFilter = new RegexFileFilter("^mon-api-0\\.1\\.0-(\\d|\\w)+-(\\d|\\w)+\\.jar");
+    File[] files = dir.listFiles(fileFilter);
+    if (files.length == 0) {
+      System.err.println("Failed to find shaded jar. You must build mon-api before running this "
+          + "test. Try 'mvn clean package'");
+      tearDown();
+      System.exit(-1);
+    }
+    File latestFile = files[0];
+    for (File file : files) {
+      if (file.lastModified() > latestFile.lastModified()) {
+        latestFile = file;
+      }
+    }
+    return latestFile.getName();
+
   }
 
   private void waitForPortReady(String host, int port) {
@@ -443,22 +467,30 @@ public class InfluxDBTest {
   }
 
   private void stopAPI() {
-    apiProcess.destroy();
+    if (apiProcess != null) {
+      apiProcess.destroy();
+    }
   }
 
   private void stopKafka() {
-    dockerClient.stopContainerCmd(kafkaContainer.getId()).withTimeout(2).exec();
+    if (kafkaContainer != null) {
+      dockerClient.stopContainerCmd(kafkaContainer.getId()).withTimeout(2).exec();
+    }
 
   }
 
   private void stopMYSQL() {
-    dockerClient.stopContainerCmd(mysqlContainer.getId()).withTimeout(2).exec();
+    if (mysqlContainer != null) {
+      dockerClient.stopContainerCmd(mysqlContainer.getId()).withTimeout(2).exec();
+    }
 
 
   }
 
   private void stopInfluxDB() {
-    dockerClient.stopContainerCmd(influxDBContainer.getId()).withTimeout(2).exec();
+    if (influxDBContainer != null) {
+      dockerClient.stopContainerCmd(influxDBContainer.getId()).withTimeout(2).exec();
+    }
 
   }
 }
