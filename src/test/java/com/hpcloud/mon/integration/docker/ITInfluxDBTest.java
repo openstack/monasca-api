@@ -11,9 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -21,8 +19,8 @@ import java.net.SocketAddress;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.from;
 
-@Test(groups = "integration", enabled = false)
-public class InfluxDBTest {
+@Test(groups = "integration", enabled = true)
+public class ITInfluxDBTest {
 
   private final static String DDIETERLY_INFLUXDB_V1 = "ddieterly/influxdb:v1";
   private static final String DDIETERLY_MYSQL_V1 = "ddieterly/mysql:v1";
@@ -32,7 +30,7 @@ public class InfluxDBTest {
   private static final String DOCKER_IP = "192.168.59.103";
   private static final String DOCKER_PORT = "2375";
   private static final String DOCKER_URL = "http://" + DOCKER_IP + ":" + DOCKER_PORT;
-  private static final int MAX_CONNECT_PORT_TRIES = 20000;
+  private static final int MAX_CONNECT_PORT_TRIES = 10000;
 
 
   private final static DockerClient dockerClient = new DockerClient(DOCKER_URL);
@@ -57,8 +55,16 @@ public class InfluxDBTest {
   private void runAPI() throws IOException {
 
     String latestShadedJarFileName = getLatestShadedJarFileName();
-    apiProcess = Runtime.getRuntime().exec(new String[]{"java", "-cp", latestShadedJarFileName,
-        "com.hpcloud.mon.MonApiApplication", "server", "src/test/resources/mon-api-config.yml"});
+    System.out.println("Running " + latestShadedJarFileName);
+
+    ProcessBuilder pb = new ProcessBuilder("java", "-cp", "./target/" + latestShadedJarFileName,
+        "com.hpcloud.mon.MonApiApplication", "server", "src/test/resources/mon-api-config.yml");
+    File log  = new File("mon-api-integration-test.log");
+    pb.redirectErrorStream(true);
+    pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+    apiProcess = pb.start();
+
+    System.out.println("Started " + latestShadedJarFileName);
 
     waitForPortReady("localhost", 8080);
   }
@@ -74,17 +80,22 @@ public class InfluxDBTest {
       tearDown();
       System.exit(-1);
     }
+    System.out.println("Found " + files.length + " jar files");
     File latestFile = files[0];
     for (File file : files) {
       if (file.lastModified() > latestFile.lastModified()) {
         latestFile = file;
       }
     }
+
+    System.out.println(latestFile.getName() + " is the latest jar file");
     return latestFile.getName();
 
   }
 
   private void waitForPortReady(String host, int port) {
+
+    System.out.println("waiting to connect to host [" + host + "] on port [" + port + "]");
 
     Socket s = null;
     boolean isPortReady = false;
