@@ -11,7 +11,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -22,16 +24,15 @@ import static com.jayway.restassured.path.json.JsonPath.from;
 @Test(groups = "integration", enabled = true)
 public class ITInfluxDBTest {
 
-  private final static String DDIETERLY_INFLUXDB_V1 = "ddieterly/influxdb:v1";
-  private static final String DDIETERLY_MYSQL_V1 = "ddieterly/mysql:v1";
+  private final static String DDIETERLY_INFLUXDB_V1 = "monasca/api-integ-tests-influxdb";
+  private static final String DDIETERLY_MYSQL_V1 = "monasca/api-integ-tests-mysql";
   private static final String DDIETERLY_MYSQL_V1_RUN_CMD = "/usr/bin/mysqld_safe";
-  private static final String DDIETERLY_KAFKA_V1 = "ddieterly/kafka:v1";
+  private static final String DDIETERLY_KAFKA_V1 = "monasca/api-integ-tests-kafka";
   private static final String DDIETERLY_KAFKA_V1_RUN_CMD = "/run.sh";
   private static final String DOCKER_IP = "192.168.59.103";
   private static final String DOCKER_PORT = "2375";
   private static final String DOCKER_URL = "http://" + DOCKER_IP + ":" + DOCKER_PORT;
   private static final int MAX_CONNECT_PORT_TRIES = 10000;
-
 
   private final static DockerClient dockerClient = new DockerClient(DOCKER_URL);
   private Process apiProcess = null;
@@ -42,14 +43,22 @@ public class ITInfluxDBTest {
   @BeforeClass
   public void setup() throws DockerException, IOException {
 
-    runKafka();
+    try {
 
-    runInfluxDB();
+      runKafka();
 
-    runMYSQL();
+      runInfluxDB();
 
-    runAPI();
+      runMYSQL();
 
+      runAPI();
+
+    } catch (Exception e) {
+
+      System.err.println("Failed to setup environment");
+      System.err.println(e);
+      tearDown();
+    }
   }
 
   private void runAPI() throws IOException {
@@ -59,7 +68,7 @@ public class ITInfluxDBTest {
 
     ProcessBuilder pb = new ProcessBuilder("java", "-cp", "./target/" + latestShadedJarFileName,
         "com.hpcloud.mon.MonApiApplication", "server", "src/test/resources/mon-api-config.yml");
-    File log  = new File("mon-api-integration-test.log");
+    File log = new File("mon-api-integration-test.log");
     pb.redirectErrorStream(true);
     pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
     apiProcess = pb.start();
