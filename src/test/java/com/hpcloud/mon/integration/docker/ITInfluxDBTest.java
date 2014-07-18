@@ -59,10 +59,15 @@ public class ITInfluxDBTest {
       System.err.println("Failed to setup environment");
       System.err.println(e);
       tearDown();
+      System.exit(-1);
     }
   }
 
-  private void runAPI() throws IOException {
+  private void runAPI() throws Exception {
+
+    if (!isPortFree(8080)) {
+      throw new Exception("port 8080 is not free. Unable to start instance" + " of monasca api");
+    }
 
     String latestShadedJarFileName = getLatestShadedJarFileName();
     System.out.println("Running " + latestShadedJarFileName);
@@ -100,6 +105,16 @@ public class ITInfluxDBTest {
 
     System.out.println(latestFile.getName() + " is the latest jar file");
     return latestFile.getName();
+
+  }
+
+  boolean isPortFree(int port) {
+
+    try (Socket s = new Socket("localhost", port)) {
+      return false;
+    } catch (Exception e) {
+      return true;
+    }
 
   }
 
