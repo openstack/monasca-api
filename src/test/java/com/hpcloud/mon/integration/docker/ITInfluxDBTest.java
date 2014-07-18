@@ -2,6 +2,7 @@ package com.hpcloud.mon.integration.docker;
 
 import com.github.dockerjava.client.DockerClient;
 import com.github.dockerjava.client.DockerException;
+import com.github.dockerjava.client.NotFoundException;
 import com.github.dockerjava.client.model.ContainerCreateResponse;
 import com.github.dockerjava.client.model.ExposedPort;
 import com.github.dockerjava.client.model.Ports;
@@ -24,11 +25,11 @@ import static com.jayway.restassured.path.json.JsonPath.from;
 @Test(groups = "integration", enabled = true)
 public class ITInfluxDBTest {
 
-  private final static String DDIETERLY_INFLUXDB_V1 = "monasca/api-integ-tests-influxdb";
-  private static final String DDIETERLY_MYSQL_V1 = "monasca/api-integ-tests-mysql";
-  private static final String DDIETERLY_MYSQL_V1_RUN_CMD = "/usr/bin/mysqld_safe";
-  private static final String DDIETERLY_KAFKA_V1 = "monasca/api-integ-tests-kafka";
-  private static final String DDIETERLY_KAFKA_V1_RUN_CMD = "/run.sh";
+  private final static String INFLUXDB_IMAGE_NAME = "monasca/api-integ-tests-influxdb";
+  private static final String MYSQL_IMAGE_NAME = "monasca/api-integ-tests-mysql";
+  private static final String MYSQL_CONTAINER_RUN_CMD = "/usr/bin/mysqld_safe";
+  private static final String KAFKA_IMAGE_NAME = "monasca/api-integ-tests-kafka";
+  private static final String KAFKA_CONTAINER_RUN_CMD = "/run.sh";
   private static final String DOCKER_IP = "192.168.59.103";
   private static final String DOCKER_PORT = "2375";
   private static final String DOCKER_URL = "http://" + DOCKER_IP + ":" + DOCKER_PORT;
@@ -142,13 +143,18 @@ public class ITInfluxDBTest {
 
   private void runKafka() {
 
-    ClientResponse response = dockerClient.pullImageCmd(DDIETERLY_KAFKA_V1).exec();
+    ClientResponse response = dockerClient.pullImageCmd(KAFKA_IMAGE_NAME).exec();
 
-    ExposedPort tcp2181 = ExposedPort.tcp(2181);
-    ExposedPort tcp9092 = ExposedPort.tcp(9092);
+    final ExposedPort tcp2181 = ExposedPort.tcp(2181);
+    final ExposedPort tcp9092 = ExposedPort.tcp(9092);
 
-    kafkaContainer = dockerClient.createContainerCmd(DDIETERLY_KAFKA_V1).withCmd(new
-        String[]{DDIETERLY_KAFKA_V1_RUN_CMD, DOCKER_IP}).withExposedPorts(tcp2181, tcp9092).exec();
+    waitForCreateContainer(new CreateContainer(KAFKA_IMAGE_NAME) {
+      @Override
+      void createContainer() {
+        kafkaContainer = dockerClient.createContainerCmd(KAFKA_IMAGE_NAME).withCmd(new
+            String[]{KAFKA_CONTAINER_RUN_CMD, DOCKER_IP}).withExposedPorts(tcp2181, tcp9092).exec();
+      }
+    });
 
     Ports portBindings2 = new Ports();
     portBindings2.bind(tcp2181, Ports.Binding(2181));
@@ -162,12 +168,18 @@ public class ITInfluxDBTest {
 
   private void runMYSQL() {
 
-    ClientResponse response = dockerClient.pullImageCmd(DDIETERLY_MYSQL_V1).exec();
+    ClientResponse response = dockerClient.pullImageCmd(MYSQL_IMAGE_NAME).exec();
 
-    ExposedPort tcp3306 = ExposedPort.tcp(3306);
+    final ExposedPort tcp3306 = ExposedPort.tcp(3306);
 
-    mysqlContainer = dockerClient.createContainerCmd(DDIETERLY_MYSQL_V1).withCmd(new
-        String[]{DDIETERLY_MYSQL_V1_RUN_CMD}).withExposedPorts(tcp3306).exec();
+    waitForCreateContainer(new CreateContainer(MYSQL_IMAGE_NAME) {
+      @Override
+      void createContainer() {
+
+        mysqlContainer = dockerClient.createContainerCmd(MYSQL_IMAGE_NAME).withCmd(new
+            String[]{MYSQL_CONTAINER_RUN_CMD}).withExposedPorts(tcp3306).exec();
+      }
+    });
 
     Ports portBindings1 = new Ports();
     portBindings1.bind(tcp3306, Ports.Binding(3306));
@@ -179,15 +191,20 @@ public class ITInfluxDBTest {
 
   private void runInfluxDB() {
 
-    ClientResponse response = dockerClient.pullImageCmd(DDIETERLY_INFLUXDB_V1).exec();
+    ClientResponse response = dockerClient.pullImageCmd(INFLUXDB_IMAGE_NAME).exec();
 
-    ExposedPort tcp8083 = ExposedPort.tcp(8083);
-    ExposedPort tcp8086 = ExposedPort.tcp(8086);
-    ExposedPort tcp8090 = ExposedPort.tcp(8090);
-    ExposedPort tcp8099 = ExposedPort.tcp(8099);
+    final ExposedPort tcp8083 = ExposedPort.tcp(8083);
+    final ExposedPort tcp8086 = ExposedPort.tcp(8086);
+    final ExposedPort tcp8090 = ExposedPort.tcp(8090);
+    final ExposedPort tcp8099 = ExposedPort.tcp(8099);
 
-    influxDBContainer = dockerClient.createContainerCmd(DDIETERLY_INFLUXDB_V1).withExposedPorts
-        (tcp8083, tcp8086, tcp8090, tcp8099).exec();
+    waitForCreateContainer(new CreateContainer(INFLUXDB_IMAGE_NAME) {
+      @Override
+      void createContainer() {
+        influxDBContainer = dockerClient.createContainerCmd(INFLUXDB_IMAGE_NAME).withExposedPorts
+            (tcp8083, tcp8086, tcp8090, tcp8099).exec();
+      }
+    });
 
     Ports portBindings = new Ports();
     portBindings.bind(tcp8083, Ports.Binding(8083));
@@ -512,5 +529,33 @@ public class ITInfluxDBTest {
       dockerClient.stopContainerCmd(influxDBContainer.getId()).withTimeout(2).exec();
     }
 
+  }
+
+  private static abstract class CreateContainer {
+    private String imageName;
+
+    private CreateContainer(String imageName) {
+      this.imageName = imageName;
+    }
+
+    abstract void createContainer();
+
+    String getImageName() {
+      return imageName;
+    }
+
+  }
+
+  private void waitForCreateContainer(CreateContainer createContainer) {
+
+    boolean isContainerCreated = false;
+    while (!isContainerCreated) {
+      try {
+        createContainer.createContainer();
+        isContainerCreated = true;
+      } catch (NotFoundException e) {
+        System.out.println("Waiting for image " + createContainer.getImageName() + " to be pulled");
+      }
+    }
   }
 }
