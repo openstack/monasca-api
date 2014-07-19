@@ -16,7 +16,7 @@ The API consists of six main resources:
 5. Notification Methods - Represents a method, such as email, which can be associated with an alarm via an action. When an alarm is triggered notification methods associated with the alarm are triggered.
 5. Alarms -  Identifies one or more metrics scoped by name and dimensions, which should trigger a set of actions when the value of a threshold is exceeded.
 
-Before using the API, you must first get a valid auth token from Keystone. All API operations require auth token specified in the header of the http request.
+Before using the API, you must first get a valid auth token from Keystone. All API operations require an auth token specified in the header of the http request.
 
 ## Name and Dimensions
 A metric is uniquely identified by a name and set of dimensions.
@@ -27,7 +27,7 @@ Defines the name of a metric. A name is of type string(64).
 
 ### Dimensions
 
-A dictionary of (key, value) pairs. The key and value are of type string(255). Dimensions may only use the characters from: a-z A-Z 0-9 . _.
+A dictionary of (key, value) pairs. The key and value are of type string(255). Dimensions may only use the characters from: a-z A-Z 0-9 . _ -.
 
 ## Alarm Expressions
 The alarm expression syntax allows the creation of simple or complex alarms to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
@@ -61,13 +61,15 @@ Threshold values are always in the same units as the metric that they are being 
 
 The first subexpression shows a direct comparison of a metric to a threshold_value, done every 60 seconds.
 
-#### Example
+#### Simple Example
+In this example the metric uniquely identified with the name=cpu_perc and dimension hostname=host.domain.com is compared to the threshold 95.
 
 ```
 cpu_perc:{hostname=host.domain.com} > 95
 ```
 
-#### Example
+#### More Complex Example
+In this example the average of the same metric as in the previous example is evaluated over a 90 second period for 3 times.
 
 ```
 avg(cpu_perc:{hostname=host.domain.com},85) > 90 times 3
@@ -85,19 +87,11 @@ Functions work on all metric measurements during the period time frame.
 
 The metric is a complex identifier that says the name and optional dimensions.
 
-```
-metric
-    : name ':' '{' dimensions '}')?
-```
+#### Compound alarm example
+In this example a compound alarm expression is evaluated involving two thresholds.
 
-#### Simple Example
 ```
-cpu_perc:{hostname=host.domain.com}
-```
-
-#### Larger example:
-```
-(avg(cpu_perc:{hostname=hostname.domain.com}) > 90 ) or ( avg(disk_read_ops:{hostname=hostname.domain.com,device=vda,120) > 1000 t
+(avg(cpu_perc:{hostname=hostname.domain.com}) > 90 ) or ( avg(disk_read_ops:{hostname=hostname.domain.com,device=vda,120) > 1000
 ```
 
 # Common Request Headers
@@ -114,29 +108,44 @@ The standard Http request headers that are used in requests.
 ## Non-standard request headers
 The non-standard request headers that are used in requests.
 
-* X-Auth-Token - Keystone auth token.
+* X-Auth-Token (string, required) - Keystone auth token
 
 # Common Responses
-* links
+* 200 - A request succeeded.
+* 201 - A resource has been successfully created.
+* 204 - No content
+* 400 -
+* 401 - Unauthorized
+* 404 - Not found
+* 409 - Conflict
+* 422 - Unprocessable entity
 
 # Versions
 The versions resource supplies operations for accessing information about supported versions of the API.
 
 ## List Versions
+Lists the supported versions of the Monasca API.
+
 ### GET /v2.0/versions
-Lists the supported versions.
 
 #### Headers
-* X-Auth-Token
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### Success Response
-##### Status code
+#### Path Parameters
+None.
+
+#### Query Parameters
+None.
+
+### Response
+#### Status code
 * 200 - OK
 
-##### Response data
-Returns an array of the supported versions.
+#### Response Body
+Returns a JSON array of supported versions.
 
+#### Response Examples
 ```
 [  
    {  
@@ -154,19 +163,28 @@ Returns an array of the supported versions.
 ```
 
 ## Get Version
+Gets detail about the specified version of the Monasca API.
+
 ### Get /v2.0/versions/{version_id}
-Gets detail about the specified version.
 
 #### Headers
-* X-Auth-Token
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
-#### Success Response
-##### Status code
+
+#### Path Parameters
+None.
+
+#### Query Parameters
+None.
+
+### Response
+#### Status code
 * 200 - OK
 
-##### Response data
-Returns detail about the specified version.
+#### Response Body
+Returns a JSON version object with details about the specified version.
 
+#### Response Examples
 ```
 {  
    "id":"v2.0",
@@ -185,28 +203,31 @@ Returns detail about the specified version.
 The metrics resource allows metrics to be created and queried.
 
 ## Create Metric
-
-### POST /v2.0/metrics
 Create metrics.
 
+### POST /v2.0/metrics
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Content-Type (required) - application/json
 
-#### URL Parameters
-None
+#### Path Parameters
+None.
 
-#### Body
+#### Query Parameters
+None.
+
+#### Request Body
 Consists of a single metric or an array of metrics. A metric has the following properties:
 
 * name (string(64), required) - The name of the metric.
-dimensions (Map[string(255), string(255)], optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
+dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
 * timestamp (string, required) - The timestamp in seconds from the Epoch.
 * value (float, required) - Value of the metric.
 
 The name and dimensions are used to uniquely identify a metric.
 
-#### Request Data
+#### Request Examples
 
 ##### Single metric
 POST a single metric.
@@ -218,7 +239,15 @@ Content-Type: application/json
 X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
 Cache-Control: no-cache
 
-{ "name": "name1", "dimensions": { "key1": "value1", "key2": "value2" }, "timestamp": 1405630174, "value": 1.0 }
+{  
+   "name":"name1",
+   "dimensions":{  
+      "key1":"value1",
+      "key2":"value2"
+   },
+   "timestamp":1405630174,
+   "value":1.0
+}
 ```
 
 ##### Array of metrics
@@ -231,34 +260,52 @@ Content-Type: application/json
 X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
 Cache-Control: no-cache
 
-    [ { "name": "name1", "dimensions": { "key1": "value1", "key2": "value2" }, "timestamp": 1405630174, "value": 1.0 }, { "name": "name2", "dimensions": { "key1": "value1", "key2": "value2" }, "timestamp": 1405630174, "value": 2.0 } ]
+[  
+   {  
+      "name":"name1",
+      "dimensions":{  
+         "key1":"value1",
+         "key2":"value2"
+      },
+      "timestamp":1405630174,
+      "value":1.0
+   },
+   {  
+      "name":"name2",
+      "dimensions":{  
+         "key1":"value1",
+         "key2":"value2"
+      },
+      "timestamp":1405630174,
+      "value":2.0
+   }
+]
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 204 - No Content
 
-##### Response Data
+#### Response Body
 This request does not return a response body.
 
-#### Error Response
-##### Status Code
-* 401 - Unauthorized
-
 ## List metrics
-
-### GET /v2.0/metrics
 Get metrics
 
+#### GET /v2.0/metrics
+
 #### Headers
-* X-Auth-Token
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-* name (string(64), optional) - The name of the metric.
-* dimensions (string, optional) - A dictionary used to uniquely identify a metric specified as a comma separated list of (key, value) pairs as "key1:value1,key1:value1, ..."
+#### Path Parameters
+None.
 
-#### Request Data
+#### Query Parameters
+* name (string(64), optional) - A metric name to filter metrics by.
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+
+##### Request Examples
 ```
 GET /v2.0/metrics?name=metric1&dimensions=key1:value1 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -267,12 +314,17 @@ X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
 Cache-Control: no-cache
 ```
 
-#### Success Response
-
-##### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
+#### Response Body
+Returns a JSON array of metric definition objects with the following fields:
+
+* name (string)
+* dimensions ({string(255): string(255)})
+
+#### Response Examples
 ````
 [  
    {  
@@ -290,30 +342,32 @@ Cache-Control: no-cache
 ]
 ````
 
-#### Error Response
-
-##### Status Code
-* 401 - Unauthorized
-
 # Measurements
-Operations for accessing measurements.
+Operations for accessing measurements of metrics.
 
 ## List measurements
-### GET /v2.0/metrics/measurements
 Get measurements for metrics.
 
+### GET /v2.0/metrics/measurements
+
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
+None.
+
+#### Query Parameters
 * name (string(64), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated list of (key, value) pairs as "key1:value1,key1:value1, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * limit (integer, optional) - The maximum number of metrics to return.
 
-#### Request Data
+#### Request Body
+None.
+
+#### Request Examples
 ```
 GET /v2.0/metrics/measurements?name=cpu_user_perc&dimensions=hostname:devstack&start_time=2014-07-18T03:00:00Z HTTP/1.1
 Host: 192.168.10.4:8080
@@ -322,18 +376,19 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
-Returns an array of measurements for each unique metric with the following parameters:
-
-* name (string(64)) - A name of a metric.
-* dimensions (Map[string(255), string(255)] - The dimensions of a metric.
-* columns (array[string]) - An array of column names corresponding to the columns in measurements.
-* measurements (List[List[]]) - A two dimensional array of measurements for each timestamp.
-
-##### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
+#### Response Body
+Returns a JSON array of measurements objects for each unique metric with the following fields:
+
+* name (string(64)) - A name of a metric.
+* dimensions ({string(255): string(255)}) - The dimensions of a metric.
+* columns (array[string]) - An array of column names corresponding to the columns in measurements.
+* measurements (array[array[]]) - A two dimensional array of measurements for each timestamp.
+
+#### Response Examples
 ```
 [  
    {  
@@ -372,31 +427,33 @@ Returns an array of measurements for each unique metric with the following param
 ]
 ```
 
-#### Error Response
-
-##### Status Code
-* 401 - Unauthorized
-
 # Statistics
-Operations for accessing statistics.
-## List statistics
+Operations for calculating statistics of metrics.
 
-### GET /v2.0/metrics/statistics
+## List statistics
 Get statistics for metrics.
 
+### GET /v2.0/metrics/statistics
+
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
+None.
+
+#### Query Parameters
 * name (string(64), required) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated list of (key, value) pairs as "key1:value1,key1:value1, ..."
-* statistics (string, required) - A comma separate list of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* statistics (string, required) - A comma separate array of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * period (integer, optional) - The time period to aggregate measurements by. Default is 300 seconds.
 
-#### Request Data
+#### Request Body
+None.
+
+#### Request Examples
 ```
 GET /v2.0/metrics/statistics?name=cpu_user_perc&dimensions=hostname:devstack&start_time=2014-07-18T03:00:00Z&statistics=avg,min,max,sum,count HTTP/1.1
 Host: 192.168.10.4:8080
@@ -405,18 +462,20 @@ Content-Type: application/json
 Cache-Control: no-cache
 ```
 
-#### Success Response
-Returns an array of statistics for each unique metric with the following parameters:
+### Response
 
-* name (string(64)) - A name of a metric.
-* dimensions (Map[string(255), string(255)] - The dimensions of a metric.
-* columns (array[string]) - An array of column names corresponding to the columns in statistics.
-* statistics (List[List[]]) - A two dimensional array of statistics for each period.
-
-##### Status Code
+#### Status Code
 * 200 - OK
 
-##### Response Data
+#### Response Body
+Returns a JSON array of statistic objects for each unique metric with the following fields:
+
+* name (string(64)) - A name of a metric.
+* dimensions ({string(255): string(255)}) - The dimensions of a metric.
+* columns (array[string]) - An array of column names corresponding to the columns in statistics.
+* statistics (array[array[]]) - A two dimensional array of statistics for each period.
+
+#### Response Examples
 ```
 [  
    {  
@@ -462,34 +521,31 @@ Returns an array of statistics for each unique metric with the following paramet
 ]
 ```
 
-#### Error Response
-
-##### Status Code
-* 401 - Unauthorized
-
 # Notification Methods
 Operations for working with notification methods.
+
 ## Create Notification Method
+Creates a notification method through which notifications can be sent to when an alarm state transition occurs. Notification methods are associated with alarms when an alarm is created or updated.
 
 ### POST /v2.0/notification-methods
-Creates a new notification method through which notifications can be sent to when an alarm state transition occurs. Notification methods are associated with alarms when an alarm is created.
 
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Content-Type (string) - application/json
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
+None
 
+#### Query Parameters
 None.
 
-#### Body
+#### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
 * type (string(100), required) - The type of notification method (EMAIL).
 * address (string(100), required) - The address / number to notify.
 
-#### Request Data
-
+#### Request Examples
 ```
 POST /v2.0/notification-methods HTTP/1.1
 Host: 192.168.10.4:8080
@@ -497,20 +553,28 @@ Content-Type: application/json
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 
-{ "name": "Name of notification method", "type": "EMAIL", "address": "john.doe@hp.com" }
+{  
+   "name":"Name of notification method",
+   "type":"EMAIL",
+   "address":"john.doe@hp.com"
+}
 ```
 
-##### Response Data
-Returns the notification method that was created consisting of the following parameters:
+### Response
 
-* id - The ID of the notification method that was created.
-* links - An array of links where a link consists of the following:
-	* rel - Relationship type
-	* href - Hypermedia reference
-* name
-* type
-* address
+#### Status Code
+* 200 - OK
 
+#### Response Body
+Returns a JSON notification method object with the following fields:
+
+* id (string) - ID of notification method
+* links ([link]) 
+* name (string) - Name of notification method
+* type (string) - Type of notification method
+* address (string) - Address of notification method
+
+#### Response Examples
 ```
 {  
    "id":"35cc6f1c-3a29-49fb-a6fc-d9d97d190508",
@@ -527,21 +591,24 @@ Returns the notification method that was created consisting of the following par
 ```
 
 ## List Notification Methods
-
-### GET /v2.0/notification-methods
 List all notification methods.
 
+### GET /v2.0/notification-methods
+
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-None
+#### Path Parameters
+None.
+
+#### Query Parameters
+None.
 
 #### Body
 None
 
-#### Request Data
+#### Request Examples
 ```
 GET /v2.0/notification-methods HTTP/1.1
 Host: 192.168.10.4:8080
@@ -550,14 +617,21 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
+### Response
 
-##### Status Code
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns an array of notification methods.
+#### Response Body
+Returns a JSON array of notification method objects with the following fields:
 
+* id (string) - ID of notification method
+* links ([link]) 
+* name (string) - Name of notification method
+* type (string) - Type of notification method
+* address (string) - Address of notification method
+
+#### Response Examples
 ```
 [  
    {  
@@ -588,32 +662,43 @@ Returns an array of notification methods.
 ```
 
 ## Get Notification Method
-### GET /v2.0/notification-methods/{notification_method_id}
 Get the details of a specific notification method.
 
+### GET /v2.0/notification-methods/{notification_method_id}
+
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-* notification_method_id - ID of the notification method
+#### Path Parameters
+* notification_method_id (string, required) - ID of the notification method
 
-#### Body
-None
+#### Query Parameters
+None.
 
-##### Request Data
+#### Request Body
+None.
+
+#### Request Examples
 ```
-http://192.168.10.4:8080/v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508
+GET http://192.168.10.4:8080/v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508
 ```
 
-#### Success Response
+### Response
 
-##### Status Code
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns the details of the specified notification method.
+#### Response Body
+Returns a JSON notification method object with the following fields:
 
+* id (string) - ID of notification method
+* links ([link]) 
+* name (string) - Name of notification method
+* type (string) - Type of notification method
+* address (string) - Address of notification method
+
+#### Response Examples
 ```
 {  
    "id":"35cc6f1c-3a29-49fb-a6fc-d9d97d190508",
@@ -629,31 +714,28 @@ Returns the details of the specified notification method.
 }
 ```
 
-#### Error Response
-
-##### Status Code
-
-* 404 - Not Found
-
 ## Update Notification Method
-
-### PUT /v2.0/notification-methods/{notification_method_id}
 Update the specified notification method.
 
+### PUT /v2.0/notification-methods/{notification_method_id}
+
 #### Headers
-* X-Auth-Token (string)
+* X-Auth-Token (string, required) - Keystone auth token
 * Content-Type (string) - application/json
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
 * notification_method_id (string, required) - ID of the notification method to update.
 
-#### Body
+#### Query Parameters
+None.
+
+#### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
 * type (string(100), required) - The type of notification method (EMAIL).
 * address (string(100), required) - The address / number to notify.
 
-#### Request data
+#### Request Examples
 ````
 PUT /v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -661,15 +743,28 @@ Content-Type: application/json
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 
-{ "name": "New name of notification method", "type": "EMAIL", "address": "jane.doe@hp.com" }
+{  
+   "name":"New name of notification method",
+   "type":"EMAIL",
+   "address":"jane.doe@hp.com"
+}
 ````
 
-#### Success Response
+### Response
 
-##### Status Code
+#### Status Code
 * 200 - OK
 
-#### Response data
+#### Response Body
+Returns a JSON notification method object with the following fields:
+
+* id (string) - ID of notification method
+* links ([link]) 
+* name (string) - Name of notification method
+* type (string) - Type of notification method
+* address (string) - Address of notification method
+
+#### Response Examples
 ````
 {  
    "id":"35cc6f1c-3a29-49fb-a6fc-d9d97d190508",
@@ -686,17 +781,23 @@ Cache-Control: no-cache
 ````
 
 ## Delete Notification Method
-
-### DELETE /v2.0/notification-methods/{notification_method_id}
 Delete the specified notification method.
 
-#### Headers
-* X-Auth-Token (string)
+### DELETE /v2.0/notification-methods/{notification_method_id}
 
-#### URL Parameters
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+
+#### Path Parameters
 * notification_method_id (string, required) - ID of the notification method to delete
 
-##### Request Data
+#### Query Parameters
+None.
+
+#### Request Body
+None.
+
+#### Request Examples
 ```
 DELETE /v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -705,45 +806,44 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
+### Response
 
-###### Status Code
+#### Status Code
 * 204 - No Content
 
-##### Response Data
+#### Response Body
 This request does not return a response body.
-
-#### Error Response
-
-##### Status Code
-* 401 - Unauthorized
 
 # Alarms
 Operations for working with alarms.
 
 ## Create Alarm
-### POST /v2.0/alarms
 Create an alarm.
 
+### POST /v2.0/alarms
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-None
+#### Path Parameters
+None.
 
-#### Body
+#### Query Parameters
+None.
+
+#### Request Body
 Consists of an alarm definition. An alarm has the following properties:
 
 * name (string(255), required) - A unique name of the alarm. Note, the name must be unique.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, required) - An alarm expression.
-* alarmActions (string(50), optional) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* okActions (string(50), optional) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undeterminedActions (string(50), optional) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarmActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* okActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undeterminedActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 * severity (string, optional) - Severity of an alarm. Must be either "LOW", "MEDIUM", "HIGH" or "CRITICAL". Default is "LOW". 
 
-#### Request Data
+#### Request Examples
 ```
 POST /v2.0/alarms HTTP/1.1
 Host: 192.168.10.4:8080
@@ -768,13 +868,15 @@ Cache-Control: no-cache
 }
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 201 - Created
 
-##### Response Data
+#### Response Body
+Returns a JSON array of alarm objects with the following fields:
+
 * id (string) - ID of alarm that was created.
-* links (array(link)) - Links to alarm.
+* links ([link]) - An array of Links to the alarm.
 * name (string) - Name of alarm.
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
@@ -782,10 +884,11 @@ Cache-Control: no-cache
 * state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
 * severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array(string) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
+#### Response Examples
 ```
 {  
    "id":"b461d659-577b-4d63-9782-a99194d4a472",
@@ -828,30 +931,27 @@ Cache-Control: no-cache
 }
 ```
 
-#### Error Response
-##### Status Code
-* 400 - Bad request
-* 401 - Unauthorized
-* 409 - Conflict. An alarm already exists
-* 422 - Unprocessable entity
-
 ## List Alarms
-### GET /v2.0/alarms
 List alarms
 
+### GET /v2.0/alarms
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-* name (string(255), optional) - Name of alarm to filter by.
-* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated list of (key, value) pairs as "key1:value1,key1:value1, ..."
-* state (string, optional) - State of alarm to filter by. Must be either "undetermined", "ok" or "alarm".
-
-#### Body
+#### Path Parameters
 None.
 
-#### Request Data
+#### Query Parameters
+* name (string(255), optional) - Name of alarm to filter by.
+* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* state (string, optional) - State of alarm to filter by. Must be either "UNDETERMINED", "OK" or "ALARM".
+
+#### Request Body
+None.
+
+#### Request Examples
 ```
 GET /v2.0/alarms?name=CPU percent greater than 10&dimensions=hostname:devstack&state=UNDETERMINED HTTP/1.1
 Host: 192.168.10.4:8080
@@ -860,15 +960,15 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns an array of alarms with the following parameters.
+#### Response Body
+Returns a JSON array of alarm objects with the following fields:
 
 * id (string) - ID of alarm.
-* links (array(link)) - Links to alarm.
+* links ([link]) - Links to alarm.
 * name (string) - Name of alarm.
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
@@ -876,10 +976,11 @@ Returns an array of alarms with the following parameters.
 * state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
 * severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array(string) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
+#### Response Examples
 ```
 [  
    {  
@@ -924,34 +1025,32 @@ Returns an array of alarms with the following parameters.
 ]
 ```
 
-#### Error Response
-##### Status Code
-* 401 - Unauthorized
-
 ## List Alarms State History
-### GET /v2.0/alarms/state-history
 List alarm state history for alarms.
 
+### GET /v2.0/alarms/state-history
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
-* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated list of (key, value) pairs as "key1:value1,key1:value1, ..."
+#### Path Parameters
+None.
+
+#### Query Parameters
+* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
 * start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 
-#### Body
+#### Request Body
 None.
 
-#### Request Data
-
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns an array of alarm state transitions with the following parameters:
+#### Response Body
+Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
 * old_state (string) - The old state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
@@ -960,6 +1059,7 @@ Returns an array of alarm state transitions with the following parameters:
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 
+#### Response Examples
 ```
 [
     {
@@ -1013,35 +1113,33 @@ Returns an array of alarm state transitions with the following parameters:
 ]
 ```
 
-#### Error Response
-##### Status Code
-* 401 - Unauthorized
-
 ## Get Alarm
-### GET /v2.0/alarms/{alarm_id}
 Get the specified alarm.
 
+### GET /v2.0/alarms/{alarm_id}
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
 * alarm_id (string, required) - Alarm ID
 
-#### Body
+#### Query Parameters
 None.
 
-#### Request Data
+#### Request Body
+None.
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns an alarm with the following parameters:
+#### Response Body
+Returns a JSON alarm object with the following fields:
 
 * id (string) - ID of alarm.
-* links (array(link)) - Links to alarm.
+* links ([link]) - Links to alarm.
 * name (string) - Name of alarm.
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
@@ -1049,10 +1147,11 @@ Returns an alarm with the following parameters:
 * state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
 * severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array(string) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
+#### Response Examples
 ```
 {
     "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
@@ -1095,40 +1194,38 @@ Returns an alarm with the following parameters:
 }
 ```
 
-#### Error Response
-##### Status Code
-* 400 - Invalid ID supplied
-* 401 - Unauthorized
-* 404 - Alarm not found
-
 ## Update Alarm
-### PUT /v2.0/alarms/{alarm_id}
 Update/Replace the entire state of the specified alarm.
 
+### PUT /v2.0/alarms/{alarm_id}
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Content-Type (string) - application/json
 * Accept (string) - application/json
 
-#### URL Parameters
-* alarm_id (required)
+#### Path Parameters
+* alarm_id (string, required)
 
-#### Body
+#### Query Parameters
+None.
+
+#### Request Body
 Consists of an alarm definition. An alarm has the following properties:
 
 * name (string(255), required) - A name of the alarm.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, required) - An alarm expression.
-* state (string, required) - State of alarm to set. Must be either "undetermined", "ok" or "alarm".
+* state (string, required) - State of alarm to set. Must be either "UNDETERMINED", "OK" or "ALARM".
 * enabled (boolean, required)
-* alarmActions (string(50), optional) 
-* okActions (string(50), optional)
-* undeterminedActions (string(50), optional)
+* alarmActions ([string(50)], optional) 
+* okActions ([string(50)], optional)
+* undeterminedActions ([string(50)], optional)
 * severity (string, optional) - Severity of an alarm. Must be either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 
 If optional parameters are not specified they will be reset to their default state.
 
-#### Request Data
+#### Request Examples
 ```
 PUT /v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -1154,15 +1251,15 @@ Cache-Control: no-cache
 }
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns the updated alarm with the following parameters:
+#### Response Body
+Returns a JSON alarm object with the following parameters:
 
 * id (string) - ID of alarm.
-* links (array(link)) - Links to alarm.
+* links ([link]) - Links to alarm.
 * name (string) - Name of alarm.
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
@@ -1170,10 +1267,11 @@ Returns the updated alarm with the following parameters:
 * state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
 * severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array(string) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
+#### Response Examples
 ```
 {
     "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
@@ -1216,40 +1314,36 @@ Returns the updated alarm with the following parameters:
 }
 ```
 
-#### Error Response
-##### Status Code
-* 400 - Invalid ID supplied
-* 401 - Unauthorized
-* 404 - Alarm not found
-
 ## Update Alarm
 ### PATCH /v2.0/alarms/{alarm_id}
-Update select parameters of the specified alarm.
+Update select parameters of the specified alarm, set the alarm state and enable/disable it.
 
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Content-Type (string) - application/json-patch+json
 * Accept (string) - application/json
 
-#### URL Parameters
-* alarm_id (required)
+#### Path Parameters
+* alarm_id (string, required) - Alarm ID
 
-#### Body
-Consists of an alarm definition. An alarm has the following properties:
+#### Query Parameters
+None.
 
-* name (string(255), optional) - A name of the alarm of type string(64).
-* description (string(255), optional) -  A description of an alarm of type string(255).
+#### Request Body
+Consists of an alarm with the following properties:
+
+* name (string(255), optional) - A name of the alarm.
+* description (string(255), optional) -  A description of an alarm.
 * expression (string, optional) - An alarm expression.
-* state (string, optional) - State of alarm to set. Must be either "undetermined", "ok" or "alarm".
+* state (string, optional) - State of alarm to set. Must be either "UNDETERMINED", "OK" or "ALARM".
 * enabled (boolean, optional)
-* alarmActions (string(50), optional) - 
-* okActions (string(50), optional) - 
-* undeterminedActions (string(50), optional) - 
-* severity (string, optional) - Severity of an alarm. Must be either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* alarm_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
 Only the parameters that are specified will be updated.
 
-#### Request Data
+#### Request Examples
 ```
 PATCH /v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -1276,15 +1370,15 @@ Cache-Control: no-cache
 }
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns the patched alarm with the following parameters:
+#### Response Body
+Returns a JSON alarm object with the following fields:
 
 * id (string) - ID of alarm.
-* links (array(link)) - Links to alarm.
+* links ([link]) - Links to alarm.
 * name (string) - Name of alarm.
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
@@ -1292,10 +1386,11 @@ Returns the patched alarm with the following parameters:
 * state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
 * severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array(string) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array(string)) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
 
+#### Response Examples
 ```
 {
     "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
@@ -1338,26 +1433,24 @@ Returns the patched alarm with the following parameters:
 }
 ```
 
-#### Error Response
-##### Status Code
-* 400 - Invalid ID supplied
-* 401 - Unauthorized
-* 404 - Alarm not found
-
 ## Delete Alarm
-### DELETE /v2.0/alarms/{alarm_id}
 Delete the specified alarm.
 
-#### Headers
-* X-Auth-Token (string, required)
+### DELETE /v2.0/alarms/{alarm_id}
 
-#### URL Parameters
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+
+#### Path Parameters
 * alarm_id (string, required) - Alarm ID
 
-#### Body
+#### Query Parameters
 None.
 
-#### Request Data
+#### Request Body
+None.
+
+#### Request Examples
 ```
 DELETE /v2.0/alarms/b461d659-577b-4d63-9782-a99194d4a472 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -1365,30 +1458,29 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 204 - No content
 
-##### Response Data
-None
-
-#### Error Response
-##### Status Code
-* 401 - Unauthorized
-* 404 - Not found
+#### Response Body
+None.
 
 ## List Alarm State History
-### GET /v2.0/alarms/{alarm_id}/state-history
 List the alarm state history for the specified alarm.
 
+### GET /v2.0/alarms/{alarm_id}/state-history
+
 #### Headers
-* X-Auth-Token (string, required)
+* X-Auth-Token (string, required) - Keystone auth token
 * Accept (string) - application/json
 
-#### URL Parameters
+#### Path Parameters
 * alarm_id (string, required)
 
-#### Body
+#### Query Parameters
+None.
+
+#### Request Body
 None.
 
 #### Request Data
@@ -1399,12 +1491,12 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-#### Success Response
-###### Status Code
+### Response
+#### Status Code
 * 200 - OK
 
-##### Response Data
-Returns an array of alarm state transitions for the specified alarm with the following parameters:
+#### Response Body
+Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
 * old_state (string) - The old state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
@@ -1413,6 +1505,7 @@ Returns an array of alarm state transitions for the specified alarm with the fol
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 
+#### Response Examples
 ```
 [
     {
@@ -1465,11 +1558,6 @@ Returns an array of alarm state transitions for the specified alarm with the fol
     }
 ]
 ```
-
-#### Error Response
-##### Status Code
-* 401 - Unauthorized
-* 404 - Not found
 
 # License
 Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
