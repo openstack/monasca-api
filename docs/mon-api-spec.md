@@ -1011,6 +1011,7 @@ Returns an array of alarm state transitions with the following parameters:
         "timestamp": "2014-07-19T03:26:20.000Z"
     }
 ]
+```
 
 #### Error Response
 ##### Status Code
