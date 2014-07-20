@@ -9,24 +9,22 @@ This document describes the Monasca API v2.0, which supports Monitoring as a Ser
 
 The API consists of six main resources:
 
-1. Versions  - Provides information about the supported Monasca API versions.
-2. Metrics - The metric resource allows the storage and retrieval of metrics.
-3. Measurements - Operations for accessing measurements of metrics.
-4. Statistics -  Operations for accessing statistics about metrics.
+1. Versions  - Provides information about the supported versions of the API.
+2. Metrics - Provides for storage and retrieval of metrics.
+3. Measurements - Operations for querying measurements of metrics.
+4. Statistics -  Operations for evaluating statistics of metrics.
 5. Notification Methods - Represents a method, such as email, which can be associated with an alarm via an action. When an alarm is triggered notification methods associated with the alarm are triggered.
-5. Alarms -  Identifies one or more metrics scoped by name and dimensions, which should trigger a set of actions when the value of a threshold is exceeded.
+5. Alarms - Provides CRUD operations for alarms and querying the alarm state history.  
 
 Before using the API, you must first get a valid auth token from Keystone. All API operations require an auth token specified in the header of the http request.
 
-## Name and Dimensions
+## Metric Name and Dimensions
 A metric is uniquely identified by a name and set of dimensions.
 
 ### Name
-
 Defines the name of a metric. A name is of type string(64).
 
 ### Dimensions
-
 A dictionary of (key, value) pairs. The key and value are of type string(255). Dimensions may only use the characters from: a-z A-Z 0-9 . _ -.
 
 ## Alarm Expressions
@@ -111,10 +109,12 @@ The non-standard request headers that are used in requests.
 * X-Auth-Token (string, required) - Keystone auth token
 
 # Common Responses
+The Monasca API utilizes HTTP response codes to inform clients of the success or failure of each request. Clients should use the HTTP response code to trigger error handling if necessary (many errors can be resolved by retrying the request after a short delay). This section discusses various API error responses.
+
 * 200 - A request succeeded.
 * 201 - A resource has been successfully created.
 * 204 - No content
-* 400 -
+* 400 - Bad request
 * 401 - Unauthorized
 * 404 - Not found
 * 409 - Conflict
@@ -137,6 +137,18 @@ None.
 
 #### Query Parameters
 None.
+
+#### Request Body
+None.
+
+#### Request Examples
+```
+GET / HTTP/1.1
+Host: 192.168.10.4:8080
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Accept: application/json
+Cache-Control: no-cache
+```
 
 ### Response
 #### Status code
@@ -172,10 +184,22 @@ Gets detail about the specified version of the Monasca API.
 * Accept (string) - application/json
 
 #### Path Parameters
-None.
+* version_id (string, required) - Version ID of API
 
 #### Query Parameters
 None.
+
+#### Request Body
+None.
+
+#### Request Examples
+```
+GET /v2.0/ HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+```
 
 ### Response
 #### Status code
@@ -209,7 +233,7 @@ Create metrics.
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (required) - application/json
+* Content-Type (string, required) - application/json
 
 #### Path Parameters
 None.
@@ -218,10 +242,10 @@ None.
 None.
 
 #### Request Body
-Consists of a single metric or an array of metrics. A metric has the following properties:
+Consists of a single metric object or an array of metric objects. A metric has the following properties:
 
 * name (string(64), required) - The name of the metric.
-dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
+* dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
 * timestamp (string, required) - The timestamp in seconds from the Epoch.
 * value (float, required) - Value of the metric.
 
@@ -303,9 +327,12 @@ None.
 
 #### Query Parameters
 * name (string(64), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
 
-##### Request Examples
+#### Request Body
+None.
+
+#### Request Examples
 ```
 GET /v2.0/metrics?name=metric1&dimensions=key1:value1 HTTP/1.1
 Host: 192.168.10.4:8080
@@ -359,7 +386,7 @@ None.
 
 #### Query Parameters
 * name (string(64), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * limit (integer, optional) - The maximum number of metrics to return.
@@ -444,7 +471,7 @@ None.
 
 #### Query Parameters
 * name (string(64), required) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
 * statistics (string, required) - A comma separate array of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
@@ -525,17 +552,17 @@ Returns a JSON array of statistic objects for each unique metric with the follow
 Operations for working with notification methods.
 
 ## Create Notification Method
-Creates a notification method through which notifications can be sent to when an alarm state transition occurs. Notification methods are associated with alarms when an alarm is created or updated.
+Creates a notification method through which notifications can be sent to when an alarm state transition occurs. Notification methods can be associated with zero or many alarms. 
 
 ### POST /v2.0/notification-methods
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string) - application/json
+* Content-Type (string, required) - application/json
 * Accept (string) - application/json
 
 #### Path Parameters
-None
+None.
 
 #### Query Parameters
 None.
@@ -606,7 +633,7 @@ None.
 None.
 
 #### Body
-None
+None.
 
 #### Request Examples
 ```
@@ -721,7 +748,7 @@ Update the specified notification method.
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string) - application/json
+* Content-Type (string, required) - application/json
 * Accept (string) - application/json
 
 #### Path Parameters
@@ -1201,7 +1228,7 @@ Update/Replace the entire state of the specified alarm.
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string) - application/json
+* Content-Type (string, required) - application/json
 * Accept (string) - application/json
 
 #### Path Parameters
@@ -1320,7 +1347,7 @@ Update select parameters of the specified alarm, set the alarm state and enable/
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string) - application/json-patch+json
+* Content-Type (string, required) - application/json-patch+json
 * Accept (string) - application/json
 
 #### Path Parameters
