@@ -62,6 +62,11 @@
     <dependencies>
         <dependency>
             <groupId>com.hpcloud</groupId>
+            <artifactId>mon-influxdb</artifactId>
+            <version>${mon.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hpcloud</groupId>
             <artifactId>mon-model</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
