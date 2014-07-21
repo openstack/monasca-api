@@ -127,7 +127,7 @@ The versions resource supplies operations for accessing information about suppor
 ## List Versions
 Lists the supported versions of the Monasca API.
 
-### GET /v2.0/versions
+### GET
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -178,7 +178,7 @@ Returns a JSON array of supported versions.
 ## Get Version
 Gets detail about the specified version of the Monasca API.
 
-### Get /v2.0/versions/{version_id}
+### Get /{version_id}
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -633,7 +633,7 @@ None.
 #### Query Parameters
 None.
 
-#### Body
+#### Request Body
 None.
 
 #### Request Examples
