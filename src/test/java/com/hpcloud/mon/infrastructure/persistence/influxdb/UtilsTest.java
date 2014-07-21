@@ -11,7 +11,8 @@ import org.testng.annotations.Test;
 @Test
 public class UtilsTest {
   public void SQLSanitizerSanitizeGoodDataTest() throws Exception {
-    String goodString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
+    String goodString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_" +
+        ".?/%=&";
 
     assert (goodString.equals(Utils.SQLSanitizer.sanitize(goodString)));
   }
