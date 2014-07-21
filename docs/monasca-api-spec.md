@@ -43,7 +43,7 @@ expression
     | expression logical_operator expression
 ```
 
-The logical_operators are: 'and' (also &&), 'or' (also ||).
+The logical_operators are: `and` (also `&&`), `or` (also `||`).
 
 Each subexpression is made up of several parts with a couple of options:
 
@@ -53,7 +53,7 @@ subexpression
     | function '(' metric ',' period ')' relational_operator threshold_value ('times' periods)? 
 ```
 
-The relational_operators are: 'lt' (also <), 'gt' (also >), 'lte' (also <=), 'gte' (also >=).
+The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`), `gte` (also `>=`).
 
 Threshold values are always in the same units as the metric that they are being compared to.
 
@@ -63,14 +63,14 @@ The first subexpression shows a direct comparison of a metric to a threshold_val
 In this example the metric uniquely identified with the name=cpu_perc and dimension hostname=host.domain.com is compared to the threshold 95.
 
 ```
-cpu_perc:{hostname=host.domain.com} > 95
+cpu_perc{hostname=host.domain.com} > 95
 ```
 
 #### More Complex Example
 In this example the average of the same metric as in the previous example is evaluated over a 90 second period for 3 times.
 
 ```
-avg(cpu_perc:{hostname=host.domain.com},85) > 90 times 3
+avg(cpu_perc{hostname=host.domain.com}, 85) > 90 times 3
 ```
 
 Note that period is the number of seconds for the measurement to be done on. They can only be in a multiple of 60. Periods is how many times in a row that this expression must be true before triggering the alarm. Both period and periods are optional and default to 60 and 1 respectively.
@@ -89,7 +89,7 @@ The metric is a complex identifier that says the name and optional dimensions.
 In this example a compound alarm expression is evaluated involving two thresholds.
 
 ```
-(avg(cpu_perc:{hostname=hostname.domain.com}) > 90 ) or ( avg(disk_read_ops:{hostname=hostname.domain.com,device=vda,120) > 1000
+avg(cpu_perc{hostname=hostname.domain.com}) > 90 or avg(disk_read_ops{hostname=hostname.domain.com, device=vda, 120) > 1000
 ```
 
 # Common Request Headers
@@ -98,7 +98,7 @@ This section documents the common request headers that are used in requests.
 ## Common Http Request Headers
 The standard Http request headers that are used in requests.
 
-* Content-Type - The Internet media type of the request body. Used with POST and PUT requests. Must be application/json or application/json-patch+json.
+* Content-Type - The Internet media type of the request body. Used with POST and PUT requests. Must be `application/json` or `application/json-patch+json`.
 * Accept - Internet media types that are acceptable in the response. Must be application/json.
 * X-Requested-With
 * Origin
@@ -327,7 +327,7 @@ None.
 
 #### Query Parameters
 * name (string(64), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 
 #### Request Body
 None.
@@ -386,7 +386,7 @@ None.
 
 #### Query Parameters
 * name (string(64), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * limit (integer, optional) - The maximum number of metrics to return.
@@ -435,17 +435,17 @@ Returns a JSON array of measurements objects for each unique metric with the fol
             2.54
          ],
          [  
-            6248030001,
+            6248030003,
             "2014-07-18T03:23:50Z",
             2.21
          ],
          [  
-            6246680001,
+            6246680007,
             "2014-07-18T03:23:14Z",
             3.17
          ],
          [  
-            6242570001,
+            6242570022,
             "2014-07-18T03:22:38Z",
             2.12
          ]
@@ -471,7 +471,7 @@ None.
 
 #### Query Parameters
 * name (string(64), required) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as "key1:value1,key2:value2, ..."
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * statistics (string, required) - A comma separate array of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
@@ -569,7 +569,7 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
-* type (string(100), required) - The type of notification method (EMAIL).
+* type (string(100), required) - The type of notification method (`EMAIL`).
 * address (string(100), required) - The address / number to notify.
 
 #### Request Examples
@@ -759,7 +759,7 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
-* type (string(100), required) - The type of notification method (EMAIL).
+* type (string(100), required) - The type of notification method (`EMAIL`).
 * address (string(100), required) - The address / number to notify.
 
 #### Request Examples
@@ -865,10 +865,10 @@ Consists of an alarm definition. An alarm has the following properties:
 * name (string(255), required) - A unique name of the alarm. Note, the name must be unique.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, required) - An alarm expression.
-* alarmActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* okActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undeterminedActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
-* severity (string, optional) - Severity of an alarm. Must be either "LOW", "MEDIUM", "HIGH" or "CRITICAL". Default is "LOW". 
+* alarmActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* okActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undeterminedActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* severity (string, optional) - Severity of an alarm. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`. Default is `LOW`. 
 
 #### Request Examples
 ```
@@ -908,12 +908,12 @@ Returns a JSON array of alarm objects with the following fields:
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
 * expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
-* severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
+* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -972,12 +972,12 @@ None.
 
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
-* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
-* state (string, optional) - State of alarm to filter by. Must be either "UNDETERMINED", "OK" or "ALARM".
+* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* state (string, optional) - State of alarm to filter by. Must be either `UNDETERMINED`, `OK` or `ALARM`.
 
 #### Request Body
 None.
-
+"
 #### Request Examples
 ```
 GET /v2.0/alarms?name=CPU percent greater than 10&dimensions=hostname:devstack&state=UNDETERMINED HTTP/1.1
@@ -987,7 +987,7 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-### Response
+### Response"
 #### Status Code
 * 200 - OK
 
@@ -1000,12 +1000,12 @@ Returns a JSON array of alarm objects with the following fields:
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
 * expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
-* severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
+* severity (string) - The severity of an alarn. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1065,7 +1065,7 @@ List alarm state history for alarms.
 None.
 
 #### Query Parameters
-* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as "key1:value1,key1:value1, ..."
+* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 
@@ -1080,8 +1080,8 @@ None.
 Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
-* old_state (string) - The old state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
-* new_state (string) - The new state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
+* old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
+* new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
@@ -1171,12 +1171,12 @@ Returns a JSON alarm object with the following fields:
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
 * expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
-* severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
+* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1243,12 +1243,12 @@ Consists of an alarm definition. An alarm has the following properties:
 * name (string(255), required) - A name of the alarm.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, required) - An alarm expression.
-* state (string, required) - State of alarm to set. Must be either "UNDETERMINED", "OK" or "ALARM".
+* state (string, required) - State of alarm to set. Must be either `OK`, `ALARM` or `UNDETERMINED`.
 * enabled (boolean, required)
 * alarmActions ([string(50)], optional) 
 * okActions ([string(50)], optional)
 * undeterminedActions ([string(50)], optional)
-* severity (string, optional) - Severity of an alarm. Must be either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* severity (string, optional) - Severity of an alarm. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 
 If optional parameters are not specified they will be reset to their default state.
 
@@ -1291,12 +1291,12 @@ Returns a JSON alarm object with the following parameters:
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
 * expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
-* severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
+* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1362,11 +1362,11 @@ Consists of an alarm with the following properties:
 * name (string(255), optional) - A name of the alarm.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, optional) - An alarm expression.
-* state (string, optional) - State of alarm to set. Must be either "UNDETERMINED", "OK" or "ALARM".
+* state (string, optional) - State of alarm to set. Must be either `UNDETERMINED`, `OK` or `ALARM`.
 * enabled (boolean, optional)
-* alarm_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 Only the parameters that are specified will be updated.
 
@@ -1410,12 +1410,12 @@ Returns a JSON alarm object with the following fields:
 * description (string) - Description of alarm.
 * expression (string) - The alarm expression.
 * expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either "OK", "ALARM" or "UNDETERMINED". The initial state of an alarm is "UNDETERMINED". 
-* severity (string) - The severity of an alarm. Either "LOW", "MEDIUM", "HIGH" or "CRITICAL".
+* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
+* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 * actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "ALARM" state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "OK" state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the "UNDETERMINED" state.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1526,8 +1526,8 @@ Cache-Control: no-cache
 Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
-* old_state (string) - The old state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
-* new_state (string) - The new state of the alarm. Either "OK", "ALARM" or "UNDETERMINED".
+* old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
+* new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
