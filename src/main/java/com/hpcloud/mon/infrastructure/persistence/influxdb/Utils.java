@@ -28,16 +28,13 @@ final class Utils {
   static class SQLSanitizer {
     private SQLSanitizer() {}
 
-    private static final Pattern p = Pattern.compile("^(\\w|-|\\.|\\?|\\/|:|&|%|=)+$");
+    private static final Pattern p = Pattern.compile("^.*('|;)+.*$");
 
     static String sanitize(String taintedString) throws Exception {
       Matcher m = p.matcher(taintedString);
-      if (!m.matches()) {
-        throw new Exception(String.format("Input from user contains non-word chars[ %1$s ]. Only "
-            + "" + "word chars [a-zA-Z_0-9], dash [-], dot [.], question mark [?], " +
-                "slash [/], colon [:], ampersand [&], percent sign [%], " +
-                "and equal sign [=] allowed. ",
-            taintedString));
+      if (m.matches()) {
+        throw new Exception(String.format("Input from user contains single quote ['] or " +
+                "semi-colon [;] characters[ %1$s ]", taintedString));
       }
 
       return taintedString;

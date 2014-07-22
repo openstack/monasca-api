@@ -12,23 +12,23 @@ import org.testng.annotations.Test;
 public class UtilsTest {
   public void SQLSanitizerSanitizeGoodDataTest() throws Exception {
     String goodString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_" +
-        ".?/%=&";
+        ".?/%=&鱼鸟";
 
     assert (goodString.equals(Utils.SQLSanitizer.sanitize(goodString)));
   }
 
   @Test(expectedExceptions = {Exception.class})
   public void SQLSanitizerSanitizeBadDataTest1() throws Exception {
-    String badString = "';abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
+    String badStringWithSemicolon = "abcdefghijklmnopqrs;tuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
 
-    assert (badString.equals(Utils.SQLSanitizer.sanitize(badString)));
+    assert (badStringWithSemicolon.equals(Utils.SQLSanitizer.sanitize(badStringWithSemicolon)));
   }
 
   @Test(expectedExceptions = {Exception.class})
   public void SQLSanitizerSanitizeBadDataTest2() throws Exception {
-    String badStrng = "'a'bcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
+    String badStringWithSingleQuote = "'a'bcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
 
-    assert (badStrng.equals(Utils.SQLSanitizer.sanitize(badStrng)));
+    assert (badStringWithSingleQuote.equals(Utils.SQLSanitizer.sanitize(badStringWithSingleQuote)));
   }
 
   public void whereClauseBuilderBuildTimePartTest() {
