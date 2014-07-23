@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hpcloud</groupId>
+    <groupId>monasca-api</groupId>
     <artifactId>mon-api</artifactId>
     <version>0.1.0</version>
-    <url>http://github.com/hpcloud-mon/mon-api</url>
+    <url>http://github.com/stackforge/monasca-api</url>
     <packaging>jar</packaging>
 
     <prerequisites>
@@ -25,8 +25,8 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:hpcloud-mon/mon-api</connection>
-        <developerConnection>scm:git:git@github.com:hpcloud-mon/mon-api</developerConnection>
+        <connection>scm:git:git@github.com:stackforge/monasca-api</connection>
+        <developerConnection>scm:git:git@github.com:stackforge/monasca-api</developerConnection>
     </scm>
 
     <repositories>
@@ -61,33 +61,33 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-influxdb</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-influxdb</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-model</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-model</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-persistence</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-persistence</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-util</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-util</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-kafka</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-kafka</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-middleware</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-middleware</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
         <dependency>
@@ -174,14 +174,14 @@
 
         <!-- Test dependencies -->
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-testing</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-testing</artifactId>
             <version>${mon.common.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.hpcloud</groupId>
-            <artifactId>mon-dropwizard</artifactId>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-dropwizard</artifactId>
             <version>${mon.common.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
