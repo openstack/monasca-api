@@ -51,7 +51,8 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
     if (dimensions == null || dimensions.isEmpty()) {
 
       // First find all time series (measurements) with all their dimensions.
-      String query = String.format("select * from %1$s limit 1", namePart);
+      String query = String.format("select * from %1$s where tenant_id = '%2$s' limit 1",
+          namePart, Utils.SQLSanitizer.sanitize(tenantId));
 
       logger.debug("Query string: {}", query);
 
@@ -99,7 +100,8 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
         String namesPart = "/(" + Joiner.on("|").join(nameList) + ")/";
 
         // Can use any aggregate function.  We chose max.
-        String query2 = String.format("Select max(value) from %1$s %2$s", namesPart, groupByPart);
+        String query2 = String.format("Select max(value) from %1$s where tenant_id = '%2$s' %3$s",
+            namesPart, Utils.SQLSanitizer.sanitize(tenantId), groupByPart);
 
         logger.debug("Query string: {}", query2);
 
