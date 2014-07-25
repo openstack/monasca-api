@@ -101,8 +101,8 @@ The standard Http request headers that are used in requests.
 
 * Content-Type - The Internet media type of the request body. Used with POST and PUT requests. Must be `application/json` or `application/json-patch+json`.
 * Accept - Internet media types that are acceptable in the response. Must be application/json.
-* X-Requested-With
-* Origin
+* X-Requested-With (optional) - Which headers are requested to be allowed. Filled in by browser as part of the CORS protocol.
+* Origin (optional) - The origin of page that is requesting cross origin access. Filled in by browser as part of the CORS protocol.
 
 ## Non-standard request headers
 The non-standard request headers that are used in requests.
