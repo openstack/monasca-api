@@ -47,18 +47,6 @@ public class MiddlewareConfiguration {
   public String connSSLClientAuth;
   @NotEmpty
   @JsonProperty
-  public String keystore;
-  @NotEmpty
-  @JsonProperty
-  public String keystorePass;
-  @NotEmpty
-  @JsonProperty
-  public String truststore;
-  @NotEmpty
-  @JsonProperty
-  public String truststorePass;
-  @NotEmpty
-  @JsonProperty
   public String connPoolMaxActive;
   @NotEmpty
   @JsonProperty
@@ -77,7 +65,10 @@ public class MiddlewareConfiguration {
   public String connRetryInterval;
   @NotNull
   @JsonProperty
-  public List<String> rolesToMatch;
+  public List<String> defaultAuthorizedRoles;
+  @NotNull
+  @JsonProperty
+  public List<String> agentAuthorizedRoles;
   @JsonProperty
   public String timeToCacheToken;
   @JsonProperty
