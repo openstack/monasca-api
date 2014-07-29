@@ -25,8 +25,8 @@ A metric is uniquely identified by a name and set of dimensions.
 Defines the name of a metric. A name is of type string(64).
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). Dimensions may
-only use the characters from: a-z A-Z 0-9 . _ - % = & ? : /.
+A dictionary of (key, value) pairs. The key and value are of type string(255). The first character in the dimension is restricted to the following: a-z A-Z 0-9 _ / \ $. 
+However, the next characters may be any character except for the following: ; } { = , & ) ( ". If one of the restricted characters is needed, this can be achieved by double quoting the dimensions. 
 
 ## Alarm Expressions
 The alarm expression syntax allows the creation of simple or complex alarms to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
