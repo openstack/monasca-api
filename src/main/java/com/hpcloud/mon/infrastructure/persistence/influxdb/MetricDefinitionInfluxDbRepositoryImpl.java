@@ -72,6 +72,10 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
             continue;
           } else if (columnName.equalsIgnoreCase("value")) {
             continue;
+          } else if (columnName.equalsIgnoreCase("tenant_id")) {
+            continue;
+          } else if (columnName.equalsIgnoreCase("region")) {
+            continue;
           } else {
             columnsSet.add(columnName);
           }
