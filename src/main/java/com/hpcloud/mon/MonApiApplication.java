@@ -13,6 +13,7 @@
  */
 package com.hpcloud.mon;
 
+import com.hpcloud.mon.infrastructure.servlet.RoleAuthorizationFilter;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -127,10 +128,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("ServerPort", config.middleware.serverPort);
       authInitParams.put("ConnTimeout", config.middleware.connTimeout);
       authInitParams.put("ConnSSLClientAuth", config.middleware.connSSLClientAuth);
-      authInitParams.put("Keystore", config.middleware.keystore);
-      authInitParams.put("KeystorePass", config.middleware.keystorePass);
-      authInitParams.put("Truststore", config.middleware.truststore);
-      authInitParams.put("TruststorePass", config.middleware.truststorePass);
       authInitParams.put("ConnPoolMaxActive", config.middleware.connPoolMaxActive);
       authInitParams.put("ConnPoolMaxIdle", config.middleware.connPoolMaxActive);
       authInitParams.put("ConnPoolEvictPeriod", config.middleware.connPoolEvictPeriod);
@@ -157,12 +154,14 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
       Dynamic postAuthenticationFilter =
           environment.servlets().addFilter("post-auth",
-              new PostAuthenticationFilter(config.middleware.rolesToMatch));
+              new PostAuthenticationFilter(config.middleware.defaultAuthorizedRoles, config.middleware.agentAuthorizedRoles));
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
+
+      environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RoleAuthorizationFilter());
     } else {
-      Dynamic mockAuthenticationFilter =
-          environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
+        Dynamic mockAuthenticationFilter =
+                environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }

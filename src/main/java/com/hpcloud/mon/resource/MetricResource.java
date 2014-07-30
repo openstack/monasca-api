@@ -45,9 +45,9 @@ import java.util.Map;
 @Api(value = "/v2.0/metrics", description = "Operations for accessing metrics")
 public class MetricResource {
   private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
-  private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
-  private final MetricService service;
+    private final MetricService service;
   private final MetricDefinitionRepository metricRepo;
 
   @Inject
@@ -64,8 +64,8 @@ public class MetricResource {
       @HeaderParam("X-Roles") String roles, @QueryParam("tenant_id") String crossTenantId,
       @Valid CreateMetricCommand[] commands) {
     boolean isDelegate =
-        !Strings.isNullOrEmpty(roles)
-            && Arrays.asList(COMMA_SPLITTER.split(roles)).contains(MONITORING_DELEGATE_ROLE);
+            !Strings.isNullOrEmpty(roles)
+                    && Arrays.asList(COMMA_SPLITTER.split(roles)).contains(MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {

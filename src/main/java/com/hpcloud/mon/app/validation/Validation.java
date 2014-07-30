@@ -169,6 +169,6 @@ public final class Validation {
    */
   public static void validateTimes(DateTime startTime, DateTime endTime) {
     if (!startTime.isBefore(endTime))
-      throw Exceptions.badRequest("start_time must be before end_time");
+        throw Exceptions.badRequest("start_time must be before end_time");
   }
 }
