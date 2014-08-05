@@ -25,8 +25,8 @@ A metric is uniquely identified by a name and set of dimensions.
 Defines the name of a metric. A name is of type string(64).
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). The first character in the dimension is restricted to the following: a-z A-Z 0-9 _ / \ $. 
-However, the next characters may be any character except for the following: ; } { = , & ) ( ". If one of the restricted characters is needed, this can be achieved by double quoting the dimensions. 
+A dictionary of (key, value) pairs. The key and value are of type string(255). The first character in the dimension is restricted to the following: `a-z A-Z 0-9 _ / \ $`. 
+However, the next characters may be any character except for the following: `; } { = , & ) ( "`. If one of the restricted characters is needed, this can be achieved by double quoting the dimensions. 
 
 ## Alarm Expressions
 The alarm expression syntax allows the creation of simple or complex alarms to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
@@ -110,7 +110,7 @@ The non-standard request headers that are used in requests.
 * X-Auth-Token (string, required) - Keystone auth token
 
 # Common Responses
-The Monasca API utilizes HTTP response codes to inform clients of the success or failure of each request. Clients should use the HTTP response code to trigger error handling if necessary (many errors can be resolved by retrying the request after a short delay). This section discusses various API error responses.
+The Monasca API utilizes HTTP response codes to inform clients of the success or failure of each request. Clients should use the HTTP response code to trigger error handling if necessary. This section discusses various API error responses.
 
 * 200 - A request succeeded.
 * 201 - A resource has been successfully created.
