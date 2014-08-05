@@ -174,6 +174,7 @@ Returns a JSON array of supported versions.
    }
 ]
 ```
+___
 
 ## Get Version
 Gets detail about the specified version of the Monasca API.
@@ -223,6 +224,7 @@ Returns a JSON version object with details about the specified version.
    "updated":"2014-07-18T03:25:02.423Z"
 }
 ```
+___
 
 # Metrics
 The metrics resource allows metrics to be created and queried.
@@ -313,6 +315,7 @@ Cache-Control: no-cache
 
 #### Response Body
 This request does not return a response body.
+___
 
 ## List metrics
 Get metrics
@@ -369,6 +372,7 @@ Returns a JSON array of metric definition objects with the following fields:
    }
 ]
 ````
+___
 
 # Measurements
 Operations for accessing measurements of metrics.
@@ -454,6 +458,7 @@ Returns a JSON array of measurements objects for each unique metric with the fol
    }
 ]
 ```
+___
 
 # Statistics
 Operations for calculating statistics of metrics.
@@ -548,6 +553,7 @@ Returns a JSON array of statistic objects for each unique metric with the follow
    }
 ]
 ```
+___
 
 # Notification Methods
 Operations for working with notification methods.
@@ -617,6 +623,7 @@ Returns a JSON notification method object with the following fields:
    "address":"john.doe@hp.com"
 }
 ```
+___
 
 ## List Notification Methods
 List all notification methods.
@@ -688,6 +695,7 @@ Returns a JSON array of notification method objects with the following fields:
    }
 ]
 ```
+___
 
 ## Get Notification Method
 Get the details of a specific notification method.
@@ -741,6 +749,7 @@ Returns a JSON notification method object with the following fields:
    "address":"john.doe@hp.com"
 }
 ```
+___
 
 ## Update Notification Method
 Update the specified notification method.
@@ -807,6 +816,7 @@ Returns a JSON notification method object with the following fields:
    "address":"jane.doe@hp.com"
 }
 ````
+___
 
 ## Delete Notification Method
 Delete the specified notification method.
@@ -841,6 +851,7 @@ Cache-Control: no-cache
 
 #### Response Body
 This request does not return a response body.
+___
 
 # Alarms
 Operations for working with alarms.
@@ -958,6 +969,7 @@ Returns a JSON array of alarm objects with the following fields:
    ]
 }
 ```
+___
 
 ## List Alarms
 List alarms
@@ -1052,6 +1064,7 @@ Returns a JSON array of alarm objects with the following fields:
    }
 ]
 ```
+___
 
 ## List Alarms State History
 List alarm state history for alarms.
@@ -1140,6 +1153,7 @@ Returns a JSON array of alarm state transition objects with the following fields
     }
 ]
 ```
+___
 
 ## Get Alarm
 Get the specified alarm.
@@ -1221,6 +1235,7 @@ Returns a JSON alarm object with the following fields:
     ]
 }
 ```
+___
 
 ## Update Alarm
 Update/Replace the entire state of the specified alarm.
@@ -1341,6 +1356,7 @@ Returns a JSON alarm object with the following parameters:
     ]
 }
 ```
+___
 
 ## Update Alarm
 ### PATCH /v2.0/alarms/{alarm_id}
@@ -1460,6 +1476,7 @@ Returns a JSON alarm object with the following fields:
     ]
 }
 ```
+___
 
 ## Delete Alarm
 Delete the specified alarm.
@@ -1492,6 +1509,7 @@ Cache-Control: no-cache
 
 #### Response Body
 None.
+___
 
 ## List Alarm State History
 List the alarm state history for the specified alarm.
@@ -1586,6 +1604,7 @@ Returns a JSON array of alarm state transition objects with the following fields
     }
 ]
 ```
+___
 
 # License
 Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
