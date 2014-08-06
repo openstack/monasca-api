@@ -59,8 +59,8 @@ public class MetricService {
     List<KeyedMessage<String, String>> keyedMessages = new ArrayList<>(metrics.size());
     for (Metric metric : metrics) {
       MetricEnvelope envelope = new MetricEnvelope(metric, meta);
-      keyedMessages.add(new KeyedMessage<>(config.metricsTopic, tenantId, MetricEnvelopes
-          .toJson(envelope)));
+      keyedMessages.add(new KeyedMessage<>(config.metricsTopic, Long.valueOf(metric.timestamp)
+          .toString(), MetricEnvelopes.toJson(envelope)));
     }
 
     producer.send(keyedMessages);
