@@ -101,7 +101,7 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
         if (columnsSet.size() > 0) {
           groupByPart = "group by " + Joiner.on(",").join(columnsSet);
         }
-        String namesPart = "/(" + Joiner.on("|").join(nameList) + ")/";
+        String namesPart = Joiner.on(",").join(nameList);
 
         // Can use any aggregate function.  We chose max.
         String query2 = String.format("Select max(value) from %1$s where tenant_id = '%2$s' %3$s",
