@@ -115,17 +115,20 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
         for (Serie serie : result2) {
 
           // Each set of points is a unique measurement definition.
-          for (Object[] pointsArry : serie.getPoints()) {
+          final String[] colNames = serie.getColumns();
+          final List<Map<String, Object>> rows = serie.getRows();
+
+          for (Map<String, Object> row : rows) {
 
             MetricDefinition metricDefinition = new MetricDefinition();
             metricDefinition.name = serie.getName();
 
             Map<String, String> dimMap = new HashMap<String, String>();
             // time and max(value) are always the first columns. Skip them.
-            for (int i = 2; i < serie.getColumns().length; ++i) {
-              Object dimValue = pointsArry[i];
+            for (int i = 2; i < colNames.length; ++i) {
+              Object dimValue = row.get(colNames[i]);
               if (dimValue != null) {
-                dimMap.put((String) serie.getColumns()[i], (String) dimValue);
+                dimMap.put((String) colNames[i], (String) dimValue);
               }
             }
             metricDefinition.setDimensions(dimMap);

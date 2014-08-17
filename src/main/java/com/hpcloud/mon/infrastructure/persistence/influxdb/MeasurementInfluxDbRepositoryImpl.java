@@ -76,18 +76,19 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
     measurements.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
     List<Object[]> valObjArryList = new LinkedList<>();
     for (Serie serie : result) {
-      Object[][] valObjArry = serie.getPoints();
-      for (int i = 0; i < valObjArry.length; i++) {
+      final String[] colNames = serie.getColumns();
+      final List<Map<String, Object>> rows = serie.getRows();
+      for (Map<String, Object> row : rows) {
 
         Object[] objArry = new Object[3];
 
         // sequence_number
-        objArry[0] = ((Double) valObjArry[i][1]).longValue();
+        objArry[0] = ((Double) row.get(colNames[1])).longValue();
         // time
-        Double timeDouble = (Double) valObjArry[i][0];
+        Double timeDouble = (Double) row.get(colNames[0]);
         objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
-        objArry[2] = (Double) valObjArry[i][2];
+        objArry[2] = (Double) row.get(colNames[2]);
 
         valObjArryList.add(objArry);
       }

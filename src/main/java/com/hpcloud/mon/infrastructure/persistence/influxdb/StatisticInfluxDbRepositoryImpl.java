@@ -82,14 +82,15 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
       stat.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
       List<List<Object>> valObjArryArry = new LinkedList<List<Object>>();
       stat.setStatistics(valObjArryArry);
-      Object[][] pointsArryArry = serie.getPoints();
-      for (int i = 0; i < pointsArryArry.length; i++) {
+      final String[] colNames = serie.getColumns();
+      final List<Map<String, Object>> rows = serie.getRows();
+      for (Map<String, Object> row : rows) {
         List<Object> valObjArry = new ArrayList<>();
         // First column is always time.
-        Double timeDouble = (Double) pointsArryArry[i][0];
+        Double timeDouble = (Double) row.get(colNames[0]);
         valObjArry.add(DATETIME_FORMATTER.print(timeDouble.longValue()));
         for (int j = 1; j < statistics.size() + 1; j++) {
-          valObjArry.add(pointsArryArry[i][j]);
+          valObjArry.add(row.get(colNames[j]));
         }
         valObjArryArry.add(valObjArry);
       }

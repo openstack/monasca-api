@@ -29,22 +29,6 @@
         <developerConnection>scm:git:git@github.com:stackforge/monasca-api</developerConnection>
     </scm>
 
-    <repositories>
-        <repository>
-            <id>nexus releases</id>
-            <url>http://nexus.paas.hpcloud.net:8081/nexus/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>nexus 3rd party</id>
-            <url>http://nexus.paas.hpcloud.net:8081/nexus/content/repositories/thirdparty</url>
-        </repository>
-        <repository>
-            <id>nexus-snapshots</id>
-            <name>nexus snapshots</name>
-            <url>http://nexus.paas.hpcloud.net:8081/nexus/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
     <profiles>
         <profile>
             <id>release-deploy-url-override</id>
@@ -114,11 +98,6 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-jersey</artifactId>
             <version>${dropwizard.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vertica</groupId>
-            <artifactId>vertica-jdbc</artifactId>
-            <version>6.1.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

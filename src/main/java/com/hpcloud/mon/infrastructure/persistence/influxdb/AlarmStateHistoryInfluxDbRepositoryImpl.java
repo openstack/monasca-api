@@ -143,19 +143,20 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
 
     // Should only be one serie -- alarm_state_history.
     for (Serie serie : result) {
-      Object[][] valObjArryArry = serie.getPoints();
-      for (int i = 0; i < valObjArryArry.length; i++) {
+      final String[] colNames = serie.getColumns();
+      final List<Map<String, Object>> rows = serie.getRows();
+      for (Map<String, Object> row : rows) {
 
         AlarmStateHistory alarmStateHistory = new AlarmStateHistory();
         // Time is always in position 0.
-        Double timeDouble = (Double) valObjArryArry[i][0];
+        Double timeDouble = (Double) row.get(colNames[0]);
         alarmStateHistory.setTimestamp(new DateTime(timeDouble.longValue(), DateTimeZone.UTC));
         // Sequence_number is always in position 1.
-        alarmStateHistory.setAlarmId((String) valObjArryArry[i][2]);
-        alarmStateHistory.setNewState(AlarmState.valueOf((String) valObjArryArry[i][3]));
-        alarmStateHistory.setOldState(AlarmState.valueOf((String) valObjArryArry[i][4]));
-        alarmStateHistory.setReason((String) valObjArryArry[i][5]);
-        alarmStateHistory.setReasonData((String) valObjArryArry[i][6]);
+        alarmStateHistory.setAlarmId((String) row.get(colNames[2]));
+        alarmStateHistory.setNewState(AlarmState.valueOf((String) row.get(colNames[3])));
+        alarmStateHistory.setOldState(AlarmState.valueOf((String) row.get(colNames[4])));
+        alarmStateHistory.setReason((String) row.get(colNames[5]));
+        alarmStateHistory.setReasonData((String) row.get(colNames[6]));
 
         alarmStateHistoryList.add(alarmStateHistory);
       }
