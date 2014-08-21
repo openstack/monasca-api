@@ -325,6 +325,25 @@
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/tar.xml</descriptor>
+                    </descriptors>
+                    <finalName>${artifactNamedVersion}</finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>jdeb</artifactId>
                 <groupId>org.vafer</groupId>
                 <version>1.0</version>
