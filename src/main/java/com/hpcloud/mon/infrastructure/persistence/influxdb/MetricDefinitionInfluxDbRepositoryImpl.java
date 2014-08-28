@@ -60,7 +60,7 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
           TimeUnit.SECONDS);
 
       // Group time series names under their unique set of dimensions.
-      Map<TreeSet, List<String>> columnsToNamesMap = new HashMap<TreeSet, List<String>>();
+      Map<TreeSet<String>, List<String>> columnsToNamesMap = new HashMap<>();
       for (Serie serie : result) {
         TreeSet<String> columnsSet = new TreeSet<String>();
         for (String columnName : serie.getColumns()) {
@@ -92,8 +92,8 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
 
       // For each set of unique dimensions, issue a query for all time series with that
       // unique set of dimensions.
-      for (TreeSet columnsSet : columnsToNamesMap.keySet()) {
-        List nameList = columnsToNamesMap.get(columnsSet);
+      for (TreeSet<String> columnsSet : columnsToNamesMap.keySet()) {
+        List<String> nameList = columnsToNamesMap.get(columnsSet);
 
         String groupByPart = "";
 
