@@ -21,6 +21,7 @@ import com.github.dockerjava.client.model.ContainerCreateResponse;
 import com.github.dockerjava.client.model.ExposedPort;
 import com.github.dockerjava.client.model.Ports;
 import com.sun.jersey.api.client.ClientResponse;
+
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -87,7 +88,8 @@ public class ITInfluxDBTest {
     System.out.println("Running " + latestShadedJarFileName);
 
     ProcessBuilder pb = new ProcessBuilder("java", "-cp", "./target/" + latestShadedJarFileName,
-        "com.hpcloud.mon.MonApiApplication", "server", "src/test/resources/mon-api-config.yml");
+                                           "com.hpcloud.mon.MonApiApplication", "server",
+                                           "src/test/resources/mon-api-config.yml");
     File log = new File("mon-api-integration-test.log");
     pb.redirectErrorStream(true);
     pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
@@ -105,7 +107,7 @@ public class ITInfluxDBTest {
     File[] files = dir.listFiles(fileFilter);
     if (files.length == 0) {
       System.err.println("Failed to find shaded jar. You must build mon-api before running this "
-          + "test. Try 'mvn clean package'");
+                         + "test. Try 'mvn clean package'");
       tearDown();
       System.exit(-1);
     }
@@ -143,7 +145,7 @@ public class ITInfluxDBTest {
 
       if (tryCount >= MAX_CONNECT_PORT_TRIES) {
         System.err.println("Failed to connect to host [" + host + "] on port [" + port + "] in " +
-            "[" + tryCount + "] tries");
+                           "[" + tryCount + "] tries");
         tearDown();
         System.exit(-1);
       }
@@ -155,7 +157,7 @@ public class ITInfluxDBTest {
         s.connect(sa, 50000);
         isPortReady = true;
         System.out.println("Took " + tryCount + " tries to connect to host [" + host + "] on port" +
-            "[" + port + "]");
+                           "[" + port + "]");
       } catch (Exception e) {
         tryCount++;
       }
@@ -181,7 +183,8 @@ public class ITInfluxDBTest {
       @Override
       void createContainer() {
         kafkaContainer = dockerClient.createContainerCmd(KAFKA_IMAGE_NAME).withCmd(new
-            String[]{KAFKA_CONTAINER_RUN_CMD, DOCKER_IP}).withExposedPorts(tcp2181, tcp9092).exec();
+                                                                                       String[]{
+            KAFKA_CONTAINER_RUN_CMD, DOCKER_IP}).withExposedPorts(tcp2181, tcp9092).exec();
       }
     });
 
@@ -206,7 +209,8 @@ public class ITInfluxDBTest {
       void createContainer() {
 
         mysqlContainer = dockerClient.createContainerCmd(MYSQL_IMAGE_NAME).withCmd(new
-            String[]{MYSQL_CONTAINER_RUN_CMD}).withExposedPorts(tcp3306).exec();
+                                                                                       String[]{
+            MYSQL_CONTAINER_RUN_CMD}).withExposedPorts(tcp3306).exec();
       }
     });
 
@@ -250,13 +254,20 @@ public class ITInfluxDBTest {
   public void alarmCreateTest() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-1\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").then().assertThat().statusCode(201);
+                    "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
+                                                           "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           ""
+                                                           + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           "\"name\": \"test-alarm-1\", \"description\": \"test-alarm-description\", "
+                                                           +
+                                                           "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+                                                           +
+                                                           "0\", \"severity\": \"low\"}")
+        .post("/v2.0/alarms").then().assertThat().statusCode(201);
 
   }
 
@@ -264,18 +275,21 @@ public class ITInfluxDBTest {
   public void alarmDeleteTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-2\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"alarm_actions\": " +
+              "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"name\": \"test-alarm-2\", \"description\": \"test-alarm-description\", " +
+              "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+              +
+              "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
 
     String alarmId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").delete("/v2.0/alarms/" + alarmId).then().assertThat()
+                    "X-Auth-Token", "82510970543135").delete("/v2.0/alarms/" + alarmId).then()
+        .assertThat()
         .statusCode(204);
 
   }
@@ -284,18 +298,21 @@ public class ITInfluxDBTest {
   public void alarmHistoryTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-3\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"alarm_actions\": " +
+              "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"name\": \"test-alarm-3\", \"description\": \"test-alarm-description\", " +
+              "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+              +
+              "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
 
     String alarmId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("v2.0/alarms/" + alarmId + "/state-history").then()
+                    "X-Auth-Token", "82510970543135")
+        .get("v2.0/alarms/" + alarmId + "/state-history").then()
         .assertThat().statusCode(200);
 
   }
@@ -304,7 +321,8 @@ public class ITInfluxDBTest {
   public void alarmListTest() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("/v2.0/alarms").then().assertThat().statusCode(200);
+                    "X-Auth-Token", "82510970543135").get("/v2.0/alarms").then().assertThat()
+        .statusCode(200);
 
   }
 
@@ -312,18 +330,21 @@ public class ITInfluxDBTest {
   public void alarmPatchTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-4\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"alarm_actions\": " +
+              "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"name\": \"test-alarm-4\", \"description\": \"test-alarm-description\", " +
+              "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+              +
+              "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
 
     String alarmId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json-patch+json",
-        "X-Auth-Token", "82510970543135").body("{}").patch("v2.0/alarms/" + alarmId).then()
+                    "X-Auth-Token", "82510970543135").body("{}").patch("v2.0/alarms/" + alarmId)
+        .then()
         .assertThat().statusCode(200);
 
   }
@@ -332,18 +353,21 @@ public class ITInfluxDBTest {
   public void alarmShowTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-5\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"alarm_actions\": " +
+              "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"name\": \"test-alarm-5\", \"description\": \"test-alarm-description\", " +
+              "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+              +
+              "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
 
     String alarmId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("v2.0/alarms/" + alarmId).then().assertThat()
+                    "X-Auth-Token", "82510970543135").get("v2.0/alarms/" + alarmId).then()
+        .assertThat()
         .statusCode(200);
 
   }
@@ -352,26 +376,37 @@ public class ITInfluxDBTest {
   public void alarmUpdateTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-6\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"alarm_actions\": " +
+              "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"name\": \"test-alarm-6\", \"description\": \"test-alarm-description\", " +
+              "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
+              "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+              +
+              "0\", \"severity\": \"low\"}").post("/v2.0/alarms").asString();
 
     String alarmId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
-        "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "" + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"name\": \"test-alarm-6\", \"description\": \"test-alarm-description\", " +
-        "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], " +
-        "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > " +
-        "0\", \"severity\": \"low\", \"actions_enabled\":\"true\", " +
-        "\"state\": \"alarm\"}").put("/v2" +
-        ".0/alarms/" + alarmId).then().assertThat().statusCode(200);
+                    "X-Auth-Token", "82510970543135").body("{\"alarm_actions\": " +
+                                                           "[\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           ""
+                                                           + "\"ok_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           "\"name\": \"test-alarm-6\", \"description\": \"test-alarm-description\", "
+                                                           +
+                                                           "\"undetermined_actions\": [\"044fa9be-36ef-4e51-a1d9-67ec31734908\"], "
+                                                           +
+                                                           "\"expression\": \"max(cpu_system_perc) > 0 and max(load_avg_1_min{hostname=mini-mon}) > "
+                                                           +
+                                                           "0\", \"severity\": \"low\", \"actions_enabled\":\"true\", "
+                                                           +
+                                                           "\"state\": \"alarm\"}").put("/v2" +
+                                                                                        ".0/alarms/"
+                                                                                        + alarmId)
+        .then().assertThat().statusCode(200);
 
   }
 
@@ -379,8 +414,9 @@ public class ITInfluxDBTest {
   public void measurementListTest() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z").param
-        ("name", "cpu_system_perc").get("v2.0/metrics/measurements").then().assertThat()
+                    "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z")
+        .param
+            ("name", "cpu_system_perc").get("v2.0/metrics/measurements").then().assertThat()
         .statusCode(200);
 
   }
@@ -389,14 +425,17 @@ public class ITInfluxDBTest {
   public void metricCreateTest() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"timestamp\": 0, \"name\": \"test-metric-1\", " +
-        "\"value\": 1234.5678, \"dimensions\": {\"foo\": \"bar\", " +
-        "\"biz\": \"baz\"}}").post("/v2.0/metrics ").then().assertThat().statusCode(204);
+                    "X-Auth-Token", "82510970543135")
+        .body("{\"timestamp\": 0, \"name\": \"test-metric-1\", " +
+              "\"value\": 1234.5678, \"dimensions\": {\"foo\": \"bar\", " +
+              "\"biz\": \"baz\"}}").post("/v2.0/metrics ").then().assertThat().statusCode(204);
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z").param
-        ("name", "test-metric-1").get("v2.0/metrics/measurements").then().assertThat().statusCode
-        (200);
+                    "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z")
+        .param
+            ("name", "test-metric-1").get("v2.0/metrics/measurements").then().assertThat()
+        .statusCode
+            (200);
 
 
   }
@@ -407,15 +446,18 @@ public class ITInfluxDBTest {
     long unixTime = System.currentTimeMillis() / 1000L;
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"timestamp\":\"" + unixTime + "\" , " +
-        "\"name\": \"test-metric-2\", " +
-        "\"value\": 1234.5678, \"dimensions\": {\"foo\": \"bar\", " +
-        "\"biz\": \"baz\"}}").post("/v2.0/metrics ").then().assertThat().statusCode(204);
+                    "X-Auth-Token", "82510970543135")
+        .body("{\"timestamp\":\"" + unixTime + "\" , " +
+              "\"name\": \"test-metric-2\", " +
+              "\"value\": 1234.5678, \"dimensions\": {\"foo\": \"bar\", " +
+              "\"biz\": \"baz\"}}").post("/v2.0/metrics ").then().assertThat().statusCode(204);
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z").param
-        ("name", "test-metric-2").get("v2.0/metrics/measurements").then().assertThat().statusCode
-        (200);
+                    "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z")
+        .param
+            ("name", "test-metric-2").get("v2.0/metrics/measurements").then().assertThat()
+        .statusCode
+            (200);
 
   }
 
@@ -423,7 +465,8 @@ public class ITInfluxDBTest {
   public void metricList() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("/v2.0/metrics").then().assertThat().statusCode(200);
+                    "X-Auth-Token", "82510970543135").get("/v2.0/metrics").then().assertThat()
+        .statusCode(500);
 
   }
 
@@ -434,8 +477,9 @@ public class ITInfluxDBTest {
 
     for (String stat : stats) {
       given().headers("Accept", "application/json", "Content-Type", "application/json",
-          "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z").param
-          ("statistics", stat).param("name", "cpu_system_perc").get("/v2.0/metrics/statistics")
+                      "X-Auth-Token", "82510970543135").param("start_time", "1970-01-01T00:00:00Z")
+          .param
+              ("statistics", stat).param("name", "cpu_system_perc").get("/v2.0/metrics/statistics")
           .then().assertThat().statusCode(200);
     }
 
@@ -445,23 +489,28 @@ public class ITInfluxDBTest {
   public void notificationCreateTest() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
-        "" + "\"name\": \"test-notification-1\", \"address\": \"jdoe@gmail.com\"}").post("/v2" +
-        ".0/notification-methods").then().assertThat().statusCode(201);
+                    "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
+                                                           ""
+                                                           + "\"name\": \"test-notification-1\", \"address\": \"jdoe@gmail.com\"}")
+        .post("/v2" +
+              ".0/notification-methods").then().assertThat().statusCode(201);
   }
 
   @Test
   public void notificationDeleteTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
-        "" + "\"name\": \"test-notification-2\", \"address\": \"jdoe@gmail.com\"}").post("/v2" +
-        ".0/notification-methods").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"type\": \"email\", " +
+              "" + "\"name\": \"test-notification-2\", \"address\": \"jdoe@gmail.com\"}")
+        .post("/v2" +
+              ".0/notification-methods").asString();
 
     String notificationId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").delete("/v2.0/notification-methods/" + notificationId)
+                    "X-Auth-Token", "82510970543135")
+        .delete("/v2.0/notification-methods/" + notificationId)
         .then().assertThat().statusCode(204);
 
 
@@ -471,7 +520,8 @@ public class ITInfluxDBTest {
   public void notificationList() {
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("/v2.0/notification-methods").then().assertThat()
+                    "X-Auth-Token", "82510970543135").get("/v2.0/notification-methods").then()
+        .assertThat()
         .statusCode(200);
 
   }
@@ -480,14 +530,17 @@ public class ITInfluxDBTest {
   public void notificationShowTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
-        "" + "\"name\": \"test-notification-3\", \"address\": \"jdoe@gmail.com\"}").post("/v2" +
-        ".0/notification-methods").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"type\": \"email\", " +
+              "" + "\"name\": \"test-notification-3\", \"address\": \"jdoe@gmail.com\"}")
+        .post("/v2" +
+              ".0/notification-methods").asString();
 
     String notificationId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("/v2.0/notification-methods/" + notificationId)
+                    "X-Auth-Token", "82510970543135")
+        .get("/v2.0/notification-methods/" + notificationId)
         .then().assertThat().statusCode(200);
 
   }
@@ -496,19 +549,24 @@ public class ITInfluxDBTest {
   public void notificationUpdateTest() {
 
     String json = given().headers("Accept", "application/json", "Content-Type",
-        "application/json", "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
-        "" + "\"name\": \"test-notification-4\", \"address\": \"jdoe@gmail.com\"}").post("/v2" +
-        ".0/notification-methods").asString();
+                                  "application/json", "X-Auth-Token", "82510970543135")
+        .body("{\"type\": \"email\", " +
+              "" + "\"name\": \"test-notification-4\", \"address\": \"jdoe@gmail.com\"}")
+        .post("/v2" +
+              ".0/notification-methods").asString();
 
     String notificationId = from(json).get("id");
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
-        "" + "\"name\": \"test-notification-4\", \"address\": \"jsmith@gmail.com\"}").put("/v2" +
-        ".0/notification-methods/" + notificationId).then().assertThat().statusCode(200);
+                    "X-Auth-Token", "82510970543135").body("{\"type\": \"email\", " +
+                                                           ""
+                                                           + "\"name\": \"test-notification-4\", \"address\": \"jsmith@gmail.com\"}")
+        .put("/v2" +
+             ".0/notification-methods/" + notificationId).then().assertThat().statusCode(200);
 
     json = given().headers("Accept", "application/json", "Content-Type", "application/json",
-        "X-Auth-Token", "82510970543135").get("/v2.0/notification-methods/" + notificationId)
+                           "X-Auth-Token", "82510970543135")
+        .get("/v2.0/notification-methods/" + notificationId)
         .asString();
 
     String address = from(json).get("address");
@@ -561,6 +619,7 @@ public class ITInfluxDBTest {
   }
 
   private static abstract class CreateContainer {
+
     private String imageName;
 
     private CreateContainer(String imageName) {

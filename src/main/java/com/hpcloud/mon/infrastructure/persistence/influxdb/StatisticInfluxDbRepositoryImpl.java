@@ -13,14 +13,11 @@
  */
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import com.google.inject.Inject;
 
-import javax.annotation.Nullable;
+import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
+import com.hpcloud.mon.domain.model.statistic.Statistics;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
@@ -30,12 +27,18 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.domain.model.statistic.StatisticRepository;
-import com.hpcloud.mon.domain.model.statistic.Statistics;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
 
 public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
+
   private static final Logger logger = LoggerFactory
       .getLogger(StatisticInfluxDbRepositoryImpl.class);
 
@@ -53,18 +56,18 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
   @Override
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, List<String> statistics, int period)
+                               DateTime startTime, @Nullable DateTime endTime,
+                               List<String> statistics, int period)
       throws Exception {
+
+    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
     String statsPart = buildStatsPart(statistics);
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
-    String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
     String periodPart = buildPeriodPart(period);
 
     String query =
-        String.format("select time %1$s from %2$s where tenant_id = '%3$s' %4$s %5$s " + "%6$s",
-            statsPart, Utils.SQLSanitizer.sanitize(name), Utils.SQLSanitizer.sanitize(tenantId),
-            timePart, dimsPart, periodPart);
-
+        String.format("select time %1$s from /%2$s/ where 1=1 %3$s %4$s",
+                      statsPart, serieNameRegex, timePart, periodPart);
     logger.debug("Query string: {}", query);
 
     List<Serie> result =
@@ -72,16 +75,16 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
     List<Statistics> statisticsList = new LinkedList<Statistics>();
 
-    // Should only be one serie -- name.
     for (Serie serie : result) {
-      Statistics stat = new Statistics();
-      stat.setName(serie.getName());
+      Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serie.getName());
+      Statistics statistic = new Statistics();
+      statistic.setName(serieNameConverter.getMetricName());
       List<String> colNamesList = new LinkedList<>(statistics);
       colNamesList.add(0, "timestamp");
-      stat.setColumns(colNamesList);
-      stat.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
+      statistic.setColumns(colNamesList);
+      statistic.setDimensions(serieNameConverter.getDimensions());
       List<List<Object>> valObjArryArry = new LinkedList<List<Object>>();
-      stat.setStatistics(valObjArryArry);
+      statistic.setStatistics(valObjArryArry);
       final String[] colNames = serie.getColumns();
       final List<Map<String, Object>> rows = serie.getRows();
       for (Map<String, Object> row : rows) {
@@ -94,9 +97,8 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
         }
         valObjArryArry.add(valObjArry);
       }
-      statisticsList.add(stat);
+      statisticsList.add(statistic);
     }
-
     return statisticsList;
   }
 

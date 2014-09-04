@@ -13,25 +13,36 @@
  */
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import com.google.common.base.Joiner;
 import com.google.inject.Inject;
+
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
+
   private static final Logger logger = LoggerFactory.getLogger
-      (AlarmStateHistoryInfluxDbRepositoryImpl.class);
+      (MetricDefinitionInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
+
+  // Serie names match this pattern.
+  private static final Pattern p = Pattern.compile("^.+\\?.+&.+(&.+=.+)*$");
 
   @Inject
   public MetricDefinitionInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
@@ -43,122 +54,35 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
   public List<MetricDefinition> find(String tenantId, String name, Map<String,
       String> dimensions) throws Exception {
 
-    String namePart = name == null ? "/.*/" : Utils.SQLSanitizer.sanitize(name);
+    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
+
+    String query = String.format("list series /%1$s/", serieNameRegex);
+    logger.debug("Query string: {}", query);
 
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
 
-    // If no dimensions given, then find everything.
-    if (dimensions == null || dimensions.isEmpty()) {
+    List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
+                                             TimeUnit.SECONDS);
+    for (Serie serie : result) {
+      for (Map point : serie.getRows()) {
 
-      // First find all time series (measurements) with all their dimensions.
-      String query = String.format("select * from %1$s where tenant_id = '%2$s' limit 1",
-          namePart, Utils.SQLSanitizer.sanitize(tenantId));
+        String serieName = (String) point.get("name");
 
-      logger.debug("Query string: {}", query);
-
-      List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
-          TimeUnit.SECONDS);
-
-      // Group time series names under their unique set of dimensions.
-      Map<TreeSet<String>, List<String>> columnsToNamesMap = new HashMap<>();
-      for (Serie serie : result) {
-        TreeSet<String> columnsSet = new TreeSet<String>();
-        for (String columnName : serie.getColumns()) {
-
-          // Filter out everything but the dimensions.
-          if (columnName.equalsIgnoreCase("time")) {
-            continue;
-          } else if (columnName.equalsIgnoreCase("sequence_number")) {
-            continue;
-          } else if (columnName.equalsIgnoreCase("value")) {
-            continue;
-          } else if (columnName.equalsIgnoreCase("tenant_id")) {
-            continue;
-          } else if (columnName.equalsIgnoreCase("region")) {
-            continue;
-          } else {
-            columnsSet.add(columnName);
-          }
+        // We might come across other series that are created by the persister or don't
+        // pertain to metric data.  They will break the parsing. Throw them away.
+        Matcher m = p.matcher(serieName);
+        if (!m.matches()) {
+          logger.warn("Dropping series name that is not well-formed: {}", serieName);
+          continue;
         }
 
-        if (columnsToNamesMap.containsKey(columnsSet)) {
-          columnsToNamesMap.get(columnsSet).add(serie.getName());
-        } else {
-          List<String> nameList = new LinkedList<String>();
-          nameList.add(serie.getName());
-          columnsToNamesMap.put(columnsSet, nameList);
-        }
-      }
-
-      // For each set of unique dimensions, issue a query for all time series with that
-      // unique set of dimensions.
-      for (TreeSet<String> columnsSet : columnsToNamesMap.keySet()) {
-        List<String> nameList = columnsToNamesMap.get(columnsSet);
-
-        String groupByPart = "";
-
-        // Could be time series with no dimensions.
-        if (columnsSet.size() > 0) {
-          groupByPart = "group by " + Joiner.on(",").join(columnsSet);
-        }
-        String namesPart = Joiner.on(",").join(nameList);
-
-        // Can use any aggregate function.  We chose max.
-        String query2 = String.format("Select max(value) from %1$s where tenant_id = '%2$s' %3$s",
-            namesPart, Utils.SQLSanitizer.sanitize(tenantId), groupByPart);
-
-        logger.debug("Query string: {}", query2);
-
-        List<Serie> result2 = this.influxDB.Query(this.config.influxDB.getName(), query2,
-            TimeUnit.SECONDS);
-
-        for (Serie serie : result2) {
-
-          // Each set of points is a unique measurement definition.
-          final String[] colNames = serie.getColumns();
-          final List<Map<String, Object>> rows = serie.getRows();
-
-          for (Map<String, Object> row : rows) {
-
-            MetricDefinition metricDefinition = new MetricDefinition();
-            metricDefinition.name = serie.getName();
-
-            Map<String, String> dimMap = new HashMap<String, String>();
-            // time and max(value) are always the first columns. Skip them.
-            for (int i = 2; i < colNames.length; ++i) {
-              Object dimValue = row.get(colNames[i]);
-              if (dimValue != null) {
-                dimMap.put((String) colNames[i], (String) dimValue);
-              }
-            }
-            metricDefinition.setDimensions(dimMap);
-            metricDefinitionList.add(metricDefinition);
-          }
-        }
-      }
-      // Dimensions given, so we can use dimensions to query exactly what is needed.
-    } else {
-
-      String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
-
-      String query = String.format("select first(value) from %1$s where tenant_id = '%2$s' " +
-          "%3$s", namePart, Utils.SQLSanitizer.sanitize(tenantId), dimsPart);
-
-      logger.debug("Query string: {}", query);
-
-      List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
-          TimeUnit.SECONDS);
-
-      for (Serie serie : result) {
-
-        MetricDefinition metricDefinition = new MetricDefinition();
-        metricDefinition.name = serie.getName();
-        metricDefinition.setDimensions(dimensions == null ? new HashMap<String,
-            String>() : dimensions);
+        Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serieName);
+        MetricDefinition metricDefinition = new MetricDefinition(serieNameConverter.getMetricName(),
+                                 serieNameConverter.getDimensions());
         metricDefinitionList.add(metricDefinition);
       }
-    }
 
+    }
     return metricDefinitionList;
   }
 }

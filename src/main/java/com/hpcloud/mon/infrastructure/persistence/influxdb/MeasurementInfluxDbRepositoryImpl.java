@@ -13,15 +13,11 @@
  */
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import com.google.inject.Inject;
 
-import javax.annotation.Nullable;
+import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
+import com.hpcloud.mon.domain.model.measurement.Measurements;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
@@ -31,10 +27,15 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
-import com.hpcloud.mon.domain.model.measurement.Measurements;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
 
 public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository {
 
@@ -56,26 +57,31 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
 
   @Override
   public Collection<Measurements> find(String tenantId, String name,
-      Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime)
+                                       Map<String, String> dimensions, DateTime startTime,
+                                       @Nullable DateTime endTime)
       throws Exception {
 
-    String dimsPart = Utils.WhereClauseBuilder.buildDimsPart(dimensions);
-    String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
-    String query =
-        String.format("select value " + "from %1$s " + "where tenant_id = '%2$s' %3$s %4$s",
-            Utils.SQLSanitizer.sanitize(name), Utils.SQLSanitizer.sanitize(tenantId), timePart,
-            dimsPart);
+    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
 
+    String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+
+    String query =
+        String.format("select value " + "from /%1$s/ where 1 = 1 " + " %2$s ",
+                      serieNameRegex, timePart);
     logger.debug("Query string: {}", query);
 
     List<Serie> result =
         this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
 
-    Measurements measurements = new Measurements();
-    measurements.setName(name);
-    measurements.setDimensions(dimensions == null ? new HashMap<String, String>() : dimensions);
-    List<Object[]> valObjArryList = new LinkedList<>();
+    List<Measurements> measurementsList = new LinkedList<>();
+
     for (Serie serie : result) {
+
+      Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serie.getName());
+      Measurements measurements = new Measurements();
+      measurements.setName(serieNameConverter.getMetricName());
+      measurements.setDimensions(serieNameConverter.getDimensions());
+      List<Object[]> valObjArryList = new LinkedList<>();
       final String[] colNames = serie.getColumns();
       final List<Map<String, Object>> rows = serie.getRows();
       for (Map<String, Object> row : rows) {
@@ -92,10 +98,10 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
 
         valObjArryList.add(objArry);
       }
+      measurements.setMeasurements(valObjArryList);
+      measurementsList.add(measurements);
     }
-
-    measurements.setMeasurements(valObjArryList);
-
-    return Arrays.asList(measurements);
+    return measurementsList;
   }
+
 }
