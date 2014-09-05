@@ -26,6 +26,9 @@ import java.util.regex.Pattern;
 
 final class Utils {
 
+  // Serie names match this pattern.
+  private static final Pattern serieNamePattern = Pattern.compile("^.+\\?.+&.+(&.+=.+)*$");
+
   private Utils() {
   }
 
@@ -215,5 +218,15 @@ final class Utils {
       return dimensions;
     }
 
+  }
+
+  /**
+   * We might come across other series that are created by the persister or don't pertain to metric
+   * data.  They will break the parsing. Throw them away.
+   */
+
+  static boolean serieNameMatcher(String serieName) {
+    Matcher m = serieNamePattern.matcher(serieName);
+    return m.matches();
   }
 }

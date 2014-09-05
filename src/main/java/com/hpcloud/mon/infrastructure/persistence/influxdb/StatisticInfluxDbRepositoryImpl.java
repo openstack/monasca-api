@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.serieNameMatcher;
 
 public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
@@ -70,13 +71,29 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
                       statsPart, serieNameRegex, timePart, periodPart);
     logger.debug("Query string: {}", query);
 
-    List<Serie> result =
-        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
-
     List<Statistics> statisticsList = new LinkedList<Statistics>();
 
+    List<Serie> result = null;
+    try {
+      result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
+    } catch (RuntimeException e) {
+      if (e.getMessage().equals("Couldn't look up columns")) {
+        return statisticsList;
+      } else {
+        logger.error("Failed to get data from InfluxDB", e);
+        throw e;
+      }
+    }
+
     for (Serie serie : result) {
-      Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serie.getName());
+
+      String serieName = serie.getName();
+      if (!serieNameMatcher(serieName)) {
+        logger.warn("Dropping series name that is not well-formed: {}", serieName);
+        continue;
+      }
+
+      Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serieName);
       Statistics statistic = new Statistics();
       statistic.setName(serieNameConverter.getMetricName());
       List<String> colNamesList = new LinkedList<>(statistics);

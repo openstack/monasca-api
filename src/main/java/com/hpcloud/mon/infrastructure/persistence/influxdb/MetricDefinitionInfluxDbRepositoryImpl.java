@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.serieNameMatcher;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
 
@@ -40,9 +40,6 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
-
-  // Serie names match this pattern.
-  private static final Pattern p = Pattern.compile("^.+\\?.+&.+(&.+=.+)*$");
 
   @Inject
   public MetricDefinitionInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
@@ -67,18 +64,15 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
       for (Map point : serie.getRows()) {
 
         String serieName = (String) point.get("name");
-
-        // We might come across other series that are created by the persister or don't
-        // pertain to metric data.  They will break the parsing. Throw them away.
-        Matcher m = p.matcher(serieName);
-        if (!m.matches()) {
+        if (!serieNameMatcher(serieName)) {
           logger.warn("Dropping series name that is not well-formed: {}", serieName);
           continue;
         }
 
         Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serieName);
         MetricDefinition metricDefinition = new MetricDefinition(serieNameConverter.getMetricName(),
-                                 serieNameConverter.getDimensions());
+                                                                 serieNameConverter
+                                                                     .getDimensions());
         metricDefinitionList.add(metricDefinition);
       }
 
