@@ -40,10 +40,10 @@ final class Utils {
     private SQLSanitizer() {
     }
 
-    private static final Pattern p = Pattern.compile("^.*('|;)+.*$");
+    private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;)+.*$");
 
-    static String sanitize(String taintedString) throws Exception {
-      Matcher m = p.matcher(taintedString);
+    static String sanitize(final String taintedString) throws Exception {
+      Matcher m = sqlUnsafePattern.matcher(taintedString);
       if (m.matches()) {
         throw new Exception(String.format("Input from user contains single quote ['] or " +
                                           "semi-colon [;] characters[ %1$s ]", taintedString));
@@ -61,8 +61,8 @@ final class Utils {
     private WhereClauseBuilder() {
     }
 
-    static String buildTimePart(DateTime startTime, DateTime endTime) {
-      StringBuilder sb = new StringBuilder();
+    static String buildTimePart(final DateTime startTime, final DateTime endTime) {
+      final StringBuilder sb = new StringBuilder();
 
       if (startTime != null) {
         sb.append(String.format(" and time > %1$ds", startTime.getMillis() / 1000));
@@ -75,21 +75,11 @@ final class Utils {
       return sb.toString();
     }
 
-    static String buildDimsPart(Map<String, String> dims) throws Exception {
-      StringBuilder sb = new StringBuilder();
-      if (dims != null) {
-        for (String colName : dims.keySet()) {
-          sb.append(String.format(" and %1$s = '%2$s'", Utils.SQLSanitizer.sanitize(colName),
-                                  Utils.SQLSanitizer.sanitize(dims.get(colName))));
-        }
-      }
-      return sb.toString();
-    }
   }
 
-  static String buildSerieNameRegex(String tenantId, String name,
-                                    Map<String, String> dimensions) throws Exception {
-    StringBuilder regex = new StringBuilder("^");
+  static String buildSerieNameRegex(final String tenantId, final String name,
+                                    final Map<String, String> dimensions) throws Exception {
+    final StringBuilder regex = new StringBuilder("^");
 
     // Name is optional.
     if (name != null) {
@@ -106,9 +96,9 @@ final class Utils {
     if (dimensions != null && !dimensions.isEmpty()) {
 
       // We depend on the fact that dimensions are sorted in the series name.
-      TreeSet<Dimension> dimSortedSet = buildSortedDimSet(dimensions);
+      final TreeSet<Dimension> dimSortedSet = buildSortedDimSet(dimensions);
 
-      for (Dimension dim : dimSortedSet) {
+      for (final Dimension dim : dimSortedSet) {
         regex.append(".*&");
         regex.append(urlEncodeUTF8(dim.name));
         regex.append("=");
@@ -119,19 +109,19 @@ final class Utils {
   }
 
   static String urlEncodeUTF8(String s) throws Exception {
-    return URLEncoder.encode(Utils.SQLSanitizer.sanitize(s), "UTF-8");
+    return URLEncoder.encode(s, "UTF-8");
   }
 
 
-  static String urlDecodeUTF8(String s) throws UnsupportedEncodingException {
+  static String urlDecodeUTF8(final String s) throws UnsupportedEncodingException {
     return URLDecoder.decode(s, "UTF-8");
   }
 
-  static TreeSet<Dimension> buildSortedDimSet(Map<String, String> dimMap) {
+  static TreeSet<Dimension> buildSortedDimSet(final Map<String, String> dimMap) {
 
-    TreeSet<Dimension> dimTreeSet = new TreeSet<>();
-    for (String dimName : dimMap.keySet()) {
-      Dimension dim = new Dimension(dimName, dimMap.get(dimName));
+    final TreeSet<Dimension> dimTreeSet = new TreeSet<>();
+    for (final String dimName : dimMap.keySet()) {
+      final Dimension dim = new Dimension(dimName, dimMap.get(dimName));
       dimTreeSet.add(dim);
     }
     return dimTreeSet;
@@ -139,10 +129,10 @@ final class Utils {
 
   static final class Dimension implements Comparable<Dimension> {
 
-    String name;
-    String value;
+    final String name;
+    final String value;
 
-    private Dimension(String name, String value) {
+    private Dimension(final String name, final String value) {
       this.name = name;
       this.value = value;
     }
@@ -162,7 +152,7 @@ final class Utils {
     private final String region;
     private final Map<String, String> dimensions;
 
-    SerieNameConverter(String serieName) throws UnsupportedEncodingException {
+    SerieNameConverter(final String serieName) throws UnsupportedEncodingException {
 
       this.serieName = serieName;
 
@@ -183,7 +173,7 @@ final class Utils {
       // It's possible to have no dimensions.
       this.dimensions = new HashMap();
       while (rest != null) {
-        String nameValPair;
+        final String nameValPair;
         if (rest.contains("&")) {
           nameValPair = rest.substring(0, rest.indexOf('&'));
           rest = rest.substring(rest.indexOf('&') + 1);
@@ -191,8 +181,8 @@ final class Utils {
           nameValPair = rest;
           rest = null;
         }
-        String dimName = urlDecodeUTF8(nameValPair.split("=")[0]);
-        String dimVal = urlDecodeUTF8(nameValPair.split("=")[1]);
+        final String dimName = urlDecodeUTF8(nameValPair.split("=")[0]);
+        final String dimVal = urlDecodeUTF8(nameValPair.split("=")[1]);
         this.dimensions.put(dimName, dimVal);
 
       }
@@ -225,8 +215,8 @@ final class Utils {
    * data.  They will break the parsing. Throw them away.
    */
 
-  static boolean serieNameMatcher(String serieName) {
-    Matcher m = serieNamePattern.matcher(serieName);
+  static boolean isSerieMetricName(String serieName) {
+    final Matcher m = serieNamePattern.matcher(serieName);
     return m.matches();
   }
 }

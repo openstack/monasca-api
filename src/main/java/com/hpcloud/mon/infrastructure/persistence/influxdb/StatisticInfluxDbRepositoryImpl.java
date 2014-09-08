@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
-import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.serieNameMatcher;
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.isSerieMetricName;
 
 public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
@@ -88,7 +88,7 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
     for (Serie serie : result) {
 
       String serieName = serie.getName();
-      if (!serieNameMatcher(serieName)) {
+      if (!isSerieMetricName(serieName)) {
         logger.warn("Dropping series name that is not well-formed: {}", serieName);
         continue;
       }

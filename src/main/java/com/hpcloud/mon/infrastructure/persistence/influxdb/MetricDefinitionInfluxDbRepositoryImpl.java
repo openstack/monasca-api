@@ -28,10 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
-import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.serieNameMatcher;
+import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.isSerieMetricName;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
 
@@ -64,7 +63,7 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
       for (Map point : serie.getRows()) {
 
         String serieName = (String) point.get("name");
-        if (!serieNameMatcher(serieName)) {
+        if (!isSerieMetricName(serieName)) {
           logger.warn("Dropping series name that is not well-formed: {}", serieName);
           continue;
         }

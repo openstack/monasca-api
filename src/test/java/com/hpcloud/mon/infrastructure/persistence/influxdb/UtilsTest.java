@@ -53,24 +53,4 @@ public class UtilsTest {
     assert (expectedResult.equals(Utils.WhereClauseBuilder.buildTimePart(startTime, endTime)));
   }
 
-  public void whereClauseBuilderBuildDimsPartTest1() throws Exception {
-    String expectedResult = "";
-    Map<String, String> dimsMap = new HashMap<>();
-    assert (expectedResult.equals(Utils.WhereClauseBuilder.buildDimsPart(dimsMap)));
-  }
-
-  public void whereClauseBuilderBuildDimsPartTest2() throws Exception {
-    String expectedResult = " and foo = 'bar'";
-    Map<String, String> dimsMap = new HashMap<>();
-    dimsMap.put("foo", "bar");
-    assert (expectedResult.equals(Utils.WhereClauseBuilder.buildDimsPart(dimsMap)));
-  }
-
-  public void whereClauseBuilderBuildDimsPartTest3() throws Exception {
-    String expectedResult = " and foo = 'bar' and biz = 'baz'";
-    Map<String, String> dimsMap = new LinkedHashMap<>();
-    dimsMap.put("foo", "bar");
-    dimsMap.put("biz", "baz");
-    assert (expectedResult.equals(Utils.WhereClauseBuilder.buildDimsPart(dimsMap)));
-  }
 }
