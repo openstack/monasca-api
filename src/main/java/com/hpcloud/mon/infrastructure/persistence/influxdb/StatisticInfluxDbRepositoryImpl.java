@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
-import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.isSerieMetricName;
 
 public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
@@ -87,30 +86,29 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
     for (Serie serie : result) {
 
-      String serieName = serie.getName();
-      if (!isSerieMetricName(serieName)) {
-        logger.warn("Dropping series name that is not well-formed: {}", serieName);
+      Utils.SerieNameDecoder serieNameDecoder;
+      try {
+        serieNameDecoder = new Utils.SerieNameDecoder(serie.getName());
+      } catch (Utils.SerieNameDecodeException e) {
+        logger.warn("Dropping series name that is not decodable: {}", serie.getName(), e);
         continue;
       }
 
-      Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serieName);
       Statistics statistic = new Statistics();
-      statistic.setName(serieNameConverter.getMetricName());
+      statistic.setName(serieNameDecoder.getMetricName());
       List<String> colNamesList = new LinkedList<>(statistics);
       colNamesList.add(0, "timestamp");
       statistic.setColumns(colNamesList);
-      statistic.setDimensions(serieNameConverter.getDimensions());
+      statistic.setDimensions(serieNameDecoder.getDimensions());
       List<List<Object>> valObjArryArry = new LinkedList<List<Object>>();
       statistic.setStatistics(valObjArryArry);
-      final String[] colNames = serie.getColumns();
-      final List<Map<String, Object>> rows = serie.getRows();
-      for (Map<String, Object> row : rows) {
+      for (Map<String, Object> row : serie.getRows()) {
         List<Object> valObjArry = new ArrayList<>();
         // First column is always time.
-        Double timeDouble = (Double) row.get(colNames[0]);
+        Double timeDouble = (Double) row.get(serie.getColumns()[0]);
         valObjArry.add(DATETIME_FORMATTER.print(timeDouble.longValue()));
         for (int j = 1; j < statistics.size() + 1; j++) {
-          valObjArry.add(row.get(colNames[j]));
+          valObjArry.add(row.get(serie.getColumns()[j]));
         }
         valObjArryArry.add(valObjArry);
       }

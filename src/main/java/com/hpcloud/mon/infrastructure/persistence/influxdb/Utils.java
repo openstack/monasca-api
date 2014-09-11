@@ -144,7 +144,7 @@ final class Utils {
     }
   }
 
-  static class SerieNameConverter {
+  static class SerieNameDecoder {
 
     private final String serieName;
     private final String metricName;
@@ -152,7 +152,11 @@ final class Utils {
     private final String region;
     private final Map<String, String> dimensions;
 
-    SerieNameConverter(final String serieName) throws UnsupportedEncodingException {
+    SerieNameDecoder(final String serieName) throws Exception {
+
+      if (!isSerieMetricName(serieName)) {
+        throw new SerieNameDecodeException ("Serie name is not decodable: " + serieName);
+      }
 
       this.serieName = serieName;
 
@@ -210,6 +214,14 @@ final class Utils {
 
   }
 
+  static class SerieNameDecodeException extends Exception {
+
+    public SerieNameDecodeException(String s) {
+      super(s);
+    }
+
+  }
+
   /**
    * We might come across other series that are created by the persister or don't pertain to metric
    * data.  They will break the parsing. Throw them away.
@@ -219,4 +231,6 @@ final class Utils {
     final Matcher m = serieNamePattern.matcher(serieName);
     return m.matches();
   }
+
 }
+

@@ -62,15 +62,16 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
     for (Serie serie : result) {
       for (Map point : serie.getRows()) {
 
-        String serieName = (String) point.get("name");
-        if (!isSerieMetricName(serieName)) {
-          logger.warn("Dropping series name that is not well-formed: {}", serieName);
+        Utils.SerieNameDecoder serieNameDecoder;
+        try {
+          serieNameDecoder = new Utils.SerieNameDecoder((String) point.get("name"));
+        } catch (Utils.SerieNameDecodeException e) {
+          logger.warn("Dropping series name that is not decodable: {}", point.get("name"), e);
           continue;
         }
 
-        Utils.SerieNameConverter serieNameConverter = new Utils.SerieNameConverter(serieName);
-        MetricDefinition metricDefinition = new MetricDefinition(serieNameConverter.getMetricName(),
-                                                                 serieNameConverter
+        MetricDefinition metricDefinition = new MetricDefinition(serieNameDecoder.getMetricName(),
+                                                                 serieNameDecoder
                                                                      .getDimensions());
         metricDefinitionList.add(metricDefinition);
       }
