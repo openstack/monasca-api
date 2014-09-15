@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
-import static com.hpcloud.mon.infrastructure.persistence.influxdb.Utils.isSerieMetricName;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
 
@@ -55,10 +54,13 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
     String query = String.format("list series /%1$s/", serieNameRegex);
     logger.debug("Query string: {}", query);
 
-    List<MetricDefinition> metricDefinitionList = new ArrayList<>();
-
     List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
                                              TimeUnit.SECONDS);
+    return buildMetricDefList(result);
+  }
+
+  private List<MetricDefinition> buildMetricDefList(List<Serie> result) throws Exception {
+    List<MetricDefinition> metricDefinitionList = new ArrayList<>();
     for (Serie serie : result) {
       for (Map point : serie.getRows()) {
 
@@ -75,7 +77,6 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
                                                                      .getDimensions());
         metricDefinitionList.add(metricDefinition);
       }
-
     }
     return metricDefinitionList;
   }

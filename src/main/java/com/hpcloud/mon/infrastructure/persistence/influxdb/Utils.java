@@ -28,6 +28,7 @@ final class Utils {
 
   // Serie names match this pattern.
   private static final Pattern serieNamePattern = Pattern.compile("^.+\\?.+&.+(&.+=.+)*$");
+  static final String COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG = "Couldn't look up columns";
 
   private Utils() {
   }

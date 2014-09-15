@@ -70,20 +70,24 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
                       statsPart, serieNameRegex, timePart, periodPart);
     logger.debug("Query string: {}", query);
 
-    List<Statistics> statisticsList = new LinkedList<Statistics>();
-
     List<Serie> result = null;
     try {
       result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     } catch (RuntimeException e) {
-      if (e.getMessage().equals("Couldn't look up columns")) {
-        return statisticsList;
+      if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
+        return new LinkedList<>();
       } else {
         logger.error("Failed to get data from InfluxDB", e);
         throw e;
       }
     }
 
+    return buildStatisticsList(statistics, result);
+  }
+
+  private List<Statistics> buildStatisticsList(List<String> statistics, List<Serie> result)
+      throws Exception {
+    List<Statistics> statisticsList = new LinkedList<Statistics>();
     for (Serie serie : result) {
 
       Utils.SerieNameDecoder serieNameDecoder;

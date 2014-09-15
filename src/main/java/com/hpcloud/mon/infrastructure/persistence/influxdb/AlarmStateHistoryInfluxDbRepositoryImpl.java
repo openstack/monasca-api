@@ -13,15 +13,14 @@
  */
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import com.google.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Named;
+import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
+import com.hpcloud.mon.infrastructure.persistence.SubAlarmQueries;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
@@ -34,13 +33,15 @@ import org.skife.jdbi.v2.util.StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
-import com.hpcloud.mon.infrastructure.persistence.SubAlarmQueries;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+import javax.inject.Named;
 
 public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistoryRepository {
 
@@ -52,13 +53,15 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   private final DBI mysql;
 
   private static final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a " + "join"
-      + " sub_alarm sa on a.id = sa.alarm_id " + "left outer join sub_alarm_dimension dim on "
-      + "sa.id = dim.sub_alarm_id%s " + "where a.tenant_id = :tenantId and a.deleted_at is "
-      + "NULL";
+                                                + " sub_alarm sa on a.id = sa.alarm_id "
+                                                + "left outer join sub_alarm_dimension dim on "
+                                                + "sa.id = dim.sub_alarm_id%s "
+                                                + "where a.tenant_id = :tenantId and a.deleted_at is "
+                                                + "NULL";
 
   @Inject
   public AlarmStateHistoryInfluxDbRepositoryImpl(@Named("mysql") DBI mysql,
-      MonApiConfiguration config, InfluxDB influxDB) {
+                                                 MonApiConfiguration config, InfluxDB influxDB) {
     this.mysql = mysql;
     this.config = config;
     this.influxDB = influxDB;
@@ -75,13 +78,16 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   String buildQueryForFindById(String tenantId, String alarmId) throws Exception {
 
     return String.format("select alarm_id, old_state, new_state, reason, reason_data "
-        + "from alarm_state_history " + "where tenant_id = '%1$s' and alarm_id = '%2$s'",
-        Utils.SQLSanitizer.sanitize(tenantId), Utils.SQLSanitizer.sanitize(alarmId));
+                         + "from alarm_state_history "
+                         + "where tenant_id = '%1$s' and alarm_id = '%2$s'",
+                         Utils.SQLSanitizer.sanitize(tenantId),
+                         Utils.SQLSanitizer.sanitize(alarmId));
   }
 
   @Override
   public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime) throws Exception {
+                                            DateTime startTime, @Nullable DateTime endTime)
+      throws Exception {
 
     List<String> alarmIds = null;
     // Find alarm Ids for dimensions
@@ -111,8 +117,8 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
 
   String buildQueryForFind(String tenantId, String timePart, String alarmsPart) throws Exception {
     return String.format("select alarm_id, old_state, new_state, reason, reason_data "
-        + "from alarm_state_history " + "where tenant_id = '%1$s' %2$s %3$s",
-        Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
+                         + "from alarm_state_history " + "where tenant_id = '%1$s' %2$s %3$s",
+                         Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
   }
 
   String buildAlarmsPart(List<String> alarmIds) {
@@ -136,8 +142,18 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
 
     logger.debug("Query string: {}", query);
 
-    List<Serie> result =
-        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
+    List<Serie> result;
+    try {
+      result =
+          this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
+    } catch (Exception e) {
+      if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
+        return new LinkedList();
+      } else {
+        logger.error("Failed to get data from InfluxDB", e);
+        throw e;
+      }
+    }
 
     List<AlarmStateHistory> alarmStateHistoryList = new LinkedList<>();
 
