@@ -13,26 +13,17 @@
  */
 package com.hpcloud.mon.app.command;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 
-public class UpdateAlarmCommand extends CreateAlarmCommand {
+public class UpdateAlarmCommand {
   @NotNull
   public AlarmState state;
-  @NotNull
-  public Boolean actionsEnabled;
 
   public UpdateAlarmCommand() {}
 
-  public UpdateAlarmCommand(String name, @Nullable String description, String severity,
-      String expression, AlarmState state, boolean enabled, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions) {
-    super(name, description, severity, expression, alarmActions, okActions, undeterminedActions);
+  public UpdateAlarmCommand(AlarmState state) {
     this.state = state;
-    this.actionsEnabled = enabled;
   }
 }

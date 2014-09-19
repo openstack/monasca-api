@@ -15,21 +15,16 @@
 package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.util.StringMapper;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -37,10 +32,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import com.hpcloud.mon.common.model.alarm.AggregateFunction;
-import com.hpcloud.mon.common.model.alarm.AlarmOperator;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
@@ -74,195 +66,85 @@ public class AlarmMySqlRepositoryImplTest {
   @BeforeMethod
   protected void beforeMethod() {
     handle.execute("SET foreign_key_checks = 0;");
-    handle.execute("truncate table sub_alarm");
-    handle.execute("truncate table alarm_action");
-    handle.execute("truncate table sub_alarm_dimension");
     handle.execute("truncate table alarm");
+    handle.execute("truncate table alarm_action");
+    handle.execute("truncate table alarm_definition");
+    handle.execute("truncate table alarm_metric");
+    handle.execute("truncate table metric_definition");
+    handle.execute("truncate table metric_definition_dimensions");
+    handle.execute("truncate table metric_dimension");
 
     handle
-        .execute("insert into alarm (id, tenant_id, name, severity, expression, state, actions_enabled, created_at, updated_at, deleted_at) "
-            + "values ('123', 'bob', '90% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
+        .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
+            + "values ('1', 'bob', '90% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'flavor_id,image_id', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
-            + "values ('111', '123', 'avg', 'hpcs.compute', 'GT', 10, 60, 1, 'UNDETERMINED', NOW(), NOW())");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'flavor_id', '777')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'image_id', '888')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'metric_name', 'cpu')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'device', '1')");
-    handle.execute("insert into alarm_action values ('123', 'ALARM', '29387234')");
-    handle.execute("insert into alarm_action values ('123', 'ALARM', '77778687')");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('1', '1', 'OK', NOW(), NOW())");
+    handle
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('2', '1', 'UNDETERMINED', NOW(), NOW())");
+    handle
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('3', '1', 'ALARM', NOW(), NOW())");
+    handle
+        .execute("insert into alarm_metric (alarm_id, metric_definition_dimensions_id) values ('1', 11)");
+    handle
+        .execute("insert into alarm_metric (alarm_id, metric_definition_dimensions_id) values ('1', 22)");
+    handle
+        .execute("insert into alarm_metric (alarm_id, metric_definition_dimensions_id) values ('2', 11)");
+    handle
+        .execute("insert into alarm_metric (alarm_id, metric_definition_dimensions_id) values ('3', 22)");
+    handle
+        .execute("insert into metric_definition (id, name, tenant_id, region) values (1, 'cpu', 'bob', 'west')");
+    handle
+        .execute("insert into metric_definition (id, name, tenant_id, region) values (2, 'mem', 'bob', 'west')");
+    handle
+        .execute("insert into metric_definition_dimensions (id, metric_definition_id, metric_dimension_set_id) values (11, 1, 1)");
+    handle
+        .execute("insert into metric_definition_dimensions (id, metric_definition_id, metric_dimension_set_id) values (22, 2, 1)");
+    handle
+        .execute("insert into metric_dimension (dimension_set_id, name, value) values (1, 'instance_id', '123')");
+    handle
+        .execute("insert into metric_dimension (dimension_set_id, name, value) values (1, 'flavor_id', '222')");
 
     handle
-        .execute("insert into alarm (id, tenant_id, name, severity, expression, state, actions_enabled, created_at, updated_at, deleted_at) "
-            + "values ('234', 'bob', '50% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100', 'UNDETERMINED', 1, NOW(), NOW(), NULL)");
+        .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
+            + "values ('234', 'bob', '50% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100', 'flavor_id,image_id', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
-            + "values ('222', '234', 'avg', 'hpcs.compute', 'GT', 20, 60, 1, 'UNDETERMINED', NOW(), NOW())");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234111', '234', 'UNDETERMINED', NOW(), NOW())");
     handle
-        .execute("insert into sub_alarm (id, alarm_id, function, metric_name, operator, threshold, period, periods, state, created_at, updated_at) "
-            + "values ('223', '234', 'avg', 'hpcs.compute', 'LT', 100, 60, 1, 'UNDETERMINED', NOW(), NOW())");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'image_id', '888')");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'metric_name', 'mem')");
-    handle.execute("insert into alarm_action values ('234', 'ALARM', '29387234')");
-    handle.execute("insert into alarm_action values ('234', 'ALARM', '77778687')");
-  }
-
-  public void shouldCreate() {
-    Map<String, AlarmSubExpression> subExpressions =
-        ImmutableMap
-            .<String, AlarmSubExpression>builder()
-            .put(
-                "4433",
-                AlarmSubExpression
-                    .of("avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10"))
-            .build();
-
-    Alarm alarmA =
-        repo.create("555", "2345", "90% CPU", null, "LOW",
-            "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu}) > 10", subExpressions,
-            alarmActions, null, null);
-    Alarm alarmB = repo.findById("555", alarmA.getId());
-
-    assertEquals(alarmA, alarmB);
-
-    // Assert that sub-alarm and sub-alarm-dimensions made it to the db
-    assertEquals(
-        handle.createQuery("select count(*) from sub_alarm where id = 4433")
-            .map(StringMapper.FIRST).first(), "1");
-    assertEquals(
-        handle.createQuery("select count(*) from sub_alarm_dimension where sub_alarm_id = 4433")
-            .map(StringMapper.FIRST).first(), "3");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234222', '234', 'ALARM', NOW(), NOW())");
   }
 
   @Test(groups = "database")
-  public void shouldUpdate() {
-    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
-    handle = db.open();
-    repo = new AlarmMySqlRepositoryImpl(db);
-    beforeMethod();
-
-    List<String> oldSubAlarmIds = Arrays.asList("222");
-    AlarmSubExpression changedSubExpression = AlarmSubExpression.of("avg(hpcs.compute) <= 200");
-    Map<String, AlarmSubExpression> changedSubExpressions =
-        ImmutableMap.<String, AlarmSubExpression>builder().put("223", changedSubExpression).build();
-    AlarmSubExpression newSubExpression = AlarmSubExpression.of("avg(foo{flavor_id=777}) > 333");
-    Map<String, AlarmSubExpression> newSubExpressions =
-        ImmutableMap.<String, AlarmSubExpression>builder().put("555", newSubExpression).build();
-
-    repo.update("bob", "234", false, "90% CPU", null,
-        "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute) <= 200", "LOW", AlarmState.ALARM,
-        false, oldSubAlarmIds, changedSubExpressions, newSubExpressions, alarmActions, null, null);
-
-    Alarm alarm = repo.findById("bob", "234");
-    Alarm expected =
-        new Alarm("234", "90% CPU", null, "LOW",
-            "avg(foo{flavor_id=777}) > 333 and avg(hpcs.compute) <= 200", AlarmState.ALARM, false,
-            alarmActions, Collections.<String>emptyList(), Collections.<String>emptyList());
-    assertEquals(expected, alarm);
-
-    Map<String, AlarmSubExpression> subExpressions = repo.findSubExpressions("234");
-    assertEquals(subExpressions.get("223"), changedSubExpression);
-    assertEquals(subExpressions.get("555"), newSubExpression);
-  }
-
-  public void shouldFindById() {
-    Alarm alarm = repo.findById("bob", "123");
-
-    assertEquals(alarm.getId(), "123");
-    assertEquals(alarm.getName(), "90% CPU");
-    assertEquals(alarm.getSeverity(), "LOW");
-    assertEquals(alarm.getExpression(),
-        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10");
-    assertEquals(alarm.getState(), AlarmState.UNDETERMINED);
-    assertEquals(alarm.isActionsEnabled(), true);
-    assertEquals(alarm.getAlarmActions(), alarmActions);
-  }
-
-  @Test(groups = "database")
-  public void shouldFindSubAlarmMetricDefinitions() {
-    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
-    handle = db.open();
-    repo = new AlarmMySqlRepositoryImpl(db);
-    beforeMethod();
-
-    assertEquals(
-        repo.findSubAlarmMetricDefinitions("123").get("111"),
-        new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
-            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "cpu")
-            .put("device", "1").build()));
-
-    assertEquals(
-        repo.findSubAlarmMetricDefinitions("234").get("222"),
-        new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
-            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "mem").build()));
-
-    assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
-  }
-
-  @Test(groups = "database")
-  public void shouldFindSubExpressions() {
-    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
-    handle = db.open();
-    repo = new AlarmMySqlRepositoryImpl(db);
-    beforeMethod();
-
-    assertEquals(
-        repo.findSubExpressions("123").get("111"),
-        new AlarmSubExpression(AggregateFunction.AVG, new MetricDefinition("hpcs.compute",
-            ImmutableMap.<String, String>builder().put("flavor_id", "777").put("image_id", "888")
-                .put("metric_name", "cpu").put("device", "1").build()), AlarmOperator.GT, 10, 60, 1));
-
-    assertEquals(repo.findSubExpressions("234").get("223"), new AlarmSubExpression(
-        AggregateFunction.AVG, new MetricDefinition("hpcs.compute", null), AlarmOperator.LT, 100,
-        60, 1));
-
-    assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
-  }
-
-  public void testExists() {
-    assertTrue(repo.exists("bob", "90% CPU"));
-
-    // Negative
-    assertFalse(repo.exists("bob", "999% CPU"));
-  }
-
-  public void shouldFind() {
-    List<Alarm> alarms = repo.find("bob", null, null, null);
-
-    assertEquals(
-        alarms,
-        Arrays.asList(
-            new Alarm("123", "90% CPU", null, "LOW",
-                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-                AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"), Collections
-                    .<String>emptyList(), Collections.<String>emptyList()),
-            new Alarm(
-                "234",
-                "50% CPU",
-                null,
-                "LOW",
-                "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100",
-                AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"), Collections
-                    .<String>emptyList(), Collections.<String>emptyList())));
-  }
-
-  public void shouldFindByName() {
-    List<Alarm> alarms = repo.find("bob", "90% CPU", null, null);
-
-    assertEquals(alarms, Arrays.asList(new Alarm("123", "90% CPU", null, "LOW",
-        "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
-        AlarmState.UNDETERMINED, true, Arrays.asList("29387234", "77778687"), Collections
-            .<String>emptyList(), Collections.<String>emptyList())));
-  }
-
-  public void shouldDeleteById() {
-    repo.deleteById("bob", "123");
+  public void shouldDelete() {
+    repo.deleteById("123111");
 
     try {
-      assertNull(repo.findById("bob", "123"));
+      assertNull(repo.findById("123111"));
       fail();
     } catch (EntityNotFoundException expected) {
     }
+  }
+
+  @Test(groups = "database")
+  public void shouldFind() {
+    List<Alarm> alarms =
+        repo.find("bob", "1", "cpu",
+            ImmutableMap.<String, String>builder().put("instance_id", "123").build(), null);
+    assertEquals(alarms, Arrays.asList(new Alarm("123111", "123", "90% CPU", Arrays
+        .asList(new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
+            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "cpu").build())),
+        AlarmState.ALARM)));
+  }
+
+  @Test(groups = "database")
+  public void shouldFindById() {
+    Alarm alarm = repo.findById("123111");
+
+    assertEquals(alarm.getId(), "123111");
+    assertEquals(alarm.getAlarmDefinitionId(), "123");
+    assertEquals(alarm.getState(), "90% CPU");
+    assertEquals(
+        alarm.getMetrics(),
+        Arrays.asList(new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
+            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "cpu").build())));
   }
 }

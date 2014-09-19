@@ -13,12 +13,16 @@
  */
 package com.hpcloud.mon.domain.model.alarmstatehistory;
 
+import java.util.List;
+
 import org.joda.time.DateTime;
 
 import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
 
 public class AlarmStateHistory {
   private String alarmId;
+  private List<MetricDefinition> metrics;
   private AlarmState oldState;
   private AlarmState newState;
   private String reason;
@@ -27,9 +31,10 @@ public class AlarmStateHistory {
 
   public AlarmStateHistory() {}
 
-  public AlarmStateHistory(String alarmId, AlarmState oldState, AlarmState newState, String reason,
-      String reasonData, DateTime timestamp) {
+  public AlarmStateHistory(String alarmId, List<MetricDefinition> metrics, AlarmState oldState,
+      AlarmState newState, String reason, String reasonData, DateTime timestamp) {
     this.alarmId = alarmId;
+    this.setMetrics(metrics);
     this.oldState = oldState;
     this.newState = newState;
     this.reason = reason;
@@ -43,13 +48,18 @@ public class AlarmStateHistory {
       return true;
     if (obj == null)
       return false;
-    if (getClass() != obj.getClass())
+    if (!(obj instanceof AlarmStateHistory))
       return false;
     AlarmStateHistory other = (AlarmStateHistory) obj;
     if (alarmId == null) {
       if (other.alarmId != null)
         return false;
     } else if (!alarmId.equals(other.alarmId))
+      return false;
+    if (metrics == null) {
+      if (other.metrics != null)
+        return false;
+    } else if (!metrics.equals(other.metrics))
       return false;
     if (newState != other.newState)
       return false;
@@ -77,6 +87,10 @@ public class AlarmStateHistory {
     return alarmId;
   }
 
+  public List<MetricDefinition> getMetrics() {
+    return metrics;
+  }
+
   public AlarmState getNewState() {
     return newState;
   }
@@ -102,6 +116,7 @@ public class AlarmStateHistory {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((alarmId == null) ? 0 : alarmId.hashCode());
+    result = prime * result + ((metrics == null) ? 0 : metrics.hashCode());
     result = prime * result + ((newState == null) ? 0 : newState.hashCode());
     result = prime * result + ((oldState == null) ? 0 : oldState.hashCode());
     result = prime * result + ((reason == null) ? 0 : reason.hashCode());
@@ -112,6 +127,10 @@ public class AlarmStateHistory {
 
   public void setAlarmId(String alarmId) {
     this.alarmId = alarmId;
+  }
+
+  public void setMetrics(List<MetricDefinition> metrics) {
+    this.metrics = metrics;
   }
 
   public void setNewState(AlarmState newState) {
@@ -136,9 +155,8 @@ public class AlarmStateHistory {
 
   @Override
   public String toString() {
-    return String
-        .format(
-            "AlarmStateHistory [alarmId=%s, oldState=%s, newState=%s, reason=%s, reasonData=%s, timestamp=%s]",
-            alarmId, oldState, newState, reason, reasonData, timestamp);
+    return "AlarmStateHistory [alarmId=" + alarmId + ", metrics=" + metrics + ", oldState="
+        + oldState + ", newState=" + newState + ", reason=" + reason + ", reasonData=" + reasonData
+        + ", timestamp=" + timestamp + "]";
   }
 }

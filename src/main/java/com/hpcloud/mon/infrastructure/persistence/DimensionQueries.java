@@ -13,6 +13,8 @@
  */
 package com.hpcloud.mon.infrastructure.persistence;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -35,5 +37,20 @@ public final class DimensionQueries {
         query.bind("dvalue" + i, entry.getValue());
       }
     }
+  }
+
+  public static Map<String, String> dimensionsFor(String dimensionSet) {
+    Map<String, String> dimensions = Collections.emptyMap();
+
+    if (dimensionSet != null) {
+      dimensions = new HashMap<String, String>();
+      for (String kvStr : dimensionSet.split(",")) {
+        String[] kv = kvStr.split("=");
+        if (kv.length > 1)
+          dimensions.put(kv[0], kv[1]);
+      }
+    }
+
+    return dimensions;
   }
 }

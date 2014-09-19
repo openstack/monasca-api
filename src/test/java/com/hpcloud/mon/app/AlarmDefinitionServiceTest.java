@@ -18,7 +18,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -39,21 +38,20 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.app.AlarmService.SubExpressions;
-import com.hpcloud.mon.app.command.UpdateAlarmCommand;
+import com.hpcloud.mon.app.AlarmDefinitionService.SubExpressions;
+import com.hpcloud.mon.app.command.UpdateAlarmDefinitionCommand;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.domain.model.alarm.Alarm;
-import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinition;
+import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
 
 @Test
-public class AlarmServiceTest {
-  AlarmService service;
+public class AlarmDefinitionServiceTest {
+  AlarmDefinitionService service;
   MonApiConfiguration config;
   Producer<String, String> producer;
-  AlarmRepository repo;
+  AlarmDefinitionRepository repo;
   NotificationMethodRepository notificationMethodRepo;
 
   @BeforeMethod
@@ -61,20 +59,20 @@ public class AlarmServiceTest {
   protected void beforeMethod() {
     config = new MonApiConfiguration();
     producer = mock(Producer.class);
-    repo = mock(AlarmRepository.class);
+    repo = mock(AlarmDefinitionRepository.class);
     notificationMethodRepo = mock(NotificationMethodRepository.class);
-    service = new AlarmService(config, producer, repo, notificationMethodRepo);
+    service = new AlarmDefinitionService(config, producer, repo, notificationMethodRepo);
 
     when(
         repo.create(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(),
-            any(Map.class), any(List.class), any(List.class), any(List.class))).thenAnswer(
-        new Answer<Alarm>() {
+            any(Map.class), any(List.class), any(List.class), any(List.class), any(List.class)))
+        .thenAnswer(new Answer<AlarmDefinition>() {
           @Override
-          public Alarm answer(InvocationOnMock invocation) throws Throwable {
+          public AlarmDefinition answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return new Alarm((String) args[0], (String) args[2], (String) args[3],
-                (String) args[4], (String) args[5], AlarmState.UNDETERMINED, true,
-                (List<String>) args[7], (List<String>) args[8], (List<String>) args[9]);
+            return new AlarmDefinition((String) args[0], (String) args[2], (String) args[3],
+                (String) args[4], (String) args[5], (List<String>) args[7], true,
+                (List<String>) args[8], (List<String>) args[9], (List<String>) args[10]);
           }
         });
   }
@@ -82,22 +80,23 @@ public class AlarmServiceTest {
   @SuppressWarnings("unchecked")
   public void shouldCreate() {
     String exprStr = "avg(cpu_utilization{service=hpcs.compute, instance_id=123}) > 90";
+    List<String> matchBy = Arrays.asList("service", "instance_id");
     List<String> alarmActions = Arrays.asList("1", "2", "3");
     List<String> okActions = Arrays.asList("2", "3");
     List<String> undeterminedActions = Arrays.asList("3");
 
     when(notificationMethodRepo.exists(eq("bob"), anyString())).thenReturn(true);
 
-    Alarm alarm =
+    AlarmDefinition alarm =
         service.create("bob", "90% CPU", "foo", "LOW", exprStr, AlarmExpression.of(exprStr),
-            alarmActions, okActions, undeterminedActions);
+            matchBy, alarmActions, okActions, undeterminedActions);
 
-    Alarm expected =
-        new Alarm(alarm.getId(), "90% CPU", "foo", "LOW", exprStr, AlarmState.UNDETERMINED, true,
+    AlarmDefinition expected =
+        new AlarmDefinition(alarm.getId(), "90% CPU", "foo", "LOW", exprStr, matchBy, true,
             alarmActions, okActions, undeterminedActions);
     assertEquals(expected, alarm);
     verify(repo).create(eq("bob"), anyString(), eq("90% CPU"), eq("foo"), eq("LOW"), eq(exprStr),
-        any(Map.class), eq(alarmActions), eq(okActions), eq(undeterminedActions));
+        any(Map.class), eq(matchBy), eq(alarmActions), eq(okActions), eq(undeterminedActions));
     verify(producer).send(any(KeyedMessage.class));
   }
 
@@ -108,8 +107,8 @@ public class AlarmServiceTest {
     List<String> okActions = Arrays.asList("2", "3");
     List<String> undeterminedActions = Arrays.asList("3");
 
-    Alarm oldAlarm =
-        new Alarm("123", "foo bar", "foo bar", "LOW", exprStr, AlarmState.OK, true, alarmActions,
+    AlarmDefinition oldAlarm =
+        new AlarmDefinition("123", "foo bar", "foo bar", "LOW", exprStr, null, true, alarmActions,
             okActions, undeterminedActions);
     Map<String, AlarmSubExpression> oldSubExpressions = new HashMap<>();
     oldSubExpressions.put("444", AlarmSubExpression.of("avg(foo{instance_id=123}) > 90"));
@@ -124,17 +123,17 @@ public class AlarmServiceTest {
     List<String> newAlarmActions = Arrays.asList("5", "6", "7");
     List<String> newOkActions = Arrays.asList("6", "7");
     List<String> newUndeterminedActions = Arrays.asList("7");
-    UpdateAlarmCommand command =
-        new UpdateAlarmCommand("foo bar baz", "foo bar baz", newExprStr, "LOW", AlarmState.ALARM,
+    UpdateAlarmDefinitionCommand command =
+        new UpdateAlarmDefinitionCommand("foo bar baz", "foo bar baz", newExprStr, null, "LOW",
             false, newAlarmActions, newOkActions, newUndeterminedActions);
 
-    Alarm alarm = service.update("bob", "123", AlarmExpression.of(newExprStr), command);
+    AlarmDefinition alarm = service.update("bob", "123", AlarmExpression.of(newExprStr), command);
 
-    Alarm expected =
-        new Alarm(alarm.getId(), "foo bar baz", "foo bar baz", "LOW", newExprStr, AlarmState.ALARM,
+    AlarmDefinition expected =
+        new AlarmDefinition(alarm.getId(), "foo bar baz", "foo bar baz", "LOW", newExprStr, null,
             false, newAlarmActions, newOkActions, newUndeterminedActions);
     assertEquals(expected, alarm);
-    verify(producer, times(2)).send(any(KeyedMessage.class));
+    verify(producer).send(any(KeyedMessage.class));
   }
 
   public void testOldAndNewSubExpressionsFor() {
