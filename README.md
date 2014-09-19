@@ -37,6 +37,46 @@ Requests flow through the following architectural layers from top to bottom:
 
 * API Specification: [/docs/monasca-api-spec.md](/docs/monasca-api-spec.md).
 
+
+python monasca api implementation
+=================================
+
+To install the python api implementation, git clone the source and run the
+following command::
+
+    sudo python setup.py install
+
+If it installs successfully, you will need to make changes to the following
+two files to reflect your system settings, especially where kafka server is
+located::
+
+    /etc/monasca/monasca.ini
+    /etc/monasca/monasca.conf
+
+Once the configurations are modified to match your environment, you can start
+up the server by following the following instructions.
+
+To start the server, run the following command:
+
+    Running the server in foreground mode
+    gunicorn -k eventlet --worker-connections=2000 --backlog=1000
+             --paste /etc/monasca/monasca.ini
+
+    Running the server as daemons
+    gunicorn -k eventlet --worker-connections=2000 --backlog=1000
+             --paste /etc/monasca/monasca.ini -D
+
+To check if the code follows python coding style, run the following command
+from the root directory of this project
+
+    tox -e pep8
+    
+To run all the unit test cases, run the following command from the root
+directory of this project
+
+    tox -e py27   (or -e py26, -e py33)
+
+
 # License
 
 Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
