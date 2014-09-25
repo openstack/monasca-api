@@ -65,7 +65,7 @@ public class MetricResource {
       @Valid CreateMetricCommand[] commands) {
     boolean isDelegate =
             !Strings.isNullOrEmpty(roles)
-                    && Arrays.asList(COMMA_SPLITTER.split(roles)).contains(MONITORING_DELEGATE_ROLE);
+                    && COMMA_SPLITTER.splitToList(roles).contains(MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
