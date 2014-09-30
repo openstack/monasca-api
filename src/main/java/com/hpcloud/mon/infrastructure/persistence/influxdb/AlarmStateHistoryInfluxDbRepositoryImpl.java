@@ -13,14 +13,15 @@
  */
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import com.google.inject.Inject;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import com.hpcloud.mon.MonApiConfiguration;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
-import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
-import com.hpcloud.mon.infrastructure.persistence.SubAlarmQueries;
+import javax.annotation.Nullable;
+import javax.inject.Named;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
@@ -33,35 +34,42 @@ import org.skife.jdbi.v2.util.StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
-import javax.inject.Named;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.inject.Inject;
+import com.hpcloud.mon.MonApiConfiguration;
+import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistory;
+import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import com.hpcloud.mon.infrastructure.persistence.DimensionQueries;
+import com.hpcloud.mon.infrastructure.persistence.SubAlarmQueries;
 
 public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistoryRepository {
-
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
+      new TypeReference<List<MetricDefinition>>() {};
   private static final Logger logger = LoggerFactory
       .getLogger(AlarmStateHistoryInfluxDbRepositoryImpl.class);
+  private static final String FIND_ALARMS_SQL =
+      "select distinct ad.id from alarm_definition as ad "
+          + "join sub_alarm_definition sad on ad.id = sad.alarm_definition_id "
+          + "left outer join sub_alarm_definition_dimension dim on sad.id = dim.sub_alarm_definition_id%s "
+          + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL";
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
   private final DBI mysql;
 
-  private static final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a " + "join"
-                                                + " sub_alarm sa on a.id = sa.alarm_id "
-                                                + "left outer join sub_alarm_dimension dim on "
-                                                + "sa.id = dim.sub_alarm_id%s "
-                                                + "where a.tenant_id = :tenantId and a.deleted_at is "
-                                                + "NULL";
+  static {
+    OBJECT_MAPPER
+        .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+  }
 
   @Inject
   public AlarmStateHistoryInfluxDbRepositoryImpl(@Named("mysql") DBI mysql,
-                                                 MonApiConfiguration config, InfluxDB influxDB) {
+      MonApiConfiguration config, InfluxDB influxDB) {
     this.mysql = mysql;
     this.config = config;
     this.influxDB = influxDB;
@@ -69,25 +77,20 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
 
   @Override
   public List<AlarmStateHistory> findById(String tenantId, String alarmId) throws Exception {
-
     // InfluxDB orders queries by time stamp desc by default.
     String query = buildQueryForFindById(tenantId, alarmId);
     return queryInfluxDBForAlarmStateHistory(query);
   }
 
   String buildQueryForFindById(String tenantId, String alarmId) throws Exception {
-
-    return String.format("select alarm_id, old_state, new_state, reason, reason_data "
-                         + "from alarm_state_history "
-                         + "where tenant_id = '%1$s' and alarm_id = '%2$s'",
-                         Utils.SQLSanitizer.sanitize(tenantId),
-                         Utils.SQLSanitizer.sanitize(alarmId));
+    return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+        + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s'",
+        Utils.SQLSanitizer.sanitize(tenantId), Utils.SQLSanitizer.sanitize(alarmId));
   }
 
   @Override
   public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-                                            DateTime startTime, @Nullable DateTime endTime)
-      throws Exception {
+      DateTime startTime, @Nullable DateTime endTime) throws Exception {
 
     List<String> alarmIds = null;
     // Find alarm Ids for dimensions
@@ -116,9 +119,9 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   }
 
   String buildQueryForFind(String tenantId, String timePart, String alarmsPart) throws Exception {
-    return String.format("select alarm_id, old_state, new_state, reason, reason_data "
-                         + "from alarm_state_history " + "where tenant_id = '%1$s' %2$s %3$s",
-                         Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
+    return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+        + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s",
+        Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
   }
 
   String buildAlarmsPart(List<String> alarmIds) {
@@ -138,17 +141,16 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     return sb.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private List<AlarmStateHistory> queryInfluxDBForAlarmStateHistory(String query) {
-
     logger.debug("Query string: {}", query);
 
     List<Serie> result;
     try {
-      result =
-          this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
+      result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     } catch (Exception e) {
       if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
-        return new LinkedList();
+        return new LinkedList<>();
       } else {
         logger.error("Failed to get data from InfluxDB", e);
         throw e;
@@ -161,18 +163,25 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     for (Serie serie : result) {
       final String[] colNames = serie.getColumns();
       final List<Map<String, Object>> rows = serie.getRows();
-      for (Map<String, Object> row : rows) {
 
+      for (Map<String, Object> row : rows) {
         AlarmStateHistory alarmStateHistory = new AlarmStateHistory();
         // Time is always in position 0.
         Double timeDouble = (Double) row.get(colNames[0]);
         alarmStateHistory.setTimestamp(new DateTime(timeDouble.longValue(), DateTimeZone.UTC));
         // Sequence_number is always in position 1.
         alarmStateHistory.setAlarmId((String) row.get(colNames[2]));
-        alarmStateHistory.setNewState(AlarmState.valueOf((String) row.get(colNames[3])));
-        alarmStateHistory.setOldState(AlarmState.valueOf((String) row.get(colNames[4])));
-        alarmStateHistory.setReason((String) row.get(colNames[5]));
-        alarmStateHistory.setReasonData((String) row.get(colNames[6]));
+        try {
+          alarmStateHistory.setMetrics((List<MetricDefinition>) OBJECT_MAPPER.readValue(
+              (String) row.get(colNames[3]), METRICS_TYPE));
+        } catch (Exception ignore) {
+          alarmStateHistory.setMetrics(Collections.<MetricDefinition>emptyList());
+        }
+
+        alarmStateHistory.setNewState(AlarmState.valueOf((String) row.get(colNames[4])));
+        alarmStateHistory.setOldState(AlarmState.valueOf((String) row.get(colNames[5])));
+        alarmStateHistory.setReason((String) row.get(colNames[6]));
+        alarmStateHistory.setReasonData((String) row.get(colNames[7]));
 
         alarmStateHistoryList.add(alarmStateHistory);
       }

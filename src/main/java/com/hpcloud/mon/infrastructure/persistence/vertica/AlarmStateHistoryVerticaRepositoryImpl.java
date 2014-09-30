@@ -43,10 +43,11 @@ import com.hpcloud.persistence.BeanMapper;
 public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistoryRepository {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
-  private static final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a "
-      + "join sub_alarm sa on a.id = sa.alarm_id "
-      + "left outer join sub_alarm_dimension dim on sa.id = dim.sub_alarm_id%s "
-      + "where a.tenant_id = :tenantId and a.deleted_at is NULL";
+  private static final String FIND_ALARMS_SQL =
+      "select distinct ad.id from alarm_definition as ad "
+          + "join sub_alarm_definition sad on ad.id = sad.alarm_definition_id "
+          + "left outer join sub_alarm_definition_dimension dim on sad.id = dim.sub_alarm_definition_id%s "
+          + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL";
   private static final String FIND_BY_ALARM_DEF_SQL =
       "select *, time_stamp as timestamp from MonAlarms.StateHistory "
           + "where tenant_id = :tenantId%s order by time_stamp desc";

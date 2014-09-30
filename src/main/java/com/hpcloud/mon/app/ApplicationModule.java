@@ -24,6 +24,7 @@ public class ApplicationModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(MetricService.class).in(Singleton.class);
+    bind(AlarmDefinitionService.class).in(Singleton.class);
     bind(AlarmService.class).in(Singleton.class);
   }
 }

@@ -62,7 +62,7 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
   private List<MetricDefinition> buildMetricDefList(List<Serie> result) throws Exception {
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
     for (Serie serie : result) {
-      for (Map point : serie.getRows()) {
+      for (Map<String,Object> point : serie.getRows()) {
 
         Utils.SerieNameDecoder serieNameDecoder;
         try {

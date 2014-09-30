@@ -24,7 +24,7 @@ kafka:
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://192.168.59.103:3306/mon?connectTimeout=5000&autoReconnect=true
+  url: jdbc:mysql://localhost:3306/mon?connectTimeout=5000&autoReconnect=true
   user: monapi
   password: password
   maxWaitForConnection: 1s
@@ -34,16 +34,16 @@ mysql:
   checkConnectionWhileIdle: false
   checkConnectionOnBorrow: true
 
-vertica:
-  driverClass: com.vertica.jdbc.Driver
-  url: jdbc:vertica://192.168.10.4/mon
-  user: mon_api
-  password: password
-  maxWaitForConnection: 1s
-  validationQuery: "/* MyService Health Check */ SELECT 1"
-  minSize: 4
-  maxSize: 32
-  checkConnectionWhileIdle: false
+# vertica:
+#   driverClass: com.vertica.jdbc.Driver
+#   url: jdbc:vertica://192.168.10.4/mon
+#   user: mon_api
+#   password: password
+#   maxWaitForConnection: 1s
+#   validationQuery: "/* MyService Health Check */ SELECT 1"
+#   minSize: 4
+#   maxSize: 32
+#   checkConnectionWhileIdle: false
 
 
 influxDB:

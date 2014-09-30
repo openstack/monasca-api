@@ -13,7 +13,6 @@
  */
 package com.hpcloud.mon;
 
-import com.hpcloud.mon.infrastructure.servlet.RoleAuthorizationFilter;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -39,6 +38,8 @@ import com.hpcloud.mon.bundle.SwaggerBundle;
 import com.hpcloud.mon.infrastructure.servlet.MockAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PostAuthenticationFilter;
 import com.hpcloud.mon.infrastructure.servlet.PreAuthenticationFilter;
+import com.hpcloud.mon.infrastructure.servlet.RoleAuthorizationFilter;
+import com.hpcloud.mon.resource.AlarmDefinitionResource;
 import com.hpcloud.mon.resource.AlarmResource;
 import com.hpcloud.mon.resource.MeasurementResource;
 import com.hpcloud.mon.resource.MetricResource;
@@ -77,12 +78,14 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void run(MonApiConfiguration config, Environment environment) throws Exception {
     /** Wire services */
     Injector.registerModules(new MonApiModule(environment, config));
 
     /** Configure resources */
     environment.jersey().register(Injector.getInstance(VersionResource.class));
+    environment.jersey().register(Injector.getInstance(AlarmDefinitionResource.class));
     environment.jersey().register(Injector.getInstance(AlarmResource.class));
     environment.jersey().register(Injector.getInstance(MetricResource.class));
     environment.jersey().register(Injector.getInstance(MeasurementResource.class));
@@ -153,15 +156,18 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       tokenAuthFilter.setInitParameters(authInitParams);
 
       Dynamic postAuthenticationFilter =
-          environment.servlets().addFilter("post-auth",
-              new PostAuthenticationFilter(config.middleware.defaultAuthorizedRoles, config.middleware.agentAuthorizedRoles));
+          environment.servlets().addFilter(
+              "post-auth",
+              new PostAuthenticationFilter(config.middleware.defaultAuthorizedRoles,
+                  config.middleware.agentAuthorizedRoles));
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 
-      environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RoleAuthorizationFilter());
+      environment.jersey().getResourceConfig().getContainerRequestFilters()
+          .add(new RoleAuthorizationFilter());
     } else {
-        Dynamic mockAuthenticationFilter =
-                environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
+      Dynamic mockAuthenticationFilter =
+          environment.servlets().addFilter("mock-auth", new MockAuthenticationFilter());
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }

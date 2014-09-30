@@ -176,7 +176,7 @@ final class Utils {
       }
 
       // It's possible to have no dimensions.
-      this.dimensions = new HashMap();
+      this.dimensions = new HashMap<>();
       while (rest != null) {
         final String nameValPair;
         if (rest.contains("&")) {
@@ -216,11 +216,11 @@ final class Utils {
   }
 
   static class SerieNameDecodeException extends Exception {
+    private static final long serialVersionUID = 1L;
 
     public SerieNameDecodeException(String s) {
       super(s);
     }
-
   }
 
   /**

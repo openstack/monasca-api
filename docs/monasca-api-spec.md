@@ -24,216 +24,35 @@ Document Version: v2.0
 - [Common Responses](#common-responses)
 - [Versions](#versions)
   - [List Versions](#list-versions)
-    - [GET](#get)
-      - [Headers](#headers)
-      - [Path Parameters](#path-parameters)
-      - [Query Parameters](#query-parameters)
-      - [Request Body](#request-body)
-      - [Request Examples](#request-examples)
-    - [Response](#response)
-      - [Status code](#status-code)
-      - [Response Body](#response-body)
-      - [Response Examples](#response-examples)
   - [Get Version](#get-version)
-    - [Get /{version_id}](#get-version_id)
-      - [Headers](#headers-1)
-      - [Path Parameters](#path-parameters-1)
-      - [Query Parameters](#query-parameters-1)
-      - [Request Body](#request-body-1)
-      - [Request Examples](#request-examples-1)
-    - [Response](#response-1)
-      - [Status code](#status-code-1)
-      - [Response Body](#response-body-1)
-      - [Response Examples](#response-examples-1)
 - [Metrics](#metrics)
   - [Create Metric](#create-metric)
-    - [POST /v2.0/metrics](#post-v20metrics)
-      - [Headers](#headers-2)
-      - [Path Parameters](#path-parameters-2)
-      - [Query Parameters](#query-parameters-2)
-      - [Request Body](#request-body-2)
-      - [Request Examples](#request-examples-2)
-        - [Single metric](#single-metric)
-        - [Array of metrics](#array-of-metrics)
-    - [Response](#response-2)
-      - [Status Code](#status-code)
-      - [Response Body](#response-body-2)
   - [List metrics](#list-metrics)
-      - [GET /v2.0/metrics](#get-v20metrics)
-      - [Headers](#headers-3)
-      - [Path Parameters](#path-parameters-3)
-      - [Query Parameters](#query-parameters-3)
-      - [Request Body](#request-body-3)
-      - [Request Examples](#request-examples-3)
-    - [Response](#response-3)
-      - [Status Code](#status-code-1)
-      - [Response Body](#response-body-3)
-      - [Response Examples](#response-examples-2)
 - [Measurements](#measurements)
   - [List measurements](#list-measurements)
-    - [GET /v2.0/metrics/measurements](#get-v20metricsmeasurements)
-      - [Headers](#headers-4)
-      - [Path Parameters](#path-parameters-4)
-      - [Query Parameters](#query-parameters-4)
-      - [Request Body](#request-body-4)
-      - [Request Examples](#request-examples-4)
-    - [Response](#response-4)
-      - [Status Code](#status-code-2)
-      - [Response Body](#response-body-4)
-      - [Response Examples](#response-examples-3)
 - [Statistics](#statistics)
   - [List statistics](#list-statistics)
-    - [GET /v2.0/metrics/statistics](#get-v20metricsstatistics)
-      - [Headers](#headers-5)
-      - [Path Parameters](#path-parameters-5)
-      - [Query Parameters](#query-parameters-5)
-      - [Request Body](#request-body-5)
-      - [Request Examples](#request-examples-5)
-    - [Response](#response-5)
-      - [Status Code](#status-code-3)
-      - [Response Body](#response-body-5)
-      - [Response Examples](#response-examples-4)
 - [Notification Methods](#notification-methods)
   - [Create Notification Method](#create-notification-method)
-    - [POST /v2.0/notification-methods](#post-v20notification-methods)
-      - [Headers](#headers-6)
-      - [Path Parameters](#path-parameters-6)
-      - [Query Parameters](#query-parameters-6)
-      - [Request Body](#request-body-6)
-      - [Request Examples](#request-examples-6)
-    - [Response](#response-6)
-      - [Status Code](#status-code-4)
-      - [Response Body](#response-body-6)
-      - [Response Examples](#response-examples-5)
   - [List Notification Methods](#list-notification-methods)
-    - [GET /v2.0/notification-methods](#get-v20notification-methods)
-      - [Headers](#headers-7)
-      - [Path Parameters](#path-parameters-7)
-      - [Query Parameters](#query-parameters-7)
-      - [Request Body](#request-body-7)
-      - [Request Examples](#request-examples-7)
-    - [Response](#response-7)
-      - [Status Code](#status-code-5)
-      - [Response Body](#response-body-7)
-      - [Response Examples](#response-examples-6)
   - [Get Notification Method](#get-notification-method)
-    - [GET /v2.0/notification-methods/{notification_method_id}](#get-v20notification-methodsnotification_method_id)
-      - [Headers](#headers-8)
-      - [Path Parameters](#path-parameters-8)
-      - [Query Parameters](#query-parameters-8)
-      - [Request Body](#request-body-8)
-      - [Request Examples](#request-examples-8)
-    - [Response](#response-8)
-      - [Status Code](#status-code-6)
-      - [Response Body](#response-body-8)
-      - [Response Examples](#response-examples-7)
   - [Update Notification Method](#update-notification-method)
-    - [PUT /v2.0/notification-methods/{notification_method_id}](#put-v20notification-methodsnotification_method_id)
-      - [Headers](#headers-9)
-      - [Path Parameters](#path-parameters-9)
-      - [Query Parameters](#query-parameters-9)
-      - [Request Body](#request-body-9)
-      - [Request Examples](#request-examples-9)
-    - [Response](#response-9)
-      - [Status Code](#status-code-7)
-      - [Response Body](#response-body-9)
-      - [Response Examples](#response-examples-8)
   - [Delete Notification Method](#delete-notification-method)
-    - [DELETE /v2.0/notification-methods/{notification_method_id}](#delete-v20notification-methodsnotification_method_id)
-      - [Headers](#headers-10)
-      - [Path Parameters](#path-parameters-10)
-      - [Query Parameters](#query-parameters-10)
-      - [Request Body](#request-body-10)
-      - [Request Examples](#request-examples-10)
-    - [Response](#response-10)
-      - [Status Code](#status-code-8)
-      - [Response Body](#response-body-10)
+- [Alarm Defitinions](#alarm-definitions)
+  - [Create Alarm Definition](#create-alarm-definition)
+  - [List Alarm Definitions](#list-alarm-definitions)
+  - [Get Alarm Definition](#get-alarm-definition)
+  - [Update Alarm Definition](#update-alarm-definition)
+  - [Patch Alarm Definition](#patch-alarm-definition)
+  - [Delete Alarm Definition](#delete-alarm-definition)
 - [Alarms](#alarms)
-  - [Create Alarm](#create-alarm)
-    - [POST /v2.0/alarms](#post-v20alarms)
-      - [Headers](#headers-11)
-      - [Path Parameters](#path-parameters-11)
-      - [Query Parameters](#query-parameters-11)
-      - [Request Body](#request-body-11)
-      - [Request Examples](#request-examples-11)
-    - [Response](#response-11)
-      - [Status Code](#status-code-9)
-      - [Response Body](#response-body-11)
-      - [Response Examples](#response-examples-9)
   - [List Alarms](#list-alarms)
-    - [GET /v2.0/alarms](#get-v20alarms)
-      - [Headers](#headers-12)
-      - [Path Parameters](#path-parameters-12)
-      - [Query Parameters](#query-parameters-12)
-      - [Request Body](#request-body-12)
-      - [Request Examples](#request-examples-12)
-    - [Response"](#response)
-      - [Status Code](#status-code-10)
-      - [Response Body](#response-body-12)
-      - [Response Examples](#response-examples-10)
   - [List Alarms State History](#list-alarms-state-history)
-    - [GET /v2.0/alarms/state-history](#get-v20alarmsstate-history)
-      - [Headers](#headers-13)
-      - [Path Parameters](#path-parameters-13)
-      - [Query Parameters](#query-parameters-13)
-      - [Request Body](#request-body-13)
-    - [Response](#response-12)
-      - [Status Code](#status-code-11)
-      - [Response Body](#response-body-13)
-      - [Response Examples](#response-examples-11)
   - [Get Alarm](#get-alarm)
-    - [GET /v2.0/alarms/{alarm_id}](#get-v20alarmsalarm_id)
-      - [Headers](#headers-14)
-      - [Path Parameters](#path-parameters-14)
-      - [Query Parameters](#query-parameters-14)
-      - [Request Body](#request-body-14)
-    - [Response](#response-13)
-      - [Status Code](#status-code-12)
-      - [Response Body](#response-body-14)
-      - [Response Examples](#response-examples-12)
   - [Update Alarm](#update-alarm)
-    - [PUT /v2.0/alarms/{alarm_id}](#put-v20alarmsalarm_id)
-      - [Headers](#headers-15)
-      - [Path Parameters](#path-parameters-15)
-      - [Query Parameters](#query-parameters-15)
-      - [Request Body](#request-body-15)
-      - [Request Examples](#request-examples-13)
-    - [Response](#response-14)
-      - [Status Code](#status-code-13)
-      - [Response Body](#response-body-15)
-      - [Response Examples](#response-examples-13)
-  - [Update Alarm](#update-alarm-1)
-    - [PATCH /v2.0/alarms/{alarm_id}](#patch-v20alarmsalarm_id)
-      - [Headers](#headers-16)
-      - [Path Parameters](#path-parameters-16)
-      - [Query Parameters](#query-parameters-16)
-      - [Request Body](#request-body-16)
-      - [Request Examples](#request-examples-14)
-    - [Response](#response-15)
-      - [Status Code](#status-code-14)
-      - [Response Body](#response-body-16)
-      - [Response Examples](#response-examples-14)
+  - [Patch Alarm](#update-alarm-1)
   - [Delete Alarm](#delete-alarm)
-    - [DELETE /v2.0/alarms/{alarm_id}](#delete-v20alarmsalarm_id)
-      - [Headers](#headers-17)
-      - [Path Parameters](#path-parameters-17)
-      - [Query Parameters](#query-parameters-17)
-      - [Request Body](#request-body-17)
-      - [Request Examples](#request-examples-15)
-    - [Response](#response-16)
-      - [Status Code](#status-code-15)
-      - [Response Body](#response-body-17)
   - [List Alarm State History](#list-alarm-state-history)
-    - [GET /v2.0/alarms/{alarm_id}/state-history](#get-v20alarmsalarm_idstate-history)
-      - [Headers](#headers-18)
-      - [Path Parameters](#path-parameters-18)
-      - [Query Parameters](#query-parameters-18)
-      - [Request Body](#request-body-18)
-      - [Request Data](#request-data)
-    - [Response](#response-17)
-      - [Status Code](#status-code-16)
-      - [Response Body](#response-body-18)
-      - [Response Examples](#response-examples-15)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -1087,13 +906,13 @@ Cache-Control: no-cache
 This request does not return a response body.
 ___
 
-# Alarms
-Operations for working with alarms.
+# Alarm Definitions
+Operations for working with alarm definitions.
 
-## Create Alarm
-Create an alarm.
+## Create Alarm Definition
+Create an alarm definition.
 
-### POST /v2.0/alarms
+### POST /v2.0/alarm-definitions
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -1111,14 +930,15 @@ Consists of an alarm definition. An alarm has the following properties:
 * name (string(255), required) - A unique name of the alarm. Note, the name must be unique.
 * description (string(255), optional) -  A description of an alarm.
 * expression (string, required) - An alarm expression.
-* alarmActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* okActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undeterminedActions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
-* severity (string, optional) - Severity of an alarm. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`. Default is `LOW`. 
+* match_by ([string], optional) - The metric dimensions to match to the alarm dimensions.
+* severity (string, optional) - Severity of an alarm. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`. Default is `LOW`.
+* alarm_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
+* ok_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
+* undetermined_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
 
 #### Request Examples
 ```
-POST /v2.0/alarms HTTP/1.1
+POST /v2.0/alarm-definitions HTTP/1.1
 Host: 192.168.10.4:8080
 Content-Type: application/json
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
@@ -1127,16 +947,19 @@ Cache-Control: no-cache
 {  
    "name":"Average CPU percent greater than 10",
    "description":"The average CPU percent is greater than 10",
-   "severity":"LOW",
    "expression":"(avg(cpu_user_perc{hostname=devstack}) > 10)",
+   "match_by":[
+     "hostname"
+   ],
+   "severity":"LOW",
    "ok_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ],
    "alarm_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ],
    "undetermined_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ]
 }
 ```
@@ -1146,20 +969,20 @@ Cache-Control: no-cache
 * 201 - Created
 
 #### Response Body
-Returns a JSON array of alarm objects with the following fields:
+Returns a JSON array of alarm definition objects with the following fields:
 
-* id (string) - ID of alarm that was created.
-* links ([link]) - An array of Links to the alarm.
-* name (string) - Name of alarm.
-* description (string) - Description of alarm.
-* expression (string) - The alarm expression.
-* expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
-* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* id (string) - ID of alarm definition.
+* links ([link]) - Links to alarm definition.
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* expression_data (JSON object) - The alarm definition expression as a JSON object.
+* match_by ([string]) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1168,11 +991,7 @@ Returns a JSON array of alarm objects with the following fields:
    "links":[  
       {  
          "rel":"self",
-         "href":"http://192.168.10.4:8080/v2.0/alarms/b461d659-577b-4d63-9782-a99194d4a472"
-      },
-      {  
-         "rel":"history",
-         "href":"http://192.168.10.4:8080/v2.0/alarms/b461d659-577b-4d63-9782-a99194d4a472/history"
+         "href":"http://192.168.10.4:8080/v2.0/alarm-definitions/b461d659-577b-4d63-9782-a99194d4a472"
       }
    ],
    "name":"Average CPU percent greater than 10",
@@ -1189,26 +1008,26 @@ Returns a JSON array of alarm objects with the following fields:
       "period":60,
       "periods":1
    },
-   "state":"UNDETERMINED",
+   "match_by":[
+     "hostname"
+   ],
    "severity":"LOW",
-   "actions_enabled":true,
    "alarm_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ],
    "ok_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ],
    "undetermined_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ]
 }
 ```
 ___
+## List Alarm Definitions
+List alarm definitions.
 
-## List Alarms
-List alarms
-
-### GET /v2.0/alarms
+### GET /v2.0/alarm-definitions
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -1220,39 +1039,38 @@ None.
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
 * dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
-* state (string, optional) - State of alarm to filter by. Must be either `UNDETERMINED`, `OK` or `ALARM`.
 
 #### Request Body
 None.
-"
+
 #### Request Examples
 ```
-GET /v2.0/alarms?name=CPU percent greater than 10&dimensions=hostname:devstack&state=UNDETERMINED HTTP/1.1
+GET /v2.0/alarm-definitions?name=CPU percent greater than 10&dimensions=hostname:devstack&state=UNDETERMINED HTTP/1.1
 Host: 192.168.10.4:8080
 Content-Type: application/json
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
 ```
 
-### Response"
+### Response
 #### Status Code
 * 200 - OK
 
 #### Response Body
 Returns a JSON array of alarm objects with the following fields:
 
-* id (string) - ID of alarm.
-* links ([link]) - Links to alarm.
-* name (string) - Name of alarm.
-* description (string) - Description of alarm.
-* expression (string) - The alarm expression.
-* expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
-* severity (string) - The severity of an alarn. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* id (string) - ID of alarm definition.
+* links ([link]) - Links to alarm definition.
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* expression_data (JSON object) - The alarm definition expression as a JSON object.
+* match_by ([string]) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
 
 #### Response Examples
 ```
@@ -1262,11 +1080,7 @@ Returns a JSON array of alarm objects with the following fields:
       "links":[  
          {  
             "rel":"self",
-            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
-         },
-         {  
-            "rel":"history",
-            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/history"
+            "href":"http://192.168.10.4:8080/v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83"
          }
       ],
       "name":"CPU percent greater than 10",
@@ -1283,7 +1097,9 @@ Returns a JSON array of alarm objects with the following fields:
          "period":60,
          "periods":1
       },
-      "state":"UNDETERMINED",
+	  "match_by":[
+	    "hostname"
+	  ],
       "severity":"CRITICAL",
       "actions_enabled":true,
       "alarm_actions":[  
@@ -1295,6 +1111,428 @@ Returns a JSON array of alarm objects with the following fields:
       "undetermined_actions":[  
          "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
       ]
+   }
+]
+```
+___
+
+## Get Alarm Definition
+Get the specified alarm definition.
+
+### GET /v2.0/alarm-definitions/{alarm_definition_id}
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Accept (string) - application/json
+
+#### Path Parameters
+* alarm_definition_id (string, required) - Alarm Definition ID
+
+#### Query Parameters
+None.
+
+#### Request Body
+None.
+
+### Response
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON alarm object with the following fields:
+
+* id (string) - ID of alarm definition.
+* links ([link]) - Links to alarm definition.
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* expression_data (JSON object) - The alarm definition expression as a JSON object.
+* match_by ([string]) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
+
+#### Response Examples
+```
+{
+    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83"
+        }
+    ],
+    "name": "CPU percent greater than 10",
+    "description": "Release the hounds",
+    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 10)",
+    "expression_data": {
+        "function": "AVG",
+        "metric_name": "cpu_user_perc",
+        "dimensions": {
+            "hostname": "devstack"
+        },
+        "operator": "GT",
+        "threshold": 10,
+        "period": 60,
+        "periods": 1
+    },
+    "match_by":[
+      "hostname"
+    ],
+    "severity": "CRITICAL",
+    "actions_enabled": true,
+    "alarm_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "ok_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "undetermined_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ]
+}
+```
+___
+
+## Update Alarm Definition
+Update/Replace the specified alarm definition.
+
+### PUT /v2.0/alarm-definitions/{alarm_definition_id}
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Content-Type (string, required) - application/json
+* Accept (string) - application/json
+
+#### Path Parameters
+* alarm_definition_id (string, required)
+
+#### Query Parameters
+None.
+
+#### Request Body
+Consists of an alarm definition. An alarm has the following properties:
+
+* name (string(255), required) - A name of the alarm definition.
+* description (string(255), optional) -  A description of an alarm definition.
+* expression (string, required) - An alarm expression.
+* match_by ([string], optional) - The metric dimensions to match to the alarm dimensions
+* severity (string, optional) - Severity of an alarm definition. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* alarm_actions ([string(50)], optional) 
+* ok_actions ([string(50)], optional)
+* undetermined_actions ([string(50)], optional)
+
+If optional parameters are not specified they will be reset to their default state.
+
+#### Request Examples
+```
+PUT /v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
+Host: 192.168.10.4:8080
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Content-Type: application/json
+Cache-Control: no-cache
+
+{  
+   "name":"CPU percent greater than 15",
+   "description":"Release the hounds",
+   "expression":"(avg(cpu_user_perc{hostname=devstack}) > 15)",
+   "match_by":[
+     "hostname"
+   ],
+   "alarm_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "ok_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "undetermined_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ]
+}
+```
+
+### Response
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON alarm object with the following parameters:
+
+* id (string) - ID of alarm definition.
+* links ([link]) - Links to alarm definition.
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* expression_data (JSON object) - The alarm definition expression as a JSON object.
+* match_by ([string]) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
+
+#### Response Examples
+```
+{
+    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83"
+        }
+    ],
+    "name": "CPU percent greater than 15",
+    "description": "Release the hounds",
+    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 15)",
+    "expression_data": {
+        "function": "AVG",
+        "metric_name": "cpu_user_perc",
+        "dimensions": {
+            "hostname": "devstack"
+        },
+        "operator": "GT",
+        "threshold": 15,
+        "period": 60,
+        "periods": 1
+    },
+    "match_by":[
+      "hostname"
+    ]
+    "severity": "CRITICAL",
+    "alarm_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "ok_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "undetermined_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ]
+}
+```
+___
+
+## Patch Alarm Definition
+### PATCH /v2.0/alarm-definitions/{alarm_definition_id}
+Update select parameters of the specified alarm definition, and enable/disable its actions.
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Content-Type (string, required) - application/json-patch+json
+* Accept (string) - application/json
+
+#### Path Parameters
+* alarm_definition_id (string, required) - Alarm Definition ID
+
+#### Query Parameters
+None.
+
+#### Request Body
+Consists of an alarm with the following properties:
+
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* match_by ([string], optional) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
+
+Only the parameters that are specified will be updated.
+
+#### Request Examples
+```
+PATCH /v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
+Host: 192.168.10.4:8080
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Content-Type: application/json-patch+json
+Cache-Control: no-cache
+
+{  
+   "name":"CPU percent greater than 15",
+   "description":"Release the hounds",
+   "expression":"(avg(cpu_user_perc{hostname=devstack}) > 15)",
+   "match_by":[
+     "hostname"
+   ],
+   "severity":"CRITICAL",
+   "alarm_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "ok_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "undetermined_actions":[  
+      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ]
+}
+```
+
+### Response
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON alarm definition object with the following fields:
+
+* id (string) - ID of alarm definition.
+* links ([link]) - Links to alarm definition.
+* name (string) - Name of alarm definition.
+* description (string) - Description of alarm definition.
+* expression (string) - The alarm definition expression.
+* expression_data (JSON object) - The alarm definition expression as a JSON object.
+* match_by ([string]) - The metric dimensions to match to the alarm dimensions
+* severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* actions_enabled (boolean) - If true actions for all alarms related to this definition are enabled.
+* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
+* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
+* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
+
+#### Response Examples
+```
+{
+    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83"
+        }
+    ],
+    "name": "CPU percent greater than 15",
+    "description": "Release the hounds",
+    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 15)",
+    "expression_data": {
+        "function": "AVG",
+        "metric_name": "cpu_user_perc",
+        "dimensions": {
+            "hostname": "devstack"
+        },
+        "operator": "GT",
+        "threshold": 15,
+        "period": 60,
+        "periods": 1
+    },
+    "match_by":[
+      "hostname"
+    ],
+    "severity": "CRITICAL",
+    "alarm_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "ok_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ],
+    "undetermined_actions": [
+        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+    ]
+}
+```
+___
+
+## Delete Alarm Definition
+Delete the specified alarm definition.
+
+### DELETE /v2.0/alarm-definitions/{alarm_definition_id}
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+
+#### Path Parameters
+* alarm_id (string, required) - Alarm Definition ID
+
+#### Query Parameters
+None.
+
+#### Request Body
+None.
+
+#### Request Examples
+```
+DELETE /v2.0/alarm-definitions/b461d659-577b-4d63-9782-a99194d4a472 HTTP/1.1
+Host: 192.168.10.4:8080
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+```
+
+### Response
+#### Status Code
+* 204 - No content
+
+#### Response Body
+None.
+___
+
+## List Alarms
+List alarms
+
+### GET /v2.0/alarms
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Accept (string) - application/json
+
+#### Path Parameters
+None.
+
+#### Query Parameters
+
+* alarm_definition_id (string, optional) - Alarm definition ID to filter by.
+* metric_name (string(255), optional) - Name of metric to filter by.
+* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* state (string) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+
+#### Request Body
+None.
+"
+#### Request Examples
+```
+GET /v2.0/alarms?metric_name=cpu_utilization&metric_dimensions=hostname:devstack&state=UNDETERMINED HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+```
+
+### Response
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON array of alarm objects with the following fields:
+
+* id (string) - ID of alarm.
+* links ([link]) - Links to alarm.
+* alarm_definition_id (string) - Name of alarm.
+* metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+
+#### Response Examples
+```
+[  
+   {  
+      "id":"f9935bcc-9641-4cbf-8224-0993a947ea83",
+      "links":[  
+         {  
+            "rel":"self",
+            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
+         },
+         {  
+            "rel":"state-history",
+            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history"
+         }
+      ],
+      "alarm_definition_id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+      "metrics":[{
+         "name":"cpu_utilization",
+         "dimensions":{  
+            "hostname":"devstack"
+         }
+      }],
+      "state":"OK"
    }
 ]
 ```
@@ -1328,6 +1566,8 @@ None.
 Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
+* metric_name (string(255), optional) - Name of metric to filter by.
+* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
@@ -1339,6 +1579,10 @@ Returns a JSON array of alarm state transition objects with the following fields
 [
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "Alarm state updated via API",
@@ -1347,6 +1591,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",
@@ -1355,6 +1603,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "No data was present for the sub-alarms: [avg(cpu_user_perc{hostname=devstack}) > 15.0]",
@@ -1363,6 +1615,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",
@@ -1371,6 +1627,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "No data was present for the sub-alarms: [avg(cpu_user_perc{hostname=devstack}) > 15.0]",
@@ -1379,6 +1639,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",
@@ -1416,57 +1680,33 @@ Returns a JSON alarm object with the following fields:
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* name (string) - Name of alarm.
-* description (string) - Description of alarm.
-* expression (string) - The alarm expression.
-* expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
-* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* alarm_definition_id (string) - Name of alarm.
+* description (string) - ID of the alarm definition.
+* metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 
 #### Response Examples
 ```
-{
-    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-    "links": [
-        {
-            "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
-        },
-        {
-            "rel": "history",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/history"
-        }
-    ],
-    "name": "CPU percent greater than 10",
-    "description": "Release the hounds",
-    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 10)",
-    "expression_data": {
-        "function": "AVG",
-        "metric_name": "cpu_user_perc",
-        "dimensions": {
-            "hostname": "devstack"
-        },
-        "operator": "GT",
-        "threshold": 10,
-        "period": 60,
-        "periods": 1
-    },
-    "state": "UNDETERMINED",
-    "severity": "CRITICAL",
-    "actions_enabled": true,
-    "alarm_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "ok_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "undetermined_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ]
+{  
+   "id":"f9935bcc-9641-4cbf-8224-0993a947ea83",
+   "links":[  
+      {  
+         "rel":"self",
+         "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
+      },
+      {  
+         "rel":"state-history",
+         "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history"
+      }
+   ],
+   "alarm_definition_id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+   "metrics":[{
+      "name":"cpu_utilization",
+      "dimensions":{  
+         "hostname":"devstack"
+      }
+   }],
+   "state":"OK"
 }
 ```
 ___
@@ -1488,19 +1728,9 @@ Update/Replace the entire state of the specified alarm.
 None.
 
 #### Request Body
-Consists of an alarm definition. An alarm has the following properties:
+Consists of an alarm definition. An alarm has the following mutable properties:
 
-* name (string(255), required) - A name of the alarm.
-* description (string(255), optional) -  A description of an alarm.
-* expression (string, required) - An alarm expression.
-* state (string, required) - State of alarm to set. Must be either `OK`, `ALARM` or `UNDETERMINED`.
-* enabled (boolean, required)
-* alarmActions ([string(50)], optional) 
-* okActions ([string(50)], optional)
-* undeterminedActions ([string(50)], optional)
-* severity (string, optional) - Severity of an alarm. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-
-If optional parameters are not specified they will be reset to their default state.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 
 #### Request Examples
 ```
@@ -1511,20 +1741,7 @@ Content-Type: application/json
 Cache-Control: no-cache
 
 {  
-   "name":"CPU percent greater than 15",
-   "description":"Release the hounds",
-   "expression":"(avg(cpu_user_perc{hostname=devstack}) > 15)",
-   "state":"UNDETERMINED",
-   "actions_enabled":true,
-   "alarm_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ],
-   "ok_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ],
-   "undetermined_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ]
+  "state":"OK"
 }
 ```
 
@@ -1537,62 +1754,38 @@ Returns a JSON alarm object with the following parameters:
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* name (string) - Name of alarm.
-* description (string) - Description of alarm.
-* expression (string) - The alarm expression.
-* expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
-* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions (array[string(50)] - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* alarm_definition_id (string) - Name of alarm.
+* description (string) - ID of the alarm definition.
+* metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 
 #### Response Examples
 ```
-{
-    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-    "links": [
-        {
-            "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
-        },
-        {
-            "rel": "history",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/history"
-        }
-    ],
-    "name": "CPU percent greater than 15",
-    "description": "Release the hounds",
-    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 15)",
-    "expression_data": {
-        "function": "AVG",
-        "metric_name": "cpu_user_perc",
-        "dimensions": {
-            "hostname": "devstack"
-        },
-        "operator": "GT",
-        "threshold": 15,
-        "period": 60,
-        "periods": 1
-    },
-    "state": "UNDETERMINED",
-    "severity": "CRITICAL",
-    "actions_enabled": true,
-    "alarm_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "ok_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "undetermined_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ]
+{  
+  "id":"f9935bcc-9641-4cbf-8224-0993a947ea83",
+  "links":[  
+     {  
+        "rel":"self",
+        "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
+     },
+     {  
+        "rel":"state-history",
+        "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history"
+     }
+  ],
+  "alarm_definition_id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+  "metrics":[{
+     "name":"cpu_utilization",
+     "dimensions":{  
+        "hostname":"devstack"
+     }
+  }],
+  "state":"OK"
 }
 ```
 ___
 
-## Update Alarm
+## Patch Alarm
 ### PATCH /v2.0/alarms/{alarm_id}
 Update select parameters of the specified alarm, set the alarm state and enable/disable it.
 
@@ -1608,18 +1801,9 @@ Update select parameters of the specified alarm, set the alarm state and enable/
 None.
 
 #### Request Body
-Consists of an alarm with the following properties:
+Consists of an alarm with the following mutable properties:
 
-* name (string(255), optional) - A name of the alarm.
-* description (string(255), optional) -  A description of an alarm.
-* expression (string, optional) - An alarm expression.
-* state (string, optional) - State of alarm to set. Must be either `UNDETERMINED`, `OK` or `ALARM`.
-* enabled (boolean, optional)
-* alarm_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions ([string(50)], optional) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
-
-Only the parameters that are specified will be updated.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 
 #### Request Examples
 ```
@@ -1630,21 +1814,7 @@ Content-Type: application/json-patch+json
 Cache-Control: no-cache
 
 {  
-   "name":"CPU percent greater than 15",
-   "description":"Release the hounds",
-   "expression":"(avg(cpu_user_perc{hostname=devstack}) > 15)",
-   "state":"UNDETERMINED",
-   "actions_enabled":true,
-   "severity":"CRITICAL",
-   "alarm_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ],
-   "ok_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ],
-   "undetermined_actions":[  
-      "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ]
+  "state":"OK"
 }
 ```
 
@@ -1657,58 +1827,36 @@ Returns a JSON alarm object with the following fields:
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* name (string) - Name of alarm.
-* description (string) - Description of alarm.
-* expression (string) - The alarm expression.
-* expression_data (JSON object) - The alarm expression as a JSON object.
-* state (string) - State of alarm. Either `OK`, `ALARM` or `UNDETERMINED`. The initial state of an alarm is `UNDETERMINED`. 
-* severity (string) - The severity of an alarm. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* actions_enabled (boolean) - If true the alarm is enable else the alarm is disabled.
-* alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `ALARM` state.
-* ok_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `OK` state.
-* undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarm transitions to the `UNDETERMINED` state.
+* alarm_definition_id (string) - Name of alarm.
+* description (string) - ID of the alarm definition.
+* metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
+* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 
 #### Response Examples
 ```
-{
-    "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-    "links": [
-        {
-            "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
-        },
-        {
-            "rel": "history",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/history"
-        }
-    ],
-    "name": "CPU percent greater than 15",
-    "description": "Release the hounds",
-    "expression": "(avg(cpu_user_perc{hostname=devstack}) > 15)",
-    "expression_data": {
-        "function": "AVG",
-        "metric_name": "cpu_user_perc",
-        "dimensions": {
-            "hostname": "devstack"
-        },
-        "operator": "GT",
-        "threshold": 15,
-        "period": 60,
-        "periods": 1
-    },
-    "state": "UNDETERMINED",
-    "severity": "CRITICAL",
-    "actions_enabled": true,
-    "alarm_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "ok_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ],
-    "undetermined_actions": [
-        "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-    ]
-}
+[  
+   {  
+      "id":"f9935bcc-9641-4cbf-8224-0993a947ea83",
+      "links":[  
+         {  
+            "rel":"self",
+            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83"
+         },
+         {  
+            "rel":"state-history",
+            "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history"
+         }
+      ],
+      "alarm_definition_id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+      "metrics":[{
+         "name":"cpu_utilization",
+         "dimensions":{  
+            "hostname":"devstack"
+         }
+      }],
+      "state":"OK"
+   }
+]
 ```
 ___
 
@@ -1779,6 +1927,8 @@ Cache-Control: no-cache
 Returns a JSON array of alarm state transition objects with the following fields:
 
 * alarm_id (string) - Alarm ID.
+* metric_name (string(255), optional) - Name of metric to filter by.
+* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
@@ -1790,6 +1940,10 @@ Returns a JSON array of alarm state transition objects with the following fields
 [
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "Alarm state updated via API",
@@ -1798,6 +1952,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",
@@ -1806,6 +1964,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "No data was present for the sub-alarms: [avg(cpu_user_perc{hostname=devstack}) > 15.0]",
@@ -1814,6 +1976,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",
@@ -1822,6 +1988,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "ALARM",
         "new_state": "UNDETERMINED",
         "reason": "No data was present for the sub-alarms: [avg(cpu_user_perc{hostname=devstack}) > 15.0]",
@@ -1830,6 +2000,10 @@ Returns a JSON array of alarm state transition objects with the following fields
     },
     {
         "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
+        "metric_name": "cpu_utilization",
+        "metric_dimensions": {
+          "hostname": "devstack"
+        },
         "old_state": "UNDETERMINED",
         "new_state": "ALARM",
         "reason": "Alarm state updated via API",

@@ -58,6 +58,17 @@ public final class Links {
    * 
    * @param resource to obtain id from
    * @param uriInfo to obtain path from
+   * @throws NullPointerException if {@code resource} is null
+   */
+  public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo) {
+    return hydrate(resource, prefixForHttps(uriInfo.getAbsolutePath().toString()), false);
+  }
+
+  /**
+   * Hydrates the {@code resource} with links for the {@code uriInfo}.
+   * 
+   * @param resource to obtain id from
+   * @param uriInfo to obtain path from
    * @param uriInfoForSpecificResource whether the uriInfo is for a specific resource
    * @param children child link elements to create
    * @throws NullPointerException if {@code resource} is null

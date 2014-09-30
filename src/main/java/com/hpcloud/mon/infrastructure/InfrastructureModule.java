@@ -23,6 +23,7 @@ import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
+import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.domain.model.measurement.MeasurementRepository;
 import com.hpcloud.mon.domain.model.metric.MetricDefinitionRepository;
@@ -32,6 +33,7 @@ import com.hpcloud.mon.infrastructure.persistence.influxdb.AlarmStateHistoryInfl
 import com.hpcloud.mon.infrastructure.persistence.influxdb.MeasurementInfluxDbRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.influxdb.MetricDefinitionInfluxDbRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.influxdb.StatisticInfluxDbRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmDefinitionMySqlRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
@@ -53,6 +55,8 @@ public class InfrastructureModule extends AbstractModule {
   protected void configure() {
     // Bind repositories
     bind(AlarmRepository.class).to(AlarmMySqlRepositoryImpl.class).in(Singleton.class);
+    bind(AlarmDefinitionRepository.class).to(AlarmDefinitionMySqlRepositoryImpl.class).in(
+        Singleton.class);
     if (config.databaseConfiguration.getDatabaseType().trim().toLowerCase().equals("vertica")) {
       bind(AlarmStateHistoryRepository.class).to(AlarmStateHistoryVerticaRepositoryImpl.class).in(
           Singleton.class);
