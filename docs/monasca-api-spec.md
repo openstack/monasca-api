@@ -295,7 +295,7 @@ Create metrics.
 None.
 
 #### Query Parameters
-None.
+* tenant_id (string, optional, restricted) - Tenant ID to create metric on behalf of. Usage of this query parameter requires the `monitoring-delegate` role.
 
 #### Request Body
 Consists of a single metric object or an array of metric objects. A metric has the following properties:
