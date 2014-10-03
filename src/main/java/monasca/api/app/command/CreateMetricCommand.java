@@ -31,8 +31,6 @@ import monasca.api.resource.exception.Exceptions;
 public class CreateMetricCommand {
   private static final long TIME_2MIN = 120;
   private static final long TIME_2WEEKS = 1209600;
-  private static final double VALUE_MIN = 8.515920e-109;
-  private static final double VALUE_MAX = 1.174271e+108;
 
   @NotEmpty
   @Size(min = 1, max = 64)
@@ -64,11 +62,6 @@ public class CreateMetricCommand {
     long time = System.currentTimeMillis() / 1000;
     if (timestamp > time + TIME_2MIN || timestamp < time - TIME_2WEEKS)
       throw Exceptions.unprocessableEntity("Timestamp %s is out of legal range", timestamp);
-  }
-
-  private static void validateValue(double value) {
-    if (value < 0 || (value > 0 && (value < VALUE_MIN || value > VALUE_MAX)))
-      throw Exceptions.unprocessableEntity("Value %s is out of legal range", value);
   }
 
   @Override
@@ -154,10 +147,7 @@ public class CreateMetricCommand {
         if (timeValuePair.length != 2)
           throw Exceptions.unprocessableEntity("All times_values must be timestamp / value pairs");
         validateTimestamp((long) timeValuePair[0]);
-        validateValue(timeValuePair[1]);
       }
-    } else {
-      validateValue(value);
     }
   }
 }
