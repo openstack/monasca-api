@@ -24,6 +24,7 @@ import kafka.producer.KeyedMessage;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import monasca.api.MonApiConfiguration;
@@ -50,10 +51,9 @@ public class MetricService {
 
   public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId) {
     Builder<String, Object> metaBuilder =
-        new ImmutableMap.Builder<String, Object>().put("tenantId", tenantId).put("region",
+        new ImmutableMap.Builder<String, Object>().put("tenantId",
+            Strings.isNullOrEmpty(crossTenantId) ? tenantId : crossTenantId).put("region",
             config.region);
-    if (crossTenantId != null)
-      metaBuilder.put("crossTenantId", crossTenantId);
     ImmutableMap<String, Object> meta = metaBuilder.build();
 
     List<KeyedMessage<String, String>> keyedMessages = new ArrayList<>(metrics.size());
