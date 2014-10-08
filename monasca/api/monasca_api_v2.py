@@ -26,7 +26,7 @@ class V2API(object):
         LOG.debug('initializing V2API!')
         self.global_conf = global_conf
 
-    @resource_api.Restify('/v2.0/metrics')
+    @resource_api.Restify('/v2.0/metrics', method='get')
     def do_get_metrics(self, req, res):
         res.status = '501 Not Implemented'
 
@@ -38,11 +38,11 @@ class V2API(object):
     def do_get_version(self, req, res, version_id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/metrics/measurements')
+    @resource_api.Restify('/v2.0/metrics/measurements', method='get')
     def do_get_measurements(self, req, res):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/metrics/statistics')
+    @resource_api.Restify('/v2.0/metrics/statistics', method='get')
     def do_get_statistics(self, req, res):
         res.status = '501 Not Implemented'
 
@@ -58,12 +58,32 @@ class V2API(object):
     def do_delete_notification_methods(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/notification-methods/{id}')
+    @resource_api.Restify('/v2.0/notification-methods/{id}', method='get')
     def do_get_notification_methods(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/alarms', method='post')
-    def do_post_alarms(self, req, res):
+    @resource_api.Restify('/v2.0/alarm-definitions', method='post')
+    def do_post_alarm_definitions(self, req, res):
+        res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='get')
+    def do_get_alarm_definition(self, req, res, id):
+         res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='put')
+    def do_put_alarm_definitions(self, req, res, id):
+         res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarm-definitions', method='get')
+    def do_get_alarm_definitions(self, req, res):
+        res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='patch')
+    def do_patch_alarm_definitions(self, req, res, id):
+        res.status = '501 Not Implemented'
+
+    @resource_api.Restify('v2.0/alarm-definitions/{id}', method='delete')
+    def do_delete_alarm_definitions(self, req, res, id):
         res.status = '501 Not Implemented'
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='put')
@@ -86,10 +106,10 @@ class V2API(object):
     def do_get_alarm_by_id(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/alarms/state-history')
+    @resource_api.Restify('/v2.0/alarms/state-history', method='get')
     def do_get_alarms_state_history(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/alarms/{id}/state-history')
+    @resource_api.Restify('/v2.0/alarms/{id}/state-history', method='get')
     def do_get_alarm_state_history(self, req, res, id):
         res.status = '501 Not Implemented'
