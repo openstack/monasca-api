@@ -82,7 +82,7 @@ class V2API(object):
     def do_patch_alarm_definitions(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('v2.0/alarm-definitions/{id}', method='delete')
+    @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='delete')
     def do_delete_alarm_definitions(self, req, res, id):
         res.status = '501 Not Implemented'
 
