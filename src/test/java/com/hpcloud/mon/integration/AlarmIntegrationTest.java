@@ -51,6 +51,7 @@ import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinition;
 import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import com.hpcloud.mon.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmDefinitionMySqlRepositoryImpl;
+import com.hpcloud.mon.infrastructure.persistence.mysql.AlarmMySqlRepositoryImpl;
 import com.hpcloud.mon.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 import com.hpcloud.mon.resource.AbstractMonApiResourceTest;
 import com.hpcloud.mon.resource.AlarmDefinitionResource;
@@ -84,7 +85,7 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
 
     repo = new AlarmDefinitionMySqlRepositoryImpl(mysqlDb);
     service =
-        new AlarmDefinitionService(config, producer, repo,
+        new AlarmDefinitionService(config, producer, repo, new AlarmMySqlRepositoryImpl(mysqlDb),
             new NotificationMethodMySqlRepositoryImpl(mysqlDb));
     addResources(new AlarmDefinitionResource(service, repo));
   }

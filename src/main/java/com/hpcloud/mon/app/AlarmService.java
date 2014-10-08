@@ -30,6 +30,7 @@ import com.hpcloud.mon.common.event.AlarmDeletedEvent;
 import com.hpcloud.mon.common.event.AlarmStateTransitionedEvent;
 import com.hpcloud.mon.common.event.AlarmUpdatedEvent;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.exception.InvalidEntityException;
@@ -68,8 +69,7 @@ public class AlarmService {
    */
   public void delete(String tenantId, String alarmId) {
     Alarm alarm = repo.findById(alarmId);
-    Map<String, MetricDefinition> subAlarmMetricDefs =
-        alarmDefRepo.findSubAlarmMetricDefinitions(alarm.getAlarmDefinitionId());
+    Map<String, AlarmSubExpression> subAlarmMetricDefs = repo.findAlarmSubExpressions(alarmId);
     List<MetricDefinition> metrics = repo.findMetrics(alarmId);
     repo.deleteById(alarmId);
 
@@ -119,9 +119,11 @@ public class AlarmService {
 
       // Notify interested parties of updated alarm
       AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinitionId());
+      List<MetricDefinition> metrics = repo.findMetrics(alarm.getId());
+      Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarm.getId());
       String event =
           Serialization.toJson(new AlarmUpdatedEvent(alarm.getId(), alarm.getAlarmDefinitionId(),
-              newState, oldState));
+              tenantId, metrics, subAlarms, newState, oldState));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       // Notify interested parties of transitioned alarm state

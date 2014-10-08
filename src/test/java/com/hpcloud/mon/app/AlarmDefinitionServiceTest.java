@@ -42,6 +42,7 @@ import com.hpcloud.mon.app.AlarmDefinitionService.SubExpressions;
 import com.hpcloud.mon.app.command.UpdateAlarmDefinitionCommand;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
+import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinition;
 import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
@@ -61,7 +62,8 @@ public class AlarmDefinitionServiceTest {
     producer = mock(Producer.class);
     repo = mock(AlarmDefinitionRepository.class);
     notificationMethodRepo = mock(NotificationMethodRepository.class);
-    service = new AlarmDefinitionService(config, producer, repo, notificationMethodRepo);
+    AlarmRepository alarmRepo = mock(AlarmRepository.class);
+    service = new AlarmDefinitionService(config, producer, repo, alarmRepo, notificationMethodRepo);
 
     when(
         repo.create(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(),

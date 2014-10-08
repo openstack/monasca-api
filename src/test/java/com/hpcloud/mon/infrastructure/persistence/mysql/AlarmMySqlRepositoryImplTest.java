@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -32,7 +33,9 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
+
 import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
@@ -67,6 +70,7 @@ public class AlarmMySqlRepositoryImplTest {
   protected void beforeMethod() {
     handle.execute("SET foreign_key_checks = 0;");
     handle.execute("truncate table alarm");
+    handle.execute("truncate table sub_alarm");
     handle.execute("truncate table alarm_action");
     handle.execute("truncate table alarm_definition");
     handle.execute("truncate table alarm_metric");
@@ -111,6 +115,10 @@ public class AlarmMySqlRepositoryImplTest {
         .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234111', '234', 'UNDETERMINED', NOW(), NOW())");
     handle
         .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234222', '234', 'ALARM', NOW(), NOW())");
+    handle
+        .execute("insert into sub_alarm (id, alarm_id, expression, created_at, updated_at) values ('42', '234111', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20', NOW(), NOW())");
+    handle
+        .execute("insert into sub_alarm (id, alarm_id, expression, created_at, updated_at) values ('4242', '234111', 'avg(hpcs.compute) < 100', NOW(), NOW())");
   }
 
   @Test(groups = "database")
@@ -125,26 +133,60 @@ public class AlarmMySqlRepositoryImplTest {
   }
 
   @Test(groups = "database")
+  public void shouldFindAlarmSubExpressions() {
+    final String alarmId = "234111";
+    final Map<String, AlarmSubExpression> subExpressionMap = repo.findAlarmSubExpressions(alarmId);
+    assertEquals(subExpressionMap.size(), 2);
+    assertEquals(subExpressionMap.get("42"),
+        AlarmSubExpression
+            .of("avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20"));
+    assertEquals(subExpressionMap.get("4242"), AlarmSubExpression.of("avg(hpcs.compute) < 100"));
+  }
+
+  @Test(groups = "database")
   public void shouldFind() {
+    // This test won't work without the real mysql database so use mini-mon.
+    // Warning, this will truncate your mini-mon database
+    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
+    handle = db.open();
+    repo = new AlarmMySqlRepositoryImpl(db);
+    beforeMethod();
+
     List<Alarm> alarms =
         repo.find("bob", "1", "cpu",
             ImmutableMap.<String, String>builder().put("instance_id", "123").build(), null);
-    assertEquals(alarms, Arrays.asList(new Alarm("123111", "123", "90% CPU", Arrays
-        .asList(new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
-            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "cpu").build())),
-        AlarmState.ALARM)));
+    // This test doesn't really test what it looks like because Alarm doesn't implement equals()
+    assertEquals(alarms, Arrays.asList(new Alarm("1", "1", null, Arrays.asList(
+        new MetricDefinition("cpu", ImmutableMap.<String, String>builder().put("flavor_id", "222")
+            .put("instance_id", "123").build()), new MetricDefinition("mem", ImmutableMap
+            .<String, String>builder().put("flavor_id", "222").put("instance_id", "123").build())),
+        AlarmState.ALARM),
+        new Alarm("2", "1", null, Arrays.asList(
+            new MetricDefinition("cpu", ImmutableMap.<String, String>builder().put("flavor_id", "222")
+                .put("instance_id", "123").build())),
+            AlarmState.ALARM)));
   }
 
   @Test(groups = "database")
   public void shouldFindById() {
-    Alarm alarm = repo.findById("123111");
+    // This test won't work without the real mysql database so use mini-mon.
+    // Warning, this will truncate your mini-mon database
+    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
+    handle = db.open();
+    repo = new AlarmMySqlRepositoryImpl(db);
+    beforeMethod();
 
-    assertEquals(alarm.getId(), "123111");
-    assertEquals(alarm.getAlarmDefinitionId(), "123");
-    assertEquals(alarm.getState(), "90% CPU");
+    final String alarmId = "1";
+    Alarm alarm = repo.findById(alarmId);
+
+    assertEquals(alarm.getId(), alarmId);
+    assertEquals(alarm.getAlarmDefinitionId(), "1");
+    assertEquals(alarm.getState(), AlarmState.OK);
     assertEquals(
         alarm.getMetrics(),
-        Arrays.asList(new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
-            .put("flavor_id", "777").put("image_id", "888").put("metric_name", "cpu").build())));
+        Arrays.asList(new MetricDefinition("cpu", ImmutableMap.<String, String>builder()
+            .put("flavor_id", "222").put("instance_id", "123").build()),
+            new MetricDefinition("mem", ImmutableMap.<String, String>builder()
+                .put("flavor_id", "222").put("instance_id", "123").build())));
   }
 }
