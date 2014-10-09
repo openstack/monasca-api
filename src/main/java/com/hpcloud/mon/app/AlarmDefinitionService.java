@@ -33,11 +33,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
+
 import com.hpcloud.mon.MonApiConfiguration;
 import com.hpcloud.mon.app.command.UpdateAlarmDefinitionCommand;
 import com.hpcloud.mon.common.event.AlarmDefinitionCreatedEvent;
 import com.hpcloud.mon.common.event.AlarmDefinitionDeletedEvent;
 import com.hpcloud.mon.common.event.AlarmDefinitionUpdatedEvent;
+import com.hpcloud.mon.common.event.AlarmDeletedEvent;
 import com.hpcloud.mon.common.model.alarm.AlarmExpression;
 import com.hpcloud.mon.common.model.alarm.AlarmState;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
@@ -45,6 +47,8 @@ import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityExistsException;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.exception.InvalidEntityException;
+import com.hpcloud.mon.domain.model.alarm.Alarm;
+import com.hpcloud.mon.domain.model.alarm.AlarmRepository;
 import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinition;
 import com.hpcloud.mon.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import com.hpcloud.mon.domain.model.notificationmethod.NotificationMethodRepository;
@@ -60,14 +64,17 @@ public class AlarmDefinitionService {
   private final MonApiConfiguration config;
   private final Producer<String, String> producer;
   private final AlarmDefinitionRepository repo;
+  private final AlarmRepository alarmRepo;
   private final NotificationMethodRepository notificationMethodRepo;
 
   @Inject
   public AlarmDefinitionService(MonApiConfiguration config, Producer<String, String> producer,
-      AlarmDefinitionRepository repo, NotificationMethodRepository notificationMethodRepo) {
+      AlarmDefinitionRepository repo, AlarmRepository alarmRepo,
+      NotificationMethodRepository notificationMethodRepo) {
     this.config = config;
     this.producer = producer;
     this.repo = repo;
+    this.alarmRepo = alarmRepo;
     this.notificationMethodRepo = notificationMethodRepo;
   }
 
@@ -139,12 +146,30 @@ public class AlarmDefinitionService {
   public void delete(String tenantId, String alarmDefId) {
     Map<String, MetricDefinition> subAlarmMetricDefs =
         repo.findSubAlarmMetricDefinitions(alarmDefId);
+
+    // Have to get information about the Alarms before they are deleted. They will be deleted
+    // by the database as a cascade delete from the Alarm Definition delete
+    final List<Alarm> alarms = alarmRepo.find(tenantId, alarmDefId, null, null, null);
+    final Map<String, Map<String, AlarmSubExpression>> alarmSubExpressions = new HashMap<>(alarms.size());
+    for (final Alarm alarm : alarms) {
+      alarmSubExpressions.put(alarm.getId(), alarmRepo.findAlarmSubExpressions(alarm.getId()));
+    }
+
     repo.deleteById(tenantId, alarmDefId);
 
     // Notify interested parties of alarm definition deletion
     String event =
         Serialization.toJson(new AlarmDefinitionDeletedEvent(alarmDefId, subAlarmMetricDefs));
     producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+
+    // Notify about the Deletion of the Alarms second because that is the order that thresh
+    // wants it so Alarms don't get recreated
+    for (final Alarm alarm : alarms) {
+      String alarmDeletedEvent =
+          Serialization.toJson(new AlarmDeletedEvent(tenantId, alarm.getId(), alarm.getMetrics(),
+              alarmDefId, alarmSubExpressions.get(alarm.getId())));
+      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, alarmDeletedEvent));
+    }
   }
 
   /**
@@ -213,7 +238,7 @@ public class AlarmDefinitionService {
       // Notify interested parties of updated alarm
       String event =
           Serialization.toJson(new AlarmDefinitionUpdatedEvent(tenantId, alarmDefId, name,
-              description, expression, matchBy, enabled, subExpressions.oldAlarmSubExpressions,
+              description, expression, matchBy, enabled, severity, subExpressions.oldAlarmSubExpressions,
               subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
               subExpressions.newAlarmSubExpressions));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));

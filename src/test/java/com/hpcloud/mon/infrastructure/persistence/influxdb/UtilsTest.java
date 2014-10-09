@@ -14,10 +14,6 @@
 
 package com.hpcloud.mon.infrastructure.persistence.influxdb;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.annotations.Test;

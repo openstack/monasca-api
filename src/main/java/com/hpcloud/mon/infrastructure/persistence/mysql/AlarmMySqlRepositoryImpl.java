@@ -14,6 +14,7 @@
 package com.hpcloud.mon.infrastructure.persistence.mysql;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
 import com.hpcloud.mon.common.model.alarm.AlarmState;
+import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
 import com.hpcloud.mon.common.model.metric.MetricDefinition;
 import com.hpcloud.mon.domain.exception.EntityNotFoundException;
 import com.hpcloud.mon.domain.model.alarm.Alarm;
@@ -173,6 +175,40 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
       throw e;
     } finally {
       h.close();
+    }
+  }
+
+  public static class SubAlarm {
+    private String id;
+    private String expression;
+    public String getId() {
+      return id;
+    }
+    public void setId(String id) {
+      this.id = id;
+    }
+    public String getExpression() {
+      return expression;
+    }
+    public void setExpression(String expression) {
+      this.expression = expression;
+    }
+  }
+
+  @Override
+  public Map<String, AlarmSubExpression> findAlarmSubExpressions(String alarmId) {
+    try (Handle h = db.open()) {
+      final List<SubAlarm> result = h
+          .createQuery("select * from sub_alarm where alarm_id = :alarmId")
+          .bind("alarmId", alarmId)
+          .map(new BeanMapper<SubAlarm>(SubAlarm.class)).list();
+      final Map<String, AlarmSubExpression> subAlarms = new HashMap<>(result.size());
+
+      for (SubAlarm row : result) {
+        subAlarms.put(row.id, AlarmSubExpression.of(row.expression));
+      }
+
+      return subAlarms;
     }
   }
 }

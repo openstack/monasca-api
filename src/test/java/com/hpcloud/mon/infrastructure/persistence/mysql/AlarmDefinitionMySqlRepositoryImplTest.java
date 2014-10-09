@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
+
 import com.hpcloud.mon.common.model.alarm.AggregateFunction;
 import com.hpcloud.mon.common.model.alarm.AlarmOperator;
 import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
@@ -74,20 +76,21 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
   protected void beforeMethod() {
     handle.execute("SET foreign_key_checks = 0;");
     handle.execute("truncate table sub_alarm");
+    handle.execute("truncate table sub_alarm_definition");
     handle.execute("truncate table alarm_action");
-    handle.execute("truncate table sub_alarm_dimension");
+    handle.execute("truncate table sub_alarm_definition_dimension");
     handle.execute("truncate table alarm_definition");
 
     handle
         .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
             + "values ('123', 'bob', '90% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10', 'flavor_id,image_id', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into sub_alarm (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
+        .execute("insert into sub_alarm_definition (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
             + "values ('111', '123', 'avg', 'hpcs.compute', 'GT', 10, 60, 1, NOW(), NOW())");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'flavor_id', '777')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'image_id', '888')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'metric_name', 'cpu')");
-    handle.execute("insert into sub_alarm_dimension values ('111', 'device', '1')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('111', 'flavor_id', '777')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('111', 'image_id', '888')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('111', 'metric_name', 'cpu')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('111', 'device', '1')");
     handle.execute("insert into alarm_action values ('123', 'ALARM', '29387234')");
     handle.execute("insert into alarm_action values ('123', 'ALARM', '77778687')");
 
@@ -95,14 +98,14 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
         .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
             + "values ('234', 'bob', '50% CPU', 'LOW', 'avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100', 'flavor_id,image_id', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into sub_alarm (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
+        .execute("insert into sub_alarm_definition (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
             + "values ('222', '234', 'avg', 'hpcs.compute', 'GT', 20, 60, 1, NOW(), NOW())");
     handle
-        .execute("insert into sub_alarm (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
+        .execute("insert into sub_alarm_definition (id, alarm_definition_id, function, metric_name, operator, threshold, period, periods, created_at, updated_at) "
             + "values ('223', '234', 'avg', 'hpcs.compute', 'LT', 100, 60, 1, NOW(), NOW())");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'flavor_id', '777')");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'image_id', '888')");
-    handle.execute("insert into sub_alarm_dimension values ('222', 'metric_name', 'mem')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('222', 'flavor_id', '777')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('222', 'image_id', '888')");
+    handle.execute("insert into sub_alarm_definition_dimension values ('222', 'metric_name', 'mem')");
     handle.execute("insert into alarm_action values ('234', 'ALARM', '29387234')");
     handle.execute("insert into alarm_action values ('234', 'ALARM', '77778687')");
   }
@@ -127,15 +130,17 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
 
     // Assert that sub-alarm and sub-alarm-dimensions made it to the db
     assertEquals(
-        handle.createQuery("select count(*) from sub_alarm where id = 4433")
+        handle.createQuery("select count(*) from sub_alarm_definition where id = 4433")
             .map(StringMapper.FIRST).first(), "1");
     assertEquals(
-        handle.createQuery("select count(*) from sub_alarm_dimension where sub_alarm_id = 4433")
+        handle.createQuery("select count(*) from sub_alarm_definition_dimension where sub_alarm_definition_id = 4433")
             .map(StringMapper.FIRST).first(), "3");
   }
 
   @Test(groups = "database")
   public void shouldUpdate() {
+    // This test won't work without the real mysql database so use mini-mon.
+    // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmDefinitionMySqlRepositoryImpl(db);
@@ -182,6 +187,8 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldFindSubAlarmMetricDefinitions() {
+    // This test won't work without the real mysql database so use mini-mon.
+    // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmDefinitionMySqlRepositoryImpl(db);
@@ -203,6 +210,8 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldFindSubExpressions() {
+    // This test won't work without the real mysql database so use mini-mon.
+    // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
     repo = new AlarmDefinitionMySqlRepositoryImpl(db);
@@ -215,7 +224,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
                 .put("metric_name", "cpu").put("device", "1").build()), AlarmOperator.GT, 10, 60, 1));
 
     assertEquals(repo.findSubExpressions("234").get("223"), new AlarmSubExpression(
-        AggregateFunction.AVG, new MetricDefinition("hpcs.compute", null), AlarmOperator.LT, 100,
+        AggregateFunction.AVG, new MetricDefinition("hpcs.compute", new HashMap<String, String>()), AlarmOperator.LT, 100,
         60, 1));
 
     assertTrue(repo.findSubAlarmMetricDefinitions("asdfasdf").isEmpty());
