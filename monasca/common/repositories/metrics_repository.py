@@ -13,10 +13,11 @@
 # under the License.
 
 import abc
+import six
 
 
+@six.add_metaclass(abc.ABCMeta)
 class MetricsRepository(object):
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list_metrics(self, tenant_id, name, dimensions):

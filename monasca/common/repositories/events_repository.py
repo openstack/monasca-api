@@ -13,10 +13,11 @@
 # under the License.
 
 import abc
+import six
 
 
+@six.add_metaclass(abc.ABCMeta)
 class EventsRepository(object):
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list_events(self, tenant_id, name, dimensions):
