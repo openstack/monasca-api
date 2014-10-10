@@ -131,8 +131,8 @@ public class AlarmService {
         event =
             Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarm.getId(), alarmDef
                 .getId(), alarm.getMetrics(), alarmDef.getName(), alarmDef.getDescription(),
-                oldState, newState, alarmDef.isActionsEnabled(), stateChangeReasonFor(oldState,
-                    newState), System.currentTimeMillis() / 1000));
+                oldState, newState, alarmDef.getSeverity(), alarmDef.isActionsEnabled(),
+                stateChangeReasonFor(oldState, newState), System.currentTimeMillis() / 1000));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
     } catch (Exception e) {
