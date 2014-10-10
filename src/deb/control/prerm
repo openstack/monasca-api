@@ -2,7 +2,7 @@
 
 case "$1" in
   remove)
-    stop mon-api
+    stop monasca-api
   ;;
 esac
 

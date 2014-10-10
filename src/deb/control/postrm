@@ -2,7 +2,7 @@
 
 case "$1" in
   remove|purge)
-    userdel mon_api
+    userdel monasca_api
   ;;
 esac
 

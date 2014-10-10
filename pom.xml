@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>monasca-api</groupId>
-    <artifactId>mon-api</artifactId>
+    <artifactId>monasca-api</artifactId>
     <version>0.1.0</version>
     <url>http://github.com/stackforge/monasca-api</url>
     <packaging>jar</packaging>
@@ -361,18 +361,18 @@
                                 <data>
                                     <type>file</type>
                                     <src>${project.build.directory}/${computedName}.jar</src>
-                                    <dst>/opt/mon/mon-api.jar</dst>
+                                    <dst>/opt/monasca/monasca-api.jar</dst>
                                 </data>
                                 <data>
                                     <type>file</type>
-                                    <src>${project.basedir}/src/deb/init/mon-api.conf</src>
-                                    <dst>/etc/init/mon-api.conf</dst>
+                                    <src>${project.basedir}/src/deb/init/monasca-api.conf</src>
+                                    <dst>/etc/init/monasca-api.conf</dst>
                                 </data>
                                 <data>
                                     <type>file</type>
-                                    <src>${project.basedir}/src/deb/etc/mon-api-config.yml-sample
+                                    <src>${project.basedir}/src/deb/etc/api-config.yml-sample
                                     </src>
-                                    <dst>/etc/mon/mon-api-config.yml-sample</dst>
+                                    <dst>/etc/monasca/api-config.yml-sample</dst>
                                 </data>
                             </dataSet>
                         </configuration>
