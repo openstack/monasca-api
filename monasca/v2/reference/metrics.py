@@ -13,8 +13,6 @@
 # under the License.
 
 import json
-import re
-import urllib
 
 import falcon
 from oslo.config import cfg
@@ -124,12 +122,20 @@ class Metrics(monasca_api_v2.V2API):
         '''
 
         try:
-            return self._metrics_repo.list_metrics(tenant_id, name,
-                                                     dimensions)
+            return self._metrics_repo.list_metrics(tenant_id, name, dimensions)
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
                                                 ex.message)
+
+    def _measurement_list(self, tenant_id, name, dimensions):
+        try:
+            return self._metrics_repo.measurement_list(tenant_id, name, dimensions)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPServiceUnavailable('Service unavailable',
+                                                ex.message)
+
 
     @resource_api.Restify('/v2.0/metrics/', method='post')
     def do_post_metrics(self, req, res):
@@ -154,5 +160,17 @@ class Metrics(monasca_api_v2.V2API):
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         result = self._list_metrics(tenant_id, name, dimensions)
-        res.body = json.dumps(result)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
+
+    @resource_api.Restify('/v2.0/metrics/measurements', method='get')
+    def do_get_measurements(self, req, res):
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        name = helpers.get_query_name(req)
+        helpers.validate_query_name(name)
+        dimensions = helpers.get_query_dimensions(req)
+        helpers.validate_query_dimensions(dimensions)
+        result = self._measurement_list(tenant_id, name, dimensions)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
