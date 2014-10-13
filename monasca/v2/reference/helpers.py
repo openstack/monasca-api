@@ -113,7 +113,7 @@ def get_query_dimensions(req):
             for dimension in dimensions_str_array:
                 dimension_name_value = dimension.split(':')
                 if len(dimension_name_value) == 2:
-                    dimensions[str(dimension_name_value[0])] = str(dimension_name_value[1])
+                    dimensions[dimension_name_value[0]] = dimension_name_value[1]
                 else:
                     raise Exception('Dimensions are malformed')
         return dimensions
