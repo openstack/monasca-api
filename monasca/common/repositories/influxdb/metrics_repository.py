@@ -32,7 +32,6 @@ LOG = log.getLogger(__name__)
 
 
 class MetricsRepository(metrics_repository.MetricsRepository):
-
     def __init__(self):
 
         try:
@@ -63,16 +62,19 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return query
 
-    def _build_select_query(self, dimensions, name, tenant_id):
+    def _build_select_query(self, dimensions, name, tenant_id,
+                            start_timestamp, end_timestamp):
 
-        from_clause = self._build_from_clause(dimensions, name, tenant_id)
+        from_clause = self._build_from_clause(dimensions, name, tenant_id,
+                                              start_timestamp, end_timestamp)
 
         query = 'select * ' + from_clause
 
         return query
 
 
-    def _build_from_clause(self, dimensions, name, tenant_id):
+    def _build_from_clause(self, dimensions, name, tenant_id,
+                           start_timestamp=None, end_timestamp=None):
 
         from_clause = 'from /^'
 
@@ -95,6 +97,13 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                             safe='')
 
         from_clause += '/'
+
+        if start_timestamp is not None:
+            # subtract 1 from timestamp to get >= semantics
+            from_clause += " where time > " + str(start_timestamp - 1) + "s"
+            if end_timestamp is not None:
+                # add 1 to timestamp to get <= semantics
+                from_clause += " and time < " + str(end_timestamp + 1) + "s"
 
         return from_clause
 
@@ -200,7 +209,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         return metric
 
 
-    def measurement_list(self, tenant_id, name, dimensions):
+    def measurement_list(self, tenant_id, name, dimensions, start_timestamp,
+                         end_timestamp):
         """
         Example result from InfluxDB.
         [
@@ -251,7 +261,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         json_measurement_list = []
 
         try:
-            query = self._build_select_query(dimensions, name, tenant_id)
+            query = self._build_select_query(dimensions, name, tenant_id,
+                                             start_timestamp, end_timestamp)
 
             try:
                 result = self.influxdb_client.query(query, 's')
