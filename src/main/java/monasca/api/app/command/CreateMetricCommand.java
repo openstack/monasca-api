@@ -24,8 +24,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import monasca.api.app.validation.DimensionValidation;
 import monasca.api.app.validation.MetricNameValidation;
-import com.hpcloud.mon.common.model.Services;
-import com.hpcloud.mon.common.model.metric.Metric;
+import monasca.common.model.Services;
+import monasca.common.model.metric.Metric;
 import monasca.api.resource.exception.Exceptions;
 
 public class CreateMetricCommand {

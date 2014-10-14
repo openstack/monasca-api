@@ -14,8 +14,8 @@
 
 package monasca.api.resource;
 
-import static com.hpcloud.dropwizard.JsonHelpers.fromJson;
-import static com.hpcloud.dropwizard.JsonHelpers.jsonFixture;
+import static monasca.common.dropwizard.JsonHelpers.fromJson;
+import static monasca.common.dropwizard.JsonHelpers.jsonFixture;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;

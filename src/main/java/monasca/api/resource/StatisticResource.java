@@ -29,7 +29,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
 
-// import com.hpcloud.util.stats.Statistics;
+// import monasca.common.util.stats.Statistics;
 
 /**
  * Statistics resource implementation.

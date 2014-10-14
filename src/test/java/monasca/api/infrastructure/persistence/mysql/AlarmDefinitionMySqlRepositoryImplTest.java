@@ -39,10 +39,10 @@ import org.testng.annotations.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 
-import com.hpcloud.mon.common.model.alarm.AggregateFunction;
-import com.hpcloud.mon.common.model.alarm.AlarmOperator;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.alarm.AggregateFunction;
+import monasca.common.model.alarm.AlarmOperator;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;

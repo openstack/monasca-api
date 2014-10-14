@@ -35,7 +35,7 @@ import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.SubAlarmQueries;
-import com.hpcloud.persistence.BeanMapper;
+import monasca.common.persistence.BeanMapper;
 
 /**
  * Alarm repository implementation.

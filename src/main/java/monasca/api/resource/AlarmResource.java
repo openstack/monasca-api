@@ -41,7 +41,7 @@ import com.google.common.base.Strings;
 import monasca.api.app.AlarmService;
 import monasca.api.app.command.UpdateAlarmCommand;
 import monasca.api.app.validation.Validation;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmState;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;

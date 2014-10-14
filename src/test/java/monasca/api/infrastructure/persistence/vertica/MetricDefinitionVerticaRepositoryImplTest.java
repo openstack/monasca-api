@@ -14,7 +14,7 @@
 
 package monasca.api.infrastructure.persistence.vertica;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.metric.MetricDefinitionRepository;
 import monasca.api.infrastructure.persistence.vertica.MetricDefinitionVerticaRepositoryImpl;
 

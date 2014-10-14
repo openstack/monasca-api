@@ -93,7 +93,7 @@ logging:
 
     # Sets the level for 'com.example.app' to DEBUG.
     com.example.app: DEBUG
-    com.hpcloud: debug
+    monasca.api: debug
 
   appenders:
     - type: console

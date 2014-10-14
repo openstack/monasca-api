@@ -15,7 +15,7 @@ package monasca.api.domain.model.notificationmethod;
 
 import java.util.List;
 
-import com.hpcloud.mon.domain.common.AbstractEntity;
+import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
 

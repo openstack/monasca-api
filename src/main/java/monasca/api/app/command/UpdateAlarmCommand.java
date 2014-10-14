@@ -15,7 +15,7 @@ package monasca.api.app.command;
 
 import javax.validation.constraints.NotNull;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmState;
 
 public class UpdateAlarmCommand {
   @NotNull

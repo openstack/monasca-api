@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.alarm.AlarmSubExpression;
 
 public class SubAlarmExpressionSerializer extends JsonSerializer<AlarmSubExpression> {
   @Override

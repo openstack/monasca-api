@@ -17,8 +17,8 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.metric.MetricDefinition;
 
 public class AlarmStateHistory {
   private String alarmId;

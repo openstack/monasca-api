@@ -25,15 +25,15 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
-import com.hpcloud.persistence.BeanMapper;
-import com.hpcloud.persistence.SqlQueries;
+import monasca.common.persistence.BeanMapper;
+import monasca.common.persistence.SqlQueries;
 
 /**
  * Alarmed metric repository implementation.

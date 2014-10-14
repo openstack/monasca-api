@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.hpcloud.mon.domain.common.AbstractEntity;
+import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
 

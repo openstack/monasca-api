@@ -20,10 +20,10 @@ import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Preconditions;
 import monasca.api.MonApiConfiguration;
-import com.hpcloud.mon.domain.common.AbstractEntity;
+import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
-import com.hpcloud.util.Injector;
+import monasca.common.util.Injector;
 
 /**
  * Utilities for working with links.

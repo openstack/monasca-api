@@ -47,7 +47,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
     version = new Version("v2.0", VersionStatus.CURRENT, new DateTime(1355253328));
     version.setLinks(Arrays.asList(new Link("self",
-        "https://region-a.geo-1.maas.hpcloudsvc.com/v2.0")));
+        "https://cloudsvc.example.com/v2.0")));
 
     repo = mock(VersionRepository.class);
     when(repo.findById(eq("v2.0"))).thenReturn(version);

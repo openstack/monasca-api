@@ -26,7 +26,7 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.metric.MetricDefinitionRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 

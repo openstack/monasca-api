@@ -13,7 +13,7 @@
  */
 package monasca.api.domain.model.metric;
 
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.metric.MetricDefinition;
 
 import java.util.List;
 import java.util.Map;

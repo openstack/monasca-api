@@ -16,7 +16,7 @@ package monasca.api.infrastructure.persistence.influxdb;
 import com.google.inject.Inject;
 
 import monasca.api.MonApiConfiguration;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.metric.MetricDefinitionRepository;
 
 import org.influxdb.InfluxDB;

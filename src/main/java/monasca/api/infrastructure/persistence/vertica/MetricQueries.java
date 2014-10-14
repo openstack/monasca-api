@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.skife.jdbi.v2.Handle;
 
-import com.hpcloud.persistence.SqlQueries;
+import monasca.common.persistence.SqlQueries;
 
 /**
  * Vertica utilities for building metric queries.

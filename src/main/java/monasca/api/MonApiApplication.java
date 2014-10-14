@@ -32,8 +32,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.hpcloud.messaging.kafka.KafkaHealthCheck;
-import com.hpcloud.middleware.TokenAuth;
+import monasca.common.messaging.kafka.KafkaHealthCheck;
+import monasca.common.middleware.TokenAuth;
 import monasca.api.bundle.SwaggerBundle;
 import monasca.api.infrastructure.servlet.MockAuthenticationFilter;
 import monasca.api.infrastructure.servlet.PostAuthenticationFilter;
@@ -55,7 +55,7 @@ import monasca.api.resource.exception.JsonMappingExceptionManager;
 import monasca.api.resource.exception.JsonProcessingExceptionMapper;
 import monasca.api.resource.exception.ThrowableExceptionMapper;
 import monasca.api.resource.serialization.SubAlarmExpressionSerializer;
-import com.hpcloud.util.Injector;
+import monasca.common.util.Injector;
 
 /**
  * Monitoring API application.

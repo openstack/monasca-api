@@ -26,20 +26,20 @@ import org.slf4j.LoggerFactory;
 
 import monasca.api.MonApiConfiguration;
 import monasca.api.app.command.UpdateAlarmCommand;
-import com.hpcloud.mon.common.event.AlarmDeletedEvent;
-import com.hpcloud.mon.common.event.AlarmStateTransitionedEvent;
-import com.hpcloud.mon.common.event.AlarmUpdatedEvent;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.event.AlarmDeletedEvent;
+import monasca.common.model.event.AlarmStateTransitionedEvent;
+import monasca.common.model.event.AlarmUpdatedEvent;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.exception.InvalidEntityException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
-import com.hpcloud.util.Exceptions;
-import com.hpcloud.util.Serialization;
+import monasca.common.util.Exceptions;
+import monasca.common.util.Serialization;
 
 /**
  * Services alarmed metric related requests.
