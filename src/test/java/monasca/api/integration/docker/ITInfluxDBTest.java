@@ -88,7 +88,7 @@ public class ITInfluxDBTest {
     System.out.println("Running " + latestShadedJarFileName);
 
     ProcessBuilder pb = new ProcessBuilder("java", "-cp", "./target/" + latestShadedJarFileName,
-                                           "com.hpcloud.mon.MonApiApplication", "server",
+                                           "monasca.api.MonApiApplication", "server",
                                            "src/test/resources/mon-api-config.yml");
     File log = new File("mon-api-integration-test.log");
     pb.redirectErrorStream(true);

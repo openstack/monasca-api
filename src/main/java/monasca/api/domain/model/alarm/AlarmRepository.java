@@ -3,9 +3,9 @@ package monasca.api.domain.model.alarm;
 import java.util.List;
 import java.util.Map;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 
 public interface AlarmRepository {

@@ -18,10 +18,10 @@ import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 
-import com.hpcloud.mon.common.model.Services;
-import com.hpcloud.mon.common.model.alarm.AlarmExpression;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.Services;
+import monasca.common.model.alarm.AlarmExpression;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.resource.exception.Exceptions;
 
 /**

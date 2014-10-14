@@ -16,7 +16,7 @@ package monasca.api.resource;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.hpcloud.dropwizard.AbstractResourceTest;
+import monasca.common.dropwizard.AbstractResourceTest;
 import monasca.api.resource.exception.ConstraintViolationExceptionMapper;
 import monasca.api.resource.exception.EntityExistsExceptionMapper;
 import monasca.api.resource.exception.EntityNotFoundExceptionMapper;

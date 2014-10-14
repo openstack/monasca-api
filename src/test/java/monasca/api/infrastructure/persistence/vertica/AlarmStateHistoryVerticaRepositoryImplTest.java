@@ -14,7 +14,7 @@
 
 package monasca.api.infrastructure.persistence.vertica;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmState;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import monasca.api.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
 

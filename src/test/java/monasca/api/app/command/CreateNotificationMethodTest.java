@@ -14,7 +14,7 @@
 
 package monasca.api.app.command;
 
-import static com.hpcloud.dropwizard.JsonHelpers.jsonFixture;
+import static monasca.common.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;

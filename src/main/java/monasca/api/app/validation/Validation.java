@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-import com.hpcloud.mon.common.model.Services;
+import monasca.common.model.Services;
 import monasca.api.resource.exception.Exceptions;
 
 /**

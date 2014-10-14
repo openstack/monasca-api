@@ -14,11 +14,11 @@
 package monasca.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hpcloud.messaging.kafka.KafkaConfiguration;
+import monasca.common.messaging.kafka.KafkaConfiguration;
 import monasca.api.infrastructure.middleware.MiddlewareConfiguration;
-import com.hpcloud.configuration.DatabaseConfiguration;
+import monasca.common.configuration.DatabaseConfiguration;
 
-import com.hpcloud.configuration.InfluxDbConfiguration;
+import monasca.common.configuration.InfluxDbConfiguration;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 

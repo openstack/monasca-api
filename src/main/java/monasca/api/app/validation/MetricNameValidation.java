@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
-import com.hpcloud.mon.common.model.Services;
+import monasca.common.model.Services;
 import monasca.api.resource.exception.Exceptions;
 import com.sun.jersey.spi.container.WebApplication;
 

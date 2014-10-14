@@ -4,16 +4,16 @@
 
 ## Build
 
-Requires mon-common from https://github.com/hpcloud-mon/mon-common. Download and do mvn package.
+Requires monasca-common from https://github.com/stackforge/monasca-common. Download and do mvn install.
 
 ```
-mvn clean package
+mvn clean install
 ```
 
 ## Usage
 
 ```
-java -jar target/mon-api.jar server config-file.yml
+java -jar target/monasca-api.jar server config-file.yml
 ```
 
 ## Design Overview

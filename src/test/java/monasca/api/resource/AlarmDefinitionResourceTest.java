@@ -40,7 +40,7 @@ import org.testng.annotations.Test;
 import monasca.api.app.AlarmDefinitionService;
 import monasca.api.app.command.CreateAlarmDefinitionCommand;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
-import com.hpcloud.mon.common.model.alarm.AlarmExpression;
+import monasca.common.model.alarm.AlarmExpression;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;

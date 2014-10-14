@@ -21,8 +21,8 @@ import javax.ws.rs.WebApplicationException;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
-import com.hpcloud.mon.common.model.alarm.AlarmExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.alarm.AlarmExpression;
+import monasca.common.model.metric.MetricDefinition;
 
 @Test
 public class AlarmExpressionsTest {

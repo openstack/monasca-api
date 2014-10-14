@@ -27,9 +27,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import monasca.api.MonApiConfiguration;
-import com.hpcloud.mon.common.model.metric.Metric;
-import com.hpcloud.mon.common.model.metric.MetricEnvelope;
-import com.hpcloud.mon.common.model.metric.MetricEnvelopes;
+import monasca.common.model.metric.Metric;
+import monasca.common.model.metric.MetricEnvelope;
+import monasca.common.model.metric.MetricEnvelopes;
 
 /**
  * Metric service implementation.

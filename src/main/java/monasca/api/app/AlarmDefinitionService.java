@@ -36,14 +36,14 @@ import com.google.common.collect.Sets;
 
 import monasca.api.MonApiConfiguration;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
-import com.hpcloud.mon.common.event.AlarmDefinitionCreatedEvent;
-import com.hpcloud.mon.common.event.AlarmDefinitionDeletedEvent;
-import com.hpcloud.mon.common.event.AlarmDefinitionUpdatedEvent;
-import com.hpcloud.mon.common.event.AlarmDeletedEvent;
-import com.hpcloud.mon.common.model.alarm.AlarmExpression;
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.alarm.AlarmSubExpression;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
+import monasca.common.model.event.AlarmDefinitionCreatedEvent;
+import monasca.common.model.event.AlarmDefinitionDeletedEvent;
+import monasca.common.model.event.AlarmDefinitionUpdatedEvent;
+import monasca.common.model.event.AlarmDeletedEvent;
+import monasca.common.model.alarm.AlarmExpression;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmSubExpression;
+import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.exception.InvalidEntityException;
@@ -52,8 +52,8 @@ import monasca.api.domain.model.alarm.AlarmRepository;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
-import com.hpcloud.util.Exceptions;
-import com.hpcloud.util.Serialization;
+import monasca.common.util.Exceptions;
+import monasca.common.util.Serialization;
 
 /**
  * Services alarm definition related requests.

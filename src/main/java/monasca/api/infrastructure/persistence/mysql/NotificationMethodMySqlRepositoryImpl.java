@@ -29,7 +29,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
-import com.hpcloud.persistence.BeanMapper;
+import monasca.common.persistence.BeanMapper;
 
 /**
  * Notification method repository implementation.

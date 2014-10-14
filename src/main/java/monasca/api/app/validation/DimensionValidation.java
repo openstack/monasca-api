@@ -23,7 +23,7 @@ import javax.ws.rs.WebApplicationException;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
-import com.hpcloud.mon.common.model.Services;
+import monasca.common.model.Services;
 import monasca.api.resource.exception.Exceptions;
 
 /**

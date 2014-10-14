@@ -18,9 +18,9 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.hpcloud.mon.common.model.alarm.AlarmState;
-import com.hpcloud.mon.common.model.metric.MetricDefinition;
-import com.hpcloud.mon.domain.common.AbstractEntity;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.metric.MetricDefinition;
+import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
 import com.wordnik.swagger.annotations.ApiModelProperty;
