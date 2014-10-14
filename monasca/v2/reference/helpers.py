@@ -163,6 +163,35 @@ def _convert_time_string(date_time_string):
     return timestamp
 
 
+def get_query_statistics(req):
+    try:
+        params = parse_query_string(req.query_string)
+        if 'statistics' in params:
+            statistics = params['statistics'].split(',')
+            statistics = [statistic.lower() for statistic in statistics]
+            if not all(statistic in ['avg', 'min', 'max', 'count', 'sum'] for
+                       statistic in statistics):
+                raise Exception("Invalid statistic")
+            return statistics
+        else:
+            raise Exception("Missing statistics")
+    except Exception as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request', ex.message)
+
+
+def get_query_period(req):
+    try:
+        params = parse_query_string(req.query_string)
+        if 'period' in params:
+            return params['period']
+        else:
+            return None
+    except Exception as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request', ex.message)
+
+
 def validate_query_name(name):
     '''
     Validates the query param name.

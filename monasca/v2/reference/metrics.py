@@ -140,6 +140,20 @@ class Metrics(monasca_api_v2.V2API):
             raise falcon.HTTPServiceUnavailable('Service unavailable',
                                                 ex.message)
 
+    def _metric_statistics(self, tenant_id, name, dimensions,
+                          start_timestamp, end_timestamp, statistics, period):
+        try:
+            return self._metrics_repo.metrics_statistics(tenant_id, name,
+                                                       dimensions,
+                                                       start_timestamp,
+                                                       end_timestamp,
+                                                       statistics,
+                                                       period)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPServiceUnavailable('Service unavailable',
+                                                ex.message)
+
 
     @resource_api.Restify('/v2.0/metrics/', method='post')
     def do_post_metrics(self, req, res):
@@ -179,5 +193,23 @@ class Metrics(monasca_api_v2.V2API):
         end_timestamp = helpers.get_query_endtime_timestamp(req)
         result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
+
+    @resource_api.Restify('/v2.0/metrics/statistics', method='get')
+    def do_get_statistics(self, req, res):
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        name = helpers.get_query_name(req)
+        helpers.validate_query_name(name)
+        dimensions = helpers.get_query_dimensions(req)
+        helpers.validate_query_dimensions(dimensions)
+        start_timestamp = helpers.get_query_starttime_timestamp(req)
+        end_timestamp = helpers.get_query_endtime_timestamp(req)
+        statistics = helpers.get_query_statistics(req)
+        period = helpers.get_query_period(req)
+        result = self._metric_statistics(tenant_id, name, dimensions,
+                                        start_timestamp, end_timestamp,
+                                        statistics, period)
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
