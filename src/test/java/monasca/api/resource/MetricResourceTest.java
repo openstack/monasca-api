@@ -121,6 +121,15 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   }
 
   @SuppressWarnings("unchecked")
+  public void shouldCreateWithNegativeValue() {
+    ClientResponse response =
+        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp, -1.0));
+
+    assertEquals(response.getStatus(), 204);
+    verify(service).create(any(List.class), eq("abc"), anyString());
+  }
+
+  @SuppressWarnings("unchecked")
   public void shouldCreateWithZeroTimestamp() {
     ClientResponse response =
         createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, 0L, 0.0));
@@ -278,24 +287,6 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         "Timestamp " + local_timestamp + " is out of legal range");
   }
 
-  public void shouldErrorOnCreateWithHighValue() {
-    ClientResponse response =
-        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
-            1.174271e+109));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Value 1.174271E109 is out of legal range");
-  }
-
-  public void shouldErrorOnCreateWithLowValue() {
-    ClientResponse response =
-        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
-            8.515920e-110));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Value 8.51592E-110 is out of legal range");
-  }
-
   public void shouldErrorOnCreateWithTimestampHighInTimeValues() {
     double timestampD = (double) timestamp + 1000;
     double[][] timeValues = { {timestampD, 22.0}, {timestampD + 1, 23.0}};
@@ -305,17 +296,6 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Timestamp " + (long) timestampD + " is out of legal range");
-  }
-
-  public void shouldErrorOnCreateWithValueHighInTimeValues() {
-    double timestampD = (double) timestamp;
-    double[][] timeValues = { {timestampD, 1.174271e+109}, {timestampD + 1, 23.0}};
-    ClientResponse response =
-        createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, timestamp,
-            timeValues));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Value 1.174271E109 is out of legal range");
   }
 
   public void shouldRequireMetricValuesToBeDoubles() throws Exception {
