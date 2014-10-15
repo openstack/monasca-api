@@ -13,6 +13,9 @@
  */
 package monasca.api.infrastructure.persistence.mysql;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,8 @@ import javax.inject.Named;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
@@ -31,6 +36,7 @@ import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
+
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.common.persistence.BeanMapper;
 import monasca.common.persistence.SqlQueries;
@@ -47,7 +53,7 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
           + "left join (select dimension_set_id, group_concat(name, '=', value) as dimensions from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
           + "where am.alarm_id = :alarmId";
   private static final String ALARM_SQL =
-      "select distinct a.id, a.alarm_definition_id, a.state from alarm a "
+      "select distinct a.id, a.alarm_definition_id, a.state, ad.severity, ad.name as alarm_definition_name from alarm a "
           + "inner join alarm_metric am on am.alarm_id = a.id "
           + "inner join metric_definition_dimensions mdd on mdd.id = am.metric_definition_dimensions_id "
           + "inner join metric_definition md on md.id = mdd.metric_definition_id%s "
@@ -99,6 +105,17 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
     }
   }
 
+  private static class AlarmMapper implements ResultSetMapper<Alarm> {
+    public Alarm map(int rowIndex, ResultSet rs, StatementContext ctxt) throws SQLException {
+      // Metrics will get set later
+      final Alarm alarm =
+          new Alarm(rs.getString("id"), rs.getString("alarm_definition_id"),
+              rs.getString("alarm_definition_name"), rs.getString("severity"), null,
+              AlarmState.valueOf((rs.getString("state"))));
+      return alarm;
+    }
+  }
+
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
       Map<String, String> metricDimensions, AlarmState state) {
@@ -128,11 +145,10 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
         q.bind("state", state.name());
       }
 
-      q = q.map(new BeanMapper<Alarm>(Alarm.class));
+      Query<Alarm> qAlarm = q.map(new AlarmMapper());
       DimensionQueries.bindDimensionsToQuery(q, metricDimensions);
 
-      @SuppressWarnings("unchecked")
-      List<Alarm> alarms = (List<Alarm>) q.list();
+      List<Alarm> alarms = qAlarm.list();
       for (Alarm alarm : alarms) {
         alarm.setMetrics(findMetrics(h, alarm.getId()));
       }
@@ -144,8 +160,10 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
   public Alarm findById(String alarmId) {
     try (Handle h = db.open()) {
       Alarm alarm =
-          h.createQuery("select * from alarm where id = :id").bind("id", alarmId)
-              .map(new BeanMapper<Alarm>(Alarm.class)).first();
+          h.createQuery("select ad.severity, ad.name as alarm_definition_name, a.* from alarm as a "
+              + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
+              + "where a.id = :id").bind("id", alarmId)
+              .map(new AlarmMapper()).first();
       if (alarm == null)
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
 

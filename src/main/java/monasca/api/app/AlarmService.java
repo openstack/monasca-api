@@ -76,7 +76,7 @@ public class AlarmService {
     // Notify interested parties of alarm deletion
     String event =
         Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, metrics, alarm
-            .getAlarmDefinitionId(), subAlarmMetricDefs));
+            .getAlarmDefinition().getId(), subAlarmMetricDefs));
     producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
   }
 
@@ -118,11 +118,11 @@ public class AlarmService {
       repo.update(tenantId, alarm.getId(), newState);
 
       // Notify interested parties of updated alarm
-      AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinitionId());
+      AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinition().getId());
       List<MetricDefinition> metrics = repo.findMetrics(alarm.getId());
       Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarm.getId());
       String event =
-          Serialization.toJson(new AlarmUpdatedEvent(alarm.getId(), alarm.getAlarmDefinitionId(),
+          Serialization.toJson(new AlarmUpdatedEvent(alarm.getId(), alarm.getAlarmDefinition().getId(),
               tenantId, metrics, subAlarms, newState, oldState));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 

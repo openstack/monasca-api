@@ -91,7 +91,13 @@ public class AlarmResource {
   public Alarm get(
       @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarm_id) {
-    return Links.hydrate(repo.findById(alarm_id), uriInfo, true);
+    return fixAlarmLinks(uriInfo, repo.findById(alarm_id));
+  }
+
+  private Alarm fixAlarmLinks(UriInfo uriInfo, Alarm alarm) {
+    Links.hydrate(alarm.getAlarmDefinition(), uriInfo,
+        AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
+    return Links.hydrate(alarm, uriInfo, true);
   }
 
   @GET
@@ -118,8 +124,11 @@ public class AlarmResource {
     Map<String, String> metricDimensions =
         Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
-    return Links.hydrate(repo.find(tenantId, alarmDefId, metricName, metricDimensions, state),
-        uriInfo);
+    final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state);
+    for (final Alarm alarm : alarms) {
+      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS);
+    }
+    return Links.hydrate(alarms, uriInfo);
   }
 
   @GET
@@ -157,7 +166,7 @@ public class AlarmResource {
     AlarmState state =
         stateStr == null ? null : Validation.parseAndValidate(AlarmState.class, stateStr);
 
-    return Links.hydrate((Alarm) service.patch(tenantId, alarmId, state), uriInfo, true);
+    return fixAlarmLinks(uriInfo, service.patch(tenantId, alarmId, state));
   }
 
   @PUT
@@ -168,6 +177,7 @@ public class AlarmResource {
   @ApiOperation(value = "Update alarm", response = Alarm.class)
   public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
-    return Links.hydrate(service.update(tenantId, alarmId, command), uriInfo, true);
+
+    return fixAlarmLinks(uriInfo, service.update(tenantId, alarmId, command));
   }
 }

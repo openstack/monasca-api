@@ -19,6 +19,7 @@ import java.util.List;
 import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Preconditions;
+
 import monasca.api.MonApiConfiguration;
 import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
@@ -68,6 +69,18 @@ public final class Links {
    * Hydrates the {@code resource} with links for the {@code uriInfo}.
    * 
    * @param resource to obtain id from
+   * @param uriInfo to obtain base path from
+   * @param resourcePath path to type of resource
+   * @throws NullPointerException if {@code resource} is null
+   */
+  public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo, String resourcePath) {
+    return hydrate(resource, uriInfo.getBaseUri() + resourcePath + "/", false);
+  }
+
+  /**
+   * Hydrates the {@code resource} with links for the {@code uriInfo}.
+   * 
+   * @param resource to obtain id from
    * @param uriInfo to obtain path from
    * @param uriInfoForSpecificResource whether the uriInfo is for a specific resource
    * @param children child link elements to create
@@ -80,7 +93,7 @@ public final class Links {
   }
 
   /**
-   * Returns a string that is prefixed for prefixForHttp is https is being used.
+   * Returns a string that is prefixed for prefixForHttp if https is being used.
    */
   static String prefixForHttps(String path) {
     if (accessedViaHttps && !path.toLowerCase().startsWith("https"))

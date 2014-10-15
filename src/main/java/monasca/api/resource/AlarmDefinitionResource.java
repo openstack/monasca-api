@@ -58,12 +58,14 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * Alarm definition resource implementation.
  */
-@Path("/v2.0/alarm-definitions")
-@Api(value = "/v2.0/alarm-definitions",
+@Path(AlarmDefinitionResource.ALARM_DEFINITIONS_PATH)
+@Api(value = AlarmDefinitionResource.ALARM_DEFINITIONS_PATH,
     description = "Operations for working with alarm definitions")
 public class AlarmDefinitionResource {
   private final AlarmDefinitionService service;
   private final AlarmDefinitionRepository repo;
+  public final static String ALARM_DEFINITIONS = "alarm-definitions";
+  public final static String ALARM_DEFINITIONS_PATH = "/v2.0/" + ALARM_DEFINITIONS;
 
   @Inject
   public AlarmDefinitionResource(AlarmDefinitionService service, AlarmDefinitionRepository repo) {
