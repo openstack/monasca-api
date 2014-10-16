@@ -38,13 +38,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.inject.Inject;
+
 import monasca.api.MonApiConfiguration;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
-import monasca.api.infrastructure.persistence.SubAlarmQueries;
 
 public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistoryRepository {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -53,11 +53,10 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   private static final Logger logger = LoggerFactory
       .getLogger(AlarmStateHistoryInfluxDbRepositoryImpl.class);
   private static final String FIND_ALARMS_SQL =
-      "select distinct ad.id from alarm_definition as ad "
-          + "join sub_alarm_definition sad on ad.id = sad.alarm_definition_id "
-          + "left outer join sub_alarm_definition_dimension dim on sad.id = dim.sub_alarm_definition_id%s "
-          + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL";
-
+      "select distinct a.id from alarm as a "  +
+      "join alarm_definition as ad on a.alarm_definition_id=ad.id " + 
+      "%s " +
+      "where ad.tenant_id = :tenantId and ad.deleted_at is NULL order by ad.created_at";
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
   private final DBI mysql;
@@ -95,23 +94,48 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     List<String> alarmIds = null;
     // Find alarm Ids for dimensions
     try (Handle h = mysql.open()) {
-      String sql = String.format(FIND_ALARMS_SQL, SubAlarmQueries.buildJoinClauseFor(dimensions));
+      final String sql =
+          String.format(FIND_ALARMS_SQL, buildJoinClauseFor(dimensions));
+
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
+      logger.debug("AlarmStateHistory query '{}'", sql);
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
       alarmIds = query.map(StringMapper.FIRST).list();
     }
 
     if (alarmIds == null || alarmIds.isEmpty()) {
+      logger.debug("AlarmStateHistory no alarmIds");
       return Collections.emptyList();
     }
 
+    logger.debug("AlarmStateHistory alarmIds {}", alarmIds);
     String timePart = buildTimePart(startTime, endTime);
     String alarmsPart = buildAlarmsPart(alarmIds);
 
     String query = buildQueryForFind(tenantId, timePart, alarmsPart);
+    logger.debug("AlarmStateHistory query for influxdb '{}'", query);
 
     return queryInfluxDBForAlarmStateHistory(query);
 
+  }
+
+  private String buildJoinClauseFor(Map<String, String> dimensions) {
+    if ((dimensions == null) || dimensions.isEmpty()) {
+      return "";
+    }
+    final StringBuilder sbJoin = new StringBuilder("join alarm_metric as am on a.id=am.alarm_id ");
+    sbJoin
+        .append("join metric_definition_dimensions as mdd on am.metric_definition_dimensions_id=mdd.id ");
+    for (int i = 0; i < dimensions.size(); i++) {
+      final String tableAlias = "md" + i;
+      sbJoin.append(" inner join metric_dimension ").append(tableAlias).append(" on ")
+          .append(tableAlias).append(".name = :dname").append(i).append(" and ")
+          .append(tableAlias).append(".value = :dvalue").append(i)
+          .append(" and mdd.metric_dimension_set_id = ")
+          .append(tableAlias).append(".dimension_set_id");
+    }
+
+    return sbJoin.toString();
   }
 
   String buildTimePart(DateTime startTime, DateTime endTime) {
