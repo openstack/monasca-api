@@ -155,16 +155,15 @@ public class AlarmMySqlRepositoryImplTest {
     List<Alarm> alarms =
         repo.find("bob", "1", "cpu",
             ImmutableMap.<String, String>builder().put("instance_id", "123").build(), null);
-    // This test doesn't really test what it looks like because Alarm doesn't implement equals()
-    assertEquals(alarms, Arrays.asList(new Alarm("1", "1", null, Arrays.asList(
+    assertEquals(alarms, Arrays.asList(new Alarm("1", "1", "90% CPU", "LOW", Arrays.asList(
         new MetricDefinition("cpu", ImmutableMap.<String, String>builder().put("flavor_id", "222")
             .put("instance_id", "123").build()), new MetricDefinition("mem", ImmutableMap
             .<String, String>builder().put("flavor_id", "222").put("instance_id", "123").build())),
-        AlarmState.ALARM),
-        new Alarm("2", "1", null, Arrays.asList(
+        AlarmState.OK),
+        new Alarm("2", "1", "90% CPU", "LOW", Arrays.asList(
             new MetricDefinition("cpu", ImmutableMap.<String, String>builder().put("flavor_id", "222")
                 .put("instance_id", "123").build())),
-            AlarmState.ALARM)));
+            AlarmState.UNDETERMINED)));
   }
 
   @Test(groups = "database")
@@ -180,7 +179,7 @@ public class AlarmMySqlRepositoryImplTest {
     Alarm alarm = repo.findById(alarmId);
 
     assertEquals(alarm.getId(), alarmId);
-    assertEquals(alarm.getAlarmDefinitionId(), "1");
+    assertEquals(alarm.getAlarmDefinition().getId(), "1");
     assertEquals(alarm.getState(), AlarmState.OK);
     assertEquals(
         alarm.getMetrics(),
