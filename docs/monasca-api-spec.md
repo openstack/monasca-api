@@ -106,12 +106,27 @@ subexpression
     : metric relational_operator threshold_value
     | function '(' metric ',' period ')' relational_operator threshold_value ('times' periods)? 
 ```
+A metric can be a metric name only or a metric name followed by a list of dimensions. The dimensions further qualify the metric name.
 
+```
+metric 
+	: metric_name
+	| metric_name '{' dimension_list '}
+```
+````
+dimension_list
+	: dimension
+	| dimension ',' dimension_list
+````
+````
+dimension
+	: dimension_name '=' dimension_value
+	
+````
 The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`), `gte` (also `>=`).
 
 Threshold values are always in the same units as the metric that they are being compared to.
 
-The first subexpression shows a direct comparison of a metric to a threshold_value, done every 60 seconds.
 
 #### Simple Example
 In this example the metric uniquely identified with the name=cpu_perc and dimension hostname=host.domain.com is compared to the threshold 95.
@@ -121,10 +136,10 @@ cpu_perc{hostname=host.domain.com} > 95
 ```
 
 #### More Complex Example
-In this example the average of the same metric as in the previous example is evaluated over a 90 second period for 3 times.
+In this example the average of the same metric as in the previous example is evaluated over a 120 second period for 3 times so that the expression will evaluate to true if the average is greater than 95 seconds for a total of 360 seconds.
 
 ```
-avg(cpu_perc{hostname=host.domain.com}, 85) > 90 times 3
+avg(cpu_perc{hostname=host.domain.com}, 120) > 95 times 3
 ```
 
 Note that period is the number of seconds for the measurement to be done on. They can only be in a multiple of 60. Periods is how many times in a row that this expression must be true before triggering the alarm. Both period and periods are optional and default to 60 and 1 respectively.
