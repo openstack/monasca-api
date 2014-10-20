@@ -88,7 +88,7 @@ An alarm expression is a boolean equation which if it evaluates to true with the
 
 ### Syntax
 
-At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean logic. Parenthesis can be used for separators. In a BNF style format:
+At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean logic. Parenthesis can be used for separators. In a BNF style format where items enclosed in [] are optional:
 
 ```
 expression
@@ -112,7 +112,7 @@ Each subexpression is made up of several parts with a couple of options:
 ```
 subexpression
     : metric relational_operator threshold_value
-    | function '(' metric ',' period ')' relational_operator threshold_value ('times' periods)? 
+    | function '(' metric [',' period] ')' relational_operator threshold_value ['times' periods] 
 ```
 A metric can be a metric name only or a metric name followed by a list of dimensions. The dimensions further qualify the metric name.
 
@@ -132,6 +132,11 @@ dimension
 	
 ````
 The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`), `gte` (also `>=`).
+
+```
+relational_operator
+	: 'min' | 'max' | 'sum' | 'count' | 'avg' 
+```
 
 Threshold values are always in the same units as the metric that they are being compared to.
 
