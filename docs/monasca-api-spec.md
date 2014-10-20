@@ -90,52 +90,75 @@ An alarm expression is a boolean equation which if it evaluates to true with the
 
 At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean logic. Parenthesis can be used for separators. In a BNF style format where items enclosed in [] are optional:
 
-```
-expression
-    : subexpression
-    | '(' expression ')'
-    | subexpression logical_operator expression
-```
+````
+<expression>
+    ::= <and_expression> <or_logical_operator> <expression> 
+    | <and_expression>
+
+<and_expression>
+	::= <sub_expression> <and_logical_operator> <and_expression> 
+	| <sub_expression>
+	
+````
+Each subexpression is made up of several parts with a couple of options:
+
+````
+<sub_expression> 
+	::= <metric> <relational_operator> <threshold_value>
+    | <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods] 
+	| '(' expression ')'     
+
+````
+Period must an interger multiple of 60.  The default period is 60 seconds.
 
 The logical_operators are: `and` (also `&&`), `or` (also `||`).
 
-```
-logical_operator
-	: 'and' | '&&'
-	| 'or' | '||'
+````
+<and_logical_operator> ::= 'and' | '&&'
+<or_logical_operator> ::= 'or' | '||'
 ````
 
-
-
-Each subexpression is made up of several parts with a couple of options:
-
-```
-subexpression
-    : metric relational_operator threshold_value
-    | function '(' metric [',' period] ')' relational_operator threshold_value ['times' periods] 
-```
 A metric can be a metric name only or a metric name followed by a list of dimensions. The dimensions further qualify the metric name.
 
-```
-metric 
-	: metric_name
-	| metric_name '{' dimension_list '}
-```
+
 ````
-dimension_list
-	: dimension
-	| dimension ',' dimension_list
-````
-````
-dimension
-	: dimension_name '=' dimension_value
+<metric>
+	::=  metric_name
+	| metric_name '{' <dimension_list> '}'
 	
 ````
+
+Any number of dimensions can follow the metric name.
+
+````
+<dimension_list>
+	::= <dimension>
+	| <dimension> ',' <dimension_list>
+
+````
+
+A dimension is simply a key-value pair.
+
+````
+<dimension>
+	::= dimension_name '=' dimension_value
+	
+````
+
 The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`), `gte` (also `>=`).
 
+
+````
+<relational_operator>
+	::= 'lt' | '<' | 'gt' | '>' | 'lte' | '<=' | 'gte' | '>='
+	
+````
+The list of available statistical functions include the following.
+
 ```
-relational_operator
-	: 'min' | 'max' | 'sum' | 'count' | 'avg' 
+<function>
+	::= 'min' | 'max' | 'sum' | 'count' | 'avg' 
+	
 ```
 
 Threshold values are always in the same units as the metric that they are being compared to.
