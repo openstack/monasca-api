@@ -94,10 +94,18 @@ At the highest level, you have an expression, which is made up of one or more su
 expression
     : subexpression
     | '(' expression ')'
-    | expression logical_operator expression
+    | subexpression logical_operator expression
 ```
 
 The logical_operators are: `and` (also `&&`), `or` (also `||`).
+
+```
+logical_operator
+	: 'and' | '&&'
+	| 'or' | '||'
+````
+
+
 
 Each subexpression is made up of several parts with a couple of options:
 
