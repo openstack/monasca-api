@@ -357,15 +357,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                 columns = [column.replace('time', 'timestamp') for column in
                            columns]
 
-                # format the utc date in the points.
-                fmtd_pts_list_list = []
-                for pts_list in serie['points']:
-                    # time is always the first point. the rest of the points
-                    # are statistics. just pass the statistics thru unchanged.
-                    fmtd_pts_list = ([strftime("%Y-%m-%dT%H:%M:%SZ",
-                                              gmtime(pts_list[0]))]
-                                    + pts_list[1:])
-                    fmtd_pts_list_list.append(fmtd_pts_list)
+                fmtd_pts_list_list = [[strftime("%Y-%m-%dT%H:%M:%SZ",
+                                           gmtime(pts_list[0]))] + pts_list[1:]
+                                 for pts_list in serie['points']]
 
                 measurement = {"name": metric['name'],
                                "dimensions": metric['dimensions'],
