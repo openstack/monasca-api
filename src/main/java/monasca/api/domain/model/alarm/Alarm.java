@@ -78,20 +78,12 @@ public class Alarm extends AbstractEntity implements Linked {
     this.metrics = metrics;
   }
 
-  /**
-   * TODO - Remove this when the API no longer uses it
-   * @return
-   */
   public AlarmDefinitionShort getAlarmDefinition() {
     return alarmDefinition;
   }
 
   public void setAlarmDefinition(AlarmDefinitionShort alarmDefinition) {
     this.alarmDefinition = alarmDefinition;
-  }
-
-  public String getAlarmDefinitionId() {
-    return this.alarmDefinition.getId();
   }
 
   @Override
