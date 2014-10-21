@@ -88,7 +88,14 @@ An alarm expression is a boolean equation which if it evaluates to true with the
 
 ### Syntax
 
-At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean logic. Parenthesis can be used for separators. In a BNF style format where items enclosed in [] are optional:
+At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean operators. Parenthesis can be used around groups of subexpressions to indicated higher precedence. In a BNF style format where items enclosed in [] are optional, '*' means zero or more times, and '|' means or:
+
+````
+<expression> 
+	::= <subexpression> [(and | or) <subexpression>]*
+````
+
+More formally, taking boolean operator precedence into account results in the following.
 
 ````
 <expression>
