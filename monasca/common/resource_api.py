@@ -18,11 +18,30 @@ import falcon
 from falcon import api_helpers
 
 from monasca.openstack.common import log
-
+from stevedore import driver
 
 RESOURCE_METHOD_FLAG = 'fab05a04-b861-4651-bd0c-9cb3eb9a6088'
 
 LOG = log.getLogger(__name__)
+
+
+def init_driver(namespace, driver_name, drv_invoke_args=None):
+    """Initialize the resource driver and returns it.
+    
+    :param namespace: the resource namespace (in setup.cfg).
+    :param driver_name: the driver name (in monasca.conf)
+    :param invoke_args: args to pass to the driver (a tuple)
+    """
+    invoke_args_tuple = ()
+    if drv_invoke_args:
+        invoke_args_tuple = drv_invoke_args
+    mgr = driver.DriverManager(
+            namespace = namespace,
+            name = driver_name,
+            invoke_on_load = True,
+            invoke_args = invoke_args_tuple
+    )
+    return mgr.driver
 
 
 class Restify(object):
@@ -41,7 +60,6 @@ class Restify(object):
 
 
 class ResourceAPI(falcon.API):
-
     def add_route(self, uri_template, resource):
         """Associates uri patterns with resource methods.
 
@@ -115,3 +133,20 @@ class ResourceAPI(falcon.API):
         except Exception:
             LOG.exception('Error occurred while adding the resource')
         LOG.debug(self._routes)
+    
+    def add_resource(self, resource_name, namespace, driver_name, 
+                     invoke_args=None, uri=None):
+        """Loads the resource driver, and adds it to the routes.
+        
+        :param resource_name: the name of the resource.
+        :param namespace: the resource namespace (in setup.cfg).
+        :param driver_name: the driver name (in monasca.conf)
+        :param invoke_args: args to pass to the driver (a tuple)
+        :param uri: the uri to associate with the resource
+        """
+        resource_driver = init_driver(namespace, driver_name, invoke_args)
+        LOG.debug('%s dispatcher driver %s is loaded.' % 
+                  (resource_name, driver_name))
+        self.add_route(uri, resource_driver)
+        LOG.debug('%s dispatcher driver has been added to the routes!' % 
+                  (resource_name))

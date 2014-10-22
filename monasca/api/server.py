@@ -26,6 +26,7 @@ from wsgiref import simple_server
 METRICS_DISPATCHER_NAMESPACE = 'monasca.metrics_dispatcher'
 EVENTS_DISPATCHER_NAMESPACE = 'monasca.events_dispatcher'
 TRANSFORMS_DISPATCHER_NAMESPACE = 'monasca.transforms_dispatcher'
+NOTIFICATIONS_DISPATCHER_NAMESPACE = 'monasca.notifications_dispatcher'
 
 LOG = log.getLogger(__name__)
 
@@ -63,7 +64,8 @@ cfg.CONF.register_opts(messaging_opts, messaging_group)
 repositories_opts = [
     cfg.StrOpt('metrics_driver', default='influxdb_metrics_repo', help='The repository driver to use for metrics'),
     cfg.StrOpt('events_driver', default='fake_events_repo', help='The repository driver to use for events'),
-    cfg.StrOpt('transforms_driver', default='mysql_transforms_repo', help='The repository driver to use for transforms')
+    cfg.StrOpt('transforms_driver', default='mysql_transforms_repo', help='The repository driver to use for transforms'),
+    cfg.StrOpt('notifications_driver', default='mysql_notifications_repo', help='The repository driver to use for notifications')
 ]
 
 repositories_group = cfg.OptGroup(name='repositories', title='repositories')
@@ -161,45 +163,21 @@ def api_app(conf):
     # Create the application
     app = resource_api.ResourceAPI()
 
-    # load the metrics driver specified by dispatcher in the monasca.ini file
-    metrics_manager = driver.DriverManager(namespace=METRICS_DISPATCHER_NAMESPACE,
-                                           name=cfg.CONF.dispatcher.driver,
-                                           invoke_on_load=True,
-                                           invoke_args=[conf])
+    # add the metrics resource
+    app.add_resource('metrics', METRICS_DISPATCHER_NAMESPACE,
+                     cfg.CONF.dispatcher.driver, [conf])
 
-    LOG.debug('Metrics dispatcher driver %s is loaded.' % cfg.CONF.dispatcher.driver)
+    # add the events resource
+    app.add_resource('events', EVENTS_DISPATCHER_NAMESPACE,
+                     cfg.CONF.dispatcher.driver, [conf])
 
-    # add the driver to the application
-    app.add_route(None, metrics_manager.driver)
+    # add the transforms resource
+    app.add_resource('transforms', TRANSFORMS_DISPATCHER_NAMESPACE,
+                     cfg.CONF.dispatcher.driver, [conf])
 
-    LOG.debug('Metrics dispatcher driver has been added to the routes!')
-
-
-    # load the events driver specified by dispatcher in the monasca.ini file
-    events_manager = driver.DriverManager(namespace=EVENTS_DISPATCHER_NAMESPACE,
-                                          name=cfg.CONF.dispatcher.driver,
-                                          invoke_on_load=True,
-                                          invoke_args=[conf])
-
-    LOG.debug('Events dispatcher driver %s is loaded.' % cfg.CONF.dispatcher.driver)
-
-    # add the driver to the application
-    app.add_route(None, events_manager.driver)
-
-    LOG.debug('Events dispatcher driver has been added to the routes!')
-
-    # load the events driver specified by dispatcher in the monasca.ini file
-    transforms_manager = driver.DriverManager(namespace=TRANSFORMS_DISPATCHER_NAMESPACE,
-                                              name=cfg.CONF.dispatcher.driver,
-                                              invoke_on_load=True,
-                                              invoke_args=[conf])
-
-    LOG.debug('Transforms dispatcher driver %s is loaded.' % cfg.CONF.dispatcher.driver)
-
-    # add the driver to the application
-    app.add_route(None, transforms_manager.driver)
-
-    LOG.debug('Transforms dispatcher driver has been added to the routes!')
+    # add the notifications resource
+    app.add_resource('notifications', NOTIFICATIONS_DISPATCHER_NAMESPACE,
+                     cfg.CONF.dispatcher.driver, [conf])
 
     return app
 
