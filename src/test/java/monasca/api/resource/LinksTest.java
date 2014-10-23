@@ -62,7 +62,8 @@ public class LinksTest {
     Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
     assertEquals(alarm.getAlarmDefinition().getLinks().size(), 1);
     assertEquals(alarm.getAlarmDefinition().getLinks().get(0), new Link("self", base
-        + AlarmDefinitionResource.ALARM_DEFINITIONS_PATH + "/"
+        // Have to cut the first / off of AlarmDefinitionResource.ALARM_DEFINITIONS_PATH
+        + AlarmDefinitionResource.ALARM_DEFINITIONS_PATH.substring(1) + "/"
         + alarmDefinitionId));
   }
 }

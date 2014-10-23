@@ -74,7 +74,17 @@ public final class Links {
    * @throws NullPointerException if {@code resource} is null
    */
   public static <T extends AbstractEntity & Linked> T hydrate(T resource, UriInfo uriInfo, String resourcePath) {
-    return hydrate(resource, uriInfo.getBaseUri() + resourcePath + "/", false);
+    return hydrate(resource, concatPaths(uriInfo.getBaseUri().toString(), resourcePath) + "/", false);
+  }
+
+  private static String concatPaths(final String first, final String second) {
+    // Check if this would cause two slashes in a row or a slash at the start
+    if ((first.isEmpty() || first.endsWith("/")) && !second.isEmpty() && second.startsWith("/")) {
+      return first + second.substring(1);
+    }
+    else {
+      return first + second;
+    }
   }
 
   /**

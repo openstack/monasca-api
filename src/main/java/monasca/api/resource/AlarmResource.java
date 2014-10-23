@@ -126,7 +126,7 @@ public class AlarmResource {
             .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state);
     for (final Alarm alarm : alarms) {
-      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS);
+      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
     }
     return Links.hydrate(alarms, uriInfo);
   }
