@@ -39,38 +39,15 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
         super(Transforms, self).__init__(global_conf)
         self._region = cfg.CONF.region
         self._default_authorized_roles = cfg.CONF.security.default_authorized_roles
-        self._init_transforms_repo()
-
-    def _init_transforms_repo(self):
-        mgr = driver.DriverManager(
-            namespace = 'monasca.repositories',
-            name = cfg.CONF.repositories.transforms_driver,
-            invoke_on_load=True,
-            invoke_args=()
-        )
-        self._transforms_repo = mgr.driver
-
-    def _read_transform(self, req):
-        '''
-        Read the transform from the http request and return as JSON.
-        :param req: HTTP request object.
-        :return: Returns the transform as a JSON object.
-        :raises falcon.HTTPBadRequest:
-        '''
-        try:
-            msg = req.stream.read()
-            json_msg = simplejson.loads(msg)
-            return json_msg
-        except ValueError as ex:
-            LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad request', 'Request body is not valid JSON')
+        self._transforms_repo = resource_api.init_driver('monasca.repositories',
+                                        cfg.CONF.repositories.transforms_driver)
 
     def _validate_transform(self, transform):
-        '''
-        Validates the transform
+        """Validates the transform
+        
         :param transform: An event object.
-        :raises falcon.HTTPBadRequest:
-        '''
+        :raises falcon.HTTPBadRequest
+        """
         try:
             schemas_transforms.validate(transform)
         except schemas_exceptions.ValidationException as ex:
@@ -78,11 +55,11 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
     def _create_transform(self, id, tenant_id, transform):
-        '''
-        Store the transform using the repository.
+        """Store the transform using the repository.
+        
         :param transform: A transform object.
-        :raises: falcon.HTTPServiceUnavailable:
-        '''
+        :raises: falcon.HTTPServiceUnavailable
+        """
         try:
             name = transform['name']
             description = transform['description']
@@ -128,7 +105,7 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
     def do_post_transforms(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
-        transform = self._read_transform(req)
+        transform = helpers.read_http_resource(req)
         self._validate_transform(transform)
         id = uuidutils.generate_uuid()
         tenant_id = helpers.get_tenant_id(req)

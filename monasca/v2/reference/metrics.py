@@ -46,44 +46,17 @@ class Metrics(monasca_api_v2.V2API):
             cfg.CONF.security.agent_authorized_roles
         self._metrics_transform = \
             metrics_transform_factory.create_metrics_transform()
-        self._init_message_queue()
-        self._init_metrics_repo()
-
-    def _init_message_queue(self):
-        mgr = driver.DriverManager(namespace='monasca.messaging',
-                                   name=cfg.CONF.messaging.driver,
-                                   invoke_on_load=True,
-                                   invoke_args=(['metrics']))
-        self._message_queue = mgr.driver
-
-    def _init_metrics_repo(self):
-        mgr = driver.DriverManager(namespace='monasca.repositories',
-                                   name=cfg.CONF.repositories.metrics_driver,
-                                   invoke_on_load=True, invoke_args=())
-        self._metrics_repo = mgr.driver
-
-    def _read_metrics(self, req):
-        '''
-        Read the metrics from the http request and return them as JSON.
-        :param req: HTTP request object.
-        :return: Returns the metrics as a JSON object.
-        :raises falcon.HTTPBadRequest:
-        '''
-        try:
-            msg = req.stream.read()
-            json_msg = json.loads(msg)
-            return json_msg
-        except ValueError as ex:
-            LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad request',
-                                        'Request body is not valid JSON')
+        self._message_queue = resource_api.init_driver('monasca.messaging', 
+                                        cfg.CONF.messaging.driver, ['metrics'])
+        self._metrics_repo = resource_api.init_driver('monasca.repositories',
+                                        cfg.CONF.repositories.metrics_driver)
 
     def _validate_metrics(self, metrics):
-        '''
-        Validates the metrics
+        """Validates the metrics
+        
         :param metrics: A metric object or array of metrics objects.
-        :raises falcon.HTTPBadRequest:
-        '''
+        :raises falcon.HTTPBadRequest
+        """
         try:
             schemas_metrics.validate(metrics)
         except schemas_exceptions.ValidationException as ex:
@@ -91,11 +64,11 @@ class Metrics(monasca_api_v2.V2API):
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
     def _send_metrics(self, metrics):
-        '''
-        Send the metrics using the message queue.
+        """Send the metrics using the message queue.
+        
         :param metrics: A metric object or array of metrics objects.
-        :raises: falcon.HTTPServiceUnavailable:
-        '''
+        :raises: falcon.HTTPServiceUnavailable
+        """
 
         def _send_metric(metric):
             try:
@@ -113,13 +86,13 @@ class Metrics(monasca_api_v2.V2API):
             _send_metric(metrics)
 
     def _list_metrics(self, tenant_id, name, dimensions):
-        '''
-        Query the metric repo for the metrics, format them and return them.
+        """Query the metric repo for the metrics, format them and return them.
+        
         :param tenant_id:
         :param name:
         :param dimensions:
-        :raises falcon.HTTPServiceUnavailable:
-        '''
+        :raises falcon.HTTPServiceUnavailable
+        """
 
         try:
             return self._metrics_repo.list_metrics(tenant_id, name, dimensions)
@@ -160,7 +133,7 @@ class Metrics(monasca_api_v2.V2API):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req,
                                        self._post_metrics_authorized_roles)
-        metrics = self._read_metrics(req)
+        metrics = helpers.read_http_resource(req)
         self._validate_metrics(metrics)
         tenant_id = helpers.get_cross_tenant_or_tenant_id(req,
                                                           self._delegate_authorized_roles)

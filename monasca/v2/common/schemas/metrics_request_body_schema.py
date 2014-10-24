@@ -13,7 +13,7 @@
 # under the License.
 
 from voluptuous import Schema
-from voluptuous import Required, Any, All, Range
+from voluptuous import Required, Any, All, Range, Optional
 from monasca.openstack.common import log
 from monasca.v2.common.schemas import metric_name_schema
 from monasca.v2.common.schemas import dimensions_schema
@@ -23,8 +23,8 @@ LOG = log.getLogger(__name__)
 
 metric_schema = {
     Required('name'): metric_name_schema.metric_name_schema,
-    Required('dimensions'): dimensions_schema.dimensions_schema,
-    Required('timestamp'): All(int, Range(min=0)),
+    Optional('dimensions'): dimensions_schema.dimensions_schema,
+    Required('timestamp'): All(Any(int, float), Range(min=0)),
     Required('value'): Any(int, float)
 }
 

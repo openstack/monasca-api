@@ -41,38 +41,15 @@ class Events(monasca_events_api_v2.EventsV2API):
         self._post_events_authorized_roles = cfg.CONF.security.default_authorized_roles + \
                                              cfg.CONF.security.agent_authorized_roles
         self._event_transform = events_transform_factory.create_events_transform()
-        self._init_message_queue()
-
-    def _init_message_queue(self):
-        mgr = driver.DriverManager(
-            namespace = 'monasca.messaging',
-            name = cfg.CONF.messaging.driver,
-            invoke_on_load=True,
-            invoke_args=(['raw-events'])
-        )
-        self._message_queue = mgr.driver
-
-    def _read_event(self, req):
-        '''
-        Read the event from the http request and return as JSON.
-        :param req: HTTP request object.
-        :return: Returns the event as a JSON object.
-        :raises falcon.HTTPBadRequest:
-        '''
-        try:
-            msg = req.stream.read()
-            json_msg = json.loads(msg)
-            return json_msg
-        except ValueError as ex:
-            LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad request', 'Request body is not valid JSON')
+        self._message_queue = resource_api.init_driver('monasca.messaging', 
+                                        cfg.CONF.messaging.driver, ['raw-events'])
 
     def _validate_event(self, event):
-        '''
-        Validates the event
+        """Validates the event
+        
         :param event: An event object.
-        :raises falcon.HTTPBadRequest:
-        '''
+        :raises falcon.HTTPBadRequest
+        """
         try:
             schemas_event.validate(event)
         except schemas_exceptions.ValidationException as ex:
@@ -80,11 +57,11 @@ class Events(monasca_events_api_v2.EventsV2API):
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
     def _send_event(self, event):
-        '''
-        Send the event using the message queue.
+        """Send the event using the message queue.
+        
         :param metrics: An event object.
-        :raises: falcon.HTTPServiceUnavailable:
-        '''
+        :raises: falcon.HTTPServiceUnavailable
+        """
         try:
             str_msg = json.dumps(event, default=utils.date_handler)
             self._message_queue.send_message(str_msg)
@@ -96,7 +73,7 @@ class Events(monasca_events_api_v2.EventsV2API):
     def do_post_events(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._post_events_authorized_roles)
-        event = self._read_event(req)
+        event = helpers.read_http_resource(req)
         self._validate_event(event)
         tenant_id = helpers.get_tenant_id(req)
         transformed_event = self._event_transform(event, tenant_id, self._region)
