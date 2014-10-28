@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import monasca.common.messaging.kafka.KafkaHealthCheck;
+import monasca.common.middleware.AuthConstants;
 import monasca.common.middleware.TokenAuth;
 import monasca.api.bundle.SwaggerBundle;
 import monasca.api.infrastructure.servlet.MockAuthenticationFilter;
@@ -143,6 +144,10 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       authInitParams.put("AdminUser", config.middleware.adminUser);
       authInitParams.put("AdminPassword", config.middleware.adminPassword);
       authInitParams.put("MaxTokenCacheSize", config.middleware.maxTokenCacheSize);
+      setIfNotNull(authInitParams, AuthConstants.TRUSTSTORE, config.middleware.truststore);
+      setIfNotNull(authInitParams, AuthConstants.TRUSTSTORE_PASS, config.middleware.truststorePassword);
+      setIfNotNull(authInitParams, AuthConstants.KEYSTORE, config.middleware.keystore);
+      setIfNotNull(authInitParams, AuthConstants.KEYSTORE_PASS, config.middleware.keystorePassword);
 
       /** Configure auth filters */
       Dynamic preAuthenticationFilter =
@@ -174,6 +179,12 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
     /** Configure swagger */
     SwaggerBundle.configure(config);
+  }
+
+  private void setIfNotNull(Map<String, String> authInitParams, String name, String value) {
+    if (value != null) {
+      authInitParams.put(name, value);
+    }
   }
 
   private void removeExceptionMappers(Set<Object> items) {

@@ -75,11 +75,18 @@ public class MiddlewareConfiguration {
   public String adminAuthMethod;
   @JsonProperty
   public String adminUser;
-  @NotEmpty
   @JsonProperty
   public String adminToken;
   @JsonProperty
   public String adminPassword;
   @JsonProperty
   public String maxTokenCacheSize = "1048576";
+  @JsonProperty
+  public String truststore;
+  @JsonProperty
+  public String truststorePassword;
+  @JsonProperty
+  public String keystore;
+  @JsonProperty
+  public String keystorePassword;
 }
