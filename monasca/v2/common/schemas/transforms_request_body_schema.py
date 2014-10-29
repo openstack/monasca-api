@@ -22,7 +22,8 @@ LOG = log.getLogger(__name__)
 transform_schema = {
     Required('name'): Schema(All(Any(str, unicode), Length(max=64))),
     Required('description'): Schema(All(Any(str, unicode), Length(max=250))),
-    Required('specification'): Schema(All(Any(str, unicode), Length(max=64536))),
+    Required('specification'):
+        Schema(All(Any(str, unicode), Length(max=64536))),
     Optional('enabled'): bool
 }
 

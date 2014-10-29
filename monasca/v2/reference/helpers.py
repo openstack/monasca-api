@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import datetime
+import json
 
 import falcon
 from falcon.util.uri import parse_query_string
@@ -23,6 +24,23 @@ from monasca.v2.common.schemas import dimensions_schema
 import simplejson
 
 LOG = log.getLogger(__name__)
+
+
+def read_json_msg_body(req):
+    '''
+    Read the json_msg from the http request body and return them as JSON.
+    :param req: HTTP request object.
+    :return: Returns the metrics as a JSON object.
+    :raises falcon.HTTPBadRequest:
+    '''
+    try:
+        msg = req.stream.read()
+        json_msg = json.loads(msg)
+        return json_msg
+    except ValueError as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request',
+                                    'Request body is not valid JSON')
 
 
 def validate_json_content_type(req):
@@ -79,7 +97,7 @@ def get_tenant_id(req):
     return req.get_header('X-TENANT-ID')
 
 
-def get_cross_tenant_or_tenant_id(req, delegate_authorized_roles):
+def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
     """Evaluates whether the tenant ID or cross tenant ID should be returned.
     
     :param req: HTTP request object.
@@ -95,16 +113,24 @@ def get_cross_tenant_or_tenant_id(req, delegate_authorized_roles):
     return get_tenant_id(req)
 
 
-def get_query_name(req):
-    """Returns the query param "name" if supplied.
-    
+def get_query_name(req, name_required=False):
+    '''
+    Returns the query param "name" if supplied.
     :param req: HTTP request object.
-    """
-    params = parse_query_string(req.query_string)
-    name = ''
-    if 'name' in params:
-        name = params['name']
-    return name
+    '''
+    try:
+        params = parse_query_string(req.query_string)
+        if 'name' in params:
+            name = params['name']
+            return name
+        else:
+            if name_required:
+                raise Exception("Missing name")
+            else:
+                return ''
+    except Exception as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
 def get_query_dimensions(req):
