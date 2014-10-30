@@ -111,8 +111,7 @@ Each subexpression is made up of several parts with a couple of options:
 
 ````
 <sub_expression> 
-	::= <metric> <relational_operator> <threshold_value>
-    | <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods] 
+    ::= <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods] 
 	| '(' expression ')'     
 
 ````
