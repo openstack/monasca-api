@@ -246,7 +246,7 @@ public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionReposi
         deleteActions(h, id, AlarmState.OK, okActions);
         deleteActions(h, id, AlarmState.UNDETERMINED, undeterminedActions);
       } else
-        h.execute("delete from alarm_action where alarm_id = ?", id);
+        h.execute("delete from alarm_action where alarm_definition_id = ?", id);
 
       // Insert new actions
       persistActions(h, id, AlarmState.ALARM, alarmActions);
@@ -264,14 +264,14 @@ public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionReposi
 
   private void deleteActions(Handle handle, String id, AlarmState alarmState, List<String> actions) {
     if (actions != null)
-      handle.execute("delete from alarm_action where alarm_id = ? and alarm_state = ?", id,
+      handle.execute("delete from alarm_action where alarm_definition_id = ? and alarm_state = ?", id,
           alarmState.name());
   }
 
   private List<String> findActionsById(Handle handle, String alarmDefId, AlarmState state) {
     return handle
         .createQuery(
-            "select action_id from alarm_action where alarm_id = :alarmDefId and alarm_state = :alarmState")
+            "select action_id from alarm_action where alarm_definition_id = :alarmDefId and alarm_state = :alarmState")
         .bind("alarmDefId", alarmDefId).bind("alarmState", state.name()).map(StringMapper.FIRST)
         .list();
   }
