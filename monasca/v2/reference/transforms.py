@@ -31,8 +31,6 @@ from monasca.v2.common.schemas import \
     transforms_request_body_schema as schemas_transforms
 from monasca.v2.reference import helpers
 
-from stevedore import driver
-
 LOG = log.getLogger(__name__)
 
 

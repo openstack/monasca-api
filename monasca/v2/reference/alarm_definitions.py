@@ -239,6 +239,7 @@ def get_query_alarm_definition_expression(alarm_definition):
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
+
 def get_query_alarm_definition_description(alarm_definition):
     if 'description' in alarm_definition:
         return alarm_definition['description']
