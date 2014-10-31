@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -26,20 +26,21 @@ from monasca.api import monasca_notifications_api_v2
 from monasca.common import resource_api
 from monasca.common.repositories import exceptions as repository_exceptions
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.common.schemas import notifications_request_body_schema as schemas_notifications
+from monasca.v2.common.schemas import \
+    notifications_request_body_schema as schemas_notifications
 from monasca.v2.reference import helpers
 
 LOG = log.getLogger(__name__)
 
 
 class Notifications(monasca_notifications_api_v2.NotificationsV2API):
-
     def __init__(self, global_conf):
         super(Notifications, self).__init__(global_conf)
         self._region = cfg.CONF.region
-        self._default_authorized_roles = cfg.CONF.security.default_authorized_roles
-        self._notifications_repo = resource_api.init_driver('monasca.repositories', 
-                                        cfg.CONF.repositories.notifications_driver)
+        self._default_authorized_roles = \
+            cfg.CONF.security.default_authorized_roles
+        self._notifications_repo = resource_api.init_driver(
+            'monasca.repositories', cfg.CONF.repositories.notifications_driver)
 
     def _validate_notification(self, notification):
         """Validates the notification
@@ -64,20 +65,16 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
             notification_type = notification['type'].upper()
             address = notification['address']
             if self._notifications_repo.exists(tenant_id, name):
-                raise falcon.HTTPConflict(
-                    'Conflict', ('Notification Method already exists: tenant_id=%s name=%s' %
-                                 (tenant_id, name)), code=409)
-            self._notifications_repo.create_notification(
-                id,
-                tenant_id,
-                name,
-                notification_type,
-                address)
+                raise falcon.HTTPConflict('Conflict', (
+                'Notification Method already exists: tenant_id=%s name=%s' % (
+                tenant_id, name)), code=409)
+            self._notifications_repo.create_notification(id, tenant_id, name,
+                                                         notification_type,
+                                                         address)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError(
-                'Service unavailable',
-                ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _update_notification(self, id, tenant_id, notification):
         """Update the notification using the repository.
@@ -89,31 +86,24 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
             name = notification['name']
             notification_type = notification['type'].upper()
             address = notification['address']
-            self._notifications_repo.update_notification(
-                id,
-                tenant_id,
-                name,
-                notification_type,
-                address)
+            self._notifications_repo.update_notification(id, tenant_id, name,
+                                                         notification_type,
+                                                         address)
         except repository_exceptions.DoesNotExistException:
             helpers.raise_not_found_exception('notification', id, tenant_id)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError(
-                'Service unavailable',
-                ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _create_notification_response(self, id, notification, uri):
         name = notification['name']
         notification_type = notification['type'].upper()
         address = notification['address']
-        response = {
-            'id': id,
-            'name': name,
-            'type': notification_type,
-            'address': address
-        }
-        return json.dumps(helpers.add_links_to_resource(response, uri))
+        response = {'id': id, 'name': name, 'type': notification_type,
+                    'address': address}
+        return json.dumps(helpers.add_links_to_resource(response, uri),
+                          ensure_ascii=False).encode('utf8')
 
     def _list_notifications(self, tenant_id, uri):
         """Lists all notifications for this tenant id.
@@ -128,9 +118,8 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
                 helpers.add_links_to_resource_list(notifications, uri))
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError(
-                'Service unavailable',
-                ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _list_notification(self, tenant_id, notification_id, uri):
         """Lists the notification by id.
@@ -141,17 +130,16 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         """
         try:
             notifications = self._notifications_repo.list_notification(
-                tenant_id,
-                notification_id)
+                tenant_id, notification_id)
             return json.dumps(
                 helpers.add_links_to_resource(notifications, uri))
         except repository_exceptions.DoesNotExistException:
-            helpers.raise_not_found_exception('notification', notification_id, tenant_id)
+            helpers.raise_not_found_exception('notification', notification_id,
+                                              tenant_id)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError(
-                'Service unavailable',
-                ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _delete_notification(self, tenant_id, notification_id):
         """Deletes the notification using the repository.
@@ -161,16 +149,15 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         :raises: falcon.HTTPServiceUnavailable,falcon.HTTPError (404)
         """
         try:
-            self._notifications_repo.delete_notification(
-                tenant_id,
-                notification_id)
+            self._notifications_repo.delete_notification(tenant_id,
+                                                         notification_id)
         except repository_exceptions.DoesNotExistException:
-            helpers.raise_not_found_exception('notification', notification_id, tenant_id)
+            helpers.raise_not_found_exception('notification', notification_id,
+                                              tenant_id)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError(
-                'Service unavailable',
-                ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     @resource_api.Restify('/v2.0/notification-methods', method='post')
     def do_post_notification_methods(self, req, res):
@@ -181,10 +168,8 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         id = uuidutils.generate_uuid()
         tenant_id = helpers.get_tenant_id(req)
         self._create_notification(id, tenant_id, notification)
-        res.body = self._create_notification_response(
-            id,
-            notification,
-            req.uri)
+        res.body = self._create_notification_response(id, notification,
+                                                      req.uri)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/notification-methods', method='get')
@@ -216,8 +201,6 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         self._validate_notification(notification)
         tenant_id = helpers.get_tenant_id(req)
         self._update_notification(id, tenant_id, notification)
-        res.body = self._create_notification_response(
-            id,
-            notification,
-            req.uri)
+        res.body = self._create_notification_response(id, notification,
+                                                      req.uri)
         res.status = falcon.HTTP_200

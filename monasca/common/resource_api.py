@@ -25,21 +25,18 @@ RESOURCE_METHOD_FLAG = 'fab05a04-b861-4651-bd0c-9cb3eb9a6088'
 LOG = log.getLogger(__name__)
 
 
-def init_driver(namespace, driver_name, drv_invoke_args=None):
+def init_driver(namespace, driver_name, drv_invoke_args=()):
     """Initialize the resource driver and returns it.
     
     :param namespace: the resource namespace (in setup.cfg).
     :param driver_name: the driver name (in monasca.conf)
     :param invoke_args: args to pass to the driver (a tuple)
     """
-    invoke_args_tuple = ()
-    if drv_invoke_args:
-        invoke_args_tuple = drv_invoke_args
     mgr = driver.DriverManager(
             namespace = namespace,
             name = driver_name,
             invoke_on_load = True,
-            invoke_args = invoke_args_tuple
+            invoke_args = drv_invoke_args
     )
     return mgr.driver
 
@@ -135,7 +132,7 @@ class ResourceAPI(falcon.API):
         LOG.debug(self._routes)
     
     def add_resource(self, resource_name, namespace, driver_name, 
-                     invoke_args=None, uri=None):
+                     invoke_args=(), uri=None):
         """Loads the resource driver, and adds it to the routes.
         
         :param resource_name: the name of the resource.

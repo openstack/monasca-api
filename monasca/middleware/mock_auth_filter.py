@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 class MockAuthFilter(object):
     '''
     This authorization filter doesn't do any authentication, it just copies the
@@ -26,6 +27,7 @@ class MockAuthFilter(object):
         env['HTTP_X_TENANT_ID'] = env['HTTP_X_AUTH_TOKEN']
         env['HTTP_X_ROLES'] = 'admin'
         return self.app(env, start_response)
+
 
 def filter_factory(global_conf, **local_conf):
     def validator_filter(app):

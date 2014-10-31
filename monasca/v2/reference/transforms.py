@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO: Used simplejson to read the yaml as simplejson transforms to "str" not "unicode"
+# TODO: Used simplejson to read the yaml as simplejson transforms to "str"
+# not "unicode"
 
 import json
 import simplejson
@@ -26,7 +27,8 @@ from monasca.api import monasca_transforms_api_v2
 from monasca.common import resource_api
 from monasca.common.repositories import exceptions as repository_exceptions
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.common.schemas import transforms_request_body_schema as schemas_transforms
+from monasca.v2.common.schemas import \
+    transforms_request_body_schema as schemas_transforms
 from monasca.v2.reference import helpers
 
 from stevedore import driver
@@ -38,9 +40,10 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
     def __init__(self, global_conf):
         super(Transforms, self).__init__(global_conf)
         self._region = cfg.CONF.region
-        self._default_authorized_roles = cfg.CONF.security.default_authorized_roles
-        self._transforms_repo = resource_api.init_driver('monasca.repositories',
-                                        cfg.CONF.repositories.transforms_driver)
+        self._default_authorized_roles = \
+            cfg.CONF.security.default_authorized_roles
+        self._transforms_repo = resource_api.init_driver(
+            'monasca.repositories', cfg.CONF.repositories.transforms_driver)
 
     def _validate_transform(self, transform):
         """Validates the transform
@@ -65,32 +68,31 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
             description = transform['description']
             specification = transform['specification']
             enabled = transform['enabled']
-            self._transforms_repo.create_transforms(id, tenant_id, name, description, specification, enabled)
+            self._transforms_repo.create_transforms(id, tenant_id, name,
+                                                    description, specification,
+                                                    enabled)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _create_transform_response(self, id, transform):
         name = transform['name']
         description = transform['description']
         specification = transform['specification']
         enabled = transform['enabled']
-        response =  {
-            'id': id,
-            'name': name,
-            'description': description,
-            'specification': specification,
-            'enabled': enabled
-        }
+        response = {'id': id, 'name': name, 'description': description,
+                    'specification': specification, 'enabled': enabled}
         return json.dumps(response)
 
     def _list_transforms(self, tenant_id):
         try:
-            transforms =  self._transforms_repo.list_transforms(tenant_id)
+            transforms = self._transforms_repo.list_transforms(tenant_id)
             return json.dumps(transforms)
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     def _delete_transform(self, tenant_id, transform_id):
         try:
@@ -99,7 +101,8 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
             raise falcon.HTTPNotFound()
         except repository_exceptions.RepositoryException as ex:
             LOG.error(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     @resource_api.Restify('/v2.0/events/transforms', method='post')
     def do_post_transforms(self, req, res):
@@ -120,7 +123,8 @@ class Transforms(monasca_transforms_api_v2.TransformsV2API):
         res.body = self._list_transforms(tenant_id)
         res.status = falcon.HTTP_200
 
-    @resource_api.Restify('/v2.0/events/transforms/{transform_id}', method='delete')
+    @resource_api.Restify('/v2.0/events/transforms/{transform_id}',
+                          method='delete')
     def do_delete_transforms(self, req, res, transform_id):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)

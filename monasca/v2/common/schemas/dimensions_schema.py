@@ -19,8 +19,8 @@ from monasca.v2.common.schemas import exceptions
 
 LOG = log.getLogger(__name__)
 
-# TODO: Add regex to validate dimension names don't use any excluded characters.
-dimensions_schema = Schema({All(Any(str, unicode), Length(max=255)): All(Any(str, unicode), Length(max=255))})
+dimensions_schema = Schema({All(Any(str, unicode), Length(max=255)):
+                           All(Any(str, unicode), Length(max=255))})
 
 
 def validate(dimensions):

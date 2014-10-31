@@ -20,7 +20,9 @@ from monasca.v2.common.schemas import exceptions
 LOG = log.getLogger(__name__)
 
 # TODO: Add regex to validate key/values don't use any excluded characters.
-event_schema_request_body = Schema({All(Any(str, unicode), Length(max=255)): All(Any(None, str, unicode, bool, int, float, dict, []))})
+event_schema_request_body = Schema({All(Any(str, unicode), Length(max=255)):
+                                   All(Any(None, str, unicode, bool, int,
+                                           float, dict, []))})
 
 
 def validate(body):
