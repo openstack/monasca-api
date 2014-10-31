@@ -160,8 +160,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             raise falcon.HTTPBadRequest(title, msg)
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message[1])
+            msg = "".join(ex.message.args)
+            raise falcon.HTTPInternalServerError('Service unavailable', msg)
 
     def _send_alarm_definition_created_event(self, tenant_id,
                                              alarm_definition_id, name,

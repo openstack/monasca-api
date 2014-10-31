@@ -145,7 +145,7 @@ class AlarmDefinitionsRepository(
                     "notification action".format(action.encode('utf8'),
                                                  alarm_state.encode('utf8')))
             cursor.execute("insert into alarm_action("
-                           "alarm_id,"
+                           "alarm_definition_id,"
                            "alarm_state,"
                            "action_id)"
                            "values(?,?,?)", alarm_definition_id,
