@@ -32,93 +32,133 @@ from pyparsing import Word
 
 class SubExpr(object):
     def __init__(self, tokens):
-        self.sub_expr = tokens
-        self.func = tokens.func
-        self.metric_name = tokens.metric_name
-        self.dimensions = tokens.dimensions.dimensions_list
-        self.operator = tokens.relational_op
-        self.threshold = tokens.threshold
-        self.period = tokens.period
-        self.periods = tokens.periods
+        self._sub_expr = tokens
+        self._func = tokens.func
+        self._metric_name = tokens.metric_name
+        self._dimensions = tokens.dimensions.dimensions_list
+        self._operator = tokens.relational_op
+        self._threshold = tokens.threshold
+        self._period = tokens.period
+        self._periods = tokens.periods
+        self._id = None
 
-    def get_sub_expr_str(self):
-        return "".join(list(itertools.chain(*self.sub_expr)))
+    @property
+    def sub_expr_str(self):
+        """Get the entire sub expression as a string with no spaces."""
+        return "".join(list(itertools.chain(*self._sub_expr)))
 
-    def get_fmtd_sub_expr(self):
+    @property
+    def fmtd_sub_expr_str(self):
+        """Get the entire sub expressions as a string with spaces."""
+        result = "{}({}".format(self._func.encode('utf8'),
+                                self._metric_name.encode('utf8'))
 
-        result = "{}({}".format(self.func.encode('utf8'),
-                                self.metric_name.encode('utf8'))
+        if self._dimensions:
+            result += "{{{}}}".format(self._dimensions.encode('utf8'))
 
-        if self.dimensions:
-            result += "{{{}}}".format(self.dimensions.encode('utf8'))
-
-        if self.period:
-            result += ", {}".format(self.period.encode('utf8'))
+        if self._period:
+            result += ", {}".format(self._period.encode('utf8'))
 
         result += ")"
 
-        result += " {} {}".format(self.operator.encode('utf8'),
-                                  self.threshold.encode('utf8'))
+        result += " {} {}".format(self._operator.encode('utf8'),
+                                  self._threshold.encode('utf8'))
 
-        if self.periods:
-            result += " times {}".format(self.periods.encode('utf8'))
+        if self._periods:
+            result += " times {}".format(self._periods.encode('utf8'))
 
         return result.decode('utf8')
 
-    def get_dimensions_str(self):
-        return self.dimensions
+    @property
+    def dimensions_str(self):
+        """Get all the dimensions as a single comma delimited string."""
+        return self._dimensions
 
-    def get_operands_list(self):
+    @property
+    def operands_list(self):
+        """Get this sub expression as a list."""
         return [self]
 
-    def get_func(self):
-        return self.func
+    @property
+    def func(self):
+        """Get the function as it appears in the orig expression."""
+        return self._func
 
-    def get_normalized_func(self):
-        return self.func.upper()
+    @property
+    def normalized_func(self):
+        """Get the function upper-cased."""
+        return self._func.upper()
 
-    def get_metric_name(self):
-        return self.metric_name
+    @property
+    def metric_name(self):
+        """Get the metric name as it appears in the orig expression."""
+        return self._metric_name
 
-    def get_normalized_metric_name(self):
-        return self.metric_name.lower()
+    @property
+    def normalized_metric_name(self):
+        """Get the metric name lower-cased."""
+        return self._metric_name.lower()
 
-    def get_dimensions(self):
-        return self.dimensions
+    @property
+    def dimensions(self):
+        """Get the dimensions."""
+        return self._dimensions
 
-    def get_dimensions_as_list(self):
-        if self.dimensions:
-            return self.dimensions.split(",")
+    @property
+    def dimensions_as_list(self):
+        """Get the dimensions as a list."""
+        if self._dimensions:
+            return self._dimensions.split(",")
         else:
             return []
 
-    def get_operator(self):
-        return self.operator
+    @property
+    def operator(self):
+        """Get the operator."""
+        return self._operator
 
-    def get_threshold(self):
-        return self.threshold
+    @property
+    def threshold(self):
+        """Get the threshold value."""
+        return self._threshold
 
-    def get_period(self):
-        if self.period:
-            return self.period
+    @property
+    def period(self):
+        """Get the period. Default is 60 seconds."""
+        if self._period:
+            return self._period
         else:
             return u'60'
 
-    def get_periods(self):
-        if self.periods:
-            return self.periods
+    @property
+    def periods(self):
+        """Get the periods. Default is 1."""
+        if self._periods:
+            return self._periods
         else:
             return u'1'
 
-    def get_normalized_operator(self):
-        if self.operator.lower() == "lt" or self.operator == "<":
+    @property
+    def normalized_operator(self):
+        """Get the operator as one of LT, GT, LTE, or GTE."""
+        if self._operator.lower() == "lt" or self._operator == "<":
             return u"LT"
-        elif self.operator.lower() == "gt" or self.operator == ">":
+        elif self._operator.lower() == "gt" or self._operator == ">":
             return u"GT"
-        elif self.operator.lower() == "lte" or self.operator == "<=":
+        elif self._operator.lower() == "lte" or self._operator == "<=":
             return u"LTE"
-        elif self.operator.lower() == "gte" or self.operator == ">=":
+        elif self._operator.lower() == "gte" or self._operator == ">=":
             return u"GTE"
+
+    @property
+    def id(self):
+        """Get the id used to identify this sub expression in the repo."""
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        """Set the d used to identify this sub expression in the repo."""
+        self._id = id
 
 
 class BinaryOp(object):
@@ -126,9 +166,10 @@ class BinaryOp(object):
         self.op = tokens[0][1]
         self.operands = tokens[0][0::2]
 
-    def get_operands_list(self):
+    @property
+    def operands_list(self):
         return ([sub_operand for operand in self.operands for sub_operand in
-                 operand.get_operands_list()])
+                 operand.operands_list])
 
 
 class AndSubExpr(BinaryOp):
@@ -215,29 +256,28 @@ class AlarmExprParser(object):
     def __init__(self, expr):
         self._expr = expr
 
-    def get_sub_expr_list(self):
+    @property
+    def sub_expr_list(self):
         parseResult = (expression + stringEnd).parseString(self._expr)
-        sub_expr_list = parseResult[0].get_operands_list()
+        sub_expr_list = parseResult[0].operands_list
         return sub_expr_list
 
 
 def main():
-    """ Used for development and testing.
-
-    :return:
-    """
+    """ Used for development and testing. """
     expr = "max(-_.千幸福的笑脸{घोड़ा=馬,dn2=dv2}, 60) gte 100 times 3 && " \
            "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) > 99 and " \
            "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8')
     # expr = "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 \
     # or max(biz)>100)".decode('utf8')
     alarmExprParser = AlarmExprParser(expr)
-    r = alarmExprParser.get_sub_expr_list()
+    r = alarmExprParser.sub_expr_list
     for sub_expression in r:
-        print sub_expression.get_sub_expr_str()
-        print sub_expression.get_fmtd_sub_expr()
-        print sub_expression.get_dimensions_str()
+        print sub_expression.sub_expr_str
+        print sub_expression.fmtd_sub_expr_str
+        print sub_expression.dimensions_str
         print
+
 
 if __name__ == "__main__":
     sys.exit(main())

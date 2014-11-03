@@ -48,10 +48,9 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
                 cfg.CONF.security.default_authorized_roles + \
                 cfg.CONF.security.agent_authorized_roles
 
-            self._message_queue = \
-                resource_api.init_driver('monasca.messaging',
-                                         cfg.CONF.messaging.driver,
-                                         (['events']))
+            self._message_queue = resource_api.init_driver('monasca.messaging',
+                                                           cfg.CONF.messaging.driver,
+                                                           (['events']))
 
             self._alarm_definitions_repo = resource_api.init_driver(
                 'monasca.repositories',
@@ -71,18 +70,13 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
         tenant_id = helpers.get_tenant_id(req)
         name = get_query_alarm_definition_name(alarm_definition)
-        expression = get_query_alarm_definition_expression(
-            alarm_definition)
-        description = get_query_alarm_definition_description(
-            alarm_definition)
-        severity = get_query_alarm_definition_severity(
-            alarm_definition)
-        match_by = get_query_alarm_definition_match_by(
-            alarm_definition)
+        expression = get_query_alarm_definition_expression(alarm_definition)
+        description = get_query_alarm_definition_description(alarm_definition)
+        severity = get_query_alarm_definition_severity(alarm_definition)
+        match_by = get_query_alarm_definition_match_by(alarm_definition)
         alarm_actions = get_query_alarm_definition_alarm_actions(
             alarm_definition)
-        undetermined_actions = \
-            get_query_alarm_definition_undetermined_actions(
+        undetermined_actions = get_query_alarm_definition_undetermined_actions(
             alarm_definition)
         ok_actions = get_query_ok_actions(alarm_definition)
 
@@ -129,7 +123,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
                                  alarm_actions, undetermined_actions,
                                  ok_actions):
         try:
-            sub_expr_list = AlarmExprParser(expression).get_sub_expr_list()
+            sub_expr_list = AlarmExprParser(expression).sub_expr_list
 
             alarm_definition_id = \
                 self._alarm_definitions_repo.create_alarm_definition(
@@ -180,25 +174,23 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         sub_expr_event_msg = {}
         for sub_expr in sub_expr_list:
             sub_expr_event_msg[sub_expr.id] = {
-                u'function': sub_expr.get_normalized_func()}
-            metric_definition = {
-                u'name': sub_expr.get_normalized_metric_name()}
+                u'function': sub_expr.normalized_func}
+            metric_definition = {u'name': sub_expr.normalized_metric_name}
             sub_expr_event_msg[sub_expr.id][
                 u'metricDefinition'] = metric_definition
             dimensions = {}
-            for dimension in sub_expr.get_dimensions_as_list():
+            for dimension in sub_expr.dimensions_as_list:
                 parsed_dimension = dimension.split("=")
                 dimensions[parsed_dimension[0]] = parsed_dimension[1]
             metric_definition[u'dimensions'] = dimensions
             sub_expr_event_msg[sub_expr.id][
-                u'operator'] = sub_expr.get_normalized_operator()
+                u'operator'] = sub_expr.normalized_operator
             sub_expr_event_msg[sub_expr.id][
-                u'threshold'] = sub_expr.get_threshold()
-            sub_expr_event_msg[sub_expr.id][u'period'] = sub_expr.get_period()
+                u'threshold'] = sub_expr.threshold
+            sub_expr_event_msg[sub_expr.id][u'period'] = sub_expr.period
+            sub_expr_event_msg[sub_expr.id][u'periods'] = sub_expr.periods
             sub_expr_event_msg[sub_expr.id][
-                u'periods'] = sub_expr.get_periods()
-            sub_expr_event_msg[sub_expr.id][
-                u'expression'] = sub_expr.get_fmtd_sub_expr()
+                u'expression'] = sub_expr.fmtd_sub_expr_str
 
         alarm_definition_created_event_msg[u'alarm-definition-created'][
             u'alarmSubExpressions'] = sub_expr_event_msg
