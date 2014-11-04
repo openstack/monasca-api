@@ -39,6 +39,8 @@ public class MetricService {
   private final MonApiConfiguration config;
   private final Producer<String, String> producer;
   private final Meter metricMeter;
+  private final Meter batchMeter;
+  private long metricCount = 0;
 
   @Inject
   public MetricService(MonApiConfiguration config, Producer<String, String> producer,
@@ -47,6 +49,8 @@ public class MetricService {
     this.producer = producer;
     metricMeter =
         metricRegistry.meter(MetricRegistry.name(MetricService.class, "metrics.published"));
+    batchMeter =
+        metricRegistry.meter(MetricRegistry.name(MetricService.class, "batches.published"));
   }
 
   public void create(List<Metric> metrics, String tenantId, @Nullable String crossTenantId) {
@@ -59,11 +63,12 @@ public class MetricService {
     List<KeyedMessage<String, String>> keyedMessages = new ArrayList<>(metrics.size());
     for (Metric metric : metrics) {
       MetricEnvelope envelope = new MetricEnvelope(metric, meta);
-      keyedMessages.add(new KeyedMessage<>(config.metricsTopic, Long.valueOf(metric.timestamp)
+      keyedMessages.add(new KeyedMessage<>(config.metricsTopic, Long.valueOf(metric.timestamp + metricCount++)
           .toString(), MetricEnvelopes.toJson(envelope)));
+      metricMeter.mark();
     }
 
     producer.send(keyedMessages);
-    metricMeter.mark();
+    batchMeter.mark();
   }
 }
