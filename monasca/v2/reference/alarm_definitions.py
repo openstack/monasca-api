@@ -23,8 +23,7 @@ from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
 from monasca.expression_parser.alarm_expr_parser import AlarmExprParser
 from monasca.openstack.common import log
 from monasca.v2.reference import helpers
-from monasca.v2.common.schemas import \
-    alarm_definition_request_body_schema as schema_alarms
+from monasca.v2.common.schemas import alarm_definition_request_body_schema as schema_alarms
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
 from monasca.v2.reference.helpers import read_json_msg_body
 from monasca.common.messaging import exceptions as message_queue_exceptions
@@ -40,13 +39,9 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
             self._region = cfg.CONF.region
 
-            self._default_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles
-            self._delegate_authorized_roles = \
-                cfg.CONF.security.delegate_authorized_roles
-            self._post_metrics_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles + \
-                cfg.CONF.security.agent_authorized_roles
+            self._default_authorized_roles = cfg.CONF.security.default_authorized_roles
+            self._delegate_authorized_roles = cfg.CONF.security.delegate_authorized_roles
+            self._post_metrics_authorized_roles = cfg.CONF.security.default_authorized_roles + cfg.CONF.security.agent_authorized_roles
 
             self._message_queue = resource_api.init_driver('monasca.messaging',
                                                            cfg.CONF.messaging.driver,
@@ -108,7 +103,41 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='delete')
     def do_delete_alarm_definitions(self, req, res, id):
-        res.status = '501 Not Implemented'
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        self._alarm_definition_delete(tenant_id, id)
+        res.status = falcon.HTTP_204
+
+    def _alarm_definition_delete(self, tenant_id, id):
+
+        try:
+
+            sub_alarm_definition_rows \
+                = self._alarm_definitions_repo.get_sub_alarm_definitions(id)
+            alarm_metric_rows \
+                = self._alarm_definitions_repo.get_alarm_metrics(tenant_id, id)
+            sub_alarm_rows \
+                = self._alarm_definitions_repo.get_sub_alarms(tenant_id, id)
+
+            if not self._alarm_definitions_repo.delete_alarm_definition(tenant_id, id):
+                raise falcon.HTTPNotFound
+
+            self._send_alarm_definition_deleted_event(id,
+                                                      sub_alarm_definition_rows)
+
+            self._send_alarm_deleted_event(tenant_id, id, alarm_metric_rows,
+                                           sub_alarm_rows)
+
+        except exceptions.RepositoryException as ex:
+            LOG.exception(ex)
+            msg = "".join(ex.message.args)
+            raise falcon.HTTPInternalServerError('Service unavailable', msg)
+        except falcon.HTTPNotFound:
+            raise
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPInternalServerError('Service unavailable', ex)
 
     def _validate_alarm_definition(self, alarm_definition):
 
@@ -116,7 +145,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             schema_alarms.validate(alarm_definition)
         except schemas_exceptions.ValidationException as ex:
             LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad reqeust', ex.message)
+            raise falcon.HTTPBadRequest('Bad request', ex.message)
 
     def _alarm_definition_create(self, tenant_id, name, expression,
                                  description, severity, match_by,
@@ -125,8 +154,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         try:
             sub_expr_list = AlarmExprParser(expression).sub_expr_list
 
-            alarm_definition_id = \
-                self._alarm_definitions_repo.create_alarm_definition(
+            alarm_definition_id = self._alarm_definitions_repo.create_alarm_definition(
                 tenant_id, name, expression, sub_expr_list, description,
                 severity, match_by, alarm_actions, undetermined_actions,
                 ok_actions)
@@ -156,6 +184,103 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             LOG.exception(ex)
             msg = "".join(ex.message.args)
             raise falcon.HTTPInternalServerError('Service unavailable', msg)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPInternalServerError('Service unavailable', ex)
+
+    def _send_alarm_deleted_event(self, tenant_id, alarm_definition_id,
+                                  alarm_metric_rows, sub_alarm_rows):
+
+        if not alarm_metric_rows:
+            return
+
+        # Build a dict mapping alarm id -> list of sub alarms.
+        sub_alarm_dict = {}
+        for sub_alarm_row in sub_alarm_rows:
+            if sub_alarm_row.alarm_id in sub_alarm_dict:
+                sub_alarm_dict[sub_alarm_row.alarm_id] += [sub_alarm_row]
+            else:
+                sub_alarm_dict[sub_alarm_row.alarm_id] = [sub_alarm_row]
+
+        prev_alarm_id = None
+        for alarm_metric_row in alarm_metric_rows:
+            if prev_alarm_id != alarm_metric_row.alarm_id:
+                if prev_alarm_id is not None:
+                    sub_alarms_deleted_event_msg = self._build_sub_alarm_deleted_event_msg(
+                        sub_alarm_dict, prev_alarm_id)
+                    alarm_deleted_event_msg[u'alarm-delete'][u'subAlarms': sub_alarms_deleted_event_msg]
+                    self._send_event(alarm_deleted_event_msg)
+
+                alarm_metrics_event_msg = []
+                alarm_deleted_event_msg = {
+                    u'alarm-deleted': {u'tenant_id': tenant_id,
+                                       u'alarmDefinitionId': alarm_definition_id,
+                                       u'alarmId': alarm_metric_row.alarm_id,
+                                       u'alarmMetrics': alarm_metrics_event_msg}}
+
+                prev_alarm_id = alarm_metric_row.alarm_id
+
+            dimensions = {}
+            metric = {u'name': alarm_metric_row.name,
+                      u'dimensions': dimensions}
+            for dimension in alarm_metric_row.dimensions.split(','):
+                parsed_dimension = dimension.split('=')
+                dimensions[parsed_dimension[0]] = parsed_dimension[1]
+
+            alarm_metrics_event_msg.append(metric)
+
+        # Finish last alarm
+        sub_alarms_deleted_event_msg = self._build_sub_alarm_deleted_event_msg(
+            sub_alarm_dict, prev_alarm_id)
+        alarm_deleted_event_msg[u'alarm-deleted'][u'subAlarms'] = sub_alarms_deleted_event_msg
+        self._send_event(alarm_deleted_event_msg)
+
+    def _build_sub_alarm_deleted_event_msg(self, sub_alarm_dict, alarm_id):
+
+        sub_alarms_deleted_event_msg = {}
+
+        if alarm_id not in sub_alarm_dict:
+            return sub_alarms_deleted_event_msg
+
+        for sub_alarm in sub_alarm_dict[alarm_id]:
+            # There's only one expr in a sub alarm, so just take the first.
+            sub_expr = AlarmExprParser(sub_alarm.expression).sub_expr_list[0]
+            dimensions = {}
+            sub_alarms_deleted_event_msg[sub_alarm.sub_alarm_id] = {
+                u'function': sub_expr.normalized_func,
+                u'metricDefinition': {u'name': sub_expr.metric_name,
+                                      u'dimensions': dimensions},
+                u'operator': sub_expr.normalized_operator,
+                u'threshold': sub_expr.threshold, u'period': sub_expr.period,
+                u'periods': sub_expr.periods,
+                u'expression': sub_expr.fmtd_sub_expr_str}
+
+            for dimension in sub_expr.dimensions_as_list:
+                parsed_dimension = dimension.split('=')
+                dimensions[parsed_dimension[0]] = parsed_dimension[1]
+
+        return sub_alarms_deleted_event_msg
+
+    def _send_alarm_definition_deleted_event(self, alarm_definition_id,
+                                             sub_alarm_definition_rows):
+
+        sub_alarm_definition_deleted_event_msg = {}
+        alarm_definition_deleted_event_msg = {u"alarm-definition-deleted": {
+            u"alarmDefinitionId": alarm_definition_id,
+            u'subAlarmMetricDefinitions': sub_alarm_definition_deleted_event_msg}}
+
+        for sub_alarm_definition in sub_alarm_definition_rows:
+            sub_alarm_definition_deleted_event_msg[sub_alarm_definition.id] = {
+                u'name': sub_alarm_definition.metric_name}
+            dimensions = {}
+            sub_alarm_definition_deleted_event_msg[sub_alarm_definition.id][
+                u'dimensions'] = dimensions
+            if sub_alarm_definition.dimensions:
+                for dimension in sub_alarm_definition.dimensions.split(','):
+                    parsed_dimension = dimension.split('=')
+                    dimensions[parsed_dimension[0]] = parsed_dimension[1]
+
+        self._send_event(alarm_definition_deleted_event_msg)
 
     def _send_alarm_definition_created_event(self, tenant_id,
                                              alarm_definition_id, name,
@@ -164,8 +289,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
         alarm_definition_created_event_msg = {
             u'alarm-definition-created': {u'tenantId': tenant_id,
-                                          u'alarmDefinitionId':
-                                              alarm_definition_id,
+                                          u'alarmDefinitionId': alarm_definition_id,
                                           u'alarmName': name,
                                           u'alarmDescription': description,
                                           u'alarmExpression': expression,
@@ -185,8 +309,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             metric_definition[u'dimensions'] = dimensions
             sub_expr_event_msg[sub_expr.id][
                 u'operator'] = sub_expr.normalized_operator
-            sub_expr_event_msg[sub_expr.id][
-                u'threshold'] = sub_expr.threshold
+            sub_expr_event_msg[sub_expr.id][u'threshold'] = sub_expr.threshold
             sub_expr_event_msg[sub_expr.id][u'period'] = sub_expr.period
             sub_expr_event_msg[sub_expr.id][u'periods'] = sub_expr.periods
             sub_expr_event_msg[sub_expr.id][
@@ -244,7 +367,7 @@ def get_query_alarm_definition_severity(alarm_definition):
         severity = alarm_definition['severity']
         severity = severity.decode('utf8').lower()
         if severity not in ['low', 'medium', 'high', 'critical']:
-            raise falcon.HTTPBadRequest('Bad request, Invalid severity')
+            raise falcon.HTTPBadRequest('Bad request', 'Invalid severity')
         return severity
     else:
         return ''

@@ -7,3 +7,5 @@ stevedore>=0.14
 gunicorn>=19.1.0
 oslo.config>=1.2.1
 ujson>=1.33
+Pyparsing>=2.0.3
+pyodbc>=3.0.7

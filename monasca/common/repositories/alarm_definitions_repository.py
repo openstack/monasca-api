@@ -23,3 +23,19 @@ class AlarmDefinitionsRepository(object):
             expression, sub_expr_list, description, severity, match_by, alarm_actions,
             undetermined_actions, ok_action):
         pass
+
+    @abc.abstractmethod
+    def get_sub_alarms(self, tenant_id, alarm_definition_id):
+        pass
+
+    @abc.abstractmethod
+    def get_alarm_metrics(self, tenant_id, alarm_definition_id):
+        pass
+
+    @abc.abstractmethod
+    def delete_alarm_definition(self, tenant_id, alarm_definition_id):
+        pass
+
+    @abc.abstractmethod
+    def get_sub_alarm_definitions(self, alarm_definition_id):
+        pass
