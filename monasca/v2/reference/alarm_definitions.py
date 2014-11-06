@@ -95,7 +95,19 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
     @resource_api.Restify('/v2.0/alarm-definitions', method='get')
     def do_get_alarm_definitions(self, req, res):
-        res.status = '501 Not Implemented'
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        name = helpers.get_query_name(req)
+        dimensions = helpers.get_query_dimensions(req)
+
+        result = self._alarm_definition_list(tenant_id,
+                                             name,
+                                             dimensions,
+                                             req.uri)
+
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='patch')
     def do_patch_alarm_definitions(self, req, res, id):
@@ -135,6 +147,44 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             raise falcon.HTTPInternalServerError('Service unavailable', msg)
         except falcon.HTTPNotFound:
             raise
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPInternalServerError('Service unavailable', ex)
+
+    def _alarm_definition_list(self, tenant_id,
+                               name,
+                               dimensions,
+                               req_uri):
+
+        try:
+
+            alarm_definition_rows = \
+                self._alarm_definitions_repo.get_alarm_definition_list(tenant_id,
+                                                                      name,
+                                                                      dimensions)
+
+            result = []
+            for alarm_definition_row in alarm_definition_rows:
+                ad = {u'id': alarm_definition_row.id.decode('utf8'),
+                      u'name': alarm_definition_row.name.decode("utf8"),
+                      u'description': alarm_definition_row.description.decode('utf8'),
+                      u'expression': alarm_definition_row.expression.decode('utf8'),
+                      u'match_by': alarm_definition_row.match_by.decode('utf8').split(','),
+                      u'severity': alarm_definition_row.severity.decode('utf8'),
+                      u'actions_enabled': alarm_definition_row.actions_enabled == 1,
+                      u'alarm_actions': alarm_definition_row.alarm_actions.decode('utf8').split(','),
+                      u'ok_actions': alarm_definition_row.ok_actions.decode('utf8').split(','),
+                      u'undetermined_actions': alarm_definition_row.undetermined_actions.decode('utf8').split(',')}
+
+                helpers.add_links_to_resource(ad, req_uri)
+                result.append(ad)
+
+            return result
+
+        except exceptions.RepositoryException as ex:
+            LOG.exception(ex)
+            msg = "".join(ex.message.args)
+            raise falcon.HTTPInternalServerError('Service unavailable', msg)
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable', ex)

@@ -13,6 +13,7 @@
 # under the License.
 import datetime
 import json
+from urlparse import urlparse
 
 import falcon
 from falcon.util.uri import parse_query_string
@@ -27,12 +28,12 @@ LOG = log.getLogger(__name__)
 
 
 def read_json_msg_body(req):
-    '''
+    """
     Read the json_msg from the http request body and return them as JSON.
     :param req: HTTP request object.
     :return: Returns the metrics as a JSON object.
     :raises falcon.HTTPBadRequest:
-    '''
+    """
     try:
         msg = req.stream.read()
         json_msg = json.loads(msg)
@@ -114,10 +115,10 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
 
 
 def get_query_name(req, name_required=False):
-    '''
+    """
     Returns the query param "name" if supplied.
     :param req: HTTP request object.
-    '''
+    """
     try:
         params = parse_query_string(req.query_string)
         if 'name' in params:
@@ -250,7 +251,9 @@ def get_link(uri, resource_id, rel='self'):
     :param uri: the http request.uri.
     :param resource_id: the id of the resource
     """
-    href = uri + '/' + resource_id
+    parsed_uri = urlparse(uri)
+    href = parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
+    href += '/' + resource_id
     link_dict = dict(href=href, rel=rel)
     return link_dict
 
