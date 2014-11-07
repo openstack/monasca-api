@@ -60,6 +60,74 @@ class AlarmDefinitionsRepository(
         cnxn.commit()
         cnxn.close()
 
+    def get_alarm_definition_list(self, tenant_id, name, dimensions):
+
+        try:
+
+            parms = [tenant_id]
+
+            select_clause = """
+                  select ad.id, ad.name, ad.description, ad.expression,
+                    ad.match_by, ad.severity, ad.actions_enabled,
+                    aaa.alarm_actions, aao.ok_actions, aau.undetermined_actions
+                  from alarm_definition as ad
+                  left join (select alarm_definition_id,
+                   group_concat(action_id) as alarm_actions
+                      from alarm_action
+                      where alarm_state = 'ALARM'
+                      group by alarm_definition_id) as aaa
+                      on aaa.alarm_definition_id = ad.id
+                  left join (select alarm_definition_id,
+                    group_concat(action_id) as ok_actions
+                      from alarm_action
+                      where alarm_state = 'OK'
+                      group by alarm_definition_id) as aao
+                      on aao.alarm_definition_id = ad.id
+                  left join (select alarm_definition_id,
+                    group_concat(action_id) as undetermined_actions
+                      from alarm_action
+                      where alarm_state = 'UNDETERMINED'
+                      group by alarm_definition_id) as aau
+                      on aau.alarm_definition_id = ad.id
+                      """
+
+            where_clause = " where ad.tenant_id = ? "
+
+            if name:
+                where_clause += " and ad.name = ? "
+                parms.append(name.encode('utf8'))
+
+            if dimensions:
+                inner_join = """ inner join sub_alarm_definition as sad
+                            on sad.alarm_definition_id = ad.id """
+
+                i = 0
+                for n, v in dimensions.iteritems():
+                    inner_join += """
+                        inner join
+                            (select distinct sub_alarm_definition_id
+                             from sub_alarm_definition_dimension
+                              where dimension_name='{}' and value='{}') as sadd{}
+                        on sadd{}.sub_alarm_definition_id = sad.id
+                        """.format(n.encode('utf8'), v.encode('utf8'), i, i)
+                    i += 1
+
+                select_clause += inner_join
+
+            query = select_clause + where_clause
+            cnxn, cursor = self._get_cnxn_cursor_tuple()
+            cursor.execute(query, parms)
+
+            rows = cursor.fetchall()
+
+            self._commit_close_cnxn(cnxn)
+
+            return rows
+
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
+
     def get_sub_alarms(self, tenant_id, alarm_definition_id):
 
         try:
