@@ -17,6 +17,7 @@ import pyodbc
 from oslo.config import cfg
 
 from monasca.common.repositories import alarm_definitions_repository
+from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
 from monasca.openstack.common import log
 from monasca.openstack.common import uuidutils
 from monasca.common.repositories import exceptions
@@ -25,40 +26,14 @@ from monasca.common.repositories import exceptions
 LOG = log.getLogger(__name__)
 
 
-class AlarmDefinitionsRepository(
+class AlarmDefinitionsRepository(MySQLRepository,
         alarm_definitions_repository.AlarmDefinitionsRepository):
-    database_driver = 'MySQL ODBC 5.3 ANSI Driver'
-    database_cnxn_template = 'DRIVER={' \
-                             '%s};Server=%s;CHARSET=UTF8;Database=%s;Uid=%s' \
-                             ';Pwd=%s'
+
 
     def __init__(self):
 
-        try:
-            self.conf = cfg.CONF
-            database_name = self.conf.mysql.database_name
-            database_server = self.conf.mysql.hostname
-            database_uid = self.conf.mysql.username
-            database_pwd = self.conf.mysql.password
-            self._cnxn_string = (
-                AlarmDefinitionsRepository.database_cnxn_template % (
-                    AlarmDefinitionsRepository.database_driver,
-                    database_server, database_name, database_uid,
-                    database_pwd))
+        super(AlarmDefinitionsRepository, self).__init__()
 
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
-
-    def _get_cnxn_cursor_tuple(self):
-
-        cnxn = pyodbc.connect(self._cnxn_string)
-        cursor = cnxn.cursor()
-        return cnxn, cursor
-
-    def _commit_close_cnxn(self, cnxn):
-        cnxn.commit()
-        cnxn.close()
 
     def get_alarm_definition_list(self, tenant_id, name, dimensions):
 

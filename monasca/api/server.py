@@ -25,6 +25,7 @@ from wsgiref import simple_server
 
 METRICS_DISPATCHER_NAMESPACE = 'monasca.metrics_dispatcher'
 ALARM_DEFINITIONS_DISPATCHER_NAMESPACE = 'monasca.alarm_definitions_dispatcher'
+ALARMS_DISPATCHER_NAMESPACE = 'monasca.alarms_dispatcher'
 EVENTS_DISPATCHER_NAMESPACE = 'monasca.events_dispatcher'
 TRANSFORMS_DISPATCHER_NAMESPACE = 'monasca.transforms_dispatcher'
 NOTIFICATIONS_DISPATCHER_NAMESPACE = 'monasca.notifications_dispatcher'
@@ -68,6 +69,8 @@ repositories_opts = [
     cfg.StrOpt('alarm_definitions_driver',
                default='mysql_alarm_definitions_repo',
                help='The repository driver to use for alarm definitions'),
+    cfg.StrOpt('alarms_driver', default='mysql_alarms_repo',
+               help='The repository driver to use for alarms'),
     cfg.StrOpt('events_driver', default='fake_events_repo',
                help='The repository driver to use for events'),
     cfg.StrOpt('transforms_driver', default='mysql_transforms_repo',
@@ -97,9 +100,9 @@ kafka_opts = [cfg.StrOpt('uri', help='Address to kafka server. For example: '
                          help='The group name that this service belongs to.'),
               cfg.IntOpt('wait_time', default=1,
                          help='The wait time when no messages on kafka '
-                              'queue.'),
-              cfg.IntOpt('ack_time', default=20,
-                         help='The ack time back to kafka.'),
+                              'queue.'), cfg.IntOpt('ack_time', default=20,
+                                                    help='The ack time back '
+                                                         'to kafka.'),
               cfg.IntOpt('max_retry', default=3,
                          help='The number of retry when there is a '
                               'connection error.'),
@@ -108,16 +111,16 @@ kafka_opts = [cfg.StrOpt('uri', help='Address to kafka server. For example: '
                                'messages.'),
               cfg.BoolOpt('async', default=True, help='The type of posting.'),
               cfg.BoolOpt('compact', default=True, help=(
-              'Specify if the message received should be parsed.'
-              'If True, message will not be parsed, otherwise '
-              'messages will be parsed.')),
+                  'Specify if the message received should be parsed.'
+                  'If True, message will not be parsed, otherwise '
+                  'messages will be parsed.')),
               cfg.MultiOpt('partitions', item_type=types.Integer(),
                            default=[0],
                            help='The sleep time when no messages on kafka '
                                 'queue.'),
               cfg.BoolOpt('drop_data', default=False, help=(
-              'Specify if received data should be simply dropped. '
-              'This parameter is only for testing purposes.')), ]
+                  'Specify if received data should be simply dropped. '
+                  'This parameter is only for testing purposes.')), ]
 
 kafka_group = cfg.OptGroup(name='kafka', title='title')
 cfg.CONF.register_group(kafka_group)
@@ -168,6 +171,11 @@ def api_app(conf):
 
     # load the alarm definitions resource
     app.add_resource('alarm-definitions',
+                     ALARM_DEFINITIONS_DISPATCHER_NAMESPACE,
+                     cfg.CONF.dispatcher.driver, [conf])
+
+    # load the alarm definitions resource
+    app.add_resource('alarms',
                      ALARM_DEFINITIONS_DISPATCHER_NAMESPACE,
                      cfg.CONF.dispatcher.driver, [conf])
 
