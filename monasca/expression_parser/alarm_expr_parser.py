@@ -230,8 +230,10 @@ logical_op = (AND | OR)("logical_op")
 times = CaselessLiteral("times")
 
 dimension = Group(dimension_name + EQUAL + dimension_value)
+
+# Cannot have any whitespace after the comma delimiter.
 dimension_list = Group(Optional(
-    LBRACE + delimitedList(dimension, delim=",", combine=True)(
+    LBRACE + delimitedList(dimension, delim=',', combine=True)(
         "dimensions_list") + RBRACE))
 
 metric = metric_name + dimension_list("dimensions")

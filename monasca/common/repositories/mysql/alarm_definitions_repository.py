@@ -102,17 +102,20 @@ class AlarmDefinitionsRepository(
                             on sad.alarm_definition_id = ad.id """
 
                 i = 0
+                inner_join_parms = []
                 for n, v in dimensions.iteritems():
                     inner_join += """
                         inner join
                             (select distinct sub_alarm_definition_id
                              from sub_alarm_definition_dimension
-                              where dimension_name='{}' and value='{}') as sadd{}
+                              where dimension_name = ? and value = ?) as sadd{}
                         on sadd{}.sub_alarm_definition_id = sad.id
-                        """.format(n.encode('utf8'), v.encode('utf8'), i, i)
+                        """.format(i, i)
+                    inner_join_parms += [n.encode('utf8'), v.encode('utf8')]
                     i += 1
 
                 select_clause += inner_join
+                parms = inner_join_parms + parms
 
             query = select_clause + where_clause
             cnxn, cursor = self._get_cnxn_cursor_tuple()

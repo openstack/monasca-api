@@ -165,11 +165,18 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
             result = []
             for alarm_definition_row in alarm_definition_rows:
+
+                # match_by can be null
+                if alarm_definition_row.match_by:
+                    match_by = alarm_definition_row.match_by.decode('utf8').split(',')
+                else:
+                    match_by = []
+
                 ad = {u'id': alarm_definition_row.id.decode('utf8'),
                       u'name': alarm_definition_row.name.decode("utf8"),
                       u'description': alarm_definition_row.description.decode('utf8'),
                       u'expression': alarm_definition_row.expression.decode('utf8'),
-                      u'match_by': alarm_definition_row.match_by.decode('utf8').split(','),
+                      u'match_by': match_by,
                       u'severity': alarm_definition_row.severity.decode('utf8'),
                       u'actions_enabled': alarm_definition_row.actions_enabled == 1,
                       u'alarm_actions': alarm_definition_row.alarm_actions.decode('utf8').split(','),
