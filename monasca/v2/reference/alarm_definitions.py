@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+from monasca.common.repositories.exceptions import DoesNotExistException
 
 from pyparsing import ParseException
 import falcon
@@ -23,7 +24,8 @@ from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
 from monasca.expression_parser.alarm_expr_parser import AlarmExprParser
 from monasca.openstack.common import log
 from monasca.v2.reference import helpers
-from monasca.v2.common.schemas import alarm_definition_request_body_schema as schema_alarms
+from monasca.v2.common.schemas import \
+    alarm_definition_request_body_schema as schema_alarms
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
 from monasca.v2.reference.helpers import read_json_msg_body
 from monasca.common.messaging import exceptions as message_queue_exceptions
@@ -33,7 +35,6 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmDefinitions(AlarmDefinitionsV2API):
-
     def __init__(self, global_conf):
 
         try:
@@ -42,9 +43,13 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
             self._region = cfg.CONF.region
 
-            self._default_authorized_roles = cfg.CONF.security.default_authorized_roles
-            self._delegate_authorized_roles = cfg.CONF.security.delegate_authorized_roles
-            self._post_metrics_authorized_roles = cfg.CONF.security.default_authorized_roles + cfg.CONF.security.agent_authorized_roles
+            self._default_authorized_roles = \
+                cfg.CONF.security.default_authorized_roles
+            self._delegate_authorized_roles = \
+                cfg.CONF.security.delegate_authorized_roles
+            self._post_metrics_authorized_roles = \
+                cfg.CONF.security.default_authorized_roles + \
+                cfg.CONF.security.agent_authorized_roles
 
             self._message_queue = resource_api.init_driver('monasca.messaging',
                                                            cfg.CONF.messaging.driver,
@@ -90,7 +95,15 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='get')
     def do_get_alarm_definition(self, req, res, id):
-        res.status = '501 Not Implemented'
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+
+        result = self._alarm_definition_show(tenant_id, id)
+
+        helpers.add_links_to_resource(result, req.uri)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='put')
     def do_put_alarm_definitions(self, req, res, id):
@@ -104,9 +117,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         name = helpers.get_query_name(req)
         dimensions = helpers.get_query_dimensions(req)
 
-        result = self._alarm_definition_list(tenant_id,
-                                             name,
-                                             dimensions,
+        result = self._alarm_definition_list(tenant_id, name, dimensions,
                                              req.uri)
 
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
@@ -124,18 +135,67 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         self._alarm_definition_delete(tenant_id, id)
         res.status = falcon.HTTP_204
 
+
+    def _alarm_definition_show(self, tenant_id, id):
+
+        try:
+
+            alarm_definition_row = \
+                self._alarm_definitions_repo.get_alarm_definition(
+                tenant_id, id)
+
+            match_by = get_comma_separated_str_as_list(
+                alarm_definition_row.match_by)
+
+            alarm_actions_list = get_comma_separated_str_as_list(
+                alarm_definition_row.alarm_actions)
+
+            ok_actions_list = get_comma_separated_str_as_list(
+                alarm_definition_row.ok_actions)
+
+            undetermined_actions_list = get_comma_separated_str_as_list(
+                alarm_definition_row.undetermined_actions)
+
+            result = {
+                u'actions_enabled': alarm_definition_row.actions_enabled == 1,
+                u'alarm_actions': alarm_actions_list,
+                u'undetermined_actions': undetermined_actions_list,
+                u'ok_actions': ok_actions_list,
+                u'description': alarm_definition_row.description.decode(
+                    'utf8'),
+                u'expression': alarm_definition_row.expression.decode('utf8'),
+                u'id': alarm_definition_row.id.decode('utf8'),
+                u'match_by': match_by,
+                u'name': alarm_definition_row.name.decode('utf8'),
+                u'severity': alarm_definition_row.severity.decode('utf8')}
+
+            return result
+
+
+        except DoesNotExistException:
+            raise falcon.HTTPNotFound()
+        except exceptions.RepositoryException as ex:
+            LOG.exception(ex)
+            msg = "".join(ex.message.args)
+            raise falcon.HTTPInternalServerError('Service unavailable', msg)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPInternalServerError('Service unavailable', ex)
+
     def _alarm_definition_delete(self, tenant_id, id):
 
         try:
 
-            sub_alarm_definition_rows \
-                = self._alarm_definitions_repo.get_sub_alarm_definitions(id)
-            alarm_metric_rows \
-                = self._alarm_definitions_repo.get_alarm_metrics(tenant_id, id)
-            sub_alarm_rows \
-                = self._alarm_definitions_repo.get_sub_alarms(tenant_id, id)
+            sub_alarm_definition_rows = \
+                self._alarm_definitions_repo.get_sub_alarm_definitions(
+                id)
+            alarm_metric_rows = self._alarm_definitions_repo.get_alarm_metrics(
+                tenant_id, id)
+            sub_alarm_rows = self._alarm_definitions_repo.get_sub_alarms(
+                tenant_id, id)
 
-            if not self._alarm_definitions_repo.delete_alarm_definition(tenant_id, id):
+            if not self._alarm_definitions_repo.delete_alarm_definition(
+                    tenant_id, id):
                 raise falcon.HTTPNotFound
 
             self._send_alarm_definition_deleted_event(id,
@@ -154,37 +214,42 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable', ex)
 
-    def _alarm_definition_list(self, tenant_id,
-                               name,
-                               dimensions,
-                               req_uri):
+    def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri):
 
         try:
 
             alarm_definition_rows = \
-                self._alarm_definitions_repo.get_alarm_definition_list(tenant_id,
-                                                                      name,
-                                                                      dimensions)
+                self._alarm_definitions_repo.get_alarm_definitions(
+                tenant_id, name, dimensions)
 
             result = []
             for alarm_definition_row in alarm_definition_rows:
 
-                # match_by can be null
-                if alarm_definition_row.match_by:
-                    match_by = alarm_definition_row.match_by.decode('utf8').split(',')
-                else:
-                    match_by = []
+                match_by = get_comma_separated_str_as_list(
+                    alarm_definition_row.match_by)
+
+                alarm_actions_list = get_comma_separated_str_as_list(
+                    alarm_definition_row.alarm_actions)
+
+                ok_actions_list = get_comma_separated_str_as_list(
+                    alarm_definition_row.ok_actions)
+
+                undetermined_actions_list = get_comma_separated_str_as_list(
+                    alarm_definition_row.undetermined_actions)
 
                 ad = {u'id': alarm_definition_row.id.decode('utf8'),
                       u'name': alarm_definition_row.name.decode("utf8"),
-                      u'description': alarm_definition_row.description.decode('utf8'),
-                      u'expression': alarm_definition_row.expression.decode('utf8'),
-                      u'match_by': match_by,
-                      u'severity': alarm_definition_row.severity.decode('utf8'),
-                      u'actions_enabled': alarm_definition_row.actions_enabled == 1,
-                      u'alarm_actions': alarm_definition_row.alarm_actions.decode('utf8').split(','),
-                      u'ok_actions': alarm_definition_row.ok_actions.decode('utf8').split(','),
-                      u'undetermined_actions': alarm_definition_row.undetermined_actions.decode('utf8').split(',')}
+                      u'description': alarm_definition_row.description.decode(
+                          'utf8'),
+                      u'expression': alarm_definition_row.expression.decode(
+                          'utf8'), u'match_by': match_by,
+                      u'severity': alarm_definition_row.severity.decode(
+                          'utf8'),
+                      u'actions_enabled':
+                          alarm_definition_row.actions_enabled == 1,
+                      u'alarm_actions': alarm_actions_list,
+                      u'ok_actions': ok_actions_list,
+                      u'undetermined_actions': undetermined_actions_list}
 
                 helpers.add_links_to_resource(ad, req_uri)
                 result.append(ad)
@@ -214,7 +279,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         try:
             sub_expr_list = AlarmExprParser(expression).sub_expr_list
 
-            alarm_definition_id = self._alarm_definitions_repo.create_alarm_definition(
+            alarm_definition_id = \
+                self._alarm_definitions_repo.create_alarm_definition(
                 tenant_id, name, expression, sub_expr_list, description,
                 severity, match_by, alarm_actions, undetermined_actions,
                 ok_actions)
@@ -266,17 +332,21 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         for alarm_metric_row in alarm_metric_rows:
             if prev_alarm_id != alarm_metric_row.alarm_id:
                 if prev_alarm_id is not None:
-                    sub_alarms_deleted_event_msg = self._build_sub_alarm_deleted_event_msg(
+                    sub_alarms_deleted_event_msg = \
+                        self._build_sub_alarm_deleted_event_msg(
                         sub_alarm_dict, prev_alarm_id)
-                    alarm_deleted_event_msg[u'alarm-delete'][u'subAlarms': sub_alarms_deleted_event_msg]
+                    alarm_deleted_event_msg[u'alarm-delete'][
+                    u'subAlarms': sub_alarms_deleted_event_msg]
                     self._send_event(alarm_deleted_event_msg)
 
                 alarm_metrics_event_msg = []
                 alarm_deleted_event_msg = {
                     u'alarm-deleted': {u'tenant_id': tenant_id,
-                                       u'alarmDefinitionId': alarm_definition_id,
+                                       u'alarmDefinitionId':
+                                           alarm_definition_id,
                                        u'alarmId': alarm_metric_row.alarm_id,
-                                       u'alarmMetrics': alarm_metrics_event_msg}}
+                                       u'alarmMetrics':
+                                           alarm_metrics_event_msg}}
 
                 prev_alarm_id = alarm_metric_row.alarm_id
 
@@ -292,7 +362,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         # Finish last alarm
         sub_alarms_deleted_event_msg = self._build_sub_alarm_deleted_event_msg(
             sub_alarm_dict, prev_alarm_id)
-        alarm_deleted_event_msg[u'alarm-deleted'][u'subAlarms'] = sub_alarms_deleted_event_msg
+        alarm_deleted_event_msg[u'alarm-deleted'][
+            u'subAlarms'] = sub_alarms_deleted_event_msg
         self._send_event(alarm_deleted_event_msg)
 
     def _build_sub_alarm_deleted_event_msg(self, sub_alarm_dict, alarm_id):
@@ -327,7 +398,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
         sub_alarm_definition_deleted_event_msg = {}
         alarm_definition_deleted_event_msg = {u"alarm-definition-deleted": {
             u"alarmDefinitionId": alarm_definition_id,
-            u'subAlarmMetricDefinitions': sub_alarm_definition_deleted_event_msg}}
+            u'subAlarmMetricDefinitions':
+                sub_alarm_definition_deleted_event_msg}}
 
         for sub_alarm_definition in sub_alarm_definition_rows:
             sub_alarm_definition_deleted_event_msg[sub_alarm_definition.id] = {
@@ -349,7 +421,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
         alarm_definition_created_event_msg = {
             u'alarm-definition-created': {u'tenantId': tenant_id,
-                                          u'alarmDefinitionId': alarm_definition_id,
+                                          u'alarmDefinitionId':
+                                              alarm_definition_id,
                                           u'alarmName': name,
                                           u'alarmDescription': description,
                                           u'alarmExpression': expression,
@@ -463,3 +536,10 @@ def get_query_ok_actions(alarm_definition):
         return ok_actions
     else:
         return []
+
+def get_comma_separated_str_as_list(comma_separated_str):
+
+    if not comma_separated_str:
+        return []
+    else:
+        return comma_separated_str.decode('utf8').split(',')

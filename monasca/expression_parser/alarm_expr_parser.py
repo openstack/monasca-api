@@ -260,24 +260,38 @@ class AlarmExprParser(object):
 
     @property
     def sub_expr_list(self):
-        parseResult = (expression + stringEnd).parseString(self._expr)
+        # Remove all spaces before parsing. Simple, quick fix for whitespace
+        # issue with dimension list not allowing whitespace after comma.
+        parseResult = (expression + stringEnd).parseString(
+            self._expr.replace(' ', ''))
         sub_expr_list = parseResult[0].operands_list
         return sub_expr_list
 
 
 def main():
     """ Used for development and testing. """
-    expr = "max(-_.千幸福的笑脸{घोड़ा=馬,dn2=dv2}, 60) gte 100 times 3 && " \
-           "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) > 99 and " \
-           "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8')
-    # expr = "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 \
-    # or max(biz)>100)".decode('utf8')
-    alarmExprParser = AlarmExprParser(expr)
-    r = alarmExprParser.sub_expr_list
-    for sub_expression in r:
-        print sub_expression.sub_expr_str
-        print sub_expression.fmtd_sub_expr_str
-        print sub_expression.dimensions_str
+
+    expr0 = "max(-_.千幸福的笑脸{घोड़ा=馬,  dn2=dv2}, 60) gte 100 times 3 && " \
+            "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) > 99 and " \
+            "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8')
+
+    expr1 = "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 \
+        or max(biz)>100)".decode('utf8')
+
+    expr2 = "max(foo)>=100"
+
+    for expr in (expr0, expr1, expr2):
+        print 'orig expr: {}'.format(expr.encode('utf8'))
+        alarmExprParser = AlarmExprParser(expr)
+        sub_expr = alarmExprParser.sub_expr_list
+        for sub_expression in sub_expr:
+            print 'sub expr: {}'.format(
+                sub_expression.sub_expr_str.encode('utf8'))
+            print 'fmtd sub expr: {}'.format(
+                sub_expression.fmtd_sub_expr_str.encode('utf8'))
+            print 'sub_expr dimensions: {}'.format(
+                sub_expression.dimensions_str.encode('utf8'))
+            print
         print
 
 

@@ -43,3 +43,11 @@ class AlarmDefinitionsRepository(object):
     @abc.abstractmethod
     def get_sub_alarm_definitions(self, alarm_definition_id):
         pass
+
+    @abc.abstractmethod
+    def get_alarm_definition(self, tenant_id, id):
+        pass
+
+    @abc.abstractmethod
+    def get_alarm_definitions(self, tenant_id, name, dimensions):
+        pass
