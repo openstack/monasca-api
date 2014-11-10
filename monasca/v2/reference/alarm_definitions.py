@@ -33,8 +33,11 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmDefinitions(AlarmDefinitionsV2API):
+
     def __init__(self, global_conf):
+
         try:
+
             super(AlarmDefinitions, self).__init__(global_conf)
 
             self._region = cfg.CONF.region

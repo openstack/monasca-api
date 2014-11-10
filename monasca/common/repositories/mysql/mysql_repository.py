@@ -35,6 +35,9 @@ class MySQLRepository(object):
     def __init__(self):
 
         try:
+
+            super(MySQLRepository, self).__init__()
+
             self.conf = cfg.CONF
             database_name = self.conf.mysql.database_name
             database_server = self.conf.mysql.hostname
