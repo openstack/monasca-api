@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+import re
 from monasca.common.repositories.exceptions import DoesNotExistException
 
 from pyparsing import ParseException
@@ -101,7 +102,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
 
         result = self._alarm_definition_show(tenant_id, id)
 
-        helpers.add_links_to_resource(result, req.uri)
+        helpers.add_links_to_resource(result, re.sub('/' + id, '', req.uri))
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
 

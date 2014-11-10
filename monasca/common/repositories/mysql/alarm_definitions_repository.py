@@ -68,7 +68,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
             parms = [tenant_id, id]
 
             where_clause = \
-                """ where ad.tenant_id = ? and ad.id = ? """
+                " where ad.tenant_id = ? and ad.id = ? and deleted_at is NULL "
 
             query = \
                 AlarmDefinitionsRepository.base_query \
