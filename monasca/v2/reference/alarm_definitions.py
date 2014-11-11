@@ -36,6 +36,7 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmDefinitions(AlarmDefinitionsV2API):
+
     def __init__(self, global_conf):
 
         try:
@@ -52,9 +53,10 @@ class AlarmDefinitions(AlarmDefinitionsV2API):
                 cfg.CONF.security.default_authorized_roles + \
                 cfg.CONF.security.agent_authorized_roles
 
-            self._message_queue = resource_api.init_driver('monasca.messaging',
-                                                           cfg.CONF.messaging.driver,
-                                                           (['events']))
+            self._message_queue \
+                = resource_api.init_driver('monasca.messaging',
+                                           cfg.CONF.messaging.driver,
+                                           (['events']))
 
             self._alarm_definitions_repo = resource_api.init_driver(
                 'monasca.repositories',

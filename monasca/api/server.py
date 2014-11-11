@@ -176,7 +176,7 @@ def api_app(conf):
 
     # load the alarm definitions resource
     app.add_resource('alarms',
-                     ALARM_DEFINITIONS_DISPATCHER_NAMESPACE,
+                     ALARMS_DISPATCHER_NAMESPACE,
                      cfg.CONF.dispatcher.driver, [conf])
 
     return app

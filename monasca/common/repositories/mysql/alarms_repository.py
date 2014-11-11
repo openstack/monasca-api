@@ -14,8 +14,7 @@
 import datetime
 import pyodbc
 
-from oslo.config import cfg
-
+from monasca.common.repositories import exceptions
 from monasca.common.repositories import alarms_repository
 from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
 from monasca.openstack.common import log
@@ -25,9 +24,104 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
-
     def __init__(self):
-
 
         super(AlarmsRepository, self).__init__()
 
+    def get_alarms(self, tenant_id, query_parms):
+
+        try:
+
+            parms = [tenant_id]
+
+            select_clause = """
+              select distinct a.id as alarm_id, a.state,
+              ad.id as alarm_definition_id, ad.name as alarm_definition_name,
+              ad.severity,
+              md.name as metric_name, mdg.dimensions as metric_dimensions
+              from alarm as a
+              inner join alarm_definition as ad
+                 on ad.id = a.alarm_definition_id
+              inner join alarm_metric as am on am.alarm_id = a.id
+              inner join metric_definition_dimensions as mdd
+                 on mdd.id = am.metric_definition_dimensions_id
+              inner join metric_definition as md
+                 on md.id = mdd.metric_definition_id
+              left join (select dimension_set_id, name, value,
+              group_concat(name, '=', value) as dimensions
+                 from metric_dimension group by dimension_set_id) as mdg
+                     on mdg.dimension_set_id = mdd.metric_dimension_set_id
+               """
+
+            order_by_clause = " order by a.id "
+
+            where_clause = " where ad.tenant_id = ? "
+
+            if 'alarm_definition_id' in query_parms:
+                parms.append(query_parms['alarm_definition_id'])
+                where_clause += " and ad.id = ? "
+
+            if 'metric_name' in query_parms:
+                sub_select_clause = """
+                    and a.id in (select distinct a.id from alarm as a
+                                inner join alarm_metric as am on am.alarm_id
+                                = a.id
+                                inner join metric_definition_dimensions as mdd
+                                    on mdd.id =
+                                    am.metric_definition_dimensions_id
+                                inner join (select distinct id from
+                                metric_definition
+                                            where name = ?) as md
+                                on md.id = mdd.metric_definition_id)
+                    """
+
+                parms.append(query_parms['metric_name'].encode('utf8'))
+                where_clause += sub_select_clause
+
+            if 'state' in query_parms:
+                parms.append(query_parms['state'].encode('utf8'))
+                where_clause += " and a.state = ? "
+
+            if 'metric_dimensions' in query_parms:
+                sub_select_clause = """
+                    and a.id in (select distinct a.id from alarm as a
+                                inner join alarm_metric as am on am.alarm_id
+                                = a.id
+                                inner join metric_definition_dimensions as mdd
+                                    on mdd.id =
+                                    am.metric_definition_dimensions_id
+                    """
+                sub_select_parms = []
+                i = 0
+                for metric_dimension in query_parms['metric_dimensions'].split(
+                        ','):
+                    parsed_dimension = metric_dimension.split(':')
+                    sub_select_clause += """
+                        inner join (select distinct dimension_set_id
+                                    from metric_dimension
+                                    where name = ? and value = ?) as md{}
+                        on md{}.dimension_set_id = mdd.metric_dimension_set_id
+                        """.format(i, i)
+                    i += 1
+                    sub_select_parms += [parsed_dimension[0].encode('utf8'),
+                                         parsed_dimension[1].encode('utf8')]
+
+                sub_select_clause += ")"
+                parms += sub_select_parms
+                where_clause += sub_select_clause
+
+            query = select_clause + where_clause + order_by_clause
+
+            cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+            cursor.execute(query, parms)
+
+            rows = cursor.fetchall()
+
+            self._commit_close_cnxn(cnxn)
+
+            return rows
+
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)

@@ -36,7 +36,7 @@ class AlarmsV2API(object):
         res.status = '501 Not Implemented'
 
     @resource_api.Restify('/v2.0/alarms/', method='get')
-    def do_get_alarms(self, req, res, id):
+    def do_get_alarms(self, req, res):
         res.status = '501 Not Implemented'
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='get')
