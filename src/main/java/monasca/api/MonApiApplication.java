@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
 import monasca.common.messaging.kafka.KafkaHealthCheck;
 import monasca.common.middleware.AuthConstants;
 import monasca.common.middleware.TokenAuth;
@@ -125,13 +126,32 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     corsFilter.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
     if (config.middleware.enabled) {
+      ensureHasValue(config.middleware.serverVIP, "serverVIP", "enabled", "true");
+      ensureHasValue(config.middleware.serverPort, "serverPort", "enabled", "true");
+      ensureHasValue(config.middleware.adminAuthMethod, "adminAuthMethod", "enabled", "true");
+      if ("password".equalsIgnoreCase(config.middleware.adminAuthMethod)) {
+        ensureHasValue(config.middleware.adminUser, "adminUser", "adminAuthMethod", "password");
+        ensureHasValue(config.middleware.adminPassword, "adminPassword", "adminAuthMethod", "password");
+      } else if ("token".equalsIgnoreCase(config.middleware.adminAuthMethod)) {
+        ensureHasValue(config.middleware.adminToken, "adminToken", "adminAuthMethod", "token");
+      } else {
+        throw new Exception(String.format(
+            "Invalid value '%s' for adminAuthMethod. Must be either password or token",
+            config.middleware.adminAuthMethod));
+      }
+      if (config.middleware.defaultAuthorizedRoles == null || config.middleware.defaultAuthorizedRoles.isEmpty()) {
+        ensureHasValue(null, "defaultAuthorizedRoles", "enabled", "true");
+      }
+      if (config.middleware.connSSLClientAuth) {
+        ensureHasValue(config.middleware.keystore, "keystore", "connSSLClientAuth", "true");
+        ensureHasValue(config.middleware.keystorePassword, "keystorePassword", "connSSLClientAuth", "true");
+      }
       Map<String, String> authInitParams = new HashMap<String, String>();
-      authInitParams.put("ServiceIds", config.middleware.serviceIds);
-      authInitParams.put("EndpointIds", config.middleware.endpointIds);
       authInitParams.put("ServerVIP", config.middleware.serverVIP);
       authInitParams.put("ServerPort", config.middleware.serverPort);
+      authInitParams.put(AuthConstants.USE_HTTPS, String.valueOf(config.middleware.useHttps));
       authInitParams.put("ConnTimeout", config.middleware.connTimeout);
-      authInitParams.put("ConnSSLClientAuth", config.middleware.connSSLClientAuth);
+      authInitParams.put("ConnSSLClientAuth", String.valueOf(config.middleware.connSSLClientAuth));
       authInitParams.put("ConnPoolMaxActive", config.middleware.connPoolMaxActive);
       authInitParams.put("ConnPoolMaxIdle", config.middleware.connPoolMaxActive);
       authInitParams.put("ConnPoolEvictPeriod", config.middleware.connPoolEvictPeriod);
@@ -179,6 +199,18 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
     /** Configure swagger */
     SwaggerBundle.configure(config);
+  }
+
+  private void ensureHasValue(final String value, final String what, final String control,
+      final String controlValue) throws Exception {
+    if (value == null || value.isEmpty()) {
+      final String message =
+          String
+              .format(
+                  "Since %s in middleware section of configuration file is set to %s, %s must have a value",
+                  control, controlValue, what);
+      throw new Exception(message);
+    }
   }
 
   private void setIfNotNull(Map<String, String> authInitParams, String name, String value) {

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.ws.rs.core.MediaType;
 
+import org.eclipse.jetty.server.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,25 +76,37 @@ public class PreAuthenticationFilter implements Filter {
     ErrorCapturingServletResponseWrapper responseWrapper =
         new ErrorCapturingServletResponseWrapper(res);
 
+    boolean caughtException = false;
     ServletOutputStream out = null;
-
     try {
       out = res.getOutputStream();
       chain.doFilter(request, responseWrapper);
-      if (responseWrapper.statusCode != 401)
+      if (responseWrapper.statusCode != 401 && responseWrapper.statusCode != 500)
         return;
 
     } catch (Exception e) {
       LOG.error("Error while executing pre authentication filter", e);
+      caughtException = true;
     }
 
     try {
       res.setContentType(MediaType.APPLICATION_JSON);
-      res.setStatus(responseWrapper.statusCode);
-      String output =
-          Exceptions.buildLoggedErrorMessage(FaultType.UNAUTHORIZED, responseWrapper.errorMessage,
-              null, responseWrapper.exception);
-      out.print(output);
+      if (caughtException) {
+        res.setStatus(Response.SC_INTERNAL_SERVER_ERROR);
+      }
+      else {
+        res.setStatus(responseWrapper.statusCode);
+        FaultType faultType;
+        if (responseWrapper.statusCode == 500) {
+          faultType = FaultType.SERVER_ERROR;
+        }
+        else {
+            faultType = FaultType.UNAUTHORIZED;
+        }
+        String output = Exceptions.buildLoggedErrorMessage(faultType, responseWrapper.errorMessage,
+                null, responseWrapper.exception);
+        out.print(output);
+      }
     } catch (IllegalArgumentException e) {
       // CSMiddleware is throwing this error for invalid tokens.
       // This problem appears to be fixed in other versions, but they are not approved yet.
@@ -104,12 +117,6 @@ public class PreAuthenticationFilter implements Filter {
         out.print(output);
       } catch (Exception x) {
         LOG.error("Error while writing failed authentication HTTP response", x);
-      } finally {
-        if (out != null)
-          try {
-            out.close();
-          } catch (IOException ignore) {
-          }
       }
     } catch (Exception e) {
       LOG.error("Error while writing failed authentication HTTP response", e);

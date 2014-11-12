@@ -15,62 +15,41 @@ package monasca.api.infrastructure.middleware;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * CS Middleware configuration.
  */
 public class MiddlewareConfiguration {
-  @NotNull
-  public Boolean enabled;
-  @NotEmpty
-  @JsonProperty
-  public String serviceIds;
-  @NotEmpty
-  @JsonProperty
-  public String endpointIds;
-  @NotEmpty
+  public Boolean enabled = false;
   @JsonProperty
   public String serverVIP;
-  @NotEmpty
   @JsonProperty
   public String serverPort;
-  @NotEmpty
   @JsonProperty
-  public String connTimeout;
-  @NotEmpty
+  public Boolean useHttps = Boolean.FALSE;
   @JsonProperty
-  public String connSSLClientAuth;
-  @NotEmpty
+  public String connTimeout = "500";
   @JsonProperty
-  public String connPoolMaxActive;
-  @NotEmpty
+  public Boolean connSSLClientAuth = Boolean.FALSE;
   @JsonProperty
-  public String connPoolMaxIdle;
-  @NotEmpty
+  public String connPoolMaxActive = "3";
   @JsonProperty
-  public String connPoolEvictPeriod;
-  @NotEmpty
+  public String connPoolMaxIdle = "3";
   @JsonProperty
-  public String connPoolMinIdleTime;
-  @NotEmpty
+  public String connPoolEvictPeriod = "600000";
   @JsonProperty
-  public String connRetryTimes;
-  @NotEmpty
+  public String connPoolMinIdleTime = "600000";
   @JsonProperty
-  public String connRetryInterval;
-  @NotNull
+  public String connRetryTimes = "2";
+  @JsonProperty
+  public String connRetryInterval = "50";
   @JsonProperty
   public List<String> defaultAuthorizedRoles;
-  @NotNull
   @JsonProperty
   public List<String> agentAuthorizedRoles;
   @JsonProperty
-  public String timeToCacheToken;
+  public String timeToCacheToken = "600";
   @JsonProperty
   public String adminAuthMethod;
   @JsonProperty

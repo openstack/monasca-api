@@ -55,12 +55,11 @@ influxDB:
 
 middleware:
   enabled: false
-  serviceIds: 100
-  endpointIds: 160
   serverVIP: 192.168.10.5
   serverPort: 5000
+  useHttps: false
   connTimeout: 500
-  connSSLClientAuth: true
+  connSSLClientAuth: false
   connPoolMaxActive: 3
   connPoolMaxIdle: 3
   connPoolEvictPeriod: 600000
