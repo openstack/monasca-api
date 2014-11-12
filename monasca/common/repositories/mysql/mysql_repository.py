@@ -13,6 +13,7 @@
 # under the License.
 import datetime
 import pyodbc
+from monasca.common.repositories.exceptions import DoesNotExistException
 
 from oslo.config import cfg
 
@@ -60,6 +61,36 @@ class MySQLRepository(object):
         return cnxn, cursor
 
     def _commit_close_cnxn(self, cnxn):
+
         cnxn.commit()
         cnxn.close()
 
+
+    def _execute_query(self, query, parms):
+
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+        cursor.execute(query, parms)
+
+        rows = cursor.fetchall()
+
+        self._commit_close_cnxn(cnxn)
+
+        return rows
+
+
+def try_catch_block(fun):
+
+    def try_it(*args, **kwargs):
+
+        try:
+
+            return fun(*args, **kwargs)
+
+        except DoesNotExistException:
+            raise
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
+
+    return try_it
