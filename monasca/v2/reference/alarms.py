@@ -14,34 +14,26 @@
 import json
 from falcon.util.uri import parse_query_string
 import re
-from monasca.common.repositories.exceptions import DoesNotExistException
-
-from pyparsing import ParseException
 import falcon
 from oslo.config import cfg
 from monasca.api.alarms_api_v2 import AlarmsV2API
-
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
-from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
-from monasca.expression_parser.alarm_expr_parser import AlarmExprParser
 from monasca.openstack.common import log
 from monasca.v2.reference import helpers
-from monasca.v2.common.schemas import \
-    alarm_definition_request_body_schema as schema_alarms
-from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.reference.helpers import read_json_msg_body
-from monasca.common.messaging import exceptions as message_queue_exceptions
+from monasca.v2.reference.alarming import Alarming
+from monasca.v2.reference.resource import resource_try_catch_block
 
 
 LOG = log.getLogger(__name__)
 
 
-class Alarms(AlarmsV2API):
+class Alarms(AlarmsV2API, Alarming):
 
     def __init__(self, global_conf):
 
         try:
+
             super(Alarms, self).__init__(global_conf)
 
             self._region = cfg.CONF.region
@@ -53,11 +45,6 @@ class Alarms(AlarmsV2API):
             self._post_metrics_authorized_roles = \
                 cfg.CONF.security.default_authorized_roles + \
                 cfg.CONF.security.agent_authorized_roles
-
-            self._message_queue \
-                = resource_api.init_driver('monasca.messaging',
-                                           cfg.CONF.messaging.driver,
-                                           (['events']))
 
             self._alarms_repo = resource_api.init_driver(
                 'monasca.repositories', cfg.CONF.repositories.alarms_driver)
@@ -92,10 +79,11 @@ class Alarms(AlarmsV2API):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        result = ''
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
-        res.status = falcon.HTTP_200
-        res.status = '501 Not Implemented'
+        tenant_id = helpers.get_tenant_id(req)
+
+        self._alarm_delete(tenant_id, id)
+
+        res.status = falcon.HTTP_204
 
     @resource_api.Restify('/v2.0/alarms', method='get')
     def do_get_alarms(self, req, res):
@@ -121,108 +109,102 @@ class Alarms(AlarmsV2API):
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
 
+    @resource_try_catch_block
+    def _alarm_delete(self, tenant_id, id):
+
+        alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
+        sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, id)
+
+        self._alarms_repo.delete_alarm(tenant_id, id)
+
+        # alarm_definition_id is the same for all rows.
+        alarm_definition_id = sub_alarm_rows[0].alarm_definition_id
+
+        self._send_alarm_deleted_event(tenant_id, alarm_definition_id,
+                                       alarm_metric_rows, sub_alarm_rows)
+
+    @resource_try_catch_block
     def _alarm_show(self, req_uri, tenant_id, id):
 
-        try:
+        alarm_rows = self._alarms_repo.get_alarm(tenant_id, id)
 
-            alarm_rows = self._alarms_repo.get_alarm(tenant_id, id)
+        first_row = True
+        for alarm_row in alarm_rows:
+            if first_row:
+                ad = {u'id': alarm_row.alarm_definition_id,
+                      u'name': alarm_row.alarm_definition_name,
+                      u'severity': alarm_row.severity, }
+                helpers.add_links_to_resource(ad,
+                                              re.sub('alarms',
+                                                     'alarm-definitions',
+                                                     req_uri),
+                                              rel=None)
 
-            first_row = True
-            for alarm_row in alarm_rows:
-                if first_row:
-                    ad = {u'id': alarm_row.alarm_definition_id,
-                          u'name': alarm_row.alarm_definition_name,
-                          u'severity': alarm_row.severity, }
-                    helpers.add_links_to_resource(ad,
-                                                  re.sub('alarms',
-                                                         'alarm-definitions',
-                                                         req_uri),
-                                                  rel=None)
+                metrics = []
+                alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
+                         u'state': alarm_row.state,
+                         u'alarm_definition': ad}
+                helpers.add_links_to_resource(alarm, req_uri)
 
-                    metrics = []
-                    alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
-                             u'state': alarm_row.state,
-                             u'alarm_definition': ad}
-                    helpers.add_links_to_resource(alarm, req_uri)
+                first_row = False
 
-                    first_row = False
+            dimensions = {}
+            metric = {u'name': alarm_row.metric_name,
+                      u'dimensions': dimensions}
 
-                dimensions = {}
-                metric = {u'name': alarm_row.metric_name,
-                          u'dimensions': dimensions}
+            if alarm_row.metric_dimensions:
+                for dimension in alarm_row.metric_dimensions.split(','):
+                    parsed_dimension = dimension.split('=')
+                    dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
-                if alarm_row.metric_dimensions:
-                    for dimension in alarm_row.metric_dimensions.split(','):
-                        parsed_dimension = dimension.split('=')
-                        dimensions[parsed_dimension[0]] = parsed_dimension[1]
+            metrics.append(metric)
 
-                metrics.append(metric)
+        return alarm
 
-            return alarm
-
-        except DoesNotExistException:
-            raise falcon.HTTPNotFound()
-        except exceptions.RepositoryException as ex:
-            LOG.exception(ex)
-            msg = "".join(ex.message.args)
-            raise falcon.HTTPInternalServerError('Service unavailable', msg)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex)
-
+    @resource_try_catch_block
     def _alarm_list(self, req_uri, tenant_id, query_parms):
 
-        try:
+        alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms)
 
-            alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms)
+        result = []
 
-            result = []
-
-            if not alarm_rows:
-                return result
-
-            prev_alarm_id = None
-            for alarm_row in alarm_rows:
-                if prev_alarm_id != alarm_row.alarm_id:
-                    if prev_alarm_id is not None:
-                        result.append(alarm)
-
-                    ad = {u'id': alarm_row.alarm_definition_id,
-                          u'name': alarm_row.alarm_definition_name,
-                          u'severity': alarm_row.severity, }
-                    helpers.add_links_to_resource(ad,
-                                                  re.sub('alarms',
-                                                         'alarm-definitions',
-                                                         req_uri),
-                                                  rel=None)
-
-                    metrics = []
-                    alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
-                             u'state': alarm_row.state,
-                             u'alarm_definition': ad}
-                    helpers.add_links_to_resource(alarm, req_uri)
-
-                    prev_alarm_id = alarm_row.alarm_id
-
-                dimensions = {}
-                metric = {u'name': alarm_row.metric_name,
-                          u'dimensions': dimensions}
-
-                if alarm_row.metric_dimensions:
-                    for dimension in alarm_row.metric_dimensions.split(','):
-                        parsed_dimension = dimension.split('=')
-                        dimensions[parsed_dimension[0]] = parsed_dimension[1]
-
-                metrics.append(metric)
-
-            result.append(alarm)
-
+        if not alarm_rows:
             return result
 
-        except exceptions.RepositoryException as ex:
-            LOG.exception(ex)
-            msg = "".join(ex.message.args)
-            raise falcon.HTTPInternalServerError('Service unavailable', msg)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex)
+        prev_alarm_id = None
+        for alarm_row in alarm_rows:
+            if prev_alarm_id != alarm_row.alarm_id:
+                if prev_alarm_id is not None:
+                    result.append(alarm)
+
+                ad = {u'id': alarm_row.alarm_definition_id,
+                      u'name': alarm_row.alarm_definition_name,
+                      u'severity': alarm_row.severity, }
+                helpers.add_links_to_resource(ad,
+                                              re.sub('alarms',
+                                                     'alarm-definitions',
+                                                     req_uri),
+                                              rel=None)
+
+                metrics = []
+                alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
+                         u'state': alarm_row.state,
+                         u'alarm_definition': ad}
+                helpers.add_links_to_resource(alarm, req_uri)
+
+                prev_alarm_id = alarm_row.alarm_id
+
+            dimensions = {}
+            metric = {u'name': alarm_row.metric_name,
+                      u'dimensions': dimensions}
+
+            if alarm_row.metric_dimensions:
+                for dimension in alarm_row.metric_dimensions.split(','):
+                    parsed_dimension = dimension.split('=')
+                    dimensions[parsed_dimension[0]] = parsed_dimension[1]
+
+            metrics.append(metric)
+
+        result.append(alarm)
+
+        return result
