@@ -254,17 +254,22 @@ def get_link(uri, resource_id, rel='self'):
     parsed_uri = urlparse(uri)
     href = parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
     href += '/' + resource_id
-    link_dict = dict(href=href, rel=rel)
+
+    if rel:
+        link_dict = dict(href=href, rel=rel)
+    else:
+        link_dict = dict(href=href)
+
     return link_dict
 
 
-def add_links_to_resource(resource, uri):
+def add_links_to_resource(resource, uri, rel='self'):
     """Adds links to the given resource dictionary.
     
     :param resource: the resource dictionary you wish to add links.
     :param uri: the http request.uri.
     """
-    resource['links'] = [get_link(uri, resource['id'])]
+    resource['links'] = [get_link(uri, resource['id'], rel)]
     return resource
 
 

@@ -11,8 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import datetime
-import pyodbc
+from monasca.common.repositories.exceptions import DoesNotExistException
 
 from monasca.common.repositories import alarms_repository
 from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
@@ -24,16 +23,8 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
-    def __init__(self):
 
-        super(AlarmsRepository, self).__init__()
-
-    @try_catch_block
-    def get_alarms(self, tenant_id, query_parms):
-
-        parms = [tenant_id]
-
-        select_clause = """
+    base_query = """
           select distinct a.id as alarm_id, a.state,
           ad.id as alarm_definition_id, ad.name as alarm_definition_name,
           ad.severity,
@@ -47,10 +38,40 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
           inner join metric_definition as md
              on md.id = mdd.metric_definition_id
           left join (select dimension_set_id, name, value,
-          group_concat(name, '=', value) as dimensions
-             from metric_dimension group by dimension_set_id) as mdg
-                 on mdg.dimension_set_id = mdd.metric_dimension_set_id
+                      group_concat(name, '=', value) as dimensions
+                    from metric_dimension group by dimension_set_id) as mdg
+            on mdg.dimension_set_id = mdd.metric_dimension_set_id
            """
+
+    def __init__(self):
+
+        super(AlarmsRepository, self).__init__()
+
+    @try_catch_block
+    def get_alarm(self, tenant_id, id):
+
+        parms = [tenant_id, id]
+
+        select_clause = AlarmsRepository.base_query
+
+        where_clause = """ where ad.tenant_id = ?
+                            and a.id = ? """
+
+        query = select_clause + where_clause
+
+        rows = self._execute_query(query, parms)
+
+        if not rows:
+            raise DoesNotExistException
+        else:
+            return rows
+
+    @try_catch_block
+    def get_alarms(self, tenant_id, query_parms):
+
+        parms = [tenant_id]
+
+        select_clause = AlarmsRepository.base_query
 
         order_by_clause = " order by a.id "
 
