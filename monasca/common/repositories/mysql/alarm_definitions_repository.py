@@ -16,7 +16,7 @@ import datetime
 from monasca.common.repositories import alarm_definitions_repository
 from monasca.common.repositories.exceptions import DoesNotExistException
 from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
-from monasca.common.repositories.mysql.mysql_repository import try_catch_block
+from monasca.common.repositories.mysql.mysql_repository import mysql_try_catch_block
 from monasca.openstack.common import log
 from monasca.openstack.common import uuidutils
 from monasca.common.repositories import exceptions
@@ -56,7 +56,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         super(AlarmDefinitionsRepository, self).__init__()
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_alarm_definition(self, tenant_id, id):
 
         parms = [tenant_id, id]
@@ -74,7 +74,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
         else:
             raise DoesNotExistException
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_alarm_definitions(self, tenant_id, name, dimensions):
 
         parms = [tenant_id]
@@ -114,7 +114,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
         return self._execute_query(query, parms)
 
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_definition_id):
 
         parms = [tenant_id, alarm_definition_id]
@@ -131,7 +131,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_alarm_metrics(self, tenant_id, alarm_definition_id):
 
         parms =  [tenant_id, alarm_definition_id]
@@ -156,7 +156,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @try_catch_block
+    @mysql_try_catch_block
     def delete_alarm_definition(self, tenant_id, alarm_definition_id):
         """Soft delete the alarm definition.
 
@@ -187,7 +187,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return True
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_sub_alarm_definitions(self, alarm_definition_id):
 
         parms = [alarm_definition_id]
@@ -206,7 +206,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @try_catch_block
+    @mysql_try_catch_block
     def create_alarm_definition(self, tenant_id, name, expression,
                                 sub_expr_list, description, severity, match_by,
                                 alarm_actions, undetermined_actions,

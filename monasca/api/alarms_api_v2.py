@@ -20,6 +20,9 @@ LOG = log.getLogger(__name__)
 class AlarmsV2API(object):
 
     def __init__(self, global_conf):
+
+        super(AlarmsV2API, self).__init__(global_conf)
+
         LOG.debug('initializing AlarmsV2API!')
         self.global_conf = global_conf
 

@@ -79,7 +79,7 @@ class MySQLRepository(object):
         return rows
 
 
-def try_catch_block(fun):
+def mysql_try_catch_block(fun):
 
     def try_it(*args, **kwargs):
 

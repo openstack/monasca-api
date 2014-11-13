@@ -15,7 +15,7 @@ from monasca.common.repositories.exceptions import DoesNotExistException
 
 from monasca.common.repositories import alarms_repository
 from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
-from monasca.common.repositories.mysql.mysql_repository import try_catch_block
+from monasca.common.repositories.mysql.mysql_repository import mysql_try_catch_block
 from monasca.openstack.common import log
 
 
@@ -47,7 +47,73 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
 
         super(AlarmsRepository, self).__init__()
 
-    @try_catch_block
+    @mysql_try_catch_block
+    def get_alarm_metrics(self, alarm_id):
+
+        parms =  [alarm_id]
+
+        query = """select distinct a.id as alarm_id, md.name,
+                      mdg.dimensions
+                   from alarm as a
+                   inner join alarm_metric as am on am.alarm_id = a.id
+                   inner join metric_definition_dimensions as mdd
+                      on mdd.id = am.metric_definition_dimensions_id
+                   inner join metric_definition as md
+                      on md.id = mdd.metric_definition_id
+                   left join (select dimension_set_id,
+                   group_concat(name, '=', value) as dimensions
+                      from metric_dimension group by dimension_set_id) as mdg
+                          on mdg.dimension_set_id = mdd.metric_dimension_set_id
+                   where a.id = ?
+                   order by a.id
+                   """
+
+        return self._execute_query(query, parms)
+
+    @mysql_try_catch_block
+    def get_sub_alarms(self, tenant_id, alarm_id):
+
+        parms = [tenant_id, alarm_id]
+
+        query = """select distinct sa.id as sub_alarm_id, sa.alarm_id,
+                                   sa.expression, ad.id as alarm_definition_id
+                    from sub_alarm as sa
+                    inner join alarm as a
+                      on a.id = sa.alarm_id
+                    inner join alarm_definition as ad
+                      on ad.id = a.alarm_definition_id
+                    where ad.tenant_id = ? and a.id = ?
+                """
+
+        return self._execute_query(query, parms)
+
+    @mysql_try_catch_block
+    def delete_alarm(self, tenant_id, id):
+
+        parms = [tenant_id, id]
+
+        query = """
+           delete alarm.*
+            from alarm
+            join
+              (select distinct a.id
+				from alarm as a
+              inner join alarm_definition as ad
+                on ad.id = a.alarm_definition_id
+              where ad.tenant_id = ? and a.id = ?) as b
+            on b.id = alarm.id
+            """
+
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+        cursor.execute(query, parms)
+
+        if cursor.rowcount < 1:
+            raise DoesNotExistException
+
+        self._commit_close_cnxn(cnxn)
+
+    @mysql_try_catch_block
     def get_alarm(self, tenant_id, id):
 
         parms = [tenant_id, id]
@@ -66,7 +132,7 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
         else:
             return rows
 
-    @try_catch_block
+    @mysql_try_catch_block
     def get_alarms(self, tenant_id, query_parms):
 
         parms = [tenant_id]
