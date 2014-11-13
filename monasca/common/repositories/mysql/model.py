@@ -12,9 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from monasca.openstack.common import log
 from oslo.config import cfg
 import peewee
+
+from monasca.openstack.common import log
+
 
 LOG = log.getLogger(__name__)
 

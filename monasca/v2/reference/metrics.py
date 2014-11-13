@@ -16,22 +16,17 @@ import json
 
 import falcon
 from oslo.config import cfg
-from stevedore import driver
 
-from monasca.openstack.common import log
 from monasca.api import monasca_api_v2
-from monasca.common import resource_api
 from monasca.common.messaging import exceptions as message_queue_exceptions
 from monasca.common.messaging.message_formats import metrics_transform_factory
+from monasca.common import resource_api
+from monasca.openstack.common import log
+from monasca.v2.common.schemas import (exceptions as schemas_exceptions)
+from monasca.v2.common.schemas import (
+    metrics_request_body_schema as schemas_metrics)
 from monasca.v2.common import utils
-from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.common.schemas import \
-    metrics_request_body_schema as schemas_metrics
-
-from monasca.common.repositories import exceptions
-
 from monasca.v2.reference import helpers
-from monasca.v2.reference.helpers import read_json_msg_body
 
 
 LOG = log.getLogger(__name__)
@@ -41,21 +36,23 @@ class Metrics(monasca_api_v2.V2API):
     def __init__(self, global_conf):
 
         try:
+
             super(Metrics, self).__init__(global_conf)
+
             self._region = cfg.CONF.region
-            self._default_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles
-            self._delegate_authorized_roles = \
-                cfg.CONF.security.delegate_authorized_roles
-            self._post_metrics_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles + \
-                cfg.CONF.security.agent_authorized_roles
-            self._metrics_transform = \
-                metrics_transform_factory.create_metrics_transform()
-            self._message_queue = resource_api.init_driver(
-                'monasca.messaging',
-                cfg.CONF.messaging.driver,
-                ['metrics'])
+            self._default_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles)
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
+            self._post_metrics_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.agent_authorized_roles)
+            self._metrics_transform = (
+                metrics_transform_factory.create_metrics_transform())
+            self._message_queue = (
+                resource_api.init_driver('monasca.messaging',
+                                         cfg.CONF.messaging.driver,
+                                         ['metrics']))
             self._metrics_repo = resource_api.init_driver(
                 'monasca.repositories', cfg.CONF.repositories.metrics_driver)
 
@@ -66,7 +63,7 @@ class Metrics(monasca_api_v2.V2API):
 
     def _validate_metrics(self, metrics):
         """Validates the metrics
-        
+
         :param metrics: A metric object or array of metrics objects.
         :raises falcon.HTTPBadRequest
         """
@@ -78,7 +75,7 @@ class Metrics(monasca_api_v2.V2API):
 
     def _send_metrics(self, metrics):
         """Send the metrics using the message queue.
-        
+
         :param metrics: A metric object or array of metrics objects.
         :raises: falcon.HTTPServiceUnavailable
         """
@@ -90,7 +87,7 @@ class Metrics(monasca_api_v2.V2API):
             except message_queue_exceptions.MessageQueueException as ex:
                 LOG.exception(ex)
                 raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                    ex.message)
+                                                    ex.message, 60)
 
         if isinstance(metrics, list):
             for metric in metrics:
@@ -100,7 +97,7 @@ class Metrics(monasca_api_v2.V2API):
 
     def _list_metrics(self, tenant_id, name, dimensions):
         """Query the metric repo for the metrics, format them and return them.
-        
+
         :param tenant_id:
         :param name:
         :param dimensions:
@@ -112,7 +109,7 @@ class Metrics(monasca_api_v2.V2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message)
+                                                ex.message, 60)
 
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp):
@@ -124,7 +121,7 @@ class Metrics(monasca_api_v2.V2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message)
+                                                ex.message, 60)
 
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
                            end_timestamp, statistics, period):
@@ -137,7 +134,7 @@ class Metrics(monasca_api_v2.V2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message)
+                                                ex.message, 60)
 
     @resource_api.Restify('/v2.0/metrics/', method='post')
     def do_post_metrics(self, req, res):
@@ -146,9 +143,9 @@ class Metrics(monasca_api_v2.V2API):
                                        self._post_metrics_authorized_roles)
         metrics = helpers.read_http_resource(req)
         self._validate_metrics(metrics)
-        tenant_id = \
+        tenant_id = (
             helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles)
+                                              self._delegate_authorized_roles))
         transformed_metrics = self._metrics_transform(metrics, tenant_id,
                                                       self._region)
         self._send_metrics(transformed_metrics)
@@ -175,7 +172,7 @@ class Metrics(monasca_api_v2.V2API):
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
-        end_timestamp = helpers.get_query_endtime_timestamp(req)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp)
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
@@ -190,7 +187,7 @@ class Metrics(monasca_api_v2.V2API):
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
-        end_timestamp = helpers.get_query_endtime_timestamp(req)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         statistics = helpers.get_query_statistics(req)
         period = helpers.get_query_period(req)
         result = self._metric_statistics(tenant_id, name, dimensions,

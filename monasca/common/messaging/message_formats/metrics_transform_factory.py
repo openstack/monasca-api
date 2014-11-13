@@ -13,15 +13,17 @@
 # under the License.
 
 from oslo.config import cfg
-import monasca.common.messaging.message_formats.reference.metrics as reference_metrics
+
 import monasca.common.messaging.message_formats.cadf.metrics as cadf_metrics
-import monasca.common.messaging.message_formats.identity.metrics as identity_metrics
+import monasca.common.messaging.message_formats.identity.metrics as id_metrics
+import monasca.common.messaging.message_formats.reference.metrics as r_metrics
+
 
 def create_metrics_transform():
     metrics_message_format = cfg.CONF.messaging.metrics_message_format
     if metrics_message_format == 'reference':
-        return reference_metrics.transform
+        return r_metrics.transform
     elif metrics_message_format == 'cadf':
         return cadf_metrics.transform
     else:
-        return identity_metrics.transform
+        return id_metrics.transform

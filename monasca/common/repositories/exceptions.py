@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 class RepositoryException(Exception):
     pass
+
 
 class DoesNotExistException(RepositoryException):
     pass

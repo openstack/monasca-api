@@ -11,27 +11,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import datetime
-import pyodbc
-from monasca.common.repositories.exceptions import DoesNotExistException
 
 from oslo.config import cfg
+import pyodbc
 
-from monasca.common.repositories import alarms_repository
-from monasca.openstack.common import log
-from monasca.openstack.common import uuidutils
 from monasca.common.repositories import exceptions
+from monasca.openstack.common import log
 
 
 LOG = log.getLogger(__name__)
 
 
 class MySQLRepository(object):
-
     database_driver = 'MySQL ODBC 5.3 ANSI Driver'
-    database_cnxn_template = 'DRIVER={' \
-                             '%s};Server=%s;CHARSET=UTF8;Database=%s;Uid=%s' \
-                             ';Pwd=%s'
+    database_cnxn_template = ('DRIVER={'
+                              '%s};Server=%s;CHARSET=UTF8;Database=%s;Uid=%s'
+                              ';Pwd=%s')
 
     def __init__(self):
 
@@ -65,7 +60,6 @@ class MySQLRepository(object):
         cnxn.commit()
         cnxn.close()
 
-
     def _execute_query(self, query, parms):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
@@ -87,7 +81,7 @@ def mysql_try_catch_block(fun):
 
             return fun(*args, **kwargs)
 
-        except DoesNotExistException:
+        except exceptions.DoesNotExistException:
             raise
         except Exception as ex:
             LOG.exception(ex)

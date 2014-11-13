@@ -11,13 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import time
 
 from kafka import client
 from kafka import common
 from kafka import consumer
 from kafka import producer
 from oslo.config import cfg
-import time
 
 try:
     import ujson as json

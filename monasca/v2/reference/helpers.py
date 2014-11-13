@@ -11,25 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import datetime
 import json
-from urlparse import urlparse
+import urlparse
 
 import falcon
-from falcon.util.uri import parse_query_string
+import simplejson
 
 from monasca.openstack.common import log
+from monasca.v2.common.schemas import dimensions_schema
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
 from monasca.v2.common.schemas import metric_name_schema
-from monasca.v2.common.schemas import dimensions_schema
-import simplejson
 
 LOG = log.getLogger(__name__)
 
 
 def read_json_msg_body(req):
-    """
-    Read the json_msg from the http request body and return them as JSON.
+    """Read the json_msg from the http request body and return them as JSON.
+
     :param req: HTTP request object.
     :return: Returns the metrics as a JSON object.
     :raises falcon.HTTPBadRequest:
@@ -51,9 +51,8 @@ def validate_json_content_type(req):
 
 
 def is_in_role(req, authorized_roles):
-    """Determines if one or more of the X-ROLES is in the supplied
-    authorized_roles.
-    
+    """Is one or more of the X-ROLES in the supplied authorized_roles.
+
     :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
     request header.
     :param authorized_roles: List of authorized roles to check against.
@@ -71,7 +70,7 @@ def is_in_role(req, authorized_roles):
 
 def validate_authorization(req, authorized_roles):
     """Validates whether one or more X-ROLES in the HTTP header is authorized.
-    
+
     :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
     request header.
     :param authorized_roles: List of authorized roles to check against.
@@ -92,7 +91,7 @@ def validate_authorization(req, authorized_roles):
 
 def get_tenant_id(req):
     """Returns the tenant ID in the HTTP request header.
-    
+
     :param req: HTTP request object.
     """
     return req.get_header('X-TENANT-ID')
@@ -100,14 +99,14 @@ def get_tenant_id(req):
 
 def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
     """Evaluates whether the tenant ID or cross tenant ID should be returned.
-    
+
     :param req: HTTP request object.
     :param delegate_authorized_roles: List of authorized roles that have
     delegate privileges.
     :returns: Returns the cross tenant or tenant ID.
     """
     if is_in_role(req, delegate_authorized_roles):
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'tenant_id' in params:
             tenant_id = params['tenant_id']
             return tenant_id
@@ -115,12 +114,12 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
 
 
 def get_query_name(req, name_required=False):
-    """
-    Returns the query param "name" if supplied.
+    """Returns the query param "name" if supplied.
+
     :param req: HTTP request object.
     """
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'name' in params:
             name = params['name']
             return name
@@ -136,13 +135,13 @@ def get_query_name(req, name_required=False):
 
 def get_query_dimensions(req):
     """Gets and parses the query param dimensions.
-    
+
     :param req: HTTP request object.
     :return: Returns the dimensions as a JSON object
     :raises falcon.HTTPBadRequest: If dimensions are malformed.
     """
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         dimensions = {}
         if 'dimensions' in params:
             dimensions_str = params['dimensions']
@@ -160,25 +159,31 @@ def get_query_dimensions(req):
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
-def get_query_starttime_timestamp(req):
+def get_query_starttime_timestamp(req, required=True):
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'start_time' in params:
             return _convert_time_string(params['start_time'])
         else:
-            raise Exception("Missing start time")
+            if required:
+                raise Exception("Missing start time")
+            else:
+                return None
     except Exception as ex:
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
-def get_query_endtime_timestamp(req):
+def get_query_endtime_timestamp(req, required=True):
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'end_time' in params:
             return _convert_time_string(params['end_time'])
         else:
-            return None
+            if required:
+                raise Exception("Missing end time")
+            else:
+                return None
     except Exception as ex:
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
@@ -192,7 +197,7 @@ def _convert_time_string(date_time_string):
 
 def get_query_statistics(req):
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'statistics' in params:
             statistics = params['statistics'].split(',')
             statistics = [statistic.lower() for statistic in statistics]
@@ -209,7 +214,7 @@ def get_query_statistics(req):
 
 def get_query_period(req):
     try:
-        params = parse_query_string(req.query_string)
+        params = falcon.uri.parse_query_string(req.query_string)
         if 'period' in params:
             return params['period']
         else:
@@ -221,7 +226,7 @@ def get_query_period(req):
 
 def validate_query_name(name):
     """Validates the query param name.
-    
+
     :param name: Query param name.
     :raises falcon.HTTPBadRequest: If name is not valid.
     """
@@ -234,7 +239,7 @@ def validate_query_name(name):
 
 def validate_query_dimensions(dimensions):
     """Validates the query param dimensions.
-    
+
     :param dimensions: Query param dimensions.
     :raises falcon.HTTPBadRequest: If dimensions are not valid.
     """
@@ -247,7 +252,7 @@ def validate_query_dimensions(dimensions):
 
 def get_link(uri, resource_id, rel='self'):
     """Returns a link dictionary containing href, and rel.
-    
+
     :param uri: the http request.uri.
     :param resource_id: the id of the resource
     """
@@ -265,7 +270,7 @@ def get_link(uri, resource_id, rel='self'):
 
 def add_links_to_resource(resource, uri, rel='self'):
     """Adds links to the given resource dictionary.
-    
+
     :param resource: the resource dictionary you wish to add links.
     :param uri: the http request.uri.
     """
@@ -275,7 +280,7 @@ def add_links_to_resource(resource, uri, rel='self'):
 
 def add_links_to_resource_list(resourcelist, uri):
     """Adds links to the given resource dictionary list.
-    
+
     :param resourcelist: the list of resources you wish to add links.
     :param uri: the http request.uri.
     """
@@ -286,7 +291,7 @@ def add_links_to_resource_list(resourcelist, uri):
 
 def read_http_resource(req):
     """Read from http request and return json.
-    
+
     :param req: the http request.
     """
     try:
@@ -302,7 +307,7 @@ def read_http_resource(req):
 
 def raise_not_found_exception(resource_name, resource_id, tenant_id):
     """Provides exception for not found requests (update, delete, list).
-    
+
     :param resource_name: the name of the resource.
     :param resource_id: id of the resource.
     :param tenant_id: id of the tenant

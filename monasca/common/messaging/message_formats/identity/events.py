@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime
 
 def transform(events, tenant_id, region):
     return events

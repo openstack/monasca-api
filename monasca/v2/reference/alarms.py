@@ -11,17 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import json
-from falcon.util.uri import parse_query_string
 import re
+
 import falcon
 from oslo.config import cfg
+
 from monasca.api.alarms_api_v2 import AlarmsV2API
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
 from monasca.openstack.common import log
-from monasca.v2.reference import helpers
 from monasca.v2.reference.alarming import Alarming
+from monasca.v2.reference import helpers
 from monasca.v2.reference.resource import resource_try_catch_block
 
 
@@ -38,16 +40,19 @@ class Alarms(AlarmsV2API, Alarming):
 
             self._region = cfg.CONF.region
 
-            self._default_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles
-            self._delegate_authorized_roles = \
-                cfg.CONF.security.delegate_authorized_roles
-            self._post_metrics_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles + \
-                cfg.CONF.security.agent_authorized_roles
+            self._default_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles)
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
+            self._post_metrics_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.agent_authorized_roles)
 
             self._alarms_repo = resource_api.init_driver(
                 'monasca.repositories', cfg.CONF.repositories.alarms_driver)
+
+            self._metrics_repo = resource_api.init_driver(
+                'monasca.repositories', cfg.CONF.repositories.metrics_driver)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -91,7 +96,7 @@ class Alarms(AlarmsV2API, Alarming):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
 
-        query_parms = parse_query_string(req.query_string)
+        query_parms = falcon.uri.parse_query_string(req.query_string)
 
         result = self._alarm_list(req.uri, tenant_id, query_parms)
 
@@ -101,6 +106,11 @@ class Alarms(AlarmsV2API, Alarming):
     @resource_api.Restify('/v2.0/alarms/{id}', method='get')
     def do_get_alarm_by_id(self, req, res, id):
 
+        # Necessary because falcon interprets 'state-history' as an
+        # alarm id, and this url masks '/v2.0/alarms/state-history'.
+        if id.lower() == 'state-history':
+            return self.do_get_alarms_state_history(req, res)
+
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
 
@@ -108,6 +118,53 @@ class Alarms(AlarmsV2API, Alarming):
 
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
+
+    @resource_api.Restify('/v2.0/alarms/state-history', method='get')
+    def do_get_alarms_state_history(self, req, res):
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        start_timestamp = helpers.get_query_starttime_timestamp(req, False)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
+        query_parms = falcon.uri.parse_query_string(req.query_string)
+
+        result = self._alarm_history_list(tenant_id, start_timestamp,
+                                          end_timestamp, query_parms)
+
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
+
+    @resource_api.Restify('/v2.0/alarms/{id}/state-history', method='get')
+    def do_get_alarm_state_history(self, req, res, id):
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+
+        result = self._alarm_history(tenant_id, [id])
+
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_200
+
+    @resource_try_catch_block
+    def _alarm_history_list(self, tenant_id, start_timestamp,
+                            end_timestamp, query_parms):
+
+        # get_alarms expects 'metric_dimensions' for dimensions key.
+        if 'dimensions' in query_parms:
+            new_query_parms = {'metric_dimensions': query_parms['dimensions']}
+        else:
+            new_query_parms = {}
+
+        alarm_rows = self._alarms_repo.get_alarms(tenant_id, new_query_parms)
+        alarm_id_list = [alarm_row.alarm_id for alarm_row in alarm_rows]
+
+        return self._metrics_repo.alarm_history(tenant_id, alarm_id_list,
+                                                start_timestamp, end_timestamp)
+
+    @resource_try_catch_block
+    def _alarm_history(self, tenant_id, alarm_id):
+
+        return self._metrics_repo.alarm_history(tenant_id, alarm_id)
 
     @resource_try_catch_block
     def _alarm_delete(self, tenant_id, id):
@@ -171,6 +228,8 @@ class Alarms(AlarmsV2API, Alarming):
         if not alarm_rows:
             return result
 
+        # Forward declaration
+        alarm = {}
         prev_alarm_id = None
         for alarm_row in alarm_rows:
             if prev_alarm_id != alarm_row.alarm_id:

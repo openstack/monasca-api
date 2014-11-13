@@ -12,5 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 def transform(metrics, tenant_id, region):
     raise NotImplemented()

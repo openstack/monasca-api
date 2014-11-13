@@ -13,11 +13,14 @@
 # under the License.
 
 import datetime
-from monasca.common.repositories import notifications_repository
-from monasca.common.repositories import exceptions
-from monasca.openstack.common import log
-import peewee
+
 import model
+import peewee
+
+from monasca.common.repositories import exceptions
+from monasca.common.repositories import notifications_repository
+from monasca.openstack.common import log
+
 
 LOG = log.getLogger(__name__)
 
@@ -55,7 +58,7 @@ class NotificationsRepository(
             self, id, tenant_id, name, notification_type, address):
         try:
             now = datetime.datetime.utcnow()
-            q = Notification_Method.create(
+            Notification_Method.create(
                 id=id,
                 tenant_id=tenant_id,
                 name=name,
@@ -73,7 +76,6 @@ class NotificationsRepository(
                 Notification_Method.tenant_id == tenant_id)
             results = q.execute()
 
-            notifications = []
             notifications = [
                 self.notification_from_result(result) for result in results]
             return notifications
@@ -82,7 +84,6 @@ class NotificationsRepository(
             raise exceptions.RepositoryException(ex)
 
     def delete_notification(self, tenant_id, notification_id):
-        num_rows_deleted = 0
 
         try:
             q = Notification_Method.delete().where(
@@ -113,7 +114,6 @@ class NotificationsRepository(
     def update_notification(
             self, id, tenant_id, name, notification_type, address):
         now = datetime.datetime.utcnow()
-        num_rows_updated = 0
         try:
             q = Notification_Method.update(
                 name=name,

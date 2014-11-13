@@ -12,9 +12,33 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+
 import six
 
 
 @six.add_metaclass(abc.ABCMeta)
 class AlarmsRepository(object):
-    pass
+
+    def __init__(self):
+
+        super(AlarmsRepository, self).__init__()
+
+    @abc.abstractmethod
+    def get_alarm_metrics(self, alarm_id):
+        pass
+
+    @abc.abstractmethod
+    def get_sub_alarms(self, tenant_id, alarm_id):
+        pass
+
+    @abc.abstractmethod
+    def delete_alarm(self, tenant_id, id):
+        pass
+
+    @abc.abstractmethod
+    def get_alarm(self, tenant_id, id):
+        pass
+
+    @abc.abstractmethod
+    def get_alarms(self, tenant_id, query_parms):
+        pass

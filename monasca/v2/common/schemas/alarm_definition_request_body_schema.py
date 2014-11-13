@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from voluptuous import Schema, Length, Optional
-from voluptuous import Required, Any, All
+import voluptuous
 
 from monasca.openstack.common import log
 from monasca.v2.common.schemas import exceptions
@@ -22,20 +21,26 @@ from monasca.v2.common.schemas import exceptions
 LOG = log.getLogger(__name__)
 
 alarm_definition_schema = {
-    Required('name'): All(Any(str, unicode), Length(max=250)),
-    Required('expression'): All(Any(str, unicode), Length(max=4096)),
-    Optional('description'): All(Any(str, unicode), Length(max=250)),
-    Optional('severity'): All(
-        Any('low', 'medium', 'high', 'critical', 'LOW', "MEDIUM", 'HIGH',
-            'CRITICAL')),
-    Optional('match_by'): All(Any([unicode], [str]), Length(max=255)),
-    Optional('ok_actions'): All(Any([str], [unicode]), Length(max=400)),
-    Optional('alarm_actions'): All(Any([str], [unicode]), Length(max=400)),
-    Optional('undetermined_actions'): All(Any([str], [unicode]),
-                                          Length(max=400))}
+    voluptuous.Required('name'): voluptuous.All(voluptuous.Any(str, unicode),
+                                                voluptuous.Length(max=250)),
+    voluptuous.Required('expression'): voluptuous.All(
+        voluptuous.Any(str, unicode), voluptuous.Length(max=4096)),
+    voluptuous.Optional('description'): voluptuous.All(
+        voluptuous.Any(str, unicode), voluptuous.Length(max=250)),
+    voluptuous.Optional('severity'): voluptuous.All(
+        voluptuous.Any('low', 'medium', 'high', 'critical', 'LOW', "MEDIUM",
+                       'HIGH', 'CRITICAL')),
+    voluptuous.Optional('match_by'): voluptuous.All(
+        voluptuous.Any([unicode], [str]), voluptuous.Length(max=255)),
+    voluptuous.Optional('ok_actions'): voluptuous.All(
+        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
+    voluptuous.Optional('alarm_actions'): voluptuous.All(
+        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
+    voluptuous.Optional('undetermined_actions'): voluptuous.All(
+        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400))}
 
-request_body_schema = Schema(alarm_definition_schema, required=True,
-                             extra=True)
+request_body_schema = voluptuous.Schema(alarm_definition_schema, required=True,
+                                        extra=True)
 
 
 def validate(msg):

@@ -12,22 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO: Used simplejson to read the yaml as simplejson transforms to "str"
-# not "unicode"
-
 import json
 
 import falcon
 from oslo.config import cfg
 
+from monasca.api import monasca_notifications_api_v2
+from monasca.common.repositories import exceptions as repository_exceptions
+from monasca.common import resource_api
 from monasca.openstack.common import log
 from monasca.openstack.common import uuidutils
-from monasca.api import monasca_notifications_api_v2
-from monasca.common import resource_api
-from monasca.common.repositories import exceptions as repository_exceptions
-from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.common.schemas import \
-    notifications_request_body_schema as schemas_notifications
+from monasca.v2.common.schemas import (exceptions as schemas_exceptions)
+from monasca.v2.common.schemas import (
+    notifications_request_body_schema as schemas_notifications)
 from monasca.v2.reference import helpers
 
 LOG = log.getLogger(__name__)
@@ -37,14 +34,14 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
     def __init__(self, global_conf):
         super(Notifications, self).__init__(global_conf)
         self._region = cfg.CONF.region
-        self._default_authorized_roles = \
-            cfg.CONF.security.default_authorized_roles
+        self._default_authorized_roles = (
+            cfg.CONF.security.default_authorized_roles)
         self._notifications_repo = resource_api.init_driver(
             'monasca.repositories', cfg.CONF.repositories.notifications_driver)
 
     def _validate_notification(self, notification):
         """Validates the notification
-        
+
         :param notification: An event object.
         :raises falcon.HTTPBadRequest
         """
@@ -56,7 +53,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
     def _create_notification(self, id, tenant_id, notification):
         """Store the notification using the repository.
-        
+
         :param notification: A notification object.
         :raises: falcon.HTTPServiceUnavailable,falcon.HTTPConflict
         """
@@ -66,8 +63,9 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
             address = notification['address']
             if self._notifications_repo.exists(tenant_id, name):
                 raise falcon.HTTPConflict('Conflict', (
-                'Notification Method already exists: tenant_id=%s name=%s' % (
-                tenant_id, name)), code=409)
+                    'Notification Method already exists: tenant_id=%s '
+                    'name=%s' % (
+                        tenant_id, name)), code=409)
             self._notifications_repo.create_notification(id, tenant_id, name,
                                                          notification_type,
                                                          address)
@@ -78,7 +76,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
     def _update_notification(self, id, tenant_id, notification):
         """Update the notification using the repository.
-        
+
         :param notification: A notification object.
         :raises: falcon.HTTPServiceUnavailable,falcon.HTTPError (404)
         """
@@ -107,7 +105,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
     def _list_notifications(self, tenant_id, uri):
         """Lists all notifications for this tenant id.
-        
+
         :param tenant_id: The tenant id.
         :raises: falcon.HTTPServiceUnavailable
         """
@@ -123,7 +121,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
     def _list_notification(self, tenant_id, notification_id, uri):
         """Lists the notification by id.
-        
+
         :param tenant_id: The tenant id.
         :param notification_id: The notification id
         :raises: falcon.HTTPServiceUnavailable,falcon.HTTPError (404):
@@ -143,7 +141,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
     def _delete_notification(self, tenant_id, notification_id):
         """Deletes the notification using the repository.
-        
+
         :param tenant_id: The tenant id.
         :param notification_id: The notification id
         :raises: falcon.HTTPServiceUnavailable,falcon.HTTPError (404)

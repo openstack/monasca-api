@@ -17,41 +17,44 @@ import json
 import falcon
 from oslo.config import cfg
 
-from monasca.openstack.common import log
 from monasca.api import monasca_events_api_v2
-from monasca.common import resource_api
 from monasca.common.messaging import exceptions as message_queue_exceptions
 from monasca.common.messaging.message_formats import events_transform_factory
-from monasca.v2.common import utils
+from monasca.common import resource_api
+from monasca.openstack.common import log
+from monasca.v2.common.schemas import (
+    events_request_body_schema as schemas_event)
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.common.schemas import \
-    events_request_body_schema as schemas_event
+from monasca.v2.common import utils
 from monasca.v2.reference import helpers
 
 LOG = log.getLogger(__name__)
 
 
 class Events(monasca_events_api_v2.EventsV2API):
+
     def __init__(self, global_conf):
+
         super(Events, self).__init__(global_conf)
+
         self._region = cfg.CONF.region
-        self._default_authorized_roles = \
-            cfg.CONF.security.default_authorized_roles
-        self._delegate_authorized_roles = \
-            cfg.CONF.security.delegate_authorized_roles
-        self._post_events_authorized_roles = \
-            cfg.CONF.security.default_authorized_roles + \
-            cfg.CONF.security.agent_authorized_roles
-        self._event_transform = \
-            events_transform_factory.create_events_transform()
-        self._message_queue = \
+        self._default_authorized_roles = (
+            cfg.CONF.security.default_authorized_roles)
+        self._delegate_authorized_roles = (
+            cfg.CONF.security.delegate_authorized_roles)
+        self._post_events_authorized_roles = (
+            cfg.CONF.security.default_authorized_roles +
+            cfg.CONF.security.agent_authorized_roles)
+        self._event_transform = (
+            events_transform_factory.create_events_transform())
+        self._message_queue = (
             resource_api.init_driver('monasca.messaging',
                                      cfg.CONF.messaging.driver,
-                                     ['raw-events'])
+                                     ['raw-events']))
 
     def _validate_event(self, event):
         """Validates the event
-        
+
         :param event: An event object.
         :raises falcon.HTTPBadRequest
         """
@@ -63,7 +66,7 @@ class Events(monasca_events_api_v2.EventsV2API):
 
     def _send_event(self, event):
         """Send the event using the message queue.
-        
+
         :param metrics: An event object.
         :raises: falcon.HTTPServiceUnavailable
         """

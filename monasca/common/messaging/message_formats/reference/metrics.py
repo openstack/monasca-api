@@ -12,17 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime
+import datetime
+
 
 def transform(metrics, tenant_id, region):
-    transformed_metric = {
-            'metric': {},
-            'meta': {
-                'tenantId': tenant_id,
-                'region': region
-            },
-            'creation_time': datetime.now()
-    }
+    transformed_metric = {'metric': {},
+                          'meta': {'tenantId': tenant_id, 'region': region},
+                          'creation_time': datetime.now()}
 
     if isinstance(metrics, list):
         transformed_metrics = []

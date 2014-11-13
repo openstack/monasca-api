@@ -13,20 +13,19 @@
 # under the License.
 import datetime
 
-from monasca.common.repositories import alarm_definitions_repository
-from monasca.common.repositories.exceptions import DoesNotExistException
-from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
-from monasca.common.repositories.mysql.mysql_repository import mysql_try_catch_block
+from monasca.common.repositories import alarm_definitions_repository as adr
+from monasca.common.repositories import exceptions
+from monasca.common.repositories.mysql import mysql_repository
 from monasca.openstack.common import log
 from monasca.openstack.common import uuidutils
-from monasca.common.repositories import exceptions
 
 
 LOG = log.getLogger(__name__)
 
 
-class AlarmDefinitionsRepository(MySQLRepository,
-                                 alarm_definitions_repository.AlarmDefinitionsRepository):
+class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
+                                 adr.AlarmDefinitionsRepository):
+
     base_query = """
           select ad.id, ad.name, ad.description, ad.expression,
             ad.match_by, ad.severity, ad.actions_enabled,
@@ -56,7 +55,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         super(AlarmDefinitionsRepository, self).__init__()
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarm_definition(self, tenant_id, id):
 
         parms = [tenant_id, id]
@@ -72,9 +71,9 @@ class AlarmDefinitionsRepository(MySQLRepository,
         if rows:
             return rows[0]
         else:
-            raise DoesNotExistException
+            raise exceptions.DoesNotExistException
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarm_definitions(self, tenant_id, name, dimensions):
 
         parms = [tenant_id]
@@ -113,8 +112,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_definition_id):
 
         parms = [tenant_id, alarm_definition_id]
@@ -131,10 +129,10 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarm_metrics(self, tenant_id, alarm_definition_id):
 
-        parms =  [tenant_id, alarm_definition_id]
+        parms = [tenant_id, alarm_definition_id]
 
         query = """select distinct a.id as alarm_id, md.name,
                       mdg.dimensions
@@ -156,7 +154,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def delete_alarm_definition(self, tenant_id, alarm_definition_id):
         """Soft delete the alarm definition.
 
@@ -187,7 +185,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return True
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_sub_alarm_definitions(self, alarm_definition_id):
 
         parms = [alarm_definition_id]
@@ -206,7 +204,7 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def create_alarm_definition(self, tenant_id, name, expression,
                                 sub_expr_list, description, severity, match_by,
                                 alarm_actions, undetermined_actions,
@@ -275,7 +273,6 @@ class AlarmDefinitionsRepository(MySQLRepository,
 
         return alarm_definition_id
 
-
     def _insert_into_alarm_action(self, cursor, alarm_definition_id, actions,
                                   alarm_state):
         for action in actions:
@@ -293,5 +290,3 @@ class AlarmDefinitionsRepository(MySQLRepository,
                                action_id)
                                values(?,?,?)""", alarm_definition_id,
                            alarm_state.encode('utf8'), action.encode('utf8'))
-
-

@@ -14,14 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from stevedore import driver
 import os
-from monasca.common import resource_api
-from monasca.openstack.common import log
+from wsgiref import simple_server
+
 from oslo.config import cfg
 from oslo.config import types
-from paste.deploy import loadapp
-from wsgiref import simple_server
+import paste.deploy
+
+from monasca.common import resource_api
+from monasca.openstack.common import log
+
 
 METRICS_DISPATCHER_NAMESPACE = 'monasca.metrics_dispatcher'
 ALARM_DEFINITIONS_DISPATCHER_NAMESPACE = 'monasca.alarm_definitions_dispatcher'
@@ -183,6 +185,8 @@ def api_app(conf):
 
 
 if __name__ == '__main__':
-    wsgi_app = loadapp('config:etc/monasca.ini', relative_to=os.getcwd())
+    wsgi_app = (
+        paste.deploy.loadapp('config:etc/monasca.ini',
+                             relative_to=os.getcwd()))
     httpd = simple_server.make_server('127.0.0.1', 9000, wsgi_app)
     httpd.serve_forever()

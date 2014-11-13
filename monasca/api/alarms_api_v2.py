@@ -45,3 +45,11 @@ class AlarmsV2API(object):
     @resource_api.Restify('/v2.0/alarms/{id}', method='get')
     def do_get_alarm_by_id(self, req, res, id):
         res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarms/x', method='get')
+    def do_get_alarms_state_history(self, req, res):
+        res.status = '501 Not Implemented'
+
+    @resource_api.Restify('/v2.0/alarms/{id}/state-history', method='get')
+    def do_get_alarm_state_history(self, req, res, id):
+        res.status = '501 Not Implemented'

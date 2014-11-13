@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from monasca.common.repositories import transforms_repository
-from monasca.common.repositories import exceptions
-from monasca.openstack.common import log
-import peewee
 import model
+import peewee
+
+from monasca.common.repositories import exceptions
+from monasca.common.repositories import transforms_repository
+from monasca.openstack.common import log
+
 
 LOG = log.getLogger(__name__)
 
@@ -32,11 +34,14 @@ class Transform(model.Model):
     updated_at = peewee.DateTimeField()
     deleted_at = peewee.DateTimeField()
 
-class TransformsRepository(transforms_repository.TransformsRepository):
 
-    def create_transforms(self, id, tenant_id, name, description, specification, enabled):
+class TransformsRepository(transforms_repository.TransformsRepository):
+    def create_transforms(self, id, tenant_id, name, description,
+                          specification, enabled):
         try:
-            q = Transform.create(id=id, tenant_id=tenant_id, name=name, description=description, specification=specification, enabled=enabled)
+            q = Transform.create(id=id, tenant_id=tenant_id, name=name,
+                                 description=description,
+                                 specification=specification, enabled=enabled)
             q.save()
         except Exception as ex:
             LOG.exception(str(ex))
@@ -49,13 +54,10 @@ class TransformsRepository(transforms_repository.TransformsRepository):
 
             transforms = []
             for result in results:
-                transform = {
-                    'id': result.id,
-                    'name': result.name,
-                    'description': result.description,
-                    'specification': result.specification,
-                    'enabled': result.enabled
-                }
+                transform = {'id': result.id, 'name': result.name,
+                             'description': result.description,
+                             'specification': result.specification,
+                             'enabled': result.enabled}
                 transforms.append(transform)
             return transforms
         except Exception as ex:
@@ -66,7 +68,8 @@ class TransformsRepository(transforms_repository.TransformsRepository):
         num_rows_deleted = 0
 
         try:
-            q = Transform.delete().where((Transform.tenant_id == tenant_id) & (Transform.id == transform_id))
+            q = Transform.delete().where((Transform.tenant_id == tenant_id) & (
+                Transform.id == transform_id))
             num_rows_deleted = q.execute()
         except Exception as ex:
             LOG.exception(str(ex))

@@ -14,11 +14,13 @@
 
 
 class MockAuthFilter(object):
-    '''
+    """Authorization filter.
+
     This authorization filter doesn't do any authentication, it just copies the
     auth token to the tenant ID and supplies the 'admin' role and is meant for
     testing purposes only.
-    '''
+    """
+
     def __init__(self, app, conf):
         self.app = app
         self.conf = conf

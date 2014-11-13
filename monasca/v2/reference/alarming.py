@@ -12,12 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+
 import falcon
 from oslo.config import cfg
-from monasca.common import resource_api
-from monasca.expression_parser.alarm_expr_parser import AlarmExprParser
-from monasca.openstack.common import log
+
 from monasca.common.messaging import exceptions as message_queue_exceptions
+from monasca.common import resource_api
+import monasca.expression_parser.alarm_expr_parser
+from monasca.openstack.common import log
 
 LOG = log.getLogger(__name__)
 
@@ -33,10 +35,9 @@ class Alarming(object):
 
         super(Alarming, self).__init__()
 
-        self._message_queue \
-                = resource_api.init_driver('monasca.messaging',
-                                           cfg.CONF.messaging.driver,
-                                           (['events']))
+        self._message_queue = (
+            resource_api.init_driver('monasca.messaging',
+                                     cfg.CONF.messaging.driver, (['events'])))
 
     def _send_alarm_deleted_event(self, tenant_id, alarm_definition_id,
                                   alarm_metric_rows, sub_alarm_rows):
@@ -52,15 +53,17 @@ class Alarming(object):
             else:
                 sub_alarm_dict[sub_alarm_row.alarm_id] = [sub_alarm_row]
 
+        # Forward declaration.
+        alarm_deleted_event_msg = {}
         prev_alarm_id = None
         for alarm_metric_row in alarm_metric_rows:
             if prev_alarm_id != alarm_metric_row.alarm_id:
                 if prev_alarm_id is not None:
-                    sub_alarms_deleted_event_msg = \
-                        self._build_sub_alarm_deleted_event_msg(
-                        sub_alarm_dict, prev_alarm_id)
+                    sub_alarms_deleted_event_msg = (
+                        self._build_sub_alarm_deleted_event_msg(sub_alarm_dict,
+                                                                prev_alarm_id))
                     alarm_deleted_event_msg[u'alarm-delete'][
-                    u'subAlarms': sub_alarms_deleted_event_msg]
+                        u'subAlarms': sub_alarms_deleted_event_msg]
                     self._send_event(alarm_deleted_event_msg)
 
                 alarm_metrics_event_msg = []
@@ -99,7 +102,8 @@ class Alarming(object):
 
         for sub_alarm in sub_alarm_dict[alarm_id]:
             # There's only one expr in a sub alarm, so just take the first.
-            sub_expr = AlarmExprParser(sub_alarm.expression).sub_expr_list[0]
+            sub_expr = (monasca.expression_parser.alarm_expr_parser.
+                        AlarmExprParser(sub_alarm.expression).sub_expr_list[0])
             dimensions = {}
             sub_alarms_deleted_event_msg[sub_alarm.sub_alarm_id] = {
                 u'function': sub_expr.normalized_func,

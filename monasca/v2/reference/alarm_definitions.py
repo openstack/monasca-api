@@ -11,21 +11,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import json
 import re
-from pyparsing import ParseException
+
 import falcon
 from oslo.config import cfg
+import pyparsing
 
+from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
-from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
-from monasca.expression_parser.alarm_expr_parser import AlarmExprParser
+import monasca.expression_parser.alarm_expr_parser
 from monasca.openstack.common import log
-from monasca.v2.reference import helpers
-from monasca.v2.common.schemas import alarm_definition_request_body_schema as schema_alarms
+from monasca.v2.common.schemas import (alarm_definition_request_body_schema
+                                       as schema_alarms)
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
 from monasca.v2.reference.alarming import Alarming
+from monasca.v2.reference import helpers
 from monasca.v2.reference.helpers import read_json_msg_body
 from monasca.v2.reference.resource import resource_try_catch_block
 
@@ -43,13 +46,13 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
             self._region = cfg.CONF.region
 
-            self._default_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles
-            self._delegate_authorized_roles = \
-                cfg.CONF.security.delegate_authorized_roles
-            self._post_metrics_authorized_roles = \
-                cfg.CONF.security.default_authorized_roles + \
-                cfg.CONF.security.agent_authorized_roles
+            self._default_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles)
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
+            self._post_metrics_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.agent_authorized_roles)
 
             self._alarm_definitions_repo = resource_api.init_driver(
                 'monasca.repositories',
@@ -134,9 +137,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
     @resource_try_catch_block
     def _alarm_definition_show(self, tenant_id, id):
 
-        alarm_definition_row = \
-            self._alarm_definitions_repo.get_alarm_definition(
-            tenant_id, id)
+        alarm_definition_row = (
+            self._alarm_definitions_repo.get_alarm_definition(tenant_id, id))
 
         match_by = get_comma_separated_str_as_list(
             alarm_definition_row.match_by)
@@ -168,9 +170,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
     @resource_try_catch_block
     def _alarm_definition_delete(self, tenant_id, id):
 
-        sub_alarm_definition_rows = \
-            self._alarm_definitions_repo.get_sub_alarm_definitions(
-            id)
+        sub_alarm_definition_rows = (
+            self._alarm_definitions_repo.get_sub_alarm_definitions(id))
         alarm_metric_rows = self._alarm_definitions_repo.get_alarm_metrics(
             tenant_id, id)
         sub_alarm_rows = self._alarm_definitions_repo.get_sub_alarms(
@@ -189,9 +190,9 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
     @resource_try_catch_block
     def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri):
 
-        alarm_definition_rows = \
-            self._alarm_definitions_repo.get_alarm_definitions(
-            tenant_id, name, dimensions)
+        alarm_definition_rows = (
+            self._alarm_definitions_repo.get_alarm_definitions(tenant_id, name,
+                                                               dimensions))
 
         result = []
         for alarm_definition_row in alarm_definition_rows:
@@ -227,7 +228,6 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         return result
 
-
     def _validate_alarm_definition(self, alarm_definition):
 
         try:
@@ -243,20 +243,29 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                                  ok_actions):
         try:
 
-            sub_expr_list = AlarmExprParser(expression).sub_expr_list
+            sub_expr_list = (
+                monasca.expression_parser.alarm_expr_parser.
+                AlarmExprParser(expression).sub_expr_list)
 
-        except ParseException as ex:
+        except pyparsing.ParseException as ex:
             LOG.exception(ex)
             title = "Invalid alarm expression".encode('utf8')
             msg = "parser failed on expression '{}' at column {}".format(
                 expression.encode('utf8'), str(ex.column).encode('utf'))
             raise falcon.HTTPBadRequest(title, msg)
 
-        alarm_definition_id = \
-            self._alarm_definitions_repo.create_alarm_definition(
-            tenant_id, name, expression, sub_expr_list, description,
-            severity, match_by, alarm_actions, undetermined_actions,
-            ok_actions)
+        alarm_definition_id = (
+            self._alarm_definitions_repo.
+            create_alarm_definition(tenant_id,
+                                    name,
+                                    expression,
+                                    sub_expr_list,
+                                    description,
+                                    severity,
+                                    match_by,
+                                    alarm_actions,
+                                    undetermined_actions,
+                                    ok_actions))
 
         self._send_alarm_definition_created_event(tenant_id,
                                                   alarm_definition_id,
@@ -334,6 +343,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         self._send_event(alarm_definition_created_event_msg)
 
+
 def get_query_alarm_definition_name(alarm_definition):
     try:
         if 'name' in alarm_definition:
@@ -406,6 +416,7 @@ def get_query_ok_actions(alarm_definition):
         return ok_actions
     else:
         return []
+
 
 def get_comma_separated_str_as_list(comma_separated_str):
 

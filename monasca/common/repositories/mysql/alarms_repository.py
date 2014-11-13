@@ -11,18 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from monasca.common.repositories.exceptions import DoesNotExistException
 
 from monasca.common.repositories import alarms_repository
-from monasca.common.repositories.mysql.mysql_repository import MySQLRepository
-from monasca.common.repositories.mysql.mysql_repository import mysql_try_catch_block
+from monasca.common.repositories import exceptions
+from monasca.common.repositories.mysql import mysql_repository
 from monasca.openstack.common import log
 
 
 LOG = log.getLogger(__name__)
 
 
-class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
+class AlarmsRepository(mysql_repository.MySQLRepository,
+                       alarms_repository.AlarmsRepository):
 
     base_query = """
           select distinct a.id as alarm_id, a.state,
@@ -47,10 +47,10 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
 
         super(AlarmsRepository, self).__init__()
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarm_metrics(self, alarm_id):
 
-        parms =  [alarm_id]
+        parms = [alarm_id]
 
         query = """select distinct a.id as alarm_id, md.name,
                       mdg.dimensions
@@ -70,7 +70,7 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
 
         return self._execute_query(query, parms)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_id):
 
         parms = [tenant_id, alarm_id]
@@ -87,20 +87,20 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
 
         return self._execute_query(query, parms)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def delete_alarm(self, tenant_id, id):
 
         parms = [tenant_id, id]
 
         query = """
-           delete alarm.*
-            from alarm
-            join
-              (select distinct a.id
-				from alarm as a
-              inner join alarm_definition as ad
+          delete alarm.*
+          from alarm
+          join
+            (select distinct a.id
+             from alarm as a
+             inner join alarm_definition as ad
                 on ad.id = a.alarm_definition_id
-              where ad.tenant_id = ? and a.id = ?) as b
+             where ad.tenant_id = ? and a.id = ?) as b
             on b.id = alarm.id
             """
 
@@ -109,11 +109,11 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
         cursor.execute(query, parms)
 
         if cursor.rowcount < 1:
-            raise DoesNotExistException
+            raise exceptions.DoesNotExistException
 
         self._commit_close_cnxn(cnxn)
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarm(self, tenant_id, id):
 
         parms = [tenant_id, id]
@@ -128,11 +128,11 @@ class AlarmsRepository(MySQLRepository, alarms_repository.AlarmsRepository):
         rows = self._execute_query(query, parms)
 
         if not rows:
-            raise DoesNotExistException
+            raise exceptions.DoesNotExistException
         else:
             return rows
 
-    @mysql_try_catch_block
+    @mysql_repository.mysql_try_catch_block
     def get_alarms(self, tenant_id, query_parms):
 
         parms = [tenant_id]
