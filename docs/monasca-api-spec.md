@@ -513,7 +513,7 @@ The list of available statistical functions include the following.
 	
 ```
 
-Threshold values are always in the same units as the metric that they are being compared to.
+where 'avg' is the arithmetic average. Note, threshold values are always in the same units as the metric that they are being compared to.
 
 
 #### Simple Example
@@ -546,7 +546,7 @@ The metric is a complex identifier that says the name and optional dimensions.
 In this example a compound alarm expression is evaluated involving two thresholds.
 
 ```
-avg(cpu.system_perc{hostname=hostname.domain.com}) > 90 or avg(disk_read_ops{hostname=hostname.domain.com, device=vda, 120) > 1000
+avg(cpu.system_perc{hostname=hostname.domain.com}) > 90 or avg(disk_read_ops{hostname=hostname.domain.com, device=vda}, 120) > 1000
 ```
 
 # Common Request Headers
