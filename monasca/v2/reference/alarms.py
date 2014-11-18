@@ -63,11 +63,16 @@ class Alarms(AlarmsV2API, Alarming):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        result = ''
+        tenant_id = helpers.get_tenant_id(req)
+
+        state = self._get_alarm_state(req)
+
+        self._alarm_update(tenant_id, id, state)
+
+        result = self._alarm_show(req.uri, tenant_id, id)
 
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
         res.status = falcon.HTTP_200
-        res.status = '501 Not Implemented'
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='patch')
     def do_patch_alarms(self, req, res, id):
@@ -146,6 +151,23 @@ class Alarms(AlarmsV2API, Alarming):
         res.status = falcon.HTTP_200
 
     @resource_try_catch_block
+    def _alarm_update(self, tenant_id, id, new_state):
+
+        alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
+        sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, id)
+
+        old_state = self._alarms_repo.update_alarm(tenant_id, id, new_state)
+
+        # alarm_definition_id is the same for all rows.
+        alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
+
+        state_info = {u'alarmState': new_state, u'oldAlarmState': old_state}
+
+        self._send_alarm_event(u'alarm-updated', tenant_id,
+                               alarm_definition_id, alarm_metric_rows,
+                               sub_alarm_rows, state_info)
+
+    @resource_try_catch_block
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, query_parms):
 
@@ -177,8 +199,9 @@ class Alarms(AlarmsV2API, Alarming):
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
 
-        self._send_alarm_deleted_event(tenant_id, alarm_definition_id,
-                                       alarm_metric_rows, sub_alarm_rows)
+        self._send_alarm_event(u'alarm-deleted', tenant_id,
+                               alarm_definition_id, alarm_metric_rows,
+                               sub_alarm_rows)
 
     @resource_try_catch_block
     def _alarm_show(self, req_uri, tenant_id, id):
@@ -267,3 +290,12 @@ class Alarms(AlarmsV2API, Alarming):
         result.append(alarm)
 
         return result
+
+    def _get_alarm_state(self, req):
+
+        json_msg = helpers.read_http_resource(req)
+        if 'state' in json_msg:
+            state = json_msg['state']
+            return state
+        else:
+            raise falcon.HTTPBadRequest('Bad request', 'Missing state')

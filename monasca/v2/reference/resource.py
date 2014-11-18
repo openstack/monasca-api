@@ -36,7 +36,7 @@ def resource_try_catch_block(fun):
             raise
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
-            msg = "".join(ex.message.args)
+            msg = " ".join(map(str, ex.message.args))
             raise falcon.HTTPInternalServerError('Service unavailable', msg)
         except Exception as ex:
             LOG.exception(ex)
