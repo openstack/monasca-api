@@ -1032,8 +1032,8 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
-* type (string(100), required) - The type of notification method (`EMAIL`).
-* address (string(100), required) - The address / number to notify.
+* type (string(100), required) - The type of notification method (`EMAIL` or `WEBHOOK` ).
+* address (string(100), required) - The email/url address to notify.
 
 #### Request Examples
 ```
@@ -1225,8 +1225,8 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notifcation method.
-* type (string(100), required) - The type of notification method (`EMAIL`).
-* address (string(100), required) - The address / number to notify.
+* type (string(100), required) - The type of notification method (`EMAIL` or `WEBHOOK` ).
+* address (string(100), required) - The email/url address to notify.
 
 #### Request Examples
 ````
