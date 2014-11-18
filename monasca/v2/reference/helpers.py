@@ -256,7 +256,7 @@ def get_link(uri, resource_id, rel='self'):
     :param uri: the http request.uri.
     :param resource_id: the id of the resource
     """
-    parsed_uri = urlparse(uri)
+    parsed_uri = urlparse.urlparse(uri)
     href = parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
     href += '/' + resource_id
 

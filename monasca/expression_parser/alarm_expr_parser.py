@@ -266,9 +266,12 @@ class AlarmExprParser(object):
 def main():
     """Used for development and testing."""
 
-    expr0 = ("max(-_.千幸福的笑脸{घोड़ा=馬,  dn2=dv2}, 60) gte 100 times 3 && "
-             "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >9 9and "
-             "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8'))
+    expr0 = (
+        "max(-_.千幸福的笑脸{घोड़ा=馬,  "
+        "dn2=dv2,千幸福的笑脸घ=千幸福的笑脸घ}) gte 100 "
+        "times 3 && "
+        "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >9 9and "
+        "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8'))
 
     expr1 = ("max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
              " or max(biz)>100)".decode('utf8'))

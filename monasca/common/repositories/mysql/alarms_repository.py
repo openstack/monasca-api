@@ -64,7 +64,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                    group_concat(name, '=', value) as dimensions
                       from metric_dimension group by dimension_set_id) as mdg
                           on mdg.dimension_set_id = mdd.metric_dimension_set_id
-                   where a.id = ?
+                   where a.id = %s
                    order by a.id
                    """
 
@@ -82,7 +82,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                       on a.id = sa.alarm_id
                     inner join alarm_definition as ad
                       on ad.id = a.alarm_definition_id
-                    where ad.tenant_id = ? and a.id = ?
+                    where ad.tenant_id = %s and a.id = %s
                 """
 
         return self._execute_query(query, parms)
@@ -100,18 +100,18 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
              from alarm as a
              inner join alarm_definition as ad
                 on ad.id = a.alarm_definition_id
-             where ad.tenant_id = ? and a.id = ?) as b
+             where ad.tenant_id = %s and a.id = %s) as b
             on b.id = alarm.id
             """
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
-        cursor.execute(query, parms)
+        with cnxn:
 
-        if cursor.rowcount < 1:
-            raise exceptions.DoesNotExistException
+            cursor.execute(query, parms)
 
-        self._commit_close_cnxn(cnxn)
+            if cursor.rowcount < 1:
+                raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
     def get_alarm(self, tenant_id, id):
@@ -120,8 +120,8 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         select_clause = AlarmsRepository.base_query
 
-        where_clause = """ where ad.tenant_id = ?
-                            and a.id = ? """
+        where_clause = """ where ad.tenant_id = %s
+                            and a.id = %s """
 
         query = select_clause + where_clause
 
@@ -141,11 +141,11 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         order_by_clause = " order by a.id "
 
-        where_clause = " where ad.tenant_id = ? "
+        where_clause = " where ad.tenant_id = %s "
 
         if 'alarm_definition_id' in query_parms:
             parms.append(query_parms['alarm_definition_id'])
-            where_clause += " and ad.id = ? "
+            where_clause += " and ad.id = %s "
 
         if 'metric_name' in query_parms:
             sub_select_clause = """
@@ -157,7 +157,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                                 am.metric_definition_dimensions_id
                             inner join (select distinct id from
                             metric_definition
-                                        where name = ?) as md
+                                        where name = %s) as md
                             on md.id = mdd.metric_definition_id)
                 """
 
@@ -166,7 +166,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         if 'state' in query_parms:
             parms.append(query_parms['state'].encode('utf8'))
-            where_clause += " and a.state = ? "
+            where_clause += " and a.state = %s "
 
         if 'metric_dimensions' in query_parms:
             sub_select_clause = """
@@ -185,7 +185,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                 sub_select_clause += """
                     inner join (select distinct dimension_set_id
                                 from metric_dimension
-                                where name = ? and value = ?) as md{}
+                                where name = %s and value = %s) as md{}
                     on md{}.dimension_set_id = mdd.metric_dimension_set_id
                     """.format(i, i)
                 i += 1

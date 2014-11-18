@@ -60,8 +60,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
         parms = [tenant_id, id]
 
-        where_clause = """ where ad.tenant_id = ?
-                            and ad.id = ?
+        where_clause = """ where ad.tenant_id = %s
+                            and ad.id = %s
                             and deleted_at is NULL """
 
         query = AlarmDefinitionsRepository.base_query + where_clause
@@ -80,10 +80,10 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
         select_clause = AlarmDefinitionsRepository.base_query
 
-        where_clause = " where ad.tenant_id = ? and deleted_at is NULL "
+        where_clause = " where ad.tenant_id = %s and deleted_at is NULL "
 
         if name:
-            where_clause += " and ad.name = ? "
+            where_clause += " and ad.name = %s "
             parms.append(name.encode('utf8'))
 
         order_by_clause = " order by ad.created_at "
@@ -99,7 +99,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                         inner join
                             (select distinct sub_alarm_definition_id
                              from sub_alarm_definition_dimension
-                              where dimension_name = ? and value = ?) as sadd{}
+                              where dimension_name = %s and value = %s) as
+                              sadd{}
                         on sadd{}.sub_alarm_definition_id = sad.id
                         """.format(i, i)
                 inner_join_parms += [n.encode('utf8'), v.encode('utf8')]
@@ -124,7 +125,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                       on a.id = sa.alarm_id
                     inner join alarm_definition as ad
                       on ad.id = a.alarm_definition_id
-                    where ad.tenant_id = ? and ad.id = ?
+                    where ad.tenant_id = %s and ad.id = %s
                 """
 
         return self._execute_query(query, parms)
@@ -148,7 +149,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                    group_concat(name, '=', value) as dimensions
                       from metric_dimension group by dimension_set_id) as mdg
                           on mdg.dimension_set_id = mdd.metric_dimension_set_id
-                   where ad.tenant_id = ? and ad.id = ?
+                   where ad.tenant_id = %s and ad.id = %s
                    order by a.id
                    """
 
@@ -169,21 +170,23 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
         """
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
-        cursor.execute("""update alarm_definition
-                   set deleted_at = NOW()
-                   where tenant_id = ? and id = ? and deleted_at is NULL""",
-                       [tenant_id, alarm_definition_id])
 
-        if cursor.rowcount < 1:
-            self._commit_close_cnxn(cnxn)
-            return False
+        with cnxn:
 
-        cursor.execute("""delete from alarm where alarm_definition_id = ?""",
-                       [alarm_definition_id])
+            cursor.execute("""update alarm_definition
+                       set deleted_at = NOW()
+                       where tenant_id = %s and id = %s and deleted_at is
+                       NULL""",
+                           [tenant_id, alarm_definition_id])
 
-        self._commit_close_cnxn(cnxn)
+            if cursor.rowcount < 1:
+                return False
 
-        return True
+            cursor.execute(
+                """delete from alarm where alarm_definition_id = %s""",
+                [alarm_definition_id])
+
+            return True
 
     @mysql_repository.mysql_try_catch_block
     def get_sub_alarm_definitions(self, alarm_definition_id):
@@ -199,7 +202,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                                     group by sub_alarm_definition_id)
                                     as sadd
                           on sadd.sub_alarm_definition_id = sad.id
-                          where sad.alarm_definition_id = ?
+                          where sad.alarm_definition_id = %s
                           """
 
         return self._execute_query(query, parms)
@@ -210,74 +213,83 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                                 alarm_actions, undetermined_actions,
                                 ok_actions):
         cnxn, cursor = self._get_cnxn_cursor_tuple()
-        now = datetime.datetime.utcnow()
-        alarm_definition_id = uuidutils.generate_uuid()
-        cursor.execute("""insert into alarm_definition(
-                               id,
-                               tenant_id,
-                               name,
-                               description,
-                               expression,
-                               severity,
-                               match_by,
-                               actions_enabled,
-                               created_at,
-                               updated_at)
-                               values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       alarm_definition_id, tenant_id, name.encode('utf8'),
-                       description.encode('utf8'), expression.encode('utf8'),
-                       severity.upper().encode('utf8'),
-                       ",".join(match_by).encode('utf8'), 1, now, now)
 
-        for sub_expr in sub_expr_list:
-            sub_alarm_definition_id = uuidutils.generate_uuid()
-            sub_expr.id = sub_alarm_definition_id
-            cursor.execute("""insert into sub_alarm_definition(
+        with cnxn:
+
+            now = datetime.datetime.utcnow()
+            alarm_definition_id = uuidutils.generate_uuid()
+            cursor.execute("""insert into alarm_definition(
                                    id,
-                                   alarm_definition_id,
-                                   function,
-                                   metric_name,
-                                   operator,
-                                   threshold,
-                                   period,
-                                   periods,
+                                   tenant_id,
+                                   name,
+                                   description,
+                                   expression,
+                                   severity,
+                                   match_by,
+                                   actions_enabled,
                                    created_at,
                                    updated_at)
-                                    values(?,?,?,?,?,?,?,?,?,?)""",
-                           sub_alarm_definition_id, alarm_definition_id,
-                           sub_expr.normalized_func.encode('utf8'),
-                           sub_expr.normalized_metric_name.encode("utf8"),
-                           sub_expr.normalized_operator.encode('utf8'),
-                           sub_expr.threshold.encode('utf8'),
-                           sub_expr.period.encode('utf8'),
-                           sub_expr.periods.encode('utf8'), now, now)
+                                   values (%s, %s, %s, %s, %s, %s, %s, %s, %s,
+                                   %s)""", (
+                alarm_definition_id, tenant_id, name.encode('utf8'),
+                description.encode('utf8'), expression.encode('utf8'),
+                severity.upper().encode('utf8'),
+                ",".join(match_by).encode('utf8'), 1, now, now))
 
-            for dimension in sub_expr.dimensions_as_list:
-                parsed_dimension = dimension.split('=')
-                cursor.execute("""insert into sub_alarm_definition_dimension(
-                            sub_alarm_definition_id,
-                            dimension_name,
-                            value)
-                            values(?,?,?)""", sub_alarm_definition_id,
-                               parsed_dimension[0].encode('utf8'),
-                               parsed_dimension[1].encode('utf8'))
+            for sub_expr in sub_expr_list:
+                sub_alarm_definition_id = uuidutils.generate_uuid()
+                sub_expr.id = sub_alarm_definition_id
+                cursor.execute("""insert into sub_alarm_definition(
+                                       id,
+                                       alarm_definition_id,
+                                       function,
+                                       metric_name,
+                                       operator,
+                                       threshold,
+                                       period,
+                                       periods,
+                                       created_at,
+                                       updated_at)
+                                        values(%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                                        %s)""",
+                               (
+                                   sub_alarm_definition_id,
+                                   alarm_definition_id,
+                                   sub_expr.normalized_func.encode('utf8'),
+                                   sub_expr.normalized_metric_name.encode(
+                                       "utf8"),
+                                   sub_expr.normalized_operator.encode('utf8'),
+                                   sub_expr.threshold.encode('utf8'),
+                                   sub_expr.period.encode('utf8'),
+                                   sub_expr.periods.encode('utf8'), now, now))
 
-        self._insert_into_alarm_action(cursor, alarm_definition_id,
-                                       alarm_actions, u"ALARM")
-        self._insert_into_alarm_action(cursor, alarm_definition_id,
-                                       undetermined_actions, u"UNDETERMINED")
-        self._insert_into_alarm_action(cursor, alarm_definition_id, ok_actions,
-                                       u"OK")
+                for dimension in sub_expr.dimensions_as_list:
+                    parsed_dimension = dimension.split('=')
+                    cursor.execute("""insert into
+                    sub_alarm_definition_dimension(
+                                sub_alarm_definition_id,
+                                dimension_name,
+                                value)
+                                values(%s,%s,%s)""", (
+                        sub_alarm_definition_id,
+                        parsed_dimension[0].encode('utf8'),
+                        parsed_dimension[1].encode('utf8')))
 
-        self._commit_close_cnxn(cnxn)
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           alarm_actions, u"ALARM")
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           undetermined_actions,
+                                           u"UNDETERMINED")
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           ok_actions, u"OK")
 
-        return alarm_definition_id
+            return alarm_definition_id
 
     def _insert_into_alarm_action(self, cursor, alarm_definition_id, actions,
                                   alarm_state):
         for action in actions:
-            cursor.execute("select id from notification_method where id = ?",
-                           action.encode('utf8'))
+            cursor.execute("select id from notification_method where id = %s",
+                           (action.encode('utf8'),))
             row = cursor.fetchone()
             if not row:
                 raise exceptions.RepositoryException(
@@ -288,5 +300,6 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                                alarm_definition_id,
                                alarm_state,
                                action_id)
-                               values(?,?,?)""", alarm_definition_id,
-                           alarm_state.encode('utf8'), action.encode('utf8'))
+                               values(%s,%s,%s)""", (
+                alarm_definition_id, alarm_state.encode('utf8'),
+                action.encode('utf8')))

@@ -141,29 +141,29 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
             self._alarm_definitions_repo.get_alarm_definition(tenant_id, id))
 
         match_by = get_comma_separated_str_as_list(
-            alarm_definition_row.match_by)
+            alarm_definition_row['match_by'])
 
         alarm_actions_list = get_comma_separated_str_as_list(
-            alarm_definition_row.alarm_actions)
+            alarm_definition_row['alarm_actions'])
 
         ok_actions_list = get_comma_separated_str_as_list(
-            alarm_definition_row.ok_actions)
+            alarm_definition_row['ok_actions'])
 
         undetermined_actions_list = get_comma_separated_str_as_list(
-            alarm_definition_row.undetermined_actions)
+            alarm_definition_row['undetermined_actions'])
 
         result = {
-            u'actions_enabled': alarm_definition_row.actions_enabled == 1,
+            u'actions_enabled': alarm_definition_row['actions_enabled'] == 1,
             u'alarm_actions': alarm_actions_list,
             u'undetermined_actions': undetermined_actions_list,
             u'ok_actions': ok_actions_list,
-            u'description': alarm_definition_row.description.decode(
+            u'description': alarm_definition_row['description'].decode(
                 'utf8'),
-            u'expression': alarm_definition_row.expression.decode('utf8'),
-            u'id': alarm_definition_row.id.decode('utf8'),
+            u'expression': alarm_definition_row['expression'].decode('utf8'),
+            u'id': alarm_definition_row['id'].decode('utf8'),
             u'match_by': match_by,
-            u'name': alarm_definition_row.name.decode('utf8'),
-            u'severity': alarm_definition_row.severity.decode('utf8')}
+            u'name': alarm_definition_row['name'].decode('utf8'),
+            u'severity': alarm_definition_row['severity'].decode('utf8')}
 
         return result
 
@@ -198,27 +198,27 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         for alarm_definition_row in alarm_definition_rows:
 
             match_by = get_comma_separated_str_as_list(
-                alarm_definition_row.match_by)
+                alarm_definition_row['match_by'])
 
             alarm_actions_list = get_comma_separated_str_as_list(
-                alarm_definition_row.alarm_actions)
+                alarm_definition_row['alarm_actions'])
 
             ok_actions_list = get_comma_separated_str_as_list(
-                alarm_definition_row.ok_actions)
+                alarm_definition_row['ok_actions'])
 
             undetermined_actions_list = get_comma_separated_str_as_list(
-                alarm_definition_row.undetermined_actions)
+                alarm_definition_row['undetermined_actions'])
 
-            ad = {u'id': alarm_definition_row.id.decode('utf8'),
-                  u'name': alarm_definition_row.name.decode("utf8"),
-                  u'description': alarm_definition_row.description.decode(
+            ad = {u'id': alarm_definition_row['id'].decode('utf8'),
+                  u'name': alarm_definition_row['name'].decode("utf8"),
+                  u'description': alarm_definition_row['description'].decode(
                       'utf8'),
-                  u'expression': alarm_definition_row.expression.decode(
+                  u'expression': alarm_definition_row['expression'].decode(
                       'utf8'), u'match_by': match_by,
-                  u'severity': alarm_definition_row.severity.decode(
+                  u'severity': alarm_definition_row['severity'].decode(
                       'utf8'),
                   u'actions_enabled':
-                      alarm_definition_row.actions_enabled == 1,
+                      alarm_definition_row['actions_enabled'] == 1,
                   u'alarm_actions': alarm_actions_list,
                   u'ok_actions': ok_actions_list,
                   u'undetermined_actions': undetermined_actions_list}
@@ -251,7 +251,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
             LOG.exception(ex)
             title = "Invalid alarm expression".encode('utf8')
             msg = "parser failed on expression '{}' at column {}".format(
-                expression.encode('utf8'), str(ex.column).encode('utf'))
+                expression.encode('utf8'), str(ex.column).encode('utf8'))
             raise falcon.HTTPBadRequest(title, msg)
 
         alarm_definition_id = (
@@ -292,13 +292,14 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                 sub_alarm_definition_deleted_event_msg}}
 
         for sub_alarm_definition in sub_alarm_definition_rows:
-            sub_alarm_definition_deleted_event_msg[sub_alarm_definition.id] = {
-                u'name': sub_alarm_definition.metric_name}
+            sub_alarm_definition_deleted_event_msg[
+                sub_alarm_definition['id']] = {
+                u'name': sub_alarm_definition['metric_name']}
             dimensions = {}
-            sub_alarm_definition_deleted_event_msg[sub_alarm_definition.id][
+            sub_alarm_definition_deleted_event_msg[sub_alarm_definition['id']][
                 u'dimensions'] = dimensions
-            if sub_alarm_definition.dimensions:
-                for dimension in sub_alarm_definition.dimensions.split(','):
+            if sub_alarm_definition['dimensions']:
+                for dimension in sub_alarm_definition['dimensions'].split(','):
                     parsed_dimension = dimension.split('=')
                     dimensions[parsed_dimension[0]] = parsed_dimension[1]
 

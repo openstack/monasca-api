@@ -156,7 +156,7 @@ class Alarms(AlarmsV2API, Alarming):
             new_query_parms = {}
 
         alarm_rows = self._alarms_repo.get_alarms(tenant_id, new_query_parms)
-        alarm_id_list = [alarm_row.alarm_id for alarm_row in alarm_rows]
+        alarm_id_list = [alarm_row['alarm_id'] for alarm_row in alarm_rows]
 
         return self._metrics_repo.alarm_history(tenant_id, alarm_id_list,
                                                 start_timestamp, end_timestamp)
@@ -175,7 +175,7 @@ class Alarms(AlarmsV2API, Alarming):
         self._alarms_repo.delete_alarm(tenant_id, id)
 
         # alarm_definition_id is the same for all rows.
-        alarm_definition_id = sub_alarm_rows[0].alarm_definition_id
+        alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
 
         self._send_alarm_deleted_event(tenant_id, alarm_definition_id,
                                        alarm_metric_rows, sub_alarm_rows)
@@ -188,9 +188,9 @@ class Alarms(AlarmsV2API, Alarming):
         first_row = True
         for alarm_row in alarm_rows:
             if first_row:
-                ad = {u'id': alarm_row.alarm_definition_id,
-                      u'name': alarm_row.alarm_definition_name,
-                      u'severity': alarm_row.severity, }
+                ad = {u'id': alarm_row['alarm_definition_id'],
+                      u'name': alarm_row['alarm_definition_name'],
+                      u'severity': alarm_row['severity'], }
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
@@ -198,19 +198,19 @@ class Alarms(AlarmsV2API, Alarming):
                                               rel=None)
 
                 metrics = []
-                alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
-                         u'state': alarm_row.state,
+                alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
+                         u'state': alarm_row['state'],
                          u'alarm_definition': ad}
                 helpers.add_links_to_resource(alarm, req_uri)
 
                 first_row = False
 
             dimensions = {}
-            metric = {u'name': alarm_row.metric_name,
+            metric = {u'name': alarm_row['metric_name'],
                       u'dimensions': dimensions}
 
-            if alarm_row.metric_dimensions:
-                for dimension in alarm_row.metric_dimensions.split(','):
+            if alarm_row['metric_dimensions']:
+                for dimension in alarm_row['metric_dimensions'].split(','):
                     parsed_dimension = dimension.split('=')
                     dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
@@ -232,13 +232,13 @@ class Alarms(AlarmsV2API, Alarming):
         alarm = {}
         prev_alarm_id = None
         for alarm_row in alarm_rows:
-            if prev_alarm_id != alarm_row.alarm_id:
+            if prev_alarm_id != alarm_row['alarm_id']:
                 if prev_alarm_id is not None:
                     result.append(alarm)
 
-                ad = {u'id': alarm_row.alarm_definition_id,
-                      u'name': alarm_row.alarm_definition_name,
-                      u'severity': alarm_row.severity, }
+                ad = {u'id': alarm_row['alarm_definition_id'],
+                      u'name': alarm_row['alarm_definition_name'],
+                      u'severity': alarm_row['severity'], }
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
@@ -246,19 +246,19 @@ class Alarms(AlarmsV2API, Alarming):
                                               rel=None)
 
                 metrics = []
-                alarm = {u'id': alarm_row.alarm_id, u'metrics': metrics,
-                         u'state': alarm_row.state,
+                alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
+                         u'state': alarm_row['state'],
                          u'alarm_definition': ad}
                 helpers.add_links_to_resource(alarm, req_uri)
 
-                prev_alarm_id = alarm_row.alarm_id
+                prev_alarm_id = alarm_row['alarm_id']
 
             dimensions = {}
-            metric = {u'name': alarm_row.metric_name,
+            metric = {u'name': alarm_row['metric_name'],
                       u'dimensions': dimensions}
 
-            if alarm_row.metric_dimensions:
-                for dimension in alarm_row.metric_dimensions.split(','):
+            if alarm_row['metric_dimensions']:
+                for dimension in alarm_row['metric_dimensions'].split(','):
                     parsed_dimension = dimension.split('=')
                     dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
