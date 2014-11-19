@@ -295,7 +295,9 @@ class Alarms(AlarmsV2API, Alarming):
 
         json_msg = helpers.read_http_resource(req)
         if 'state' in json_msg:
-            state = json_msg['state']
+            state = json_msg['state'].upper()
+            if state not in ['OK', 'ALARM', 'UNDETERMINED']:
+                raise falcon.HTTPBadRequest('Bad request', 'Invalid state')
             return state
         else:
             raise falcon.HTTPBadRequest('Bad request', 'Missing state')
