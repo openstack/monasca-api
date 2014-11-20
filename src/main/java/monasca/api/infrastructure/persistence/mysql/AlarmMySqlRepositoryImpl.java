@@ -47,13 +47,14 @@ import monasca.common.persistence.SqlQueries;
 public class AlarmMySqlRepositoryImpl implements AlarmRepository {
   private final DBI db;
   private static final String METRIC_DEFS_FOR_ALARM_SQL =
-      "select md.name, mdg.dimensions from metric_definition as md "
+      "select md.name, md.tenant_id, mdg.dimensions from metric_definition as md "
           + "inner join metric_definition_dimensions as mdd on mdd.metric_definition_id = md.id "
           + "inner join alarm_metric as am on am.metric_definition_dimensions_id = mdd.id "
-          + "left join (select dimension_set_id, group_concat(name, '=', value) as dimensions from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
-          + "where am.alarm_id = :alarmId";
+          + "left join (select dimension_set_id, group_concat(name, '=', value) as dimensions from metric_dimension "
+          + "group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
+          + "where am.alarm_id = :alarmId and md.tenant_id = :tenantId";
   private static final String ALARM_SQL =
-      "select distinct a.id, a.alarm_definition_id, a.state, ad.severity, ad.name as alarm_definition_name from alarm a "
+      "select distinct a.id, a.alarm_definition_id, a.state, ad.severity, ad.tenant_id, ad.name as alarm_definition_name from alarm a "
           + "inner join alarm_metric am on am.alarm_id = a.id "
           + "inner join metric_definition_dimensions mdd on mdd.id = am.metric_definition_dimensions_id "
           + "inner join metric_definition md on md.id = mdd.metric_definition_id%s "
@@ -85,10 +86,10 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
         + " dimension_set_id = ?", dimensionSetId);
   }
 
-  private static List<MetricDefinition> findMetrics(Handle handle, String alarmId) {
+  private static List<MetricDefinition> findMetrics(Handle handle, String tenantId, String alarmId) {
     List<MetricDefinition> metricDefs = new ArrayList<>();
     for (Map<String, Object> row : handle.createQuery(METRIC_DEFS_FOR_ALARM_SQL)
-        .bind("alarmId", alarmId).list()) {
+        .bind("alarmId", alarmId).bind("tenantId", tenantId).list()) {
       String metName = (String) row.get("name");
       Map<String, String> dimensions =
           DimensionQueries.dimensionsFor((String) row.get("dimensions"));
@@ -99,9 +100,17 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
   }
 
   @Override
-  public void deleteById(String id) {
-    try (Handle h = db.open()) {
-      h.execute("delete from alarm where id = :id", id);
+  public void deleteById(String tenantId, String id) {
+      String sql = "delete alarm.* from alarm " +
+                   "join (select distinct a.id " +
+                   "from alarm as a " +
+                   "inner join alarm_definition as ad " +
+                   "on ad.id = a.alarm_definition_id " +
+                   "where ad.tenant_id = :tenantId and a.id = :id) as b " +
+                   "on b.id = alarm.id";
+
+      try (Handle h = db.open()) {
+      h.execute(sql, tenantId, id);
     }
   }
 
@@ -150,33 +159,35 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
 
       List<Alarm> alarms = qAlarm.list();
       for (Alarm alarm : alarms) {
-        alarm.setMetrics(findMetrics(h, alarm.getId()));
+        alarm.setMetrics(findMetrics(h, tenantId, alarm.getId()));
       }
       return alarms;
     }
   }
 
   @Override
-  public Alarm findById(String alarmId) {
+  public Alarm findById(String tenantId, String alarmId) {
     try (Handle h = db.open()) {
       Alarm alarm =
-          h.createQuery("select ad.severity, ad.name as alarm_definition_name, a.* from alarm as a "
-              + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
-              + "where a.id = :id").bind("id", alarmId)
+          h.createQuery("select ad.tenant_id, ad.severity, ad.name as alarm_definition_name, "
+              + "a.* from alarm as a inner join alarm_definition ad on ad.id = a.alarm_definition_id "
+              + "where a.id = :id and ad.tenant_id = :tenantId")
+              .bind("id", alarmId)
+              .bind("tenantId", tenantId)
               .map(new AlarmMapper()).first();
       if (alarm == null)
         throw new EntityNotFoundException("No alarm exists for %s", alarmId);
 
       // Hydrate metrics
-      alarm.setMetrics(findMetrics(h, alarm.getId()));
+      alarm.setMetrics(findMetrics(h, tenantId, alarm.getId()));
       return alarm;
     }
   }
 
   @Override
-  public List<MetricDefinition> findMetrics(String alarmId) {
+  public List<MetricDefinition> findMetrics(String tenantId, String alarmId) {
     try (Handle h = db.open()) {
-      return findMetrics(h, alarmId);
+      return findMetrics(h, tenantId, alarmId);
     }
   }
 

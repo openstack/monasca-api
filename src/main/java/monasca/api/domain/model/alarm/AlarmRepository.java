@@ -12,7 +12,7 @@ public interface AlarmRepository {
   /**
    * Deletes all alarms associated with the {@code id}.
    */
-  void deleteById(String id);
+  void deleteById(String tenantId, String id);
 
   /**
    * Returns alarms for the given criteria.
@@ -23,9 +23,9 @@ public interface AlarmRepository {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code id}
    */
-  Alarm findById(String id);
+  Alarm findById(String tenantId, String id);
 
-  List<MetricDefinition> findMetrics(String alarmId);
+  List<MetricDefinition> findMetrics(String tenantId, String alarmId);
 
   /**
    * Updates and returns an alarm for the criteria.
