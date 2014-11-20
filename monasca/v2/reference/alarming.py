@@ -35,9 +35,55 @@ class Alarming(object):
 
         super(Alarming, self).__init__()
 
-        self._message_queue = (
+        self._events_message_queue = (
             resource_api.init_driver('monasca.messaging',
-                                     cfg.CONF.messaging.driver, (['events'])))
+                                     cfg.CONF.messaging.driver,
+                                     (['events'])))
+
+        self._alarm_state_transitions_message_queue = (
+            resource_api.init_driver('monasca.messaging',
+                                     cfg.CONF.messaging.driver,
+                                     (['alarm-state-transitions'])))
+
+    def _send_alarm_transitioned_event(self, tenant_id, alarm_id,
+                                       alarm_definition_row,
+                                       alarm_metric_rows,
+                                       old_state, new_state):
+
+        metrics = []
+        alarm_transitioned_event_msg = {u'alarm-transitioned': {
+            u'tenantId': tenant_id,
+            u'alarmId': alarm_id,
+            u'alarmDefinitionId': alarm_definition_row['id'],
+            u'alarmName': alarm_definition_row['name'],
+            u'alarmDescription': alarm_definition_row['description'],
+            u'actionsEnabled': alarm_definition_row['actions_enabled'] == 1,
+            u'stateChangeReason': 'Alarm state updated via API',
+            u'severity': alarm_definition_row['severity'],
+            u'oldState': old_state,
+            u'newState': new_state,
+            u'metrics': metrics}
+        }
+
+        for alarm_metric_row in alarm_metric_rows:
+            metric = self._build_metric(alarm_metric_row)
+            metrics.append(metric)
+
+        self._send_event(self._alarm_state_transitions_message_queue,
+                         alarm_transitioned_event_msg)
+
+    def _build_metric(self, alarm_metric_row):
+
+        dimensions = {}
+
+        metric = {u'name': alarm_metric_row['name'],
+                  u'dimensions': dimensions}
+
+        for dimension in alarm_metric_row['dimensions'].split(','):
+            parsed_dimension = dimension.split('=')
+            dimensions[parsed_dimension[0]] = parsed_dimension[1]
+
+        return metric
 
     def _send_alarm_event(self, event_type, tenant_id, alarm_definition_id,
                           alarm_metric_rows, sub_alarm_rows, extra_info=None):
@@ -79,20 +125,16 @@ class Alarming(object):
 
                 prev_alarm_id = alarm_metric_row['alarm_id']
 
-            dimensions = {}
-            metric = {u'name': alarm_metric_row['name'],
-                      u'dimensions': dimensions}
-            for dimension in alarm_metric_row['dimensions'].split(','):
-                parsed_dimension = dimension.split('=')
-                dimensions[parsed_dimension[0]] = parsed_dimension[1]
-
+            metric = self._build_metric(alarm_metric_row)
             alarm_metrics_event_msg.append(metric)
 
         # Finish last alarm
         sub_alarms_event_msg = self._build_sub_alarm_event_msg(sub_alarm_dict,
                                                                prev_alarm_id)
         alarm_event_msg[event_type][u'subAlarms'] = sub_alarms_event_msg
-        self._send_event(alarm_event_msg)
+
+        self._send_event(self._events_message_queue,
+                         alarm_event_msg)
 
     def _build_sub_alarm_event_msg(self, sub_alarm_dict, alarm_id):
 
@@ -122,9 +164,9 @@ class Alarming(object):
 
         return sub_alarms_event_msg
 
-    def _send_event(self, event_msg):
+    def _send_event(self, message_queue, event_msg):
         try:
-            self._message_queue.send_message(
+            message_queue.send_message(
                 json.dumps(event_msg, ensure_ascii=False).encode('utf8'))
         except message_queue_exceptions.MessageQueueException as ex:
             LOG.exception(ex)
