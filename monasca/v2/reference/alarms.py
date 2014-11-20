@@ -163,6 +163,21 @@ class Alarms(AlarmsV2API, Alarming):
                                alarm_definition_id, alarm_metric_rows,
                                sub_alarm_rows, state_info)
 
+        if old_state != new_state:
+            try:
+                alarm_definition_row = self._alarms_repo.get_alarm_definition(
+                    tenant_id, id)
+            except exceptions.DoesNotExistException:
+                # Alarm definition does not exist. May have been deleted
+                # in another transaction. In that case, all associated
+                # alarms were also deleted, so don't send transition events.
+                pass
+            else:
+                self._send_alarm_transitioned_event(tenant_id, id,
+                                                    alarm_definition_row,
+                                                    alarm_metric_rows,
+                                                    old_state, new_state)
+
     @resource_try_catch_block
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, query_parms):

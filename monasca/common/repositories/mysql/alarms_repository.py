@@ -48,6 +48,24 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         super(AlarmsRepository, self).__init__()
 
     @mysql_repository.mysql_try_catch_block
+    def get_alarm_definition(self, tenant_id, alarm_id):
+
+        query = """
+            select *
+            from alarm_definition as ad
+            inner join alarm as a on a.alarm_definition_id = ad.id
+            where ad.tenant_id = %s and a.id = %s"""
+
+        alarm_definition_rows = self._execute_query(query,
+                                                    (tenant_id, alarm_id))
+
+        if not alarm_definition_rows:
+            raise exceptions.DoesNotExistException
+
+        # There should only be 1 row.
+        return alarm_definition_rows[0]
+
+    @mysql_repository.mysql_try_catch_block
     def get_alarm_metrics(self, alarm_id):
 
         parms = [alarm_id]
@@ -123,9 +141,6 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                 )"""
 
             cursor.execute(update_query, parms)
-
-            if cursor.rowcount < 1:
-                raise exceptions.DoesNotExistException
 
             return prev_state
 
