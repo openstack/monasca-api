@@ -14,36 +14,29 @@
 
 package monasca.api.resource;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-
-import org.testng.annotations.Test;
-
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.resource.exception.ErrorMessages;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
+import org.testng.annotations.Test;
+
+import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.*;
 
 @Test
 public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
-  private NotificationMethod notificationMethod;
+  private NotificationMethod notificationMethod, notificationMethodWebhook;
   private NotificationMethodRepository repo;
 
   @Override
@@ -51,10 +44,14 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
     notificationMethod =
         new NotificationMethod("123", "Joe's SMS", NotificationMethodType.SMS, "8675309");
+      notificationMethodWebhook =
+        new NotificationMethod("1234", "MyWh", NotificationMethodType.WEBHOOK, "http://localhost");
 
     repo = mock(NotificationMethodRepository.class);
     when(repo.create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString()))
         .thenReturn(notificationMethod);
+    when(repo.create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString()))
+        .thenReturn(notificationMethodWebhook);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
     when(repo.find(eq("abc"))).thenReturn(Arrays.asList(notificationMethod));
 
@@ -265,4 +262,22 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "The request entity was empty");
   }
+
+    public void shouldCreateEndpointNotification() {
+        ClientResponse response =
+                client()
+                        .resource("/v2.0/notification-methods")
+                        .header("X-Tenant-Id", "abc")
+                        .header("Content-Type", MediaType.APPLICATION_JSON)
+                        .post(ClientResponse.class,
+                                new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
+                                        "http://localhost"));
+
+        NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
+        String location = response.getHeaders().get("Location").get(0);
+        assertEquals(response.getStatus(), 201);
+        assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
+        assertEquals(newNotificationMethod, notificationMethodWebhook);
+        verify(repo).create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString());
+    }
 }

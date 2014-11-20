@@ -16,7 +16,7 @@ package monasca.api.domain.model.notificationmethod;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum NotificationMethodType {
-  EMAIL, SMS;
+  EMAIL, SMS, WEBHOOK;
 
   @JsonCreator
   public static NotificationMethodType fromJson(String text) {
