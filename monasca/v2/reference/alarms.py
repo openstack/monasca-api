@@ -77,12 +77,8 @@ class Alarms(AlarmsV2API, Alarming):
     @resource_api.Restify('/v2.0/alarms/{id}', method='patch')
     def do_patch_alarms(self, req, res, id):
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
-
-        result = ''
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
-        res.status = falcon.HTTP_200
-        res.status = '501 Not Implemented'
+        # Same logic as alarm_update
+        return self.do_put_alarms(req, res, id)
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='delete')
     def do_delete_alarms(self, req, res, id):
