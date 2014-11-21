@@ -17,9 +17,12 @@ package monasca.api.app.command;
 import static monasca.common.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
 
+import javax.ws.rs.WebApplicationException;
+
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.model.AbstractModelTest;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
@@ -52,5 +55,51 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
     String json = jsonFixture("fixtures/newNotificationMethodWithInvalidEnum.json");
     CreateNotificationMethodCommand other = fromJson(json, CreateNotificationMethodCommand.class);
     assertEquals(other, newNotificationMethod);
+  }
+
+  public void testValidationForEmail() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "name@domain.com");
+
+    Exception ex = null;
+
+    try {
+      newNotificationMethod.validate();
+    } catch (Exception e) {
+      ex = e;
+    }
+
+    assertEquals(null, ex);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void testValidationExceptionForEmail() throws Exception {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "name@domain");
+
+    newNotificationMethod.validate();
+  }
+
+  public void testValidationForWebhook() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.WEBHOOK, "http://somedomain.com");
+
+    Exception ex = null;
+
+    try {
+      newNotificationMethod.validate();
+    } catch (Exception e) {
+      ex = e;
+    }
+
+    assertEquals(null, ex);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void testValidationExceptionForWebhook() throws Exception {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "ftp://localhost");
+
+    newNotificationMethod.validate();
   }
 }

@@ -64,6 +64,11 @@
             <artifactId>monasca-common-util</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
+	<dependency>
+	    <groupId>commons-validator</groupId>
+	    <artifactId>commons-validator</artifactId>
+	    <version>1.4.0</version>
+	</dependency>
         <dependency>
             <groupId>monasca-common</groupId>
             <artifactId>monasca-common-kafka</artifactId>
