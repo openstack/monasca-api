@@ -113,34 +113,38 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         with cnxn:
 
             select_query = """
-                select alarm.state
-                from alarm
-                where alarm.id = %s"""
+                select a.state
+                from alarm as a
+                inner join alarm_definition as ad
+                  on ad.id = a.alarm_definition_id
+                where ad.tenant_id = %s and a.id = %s"""
 
-            cursor.execute(select_query, (id,))
+            cursor.execute(select_query, (tenant_id, id))
 
             if cursor.rowcount < 1:
                 raise exceptions.DoesNotExistException
 
             prev_state = cursor.fetchone()['state']
 
-            parms = [state, tenant_id, id]
+            if state != prev_state:
 
-            update_query = """
-                update alarm
-                set state = %s
-                where alarm.id in
-                (select distinct id
-                  from
-                    (select distinct alarm.id
-                     from alarm
-                     inner join alarm_definition
-                      on alarm_definition.id = alarm.alarm_definition_id
-                  where alarm_definition.tenant_id = %s and alarm.id = %s)
-                  as tmptable
-                )"""
+                parms = [state, tenant_id, id]
 
-            cursor.execute(update_query, parms)
+                update_query = """
+                    update alarm
+                    set state = %s
+                    where alarm.id in
+                    (select distinct id
+                      from
+                        (select distinct alarm.id
+                         from alarm
+                         inner join alarm_definition
+                          on alarm_definition.id = alarm.alarm_definition_id
+                      where alarm_definition.tenant_id = %s and alarm.id = %s)
+                      as tmptable
+                    )"""
+
+                cursor.execute(update_query, parms)
 
             return prev_state
 
