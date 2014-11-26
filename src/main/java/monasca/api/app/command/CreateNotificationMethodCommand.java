@@ -15,7 +15,8 @@ package monasca.api.app.command;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
+import org.apache.commons.validator.routines.EmailValidator;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
@@ -64,10 +65,17 @@ public class CreateNotificationMethodCommand {
   }
 
   public void validate() {
-    int atPos = address.indexOf("@");
-    int commaPos = address.indexOf(",");
-    if (type == NotificationMethodType.EMAIL
-        && (atPos <= 0 || atPos == address.length() - 1 || commaPos >= 0))
-      throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+    switch (type) {
+      case EMAIL : {
+        if (!EmailValidator.getInstance().isValid(address))
+          throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+      }; break;
+      case WEBHOOK : {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS | UrlValidator.ALLOW_2_SLASHES);
+        if (!urlValidator.isValid(address))
+          throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+      }; break;
+    }
   }
 }
