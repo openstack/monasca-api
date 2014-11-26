@@ -91,7 +91,7 @@ public class AlarmResource {
   public Alarm get(
       @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarm_id) {
-    return fixAlarmLinks(uriInfo, repo.findById(alarm_id));
+    return fixAlarmLinks(uriInfo, repo.findById(tenantId, alarm_id));
   }
 
   private Alarm fixAlarmLinks(UriInfo uriInfo, Alarm alarm) {

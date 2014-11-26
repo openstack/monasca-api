@@ -68,10 +68,10 @@ public class AlarmService {
    * @throws EntityNotFoundException if the alarm cannot be found
    */
   public void delete(String tenantId, String alarmId) {
-    Alarm alarm = repo.findById(alarmId);
+    Alarm alarm = repo.findById(tenantId, alarmId);
     Map<String, AlarmSubExpression> subAlarmMetricDefs = repo.findAlarmSubExpressions(alarmId);
-    List<MetricDefinition> metrics = repo.findMetrics(alarmId);
-    repo.deleteById(alarmId);
+    List<MetricDefinition> metrics = repo.findMetrics(tenantId, alarmId);
+    repo.deleteById(tenantId, alarmId);
 
     // Notify interested parties of alarm deletion
     String event =
@@ -88,7 +88,7 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, AlarmState state) {
-    Alarm alarm = repo.findById(alarmId);
+    Alarm alarm = repo.findById(tenantId, alarmId);
     state = state == null ? alarm.getState() : state;
     updateInternal(tenantId, alarm, alarm.getState(), state);
     alarm.setState(state);
@@ -102,7 +102,7 @@ public class AlarmService {
    * @throws EntityNotFoundException if the alarmed metric cannot be found
    */
   public Alarm update(String tenantId, String alarmId, UpdateAlarmCommand command) {
-    Alarm alarm = repo.findById(alarmId);
+    Alarm alarm = repo.findById(tenantId, alarmId);
     updateInternal(tenantId, alarm, alarm.getState(), command.state);
     alarm.setState(command.state);
     return alarm;
@@ -119,7 +119,7 @@ public class AlarmService {
 
       // Notify interested parties of updated alarm
       AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinition().getId());
-      List<MetricDefinition> metrics = repo.findMetrics(alarm.getId());
+      List<MetricDefinition> metrics = repo.findMetrics(tenantId, alarm.getId());
       Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarm.getId());
       String event =
           Serialization.toJson(new AlarmUpdatedEvent(alarm.getId(), alarm.getAlarmDefinition().getId(),
