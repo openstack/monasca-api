@@ -150,10 +150,8 @@ public class AlarmDefinitionService {
     // Have to get information about the Alarms before they are deleted. They will be deleted
     // by the database as a cascade delete from the Alarm Definition delete
     final List<Alarm> alarms = alarmRepo.find(tenantId, alarmDefId, null, null, null);
-    final Map<String, Map<String, AlarmSubExpression>> alarmSubExpressions = new HashMap<>(alarms.size());
-    for (final Alarm alarm : alarms) {
-      alarmSubExpressions.put(alarm.getId(), alarmRepo.findAlarmSubExpressions(alarm.getId()));
-    }
+    final Map<String, Map<String, AlarmSubExpression>> alarmSubExpressions =
+                                          alarmRepo.findAlarmSubExpressionsForAlarmDefinition(alarmDefId);
 
     repo.deleteById(tenantId, alarmDefId);
 

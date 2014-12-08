@@ -13,7 +13,6 @@
  */
 package monasca.api.app;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -31,7 +30,6 @@ import monasca.common.model.event.AlarmStateTransitionedEvent;
 import monasca.common.model.event.AlarmUpdatedEvent;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
-import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.exception.InvalidEntityException;
 import monasca.api.domain.model.alarm.Alarm;
@@ -71,12 +69,11 @@ public class AlarmService {
   public void delete(String tenantId, String alarmId) {
     Alarm alarm = repo.findById(tenantId, alarmId);
     Map<String, AlarmSubExpression> subAlarmMetricDefs = repo.findAlarmSubExpressions(alarmId);
-    List<MetricDefinition> metrics = repo.findMetrics(tenantId, alarmId);
     repo.deleteById(tenantId, alarmId);
 
     // Notify interested parties of alarm deletion
     String event =
-        Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, metrics, alarm
+        Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, alarm.getMetrics(), alarm
             .getAlarmDefinition().getId(), subAlarmMetricDefs));
     producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(messageCount++), event));
   }
@@ -89,10 +86,10 @@ public class AlarmService {
    * @throws InvalidEntityException if one of the actions cannot be found
    */
   public Alarm patch(String tenantId, String alarmId, AlarmState state) {
-    Alarm alarm = repo.findById(tenantId, alarmId);
-    state = state == null ? alarm.getState() : state;
-    updateInternal(tenantId, alarm, alarm.getState(), state);
-    alarm.setState(state);
+    if (state == null) {
+      throw new InvalidEntityException("State must be specified");
+    }
+    Alarm alarm = updateInternal(tenantId, alarmId, state);
     return alarm;
   }
 
@@ -103,9 +100,7 @@ public class AlarmService {
    * @throws EntityNotFoundException if the alarmed metric cannot be found
    */
   public Alarm update(String tenantId, String alarmId, UpdateAlarmCommand command) {
-    Alarm alarm = repo.findById(tenantId, alarmId);
-    updateInternal(tenantId, alarm, alarm.getState(), command.state);
-    alarm.setState(command.state);
+    Alarm alarm = updateInternal(tenantId, alarmId, command.state);
     return alarm;
   }
 
@@ -113,29 +108,32 @@ public class AlarmService {
     return "Alarm state updated via API";
   }
 
-  private void updateInternal(String tenantId, Alarm alarm, AlarmState oldState, AlarmState newState) {
+  private Alarm updateInternal(String tenantId, String alarmId, AlarmState newState) {
     try {
-      LOG.debug("Updating alarm {} for tenant {}", alarm.getId(), tenantId);
-      repo.update(tenantId, alarm.getId(), newState);
-
+      LOG.debug("Updating alarm {} for tenant {}", alarmId, tenantId);
+      final Alarm alarm = repo.update(tenantId, alarmId, newState);
+      final AlarmState oldState = alarm.getState();
       // Notify interested parties of updated alarm
       AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinition().getId());
-      List<MetricDefinition> metrics = repo.findMetrics(tenantId, alarm.getId());
-      Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarm.getId());
+      Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarmId);
       String event =
-          Serialization.toJson(new AlarmUpdatedEvent(alarm.getId(), alarm.getAlarmDefinition().getId(),
-              tenantId, metrics, subAlarms, newState, oldState));
+          Serialization.toJson(new AlarmUpdatedEvent(alarmId, alarmDef.getId(),
+              tenantId, alarm.getMetrics(), subAlarms, newState, oldState));
       producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
 
       // Notify interested parties of transitioned alarm state
       if (!oldState.equals(newState)) {
         event =
-            Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarm.getId(), alarmDef
+            Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, alarmDef
                 .getId(), alarm.getMetrics(), alarmDef.getName(), alarmDef.getDescription(),
                 oldState, newState, alarmDef.getSeverity(), alarmDef.isActionsEnabled(),
                 stateChangeReasonFor(oldState, newState), System.currentTimeMillis() / 1000));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
       }
+      alarm.setState(newState);
+      return alarm;
+    } catch (EntityNotFoundException e) {
+      throw e;
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm for project / tenant %s", tenantId);
     }

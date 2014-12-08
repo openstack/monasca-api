@@ -5,7 +5,6 @@ import java.util.Map;
 
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
-import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 
 public interface AlarmRepository {
@@ -25,15 +24,20 @@ public interface AlarmRepository {
    */
   Alarm findById(String tenantId, String id);
 
-  List<MetricDefinition> findMetrics(String tenantId, String alarmId);
-
   /**
-   * Updates and returns an alarm for the criteria.
+   * Updates the state and returns the original alarm for the {@code id}.
+   * @return the original alarm before any state change
    */
-  void update(String tenantId, String id, AlarmState state);
+  Alarm update(String tenantId, String id, AlarmState state);
 
   /**
    * Gets the AlarmSubExpressions mapped by their Ids for an Alarm Id
    */
   Map<String, AlarmSubExpression> findAlarmSubExpressions(String alarmId);
+
+  /**
+   * Gets the AlarmSubExpressions mapped by their Ids then mapped by alarm id for an
+   * Alarm Definition Id
+   */
+  Map<String, Map<String, AlarmSubExpression>> findAlarmSubExpressionsForAlarmDefinition(String alarmDefinitionId);
 }
