@@ -60,7 +60,7 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
                                List<String> statistics, int period)
       throws Exception {
 
-    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
+    String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
     String statsPart = buildStatsPart(statistics);
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
     String periodPart = buildPeriodPart(period);
