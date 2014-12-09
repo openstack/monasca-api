@@ -37,7 +37,8 @@ alarm_definition_schema = {
     voluptuous.Optional('alarm_actions'): voluptuous.All(
         voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
     voluptuous.Optional('undetermined_actions'): voluptuous.All(
-        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400))}
+        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
+    voluptuous.Optional('actions_enabled'): bool}
 
 request_body_schema = voluptuous.Schema(alarm_definition_schema, required=True,
                                         extra=True)

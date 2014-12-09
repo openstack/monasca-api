@@ -37,7 +37,6 @@ LOG = log.getLogger(__name__)
 
 
 class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
-
     def __init__(self, global_conf):
 
         try:
@@ -106,7 +105,56 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='put')
     def do_put_alarm_definitions(self, req, res, id):
-        res.status = '501 Not Implemented'
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+
+        alarm_definition = read_json_msg_body(req)
+
+        self._validate_alarm_definition(alarm_definition)
+
+        tenant_id = helpers.get_tenant_id(req)
+
+        # Mandatory positional args
+        name = get_query_alarm_definition_name(alarm_definition)
+        expression = get_query_alarm_definition_expression(alarm_definition)
+        actions_enabled = (
+            get_query_alarm_definition_actions_enabled(alarm_definition,
+                                                       required=True))
+
+        # Validator makes actions_enabled optional. So, check it here.
+        if not actions_enabled:
+            raise falcon.HTTPBadRequest('Bad request', 'Missing '
+                                                       'actions_enabled')
+
+        # Optional args
+        description = get_query_alarm_definition_description(alarm_definition,
+                                                             return_none=True)
+        alarm_actions = get_query_alarm_definition_alarm_actions(
+            alarm_definition, return_none=True)
+        ok_actions = get_query_ok_actions(alarm_definition, return_none=True)
+        undetermined_actions = get_query_alarm_definition_undetermined_actions(
+            alarm_definition, return_none=True)
+        match_by = get_query_alarm_definition_match_by(alarm_definition,
+                                                       return_none=True)
+        severity = get_query_alarm_definition_severity(alarm_definition,
+                                                       return_none=True)
+
+        result = self._alarm_definition_update_or_patch(tenant_id,
+                                                        id,
+                                                        name,
+                                                        expression,
+                                                        actions_enabled,
+                                                        description,
+                                                        alarm_actions,
+                                                        ok_actions,
+                                                        undetermined_actions,
+                                                        match_by,
+                                                        severity,
+                                                        patch=False)
+
+        helpers.add_links_to_resource(result, req.uri)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_201
 
     @resource_api.Restify('/v2.0/alarm-definitions', method='get')
     def do_get_alarm_definitions(self, req, res):
@@ -124,7 +172,50 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='patch')
     def do_patch_alarm_definitions(self, req, res, id):
-        res.status = '501 Not Implemented'
+
+        helpers.validate_authorization(req, self._default_authorized_roles)
+
+        alarm_definition = read_json_msg_body(req)
+
+        tenant_id = helpers.get_tenant_id(req)
+
+        # Optional args
+        name = get_query_alarm_definition_name(alarm_definition,
+                                               return_none=True)
+        expression = get_query_alarm_definition_expression(alarm_definition,
+                                                           return_none=True)
+        actions_enabled = (
+            get_query_alarm_definition_actions_enabled(alarm_definition,
+                                                       return_none=True))
+
+        description = get_query_alarm_definition_description(alarm_definition,
+                                                             return_none=True)
+        alarm_actions = get_query_alarm_definition_alarm_actions(
+            alarm_definition, return_none=True)
+        ok_actions = get_query_ok_actions(alarm_definition, return_none=True)
+        undetermined_actions = get_query_alarm_definition_undetermined_actions(
+            alarm_definition, return_none=True)
+        match_by = get_query_alarm_definition_match_by(alarm_definition,
+                                                       return_none=True)
+        severity = get_query_alarm_definition_severity(alarm_definition,
+                                                       return_none=True)
+
+        result = self._alarm_definition_update_or_patch(tenant_id,
+                                                        id,
+                                                        name,
+                                                        expression,
+                                                        actions_enabled,
+                                                        description,
+                                                        alarm_actions,
+                                                        ok_actions,
+                                                        undetermined_actions,
+                                                        match_by,
+                                                        severity,
+                                                        patch=True)
+
+        helpers.add_links_to_resource(result, req.uri)
+        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.status = falcon.HTTP_201
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='delete')
     def do_delete_alarm_definitions(self, req, res, id):
@@ -139,6 +230,10 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         alarm_definition_row = (
             self._alarm_definitions_repo.get_alarm_definition(tenant_id, id))
+
+        return self._build_alarm_definition_show_result(alarm_definition_row)
+
+    def _build_alarm_definition_show_result(self, alarm_definition_row):
 
         match_by = get_comma_separated_str_as_list(
             alarm_definition_row['match_by'])
@@ -196,7 +291,6 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         result = []
         for alarm_definition_row in alarm_definition_rows:
-
             match_by = get_comma_separated_str_as_list(
                 alarm_definition_row['match_by'])
 
@@ -235,6 +329,114 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         except schemas_exceptions.ValidationException as ex:
             LOG.debug(ex)
             raise falcon.HTTPBadRequest('Bad request', ex.message)
+
+    @resource_try_catch_block
+    def _alarm_definition_update_or_patch(self, tenant_id,
+                                          id,
+                                          name,
+                                          expression,
+                                          actions_enabled,
+                                          description,
+                                          alarm_actions,
+                                          ok_actions,
+                                          undetermined_actions,
+                                          match_by,
+                                          severity,
+                                          patch):
+
+        try:
+            sub_expr_list = (
+                monasca.expression_parser.alarm_expr_parser.
+                AlarmExprParser(expression).sub_expr_list)
+
+        except pyparsing.ParseException as ex:
+            LOG.exception(ex)
+            title = "Invalid alarm expression".encode('utf8')
+            msg = "parser failed on expression '{}' at column {}".format(
+                expression.encode('utf8'), str(ex.column).encode('utf8'))
+            raise falcon.HTTPBadRequest(title, msg)
+
+        alarm_def_row, sub_alarm_def_dicts = (
+            self._alarm_definitions_repo.update_or_patch_alarm_definition(
+                tenant_id,
+                id,
+                name,
+                expression,
+                sub_expr_list,
+                actions_enabled,
+                description,
+                alarm_actions,
+                ok_actions,
+                undetermined_actions,
+                match_by,
+                severity,
+                patch))
+
+        old_sub_alarm_def_event_dict = (
+            self._build_sub_alarm_def_update_event(
+                sub_alarm_def_dicts['old']))
+
+        new_sub_alarm_def_event_dict = (
+            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+                'new']))
+
+        changed_sub_alarm_def_event_dict = (
+            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+                'changed']))
+
+        unchanged_sub_alarm_def_event_dict = (
+            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+                'unchanged']))
+
+        alarm_def_event_dict = (
+            {u'tenantId': tenant_id,
+             u'alarmDefinitionId': id,
+             u'alarmName': name,
+             u'alarmDescription': description,
+             u'alarmExpression': expression,
+             u'severity': severity,
+             u'matchBy': match_by,
+             u'alarmActionsEnabled': actions_enabled,
+             u'oldAlarmSubExpressions': old_sub_alarm_def_event_dict,
+             u'changedSubExpressions': changed_sub_alarm_def_event_dict,
+             u'unchangedSubExpressions': unchanged_sub_alarm_def_event_dict,
+             u'newAlarmSubExpressions': new_sub_alarm_def_event_dict})
+
+        alarm_definition_updated_event = (
+            {u'alarm-definition-updated': alarm_def_event_dict})
+
+        self.send_event(self.events_message_queue,
+                        alarm_definition_updated_event)
+
+        result = self._build_alarm_definition_show_result(alarm_def_row)
+
+        return result
+
+    def _build_sub_alarm_def_update_event(self, sub_alarm_def_dict):
+
+        sub_alarm_def_event_dict = {}
+        for id, sub_alarm_def in sub_alarm_def_dict.items():
+            dimensions = {}
+            for name, value in sub_alarm_def.dimensions.items():
+                dimensions[u'uname'] = value
+            sub_alarm_def_event_dict[sub_alarm_def.id] = {}
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'function'] = (
+                sub_alarm_def.function)
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'metricDefinition'] = (
+                {u'name': sub_alarm_def.metric_name,
+                 u'dimensions': dimensions})
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'operator'] = (
+                sub_alarm_def.operator)
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'threshold'] = (
+                sub_alarm_def.threshold)
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'period'] = (
+                sub_alarm_def.period)
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'periods'] = (
+                sub_alarm_def.periods)
+            sub_alarm_def_event_dict[sub_alarm_def.id][u'expression'] = (
+                sub_alarm_def.expression)
+
+        return sub_alarm_def_event_dict
 
     @resource_try_catch_block
     def _alarm_definition_create(self, tenant_id, name, expression,
@@ -303,7 +505,8 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                     parsed_dimension = dimension.split('=')
                     dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
-        self._send_event(alarm_definition_deleted_event_msg)
+        self.send_event(self.events_message_queue,
+                        alarm_definition_deleted_event_msg)
 
     def _send_alarm_definition_created_event(self, tenant_id,
                                              alarm_definition_id, name,
@@ -342,41 +545,53 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         alarm_definition_created_event_msg[u'alarm-definition-created'][
             u'alarmSubExpressions'] = sub_expr_event_msg
 
-        self._send_event(alarm_definition_created_event_msg)
+        self.send_event(self.events_message_queue,
+                        alarm_definition_created_event_msg)
 
 
-def get_query_alarm_definition_name(alarm_definition):
+def get_query_alarm_definition_name(alarm_definition, return_none=False):
     try:
         if 'name' in alarm_definition:
             name = alarm_definition['name']
             return name
         else:
-            raise Exception("Missing name")
+            if return_none:
+                return None
+            else:
+                raise Exception("Missing name")
     except Exception as ex:
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
-def get_query_alarm_definition_expression(alarm_definition):
+def get_query_alarm_definition_expression(alarm_definition,
+                                          return_none=False):
     try:
         if 'expression' in alarm_definition:
             expression = alarm_definition['expression']
             return expression
         else:
-            raise Exception("Missing expression")
+            if return_none:
+                return None
+            else:
+                raise Exception("Missing expression")
     except Exception as ex:
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
-def get_query_alarm_definition_description(alarm_definition):
+def get_query_alarm_definition_description(alarm_definition,
+                                           return_none=False):
     if 'description' in alarm_definition:
         return alarm_definition['description']
     else:
-        return ''
+        if return_none:
+            return None
+        else:
+            return ''
 
 
-def get_query_alarm_definition_severity(alarm_definition):
+def get_query_alarm_definition_severity(alarm_definition, return_none=False):
     if 'severity' in alarm_definition:
         severity = alarm_definition['severity']
         severity = severity.decode('utf8').lower()
@@ -384,43 +599,78 @@ def get_query_alarm_definition_severity(alarm_definition):
             raise falcon.HTTPBadRequest('Bad request', 'Invalid severity')
         return severity
     else:
-        return ''
+        if return_none:
+            return None
+        else:
+            return ''
 
 
-def get_query_alarm_definition_match_by(alarm_definition):
+def get_query_alarm_definition_match_by(alarm_definition, return_none=False):
     if 'match_by' in alarm_definition:
         match_by = alarm_definition['match_by']
         return match_by
     else:
-        return []
+        if return_none:
+            return None
+        else:
+            return []
 
 
-def get_query_alarm_definition_alarm_actions(alarm_definition):
+def get_query_alarm_definition_alarm_actions(alarm_definition,
+                                             return_none=False):
     if 'alarm_actions' in alarm_definition:
         alarm_actions = alarm_definition['alarm_actions']
         return alarm_actions
     else:
-        return []
+        if return_none:
+            return None
+        else:
+            return []
 
 
-def get_query_alarm_definition_undetermined_actions(alarm_definition):
+def get_query_alarm_definition_undetermined_actions(alarm_definition,
+                                                    return_none=False):
     if 'undetermined_actions' in alarm_definition:
         undetermined_actions = alarm_definition['undetermined_actions']
         return undetermined_actions
     else:
-        return []
+        if return_none:
+            return None
+        else:
+            return []
 
 
-def get_query_ok_actions(alarm_definition):
+def get_query_ok_actions(alarm_definition, return_none=False):
     if 'ok_actions' in alarm_definition:
         ok_actions = alarm_definition['ok_actions']
         return ok_actions
     else:
-        return []
+        if return_none:
+            return None
+        else:
+            return []
+
+
+def get_query_alarm_definition_actions_enabled(alarm_definition,
+                                               required=False,
+                                               return_none=False):
+    try:
+        if 'actions_enabled' in alarm_definition:
+            enabled_actions = alarm_definition['actions_enabled']
+            return enabled_actions
+        else:
+            if return_none:
+                return None
+            elif required:
+                raise Exception("Missing actions-enabled")
+            else:
+                return ''
+    except Exception as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
 def get_comma_separated_str_as_list(comma_separated_str):
-
     if not comma_separated_str:
         return []
     else:
