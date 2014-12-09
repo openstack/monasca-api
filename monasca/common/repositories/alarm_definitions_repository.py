@@ -51,3 +51,16 @@ class AlarmDefinitionsRepository(object):
     @abc.abstractmethod
     def get_alarm_definitions(self, tenant_id, name, dimensions):
         pass
+
+    @abc.abstractmethod
+    def update_or_patch_alarm_definition(self, tenant_id, id,
+                                         name,
+                                         expression,
+                                         sub_expr_list,
+                                         actions_enabled,
+                                         description,
+                                         alarm_actions,
+                                         ok_actions,
+                                         undetermined_actions,
+                                         match_by, severity, patch):
+        pass

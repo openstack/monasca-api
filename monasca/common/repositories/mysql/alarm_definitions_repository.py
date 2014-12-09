@@ -285,8 +285,309 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
             return alarm_definition_id
 
+    @mysql_repository.mysql_try_catch_block
+    def update_or_patch_alarm_definition(self, tenant_id, alarm_definition_id,
+                                         name, expression,
+                                         sub_expr_list, actions_enabled,
+                                         description, alarm_actions,
+                                         ok_actions, undetermined_actions,
+                                         match_by, severity, patch=False):
+
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+        with cnxn:
+
+            # Get the original alarm definition from the DB
+            parms = [tenant_id, alarm_definition_id]
+
+            where_clause = """ where ad.tenant_id = %s
+                            and ad.id = %s
+                            and deleted_at is NULL """
+
+            query = AlarmDefinitionsRepository.base_query + where_clause
+
+            cursor.execute(query, parms)
+
+            if cursor.rowcount < 1:
+                raise exceptions.DoesNotExistException
+
+            original_row = cursor.fetchall()[0]
+
+            query = """
+                select sad.*, sadd.dimensions
+                from sub_alarm_definition as sad
+                left join (select sub_alarm_definition_id,
+                              group_concat(dimension_name, '=',
+                              value) as dimensions
+                           from sub_alarm_definition_dimension
+                           group by sub_alarm_definition_id) as sadd
+                    on sadd.sub_alarm_definition_id = sad.id
+                where sad.alarm_definition_id = %s"""
+
+            cursor.execute(query, [alarm_definition_id])
+
+            rows = cursor.fetchall()
+
+            old_sub_alarm_defs_dict_by_id = {}
+
+            for row in rows:
+                sad = mysql_repository.SubAlarmDefinition(row=row)
+                old_sub_alarm_defs_dict_by_id[sad.id] = sad
+
+            old_sub_alarm_defs_set = set(
+                old_sub_alarm_defs_dict_by_id.values())
+
+            new_sub_alarm_defs_set = set()
+            for sub_expr in sub_expr_list:
+                sad = mysql_repository.SubAlarmDefinition(sub_expr=sub_expr)
+                # Inject the alarm definition id.
+                sad.alarm_definition_id = alarm_definition_id.decode('utf8')
+                new_sub_alarm_defs_set.add(sad)
+
+            # Identify old or changed expressions
+            old_or_changed_sub_alarm_defs_set = (
+                old_sub_alarm_defs_set - new_sub_alarm_defs_set)
+
+            # Identify new or changed expressions
+            new_or_changed_sub_alarm_defs_set = (
+                new_sub_alarm_defs_set - old_sub_alarm_defs_set)
+
+            # Find changed expressions. O(n^2) == bad!
+            # This algo may not work if sub expressions are duplicated.
+            changed_sub_alarm_defs_dict_by_id = {}
+            old_or_changed_sub_alarm_defs_set_to_remove = set()
+            new_or_changed_sub_alarm_defs_set_to_remove = set()
+            for old_or_changed in old_or_changed_sub_alarm_defs_set:
+                for new_or_changed in new_or_changed_sub_alarm_defs_set:
+                    if old_or_changed.same_key_fields(new_or_changed):
+                        old_or_changed_sub_alarm_defs_set_to_remove.add(
+                            old_or_changed
+                        )
+                        new_or_changed_sub_alarm_defs_set_to_remove.add(
+                            new_or_changed
+                        )
+                        changed_sub_alarm_defs_dict_by_id[
+                            old_or_changed.id] = (
+                            new_or_changed)
+
+            old_or_changed_sub_alarm_defs_set = (
+                old_or_changed_sub_alarm_defs_set -
+                old_or_changed_sub_alarm_defs_set_to_remove
+            )
+
+            new_or_changed_sub_alarm_defs_set = (
+                new_or_changed_sub_alarm_defs_set -
+                new_or_changed_sub_alarm_defs_set_to_remove
+            )
+            # Create the list of unchanged expressions
+            unchanged_sub_alarm_defs_dict_by_id = (
+                old_sub_alarm_defs_dict_by_id.copy())
+
+            for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
+                del unchanged_sub_alarm_defs_dict_by_id[old_sub_alarm_def.id]
+
+            for sub_alarm_definition_id in (
+                    changed_sub_alarm_defs_dict_by_id.keys()):
+                del unchanged_sub_alarm_defs_dict_by_id[
+                    sub_alarm_definition_id]
+
+            # Remove old sub expressions
+            temp = {}
+            for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
+                temp[old_sub_alarm_def.id] = old_sub_alarm_def
+            old_sub_alarm_defs_dict_by_id = temp
+
+            # Create IDs for new expressions
+            new_sub_alarm_defs_dict_by_id = {}
+            for new_sub_alarm_def in new_or_changed_sub_alarm_defs_set:
+                sub_alarm_definition_id = uuidutils.generate_uuid()
+                new_sub_alarm_def.id = sub_alarm_definition_id
+                new_sub_alarm_defs_dict_by_id[sub_alarm_definition_id] = (
+                    new_sub_alarm_def)
+
+            # Get a common update time
+            now = datetime.datetime.utcnow()
+
+            # Update the alarm definition
+            query = """
+                update alarm_definition
+                set name = %s,
+                    description = %s,
+                    expression = %s,
+                    match_by = %s,
+                    severity = %s,
+                    actions_enabled = %s,
+                    updated_at = %s
+                    where tenant_id = %s and id = %s"""
+
+            if description is None:
+                new_description = original_row['description']
+            else:
+                new_description = description.encode('utf8')
+
+            if severity is None:
+                new_severity = original_row['severity']
+            else:
+                new_severity = severity.encode('utf8')
+
+            if match_by is None:
+                new_match_by = original_row['match_by']
+            else:
+                new_match_by = ",".join(match_by).encode('utf8')
+
+            parms = [name.encode('utf8'),
+                     new_description,
+                     expression.encode('utf8'),
+                     new_match_by,
+                     new_severity,
+                     1 if actions_enabled else 0,
+                     now,
+                     tenant_id,
+                     alarm_definition_id]
+
+            cursor.execute(query, parms)
+
+            # Delete the old sub alarm definitions
+            query = """
+                delete from sub_alarm_definition where id = %s"""
+
+            for sub_alarm_def_id in old_sub_alarm_defs_dict_by_id.values():
+                parms = [sub_alarm_def_id]
+                cursor.execute(query, parms)
+
+            # Update changed sub alarm definitions
+            query = """
+                update sub_alarm_definition
+                set operator = %s,
+                threshold = %s,
+                updated_at = %s
+                where id = %s"""
+
+            for sub_alarm_definition_id, sub_alarm_def in (
+                    changed_sub_alarm_defs_dict_by_id.iteritems()):
+                parms = [sub_alarm_def.operator, sub_alarm_def.threshold,
+                         now, sub_alarm_definition_id]
+                cursor.execute(query, parms)
+
+            # Insert new sub alarm definitions
+            query = """
+                insert into sub_alarm_definition(
+                   id,
+                   alarm_definition_id,
+                   function,
+                   metric_name,
+                   operator,
+                   threshold,
+                   period,
+                   periods,
+                   created_at,
+                   updated_at)
+                values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+
+            sub_query = """
+                insert into sub_alarm_definition_dimension(
+                  sub_alarm_definition_id,
+                  dimension_name,
+                  value)
+                values(%s, %s,%s)"""
+
+            for sub_alarm_def in new_sub_alarm_defs_dict_by_id.values():
+                parms = [sub_alarm_def.id,
+                         sub_alarm_def.alarm_definition_id,
+                         sub_alarm_def.function.encode('utf8'),
+                         sub_alarm_def.metric_name.encode('utf8'),
+                         sub_alarm_def.operator.encode('utf8'),
+                         str(sub_alarm_def.threshold).encode('utf8'),
+                         str(sub_alarm_def.period).encode('utf8'),
+                         str(sub_alarm_def.periods).encode('utf8'),
+                         now,
+                         now]
+
+                cursor.execute(query, parms)
+
+                for name, value in sub_alarm_def.dimensions.items():
+                    parms = [sub_alarm_def.id, name.encode('utf8'),
+                             value.encode('utf8')]
+
+                    cursor.execute(sub_query, parms)
+
+            # Delete old alarm actions
+            if patch:
+                if alarm_actions is not None:
+                    self._delete_alarm_actions(cursor, alarm_definition_id,
+                                               'ALARM')
+                if ok_actions is not None:
+                    self._delete_alarm_actions(cursor, alarm_definition_id,
+                                               'OK')
+                if undetermined_actions is not None:
+                    self._delete_alarm_actions(cursor, alarm_definition_id,
+                                               'UNDETERMINED')
+            else:
+                query = """
+                    delete from alarm_action
+                    where alarm_definition_id = %s"""
+
+                parms = [alarm_definition_id]
+
+                cursor.execute(query, parms)
+
+            # Insert new alarm actions
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           alarm_actions,
+                                           u"ALARM")
+
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           undetermined_actions,
+                                           u"UNDETERMINED")
+
+            self._insert_into_alarm_action(cursor, alarm_definition_id,
+                                           ok_actions,
+                                           u"OK")
+
+            # Get the updated alarm definition from the DB
+            parms = [tenant_id, alarm_definition_id]
+
+            where_clause = """ where ad.tenant_id = %s
+                            and ad.id = %s
+                            and deleted_at is NULL """
+
+            query = AlarmDefinitionsRepository.base_query + where_clause
+
+            cursor.execute(query, parms)
+
+            if cursor.rowcount < 1:
+                raise Exception("Failed to find current alarm definition")
+
+            updated_row = cursor.fetchall()[0]
+
+            sub_alarm_defs_dict = {'old': old_sub_alarm_defs_dict_by_id,
+                                   'changed':
+                                       changed_sub_alarm_defs_dict_by_id,
+                                   'new':
+                                       new_sub_alarm_defs_dict_by_id,
+                                   'unchanged':
+                                       unchanged_sub_alarm_defs_dict_by_id}
+
+            # Return the alarm def and the sub alarm defs
+            return updated_row, sub_alarm_defs_dict
+
+    def _delete_alarm_actions(self, cursor, id, alarm_action_name):
+
+        query = """
+            delete
+            from alarm_action
+            where alarm_definition_id = %s and alarm_state = %s
+            """
+        parms = [id, alarm_action_name]
+
+        cursor.execute(query, parms)
+
     def _insert_into_alarm_action(self, cursor, alarm_definition_id, actions,
                                   alarm_state):
+
+        if actions is None:
+            return
+
         for action in actions:
             cursor.execute("select id from notification_method where id = %s",
                            (action.encode('utf8'),))

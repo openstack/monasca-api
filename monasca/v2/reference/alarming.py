@@ -35,12 +35,12 @@ class Alarming(object):
 
         super(Alarming, self).__init__()
 
-        self._events_message_queue = (
+        self.events_message_queue = (
             resource_api.init_driver('monasca.messaging',
                                      cfg.CONF.messaging.driver,
                                      (['events'])))
 
-        self._alarm_state_transitions_message_queue = (
+        self.alarm_state_transitions_message_queue = (
             resource_api.init_driver('monasca.messaging',
                                      cfg.CONF.messaging.driver,
                                      (['alarm-state-transitions'])))
@@ -69,8 +69,8 @@ class Alarming(object):
             metric = self._build_metric(alarm_metric_row)
             metrics.append(metric)
 
-        self._send_event(self._alarm_state_transitions_message_queue,
-                         alarm_transitioned_event_msg)
+        self.send_event(self.alarm_state_transitions_message_queue,
+                        alarm_transitioned_event_msg)
 
     def _build_metric(self, alarm_metric_row):
 
@@ -110,7 +110,8 @@ class Alarming(object):
                                                         prev_alarm_id))
                     alarm_event_msg[event_type][
                         u'subAlarms': sub_alarms_event_msg]
-                    self._send_event(alarm_event_msg)
+                    self.send_event(self.events_message_queue,
+                                    alarm_event_msg)
 
                 alarm_metrics_event_msg = []
                 alarm_event_msg = {event_type: {u'tenant_id': tenant_id,
@@ -133,8 +134,8 @@ class Alarming(object):
                                                                prev_alarm_id)
         alarm_event_msg[event_type][u'subAlarms'] = sub_alarms_event_msg
 
-        self._send_event(self._events_message_queue,
-                         alarm_event_msg)
+        self.send_event(self.events_message_queue,
+                        alarm_event_msg)
 
     def _build_sub_alarm_event_msg(self, sub_alarm_dict, alarm_id):
 
@@ -164,7 +165,7 @@ class Alarming(object):
 
         return sub_alarms_event_msg
 
-    def _send_event(self, message_queue, event_msg):
+    def send_event(self, message_queue, event_msg):
         try:
             message_queue.send_message(
                 json.dumps(event_msg, ensure_ascii=False).encode('utf8'))
