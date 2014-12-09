@@ -1,12 +1,31 @@
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, please pay attention to order them correctly.
+
+# this is the base monasca-api requirements. To choose a particular
+# implementation to install, run pip install -r xxx-requirements.txt.
+#
+# for example, to install monasca-api and v2 reference implementation, do the
+# followings:
+#
+#    pip install -r requirements.txt -r ref-impl-requirements.txt
+#
+# The above will install monasca-api base and reference implementation
+# dependencies.
+#
+# To install monasca-api and elasticsearch implementation, do the following:
+#
+#    pip install -r requirements.txt -r es-impl-requirements.txt
+#
+# The above command will install monasca-api base and elasticsearch
+# implementation while leave other implementation dependencies alone.
+
 falcon>=0.1.9
 gunicorn>=19.1.0
-influxdb>=0.1.12
-MySQL-python
 oslo.config>=1.2.1
 pastedeploy>=1.3.3
 pbr>=0.6,!=0.7,<1.0
-Pyparsing>=2.0.3
-simplejson>=2.0.9
+python-dateutil>=1.5
 six>=1.7.0
 stevedore>=0.14
 ujson>=1.33
