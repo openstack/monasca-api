@@ -154,7 +154,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         helpers.add_links_to_resource(result, req.uri)
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
-        res.status = falcon.HTTP_201
+        res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions', method='get')
     def do_get_alarm_definitions(self, req, res):
@@ -215,7 +215,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         helpers.add_links_to_resource(result, req.uri)
         res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
-        res.status = falcon.HTTP_201
+        res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='delete')
     def do_delete_alarm_definitions(self, req, res, id):
@@ -373,19 +373,19 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                 patch))
 
         old_sub_alarm_def_event_dict = (
-            self._build_sub_alarm_def_update_event(
+            self._build_sub_alarm_def_update_dict(
                 sub_alarm_def_dicts['old']))
 
         new_sub_alarm_def_event_dict = (
-            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+            self._build_sub_alarm_def_update_dict(sub_alarm_def_dicts[
                 'new']))
 
         changed_sub_alarm_def_event_dict = (
-            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+            self._build_sub_alarm_def_update_dict(sub_alarm_def_dicts[
                 'changed']))
 
         unchanged_sub_alarm_def_event_dict = (
-            self._build_sub_alarm_def_update_event(sub_alarm_def_dicts[
+            self._build_sub_alarm_def_update_dict(sub_alarm_def_dicts[
                 'unchanged']))
 
         alarm_def_event_dict = (
@@ -412,31 +412,32 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         return result
 
-    def _build_sub_alarm_def_update_event(self, sub_alarm_def_dict):
+    def _build_sub_alarm_def_update_dict(self, sub_alarm_def_dict):
 
-        sub_alarm_def_event_dict = {}
+        sub_alarm_def_update_dict = {}
         for id, sub_alarm_def in sub_alarm_def_dict.items():
             dimensions = {}
             for name, value in sub_alarm_def.dimensions.items():
                 dimensions[u'uname'] = value
-            sub_alarm_def_event_dict[sub_alarm_def.id] = {}
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'function'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id] = {}
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'function'] = (
                 sub_alarm_def.function)
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'metricDefinition'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][
+                u'metricDefinition'] = (
                 {u'name': sub_alarm_def.metric_name,
                  u'dimensions': dimensions})
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'operator'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'operator'] = (
                 sub_alarm_def.operator)
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'threshold'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'threshold'] = (
                 sub_alarm_def.threshold)
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'period'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'period'] = (
                 sub_alarm_def.period)
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'periods'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'periods'] = (
                 sub_alarm_def.periods)
-            sub_alarm_def_event_dict[sub_alarm_def.id][u'expression'] = (
+            sub_alarm_def_update_dict[sub_alarm_def.id][u'expression'] = (
                 sub_alarm_def.expression)
 
-        return sub_alarm_def_event_dict
+        return sub_alarm_def_update_dict
 
     @resource_try_catch_block
     def _alarm_definition_create(self, tenant_id, name, expression,
