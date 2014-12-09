@@ -67,7 +67,7 @@ public class CreateNotificationMethodCommand {
   public void validate() {
     switch (type) {
       case EMAIL : {
-        if (!EmailValidator.getInstance().isValid(address))
+        if (!EmailValidator.getInstance(true).isValid(address))
           throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
       }; break;
       case WEBHOOK : {

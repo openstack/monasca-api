@@ -60,22 +60,13 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
   public void testValidationForEmail() {
     CreateNotificationMethodCommand newNotificationMethod =
         new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "name@domain.com");
-
-    Exception ex = null;
-
-    try {
       newNotificationMethod.validate();
-    } catch (Exception e) {
-      ex = e;
-    }
-
-    assertEquals(null, ex);
   }
 
   @Test(expectedExceptions = WebApplicationException.class)
   public void testValidationExceptionForEmail() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod =
-        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "name@domain");
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "name@domain.");
 
     newNotificationMethod.validate();
   }
@@ -83,16 +74,7 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
   public void testValidationForWebhook() {
     CreateNotificationMethodCommand newNotificationMethod =
         new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.WEBHOOK, "http://somedomain.com");
-
-    Exception ex = null;
-
-    try {
       newNotificationMethod.validate();
-    } catch (Exception e) {
-      ex = e;
-    }
-
-    assertEquals(null, ex);
   }
 
   @Test(expectedExceptions = WebApplicationException.class)
