@@ -105,7 +105,10 @@ class Metrics(monasca_api_v2.V2API):
         """
 
         try:
-            return self._metrics_repo.list_metrics(tenant_id, name, dimensions)
+            return self._metrics_repo.list_metrics(tenant_id,
+                                                   self._region,
+                                                   name,
+                                                   dimensions)
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
@@ -114,7 +117,9 @@ class Metrics(monasca_api_v2.V2API):
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp):
         try:
-            return self._metrics_repo.measurement_list(tenant_id, name,
+            return self._metrics_repo.measurement_list(tenant_id,
+                                                       self._region,
+                                                       name,
                                                        dimensions,
                                                        start_timestamp,
                                                        end_timestamp)
@@ -126,7 +131,9 @@ class Metrics(monasca_api_v2.V2API):
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
                            end_timestamp, statistics, period):
         try:
-            return self._metrics_repo.metrics_statistics(tenant_id, name,
+            return self._metrics_repo.metrics_statistics(tenant_id,
+                                                         self._region,
+                                                         name,
                                                          dimensions,
                                                          start_timestamp,
                                                          end_timestamp,
