@@ -78,20 +78,20 @@ final class Utils {
 
   }
 
-  static String buildSerieNameRegex(final String tenantId, final String name,
+  static String buildSerieNameRegex(final String tenantId, String region, final String name,
                                     final Map<String, String> dimensions) throws Exception {
+
     final StringBuilder regex = new StringBuilder("^");
+
+    regex.append(urlEncodeUTF8(tenantId));
+    regex.append("\\?");
+    regex.append(urlEncodeUTF8(region));
 
     // Name is optional.
     if (name != null) {
+      regex.append("&");
       regex.append(urlEncodeUTF8(name));
-    } else {
-      regex.append(".+");
     }
-
-    // Tenant ID will always be included in the regex.
-    regex.append("\\?");
-    regex.append(urlEncodeUTF8(tenantId));
 
     // Dimensions are optional.
     if (dimensions != null && !dimensions.isEmpty()) {
@@ -161,17 +161,17 @@ final class Utils {
 
       this.serieName = serieName;
 
-      this.metricName = urlDecodeUTF8(serieName.substring(0, serieName.indexOf('?')));
+      this.tenantId = urlDecodeUTF8(serieName.substring(0, serieName.indexOf('?')));
       String rest = serieName.substring(serieName.indexOf('?') + 1);
 
-      this.tenantId = urlDecodeUTF8(rest.substring(0, rest.indexOf('&')));
+      this.region = urlDecodeUTF8(rest.substring(0, rest.indexOf('&')));
       rest = rest.substring(rest.indexOf('&') + 1);
 
       if (rest.contains("&")) {
-        this.region = urlDecodeUTF8(rest.substring(0, rest.indexOf('&')));
+        this.metricName = urlDecodeUTF8(rest.substring(0, rest.indexOf('&')));
         rest = rest.substring(rest.indexOf('&') + 1);
       } else {
-        this.region = urlDecodeUTF8(rest);
+        this.metricName = urlDecodeUTF8(rest);
         rest = null;
       }
 

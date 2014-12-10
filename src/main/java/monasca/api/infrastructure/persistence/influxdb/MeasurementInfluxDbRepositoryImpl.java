@@ -61,7 +61,7 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
                                        @Nullable DateTime endTime)
       throws Exception {
 
-    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
+    String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
 

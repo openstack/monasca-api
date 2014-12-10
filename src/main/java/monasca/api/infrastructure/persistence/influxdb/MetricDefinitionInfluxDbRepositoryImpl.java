@@ -49,7 +49,7 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
   public List<MetricDefinition> find(String tenantId, String name, Map<String,
       String> dimensions) throws Exception {
 
-    String serieNameRegex = buildSerieNameRegex(tenantId, name, dimensions);
+    String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 
     String query = String.format("list series /%1$s/", serieNameRegex);
     logger.debug("Query string: {}", query);
