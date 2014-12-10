@@ -20,15 +20,16 @@ import six
 @six.add_metaclass(abc.ABCMeta)
 class MetricsRepository(object):
     @abc.abstractmethod
-    def list_metrics(self, tenant_id, name, dimensions):
+    def list_metrics(self, tenant_id, region, name, dimensions):
         pass
 
     @abc.abstractmethod
-    def measurement_list(self, tenant_id, name, dimensions, start_timestamp,
+    def measurement_list(self, tenant_id, region, name, dimensions,
+                         start_timestamp,
                          end_timestamp):
         pass
 
     @abc.abstractmethod
-    def metrics_statistics(self, tenant_id, name, dimensions, start_timestamp,
-                           end_timestamp, statistics, period):
+    def metrics_statistics(self, tenant_id, region, name, dimensions,
+                           start_timestamp, end_timestamp, statistics, period):
         pass

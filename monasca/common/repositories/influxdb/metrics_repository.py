@@ -42,7 +42,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             # compile regex only once for efficiency
             self._serie_name_reqex = re.compile(
                 '([^?&=]+)\?([^?&=]+)&([^?&=]+)(&[^?&=]+=[^?&=]+)*')
-            self._serie_name_tenant_id_region_regex = re.compile(
+            self._serie_tenant_id_region_name_regex = re.compile(
                 '[^?&=]+\?[^?&=]+&[^?&=]+')
             self._serie_name_dimension_regex = re.compile('&[^?&=]+=[^?&=]+')
             self._serie_name_dimension_parts_regex = re.compile(
@@ -52,30 +52,33 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception()
             raise exceptions.RepositoryException(ex)
 
-    def _build_list_series_query(self, dimensions, name, tenant_id):
+    def _build_list_series_query(self, dimensions, name, tenant_id, region):
 
-        from_clause = self._build_from_clause(dimensions, name, tenant_id)
+        from_clause = self._build_from_clause(dimensions, name, tenant_id,
+                                              region)
 
         query = 'list series ' + from_clause
 
         return query
 
-    def _build_select_query(self, dimensions, name, tenant_id, start_timestamp,
-                            end_timestamp):
+    def _build_select_query(self, dimensions, name, tenant_id,
+                            region, start_timestamp, end_timestamp):
 
         from_clause = self._build_from_clause(dimensions, name, tenant_id,
-                                              start_timestamp, end_timestamp)
+                                              region, start_timestamp,
+                                              end_timestamp)
 
         query = 'select * ' + from_clause
 
         return query
 
     def _build_statistics_query(self, dimensions, name, tenant_id,
-                                start_timestamp, end_timestamp, statistics,
-                                period):
+                                region, start_timestamp, end_timestamp,
+                                statistics, period):
 
         from_clause = self._build_from_clause(dimensions, name, tenant_id,
-                                              start_timestamp, end_timestamp)
+                                              region, start_timestamp,
+                                              end_timestamp)
 
         statistics = [statistic.replace('avg', 'mean') for statistic in
                       statistics]
@@ -92,19 +95,22 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return query
 
-    def _build_from_clause(self, dimensions, name, tenant_id,
+    def _build_from_clause(self, dimensions, name, tenant_id, region,
                            start_timestamp=None, end_timestamp=None):
 
         from_clause = 'from /^'
 
-        if name:
-            from_clause += urllib.quote(name.encode('utf8'),
-                                        safe='') + '\?' + urllib.quote(
-                tenant_id.encode('utf8'), safe='')
-        else:
-            from_clause += '.+\?' + urllib.quote(tenant_id.encode('utf8'),
-                                                 safe='')
+        # tenant id
+        from_clause += urllib.quote(tenant_id.encode('utf8'), safe='')
 
+        # region
+        from_clause += '\?' + urllib.quote(region.encode('utf8'), safe='')
+
+        # name - optional
+        if name:
+            from_clause += '&' + urllib.quote(name.encode('utf8'), safe='')
+
+        # dimensions - optional
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.iteritems())):
@@ -126,11 +132,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return from_clause
 
-    def list_metrics(self, tenant_id, name, dimensions):
+    def list_metrics(self, tenant_id, region, name, dimensions):
 
         try:
 
-            query = self._build_list_series_query(dimensions, name, tenant_id)
+            query = self._build_list_series_query(dimensions, name, tenant_id,
+                                                  region)
 
             result = self.influxdb_client.query(query, 's')
 
@@ -151,7 +158,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             "points": [
               [
                 0,
-                "%E5%8D%83?tenant&useast&dim1=%E5%8D%83&dim2=%E5%8D%83"
+                "tenant?useast&%E5%8D%83&dim1=%E5%8D%83&dim2=%E5%8D%83"
               ]
             ],
             "name": "list_series_result",
@@ -183,10 +190,10 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         """Decodes a serie name from InfluxDB.
 
         The raw serie name is
-        formed by url encoding the name, tenant id, region, and dimensions,
+        formed by url encoding the tenant id, region, name, and dimensions,
         and concatenating them into a quasi URL query string.
 
-        urlencode(name)?urlencode(tenant)&urlencode(region)[&urlencode(
+        urlencode(tenant)?urlencode(region)&urlencode(name)[&urlencode(
         dim_name)=urlencode(dim_value)]...
 
 
@@ -196,18 +203,21 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         match = self._serie_name_reqex.match(serie_name)
         if match:
-            name = urllib.unquote_plus(match.group(1).encode('utf8')).decode(
-                'utf8')
-            metric = {"name": name}
 
-            # throw tenant_id (group 2) and region (group 3) away
+            # throw tenant_id (match.group(1) and region (match.group(2) away
+
+            metric_name = (
+                urllib.unquote_plus(match.group(3).encode(
+                    'utf8')).decode('utf8'))
+
+            metric = {"name": metric_name}
 
             # only returns the last match. we need all dimensions.
             dimensions = match.group(4)
             if dimensions:
                 # remove the name, tenant_id, and region; just
                 # dimensions remain
-                dimensions_part = self._serie_name_tenant_id_region_regex.sub(
+                dimensions_part = self._serie_tenant_id_region_name_regex.sub(
                     '', serie_name)
                 dimensions = {}
                 dimension_list = self._serie_name_dimension_regex.findall(
@@ -227,7 +237,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return metric
 
-    def measurement_list(self, tenant_id, name, dimensions, start_timestamp,
+    def measurement_list(self, tenant_id, region, name, dimensions,
+                         start_timestamp,
                          end_timestamp):
         """Example result from InfluxDB.
 
@@ -240,7 +251,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                 99.99
               ]
             ],
-            "name": "%E5%8D%83?tenant&useast&dim1=%E5%8D%83&dim2=%E5%8D%83",
+            "name": "tenant?useast&%E5%8D%83&dim1=%E5%8D%83&dim2
+            =%E5%8D%83",
             "columns": [
               "time",
               "sequence_number",
@@ -261,7 +273,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                 99.99
               ]
             ],
-            "name": "千?tenant&useast&dim1=千&dim2=千",
+            "name": "tenant?useast&千&dim1=千&dim2=千",
             "columns": [
               "time",
               "sequence_number",
@@ -280,7 +292,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         try:
             query = self._build_select_query(dimensions, name, tenant_id,
-                                             start_timestamp, end_timestamp)
+                                             region, start_timestamp,
+                                             end_timestamp)
 
             try:
                 result = self.influxdb_client.query(query, 's')
@@ -323,13 +336,15 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def metrics_statistics(self, tenant_id, name, dimensions, start_timestamp,
+    def metrics_statistics(self, tenant_id, region, name, dimensions,
+                           start_timestamp,
                            end_timestamp, statistics, period):
 
         json_statistics_list = []
 
         try:
             query = self._build_statistics_query(dimensions, name, tenant_id,
+                                                 region,
                                                  start_timestamp,
                                                  end_timestamp, statistics,
                                                  period)
