@@ -13,21 +13,19 @@
  */
 package monasca.api.domain.model.alarmdefinition;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import monasca.common.model.alarm.AlarmExpression;
-import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import monasca.common.model.alarm.AlarmExpression;
+import monasca.common.model.domain.common.AbstractEntity;
 
-@ApiModel(value = "Defines an alarm")
 @XmlRootElement(name = "Alarm definition")
 public class AlarmDefinition extends AbstractEntity implements Linked {
   private List<Link> links;
@@ -212,7 +210,6 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
   }
 
   @XmlElement(name = "id")
-  @ApiModelProperty(value = "Alarm definition ID")
   public void setId(String id) {
     this.id = id;
   }

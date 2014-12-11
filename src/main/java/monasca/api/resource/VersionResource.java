@@ -13,6 +13,8 @@
  */
 package monasca.api.resource;
 
+import com.codahale.metrics.annotation.Timed;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -24,17 +26,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-import com.codahale.metrics.annotation.Timed;
 import monasca.api.domain.model.version.Version;
 import monasca.api.domain.model.version.VersionRepository;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * Version resource implementation.
  */
 @Path("/")
-@Api(value = "/", description = "Operations for accessing versions")
 @Produces(MediaType.APPLICATION_JSON)
 public class VersionResource {
   private final VersionRepository repository;
@@ -46,7 +44,6 @@ public class VersionResource {
 
   @GET
   @Timed
-  @ApiOperation(value = "Get versions", response = Version.class, responseContainer = "List")
   public List<Version> list(@Context UriInfo uriInfo) {
     return Links.hydrate(repository.find(), uriInfo);
   }
@@ -54,7 +51,6 @@ public class VersionResource {
   @GET
   @Timed
   @Path("{version_id}")
-  @ApiOperation(value = "Get version", response = Version.class)
   public Version get(@Context UriInfo uriInfo, @PathParam("version_id") String versionId) {
     return Links.hydrate(repository.findById(versionId), uriInfo, true);
   }

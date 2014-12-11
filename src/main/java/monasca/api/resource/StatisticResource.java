@@ -13,21 +13,28 @@
  */
 package monasca.api.resource;
 
-import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+
+import com.codahale.metrics.annotation.Timed;
+
+import org.joda.time.DateTime;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.statistic.StatisticRepository;
 import monasca.api.domain.model.statistic.Statistics;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import org.joda.time.DateTime;
-
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.Map;
 
 // import monasca.common.util.stats.Statistics;
 
@@ -35,7 +42,6 @@ import java.util.Map;
  * Statistics resource implementation.
  */
 @Path("/v2.0/metrics/statistics")
-@Api(value = "/v2.0/statistics", description = "Operations for accessing statistics")
 public class StatisticResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
@@ -49,7 +55,6 @@ public class StatisticResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Get statistics", response = Statistics.class, responseContainer = "List")
   public List<Statistics> get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,

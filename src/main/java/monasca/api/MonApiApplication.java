@@ -13,10 +13,12 @@
  */
 package monasca.api;
 
-import io.dropwizard.Application;
-import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,17 +28,10 @@ import java.util.Set;
 import javax.servlet.FilterRegistration.Dynamic;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import org.eclipse.jetty.servlets.CrossOriginFilter;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
-import monasca.common.messaging.kafka.KafkaHealthCheck;
-import monasca.common.middleware.AuthConstants;
-import monasca.common.middleware.TokenAuth;
-import monasca.api.bundle.SwaggerBundle;
+import io.dropwizard.Application;
+import io.dropwizard.jdbi.bundles.DBIExceptionsBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import monasca.api.infrastructure.servlet.MockAuthenticationFilter;
 import monasca.api.infrastructure.servlet.PostAuthenticationFilter;
 import monasca.api.infrastructure.servlet.PreAuthenticationFilter;
@@ -57,6 +52,9 @@ import monasca.api.resource.exception.JsonMappingExceptionManager;
 import monasca.api.resource.exception.JsonProcessingExceptionMapper;
 import monasca.api.resource.exception.ThrowableExceptionMapper;
 import monasca.api.resource.serialization.SubAlarmExpressionSerializer;
+import monasca.common.messaging.kafka.KafkaHealthCheck;
+import monasca.common.middleware.AuthConstants;
+import monasca.common.middleware.TokenAuth;
 import monasca.common.util.Injector;
 
 /**
@@ -71,7 +69,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
   public void initialize(Bootstrap<MonApiConfiguration> bootstrap) {
     /** Configure bundles */
     bootstrap.addBundle(new DBIExceptionsBundle());
-    bootstrap.addBundle(new SwaggerBundle());
   }
 
   @Override
@@ -196,9 +193,6 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       mockAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
     }
-
-    /** Configure swagger */
-    SwaggerBundle.configure(config);
   }
 
   private void ensureHasValue(final String value, final String what, final String control,

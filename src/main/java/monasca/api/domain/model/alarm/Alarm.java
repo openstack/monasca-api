@@ -24,8 +24,6 @@ import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
-
 @XmlRootElement(name = "Alarm")
 public class Alarm extends AbstractEntity implements Linked {
   private List<Link> links;
@@ -56,7 +54,6 @@ public class Alarm extends AbstractEntity implements Linked {
   }
 
   @XmlElement(name = "id")
-  @ApiModelProperty(value = "Alarm ID")
   public void setId(String id) {
     this.id = id;
   }
