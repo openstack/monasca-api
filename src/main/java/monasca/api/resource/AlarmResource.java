@@ -13,6 +13,14 @@
  */
 package monasca.api.resource;
 
+import com.google.common.base.Strings;
+
+import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import org.hibernate.validator.constraints.NotEmpty;
+import org.joda.time.DateTime;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,33 +40,20 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-import org.hibernate.validator.constraints.NotEmpty;
-import org.joda.time.DateTime;
-
-import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.base.Strings;
 import monasca.api.app.AlarmService;
 import monasca.api.app.command.UpdateAlarmCommand;
 import monasca.api.app.validation.Validation;
-import monasca.common.model.alarm.AlarmState;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import monasca.api.resource.annotation.PATCH;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import monasca.common.model.alarm.AlarmState;
 
 /**
  * Alarm resource implementation.
  */
 @Path("/v2.0/alarms")
-@Api(value = "/v2.0/alarms", description = "Operations for accessing alarms")
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepository repo;
@@ -75,7 +70,6 @@ public class AlarmResource {
   @DELETE
   @Timed
   @Path("/{alarm_id}")
-  @ApiOperation(value = "Delete alarm")
   public void delete(@HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId) {
     service.delete(tenantId, alarmId);
@@ -85,11 +79,8 @@ public class AlarmResource {
   @Timed
   @Path("/{alarm_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Get alarm", response = Alarm.class)
-  @ApiResponses(value = {@ApiResponse(code = 400, message = "Invalid ID supplied"),
-      @ApiResponse(code = 404, message = "Alarm not found")})
   public Alarm get(
-      @ApiParam(value = "ID of alarm to fetch", required = true) @Context UriInfo uriInfo,
+      @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarm_id) {
     return fixAlarmLinks(uriInfo, repo.findById(tenantId, alarm_id));
   }
@@ -104,8 +95,6 @@ public class AlarmResource {
   @Timed
   @Path("/{alarm_id}/state-history")
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Get alarm state history", response = AlarmStateHistory.class,
-      responseContainer = "List")
   public List<AlarmStateHistory> getStateHistory(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId)
       throws Exception {
@@ -115,7 +104,6 @@ public class AlarmResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "List alarms", response = Alarm.class, responseContainer = "List")
   public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("alarm_definition_id") String alarmDefId,
       @QueryParam("metric_name") String metricName,
@@ -135,8 +123,6 @@ public class AlarmResource {
   @Timed
   @Path("/state-history")
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "List alarm state history", response = AlarmDefinition.class,
-      responseContainer = "List")
   public Collection<AlarmStateHistory> listStateHistory(
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr)
@@ -174,7 +160,6 @@ public class AlarmResource {
   @Path("/{alarm_id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Update alarm", response = Alarm.class)
   public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
 

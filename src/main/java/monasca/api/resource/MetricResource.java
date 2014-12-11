@@ -13,19 +13,14 @@
  */
 package monasca.api.resource;
 
-import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import monasca.api.app.MetricService;
-import monasca.api.app.command.CreateMetricCommand;
-import monasca.api.app.validation.Validation;
-import monasca.common.model.Services;
-import monasca.common.model.metric.Metric;
-import monasca.common.model.metric.MetricDefinition;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
-import monasca.api.resource.exception.Exceptions;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+
+import com.codahale.metrics.annotation.Timed;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -39,15 +34,20 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
+import monasca.api.app.MetricService;
+import monasca.api.app.command.CreateMetricCommand;
+import monasca.api.app.validation.Validation;
+import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.resource.exception.Exceptions;
+import monasca.common.model.Services;
+import monasca.common.model.metric.Metric;
+import monasca.common.model.metric.MetricDefinition;
 
 /**
  * Metric resource implementation.
  */
 @Path("/v2.0/metrics")
-@Api(value = "/v2.0/metrics", description = "Operations for accessing metrics")
 public class MetricResource {
   private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
@@ -64,7 +64,6 @@ public class MetricResource {
   @POST
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Create metrics")
   public void create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @HeaderParam("X-Roles") String roles, @QueryParam("tenant_id") String crossTenantId,
       @Valid CreateMetricCommand[] commands) {
@@ -94,8 +93,6 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  @ApiOperation(value = "Get metrics", response = MetricDefinition.class,
-      responseContainer = "List")
   public List<MetricDefinition> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr)
       throws Exception {
