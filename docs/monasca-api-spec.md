@@ -517,7 +517,7 @@ where 'avg' is the arithmetic average. Note, threshold values are always in the 
 
 
 #### Simple Example
-In this example the metric uniquely identified with the name=cpu.system_perc and dimension hostname=host.domain.com is compared to the threshold 95.
+In this example the metric uniquely identified with the name `cpu.system_perc` and dimension `hostname=host.domain.com` is compared to the threshold 95.
 
 ```
 cpu.system_perc{hostname=host.domain.com} > 95

@@ -51,6 +51,7 @@ public class AlarmService {
   private final Producer<String, String> producer;
   private final AlarmRepository repo;
   private final AlarmDefinitionRepository alarmDefRepo;
+  private long messageCount = 0;
 
   @Inject
   public AlarmService(MonApiConfiguration config, Producer<String, String> producer,
@@ -77,7 +78,7 @@ public class AlarmService {
     String event =
         Serialization.toJson(new AlarmDeletedEvent(tenantId, alarmId, metrics, alarm
             .getAlarmDefinition().getId(), subAlarmMetricDefs));
-    producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+    producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(messageCount++), event));
   }
 
   /**
