@@ -2,6 +2,8 @@
 
 `monasca-api` is a RESTful API server that is designed with a layered architecture [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
 
+The full API Specification can be found in [docs/monasca-api-spec.md](docs/monasca-api-spec.md)
+
 ## Build
 
 Requires monasca-common from https://github.com/stackforge/monasca-common. Download and do mvn install.
