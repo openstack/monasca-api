@@ -8,6 +8,5 @@
 
 influxdb>=0.1.12
 MySQL-python
-peewee>=2.3.3
 Pyparsing>=2.0.3
 voluptuous>=0.8.5
