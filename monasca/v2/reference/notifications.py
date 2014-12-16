@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
-
 import falcon
 from oslo.config import cfg
 
@@ -91,8 +89,12 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
     def _create_notification_response(self, id, name, type,
                                       address, uri):
 
-        response = {'id': id, 'name': name, 'type': type,
-                    'address': address}
+        response = {
+            'id': id,
+            'name': name,
+            'type': type,
+            'address': address
+        }
 
         return helpers.add_links_to_resource(response, uri)
 
@@ -140,7 +142,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         self._validate_notification(notification)
         tenant_id = helpers.get_tenant_id(req)
         result = self._create_notification(tenant_id, notification, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_201
 
     @resource_api.Restify('/v2.0/notification-methods', method='get')
@@ -148,7 +150,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
         result = self._list_notifications(tenant_id, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/notification-methods/{id}', method='delete')
@@ -163,7 +165,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
         result = self._list_notification(tenant_id, id, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/notification-methods/{id}', method='put')
@@ -175,5 +177,5 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         tenant_id = helpers.get_tenant_id(req)
         result = self._update_notification(id, tenant_id, notification,
                                            req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200

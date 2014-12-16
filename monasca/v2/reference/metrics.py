@@ -167,7 +167,7 @@ class Metrics(monasca_api_v2.V2API):
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         result = self._list_metrics(tenant_id, name, dimensions)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/metrics/measurements', method='get')
@@ -182,7 +182,7 @@ class Metrics(monasca_api_v2.V2API):
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/metrics/statistics', method='get')
@@ -200,5 +200,5 @@ class Metrics(monasca_api_v2.V2API):
         result = self._metric_statistics(tenant_id, name, dimensions,
                                          start_timestamp, end_timestamp,
                                          statistics, period)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200

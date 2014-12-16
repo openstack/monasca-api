@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import re
 
 import falcon
@@ -71,7 +70,7 @@ class Alarms(AlarmsV2API, Alarming):
 
         result = self._alarm_show(req.uri, tenant_id, id)
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='patch')
@@ -101,7 +100,7 @@ class Alarms(AlarmsV2API, Alarming):
 
         result = self._alarm_list(req.uri, tenant_id, query_parms)
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='get')
@@ -117,7 +116,7 @@ class Alarms(AlarmsV2API, Alarming):
 
         result = self._alarm_show(req.uri, tenant_id, id)
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarms/state-history', method='get')
@@ -132,7 +131,7 @@ class Alarms(AlarmsV2API, Alarming):
         result = self._alarm_history_list(tenant_id, start_timestamp,
                                           end_timestamp, query_parms)
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarms/{id}/state-history', method='get')
@@ -143,7 +142,7 @@ class Alarms(AlarmsV2API, Alarming):
 
         result = self._alarm_history(tenant_id, [id])
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_try_catch_block

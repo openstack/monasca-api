@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import re
 
 import falcon
@@ -88,7 +87,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                                                ok_actions)
 
         helpers.add_links_to_resource(result, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_201
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='get')
@@ -100,7 +99,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         result = self._alarm_definition_show(tenant_id, id)
 
         helpers.add_links_to_resource(result, re.sub('/' + id, '', req.uri))
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='put')
@@ -153,7 +152,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                                                         patch=False)
 
         helpers.add_links_to_resource(result, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions', method='get')
@@ -167,7 +166,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         result = self._alarm_definition_list(tenant_id, name, dimensions,
                                              req.uri)
 
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='patch')
@@ -214,7 +213,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
                                                         patch=True)
 
         helpers.add_links_to_resource(result, req.uri)
-        res.body = json.dumps(result, ensure_ascii=False).encode('utf8')
+        res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarm-definitions/{id}', method='delete')

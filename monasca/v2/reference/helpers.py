@@ -319,3 +319,8 @@ def raise_not_found_exception(resource_name, resource_id, tenant_id):
         title='Not Found',
         description=msg,
         code=404)
+
+
+def dumpit_utf8(thingy):
+
+    return json.dumps(thingy, ensure_ascii=False).encode('utf8')

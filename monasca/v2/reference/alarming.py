@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
 
 import falcon
 from oslo.config import cfg
@@ -20,6 +19,7 @@ from monasca.common.messaging import exceptions as message_queue_exceptions
 from monasca.common import resource_api
 import monasca.expression_parser.alarm_expr_parser
 from monasca.openstack.common import log
+from monasca.v2.reference import helpers
 
 
 LOG = log.getLogger(__name__)
@@ -168,7 +168,7 @@ class Alarming(object):
     def send_event(self, message_queue, event_msg):
         try:
             message_queue.send_message(
-                json.dumps(event_msg, ensure_ascii=False).encode('utf8'))
+                helpers.dumpit_utf8(event_msg))
         except message_queue_exceptions.MessageQueueException as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError(
