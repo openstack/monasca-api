@@ -14,120 +14,148 @@
 
 import datetime
 
-import model
-import peewee
-
 from monasca.common.repositories import exceptions
-from monasca.common.repositories import notifications_repository
+from monasca.common.repositories.mysql import mysql_repository
+from monasca.common.repositories import notifications_repository as nr
 from monasca.openstack.common import log
+from monasca.openstack.common import uuidutils
 
 
 LOG = log.getLogger(__name__)
 
 
-class Notification_Method(model.Model):
-    id = peewee.TextField(36)
-    tenant_id = peewee.TextField(36)
-    name = peewee.TextField()
-    type = peewee.TextField()
-    address = peewee.TextField()
-    created_at = peewee.DateTimeField()
-    updated_at = peewee.DateTimeField()
+class NotificationsRepository(mysql_repository.MySQLRepository,
+                              nr.NotificationsRepository):
 
+    def __init__(self):
 
-class NotificationsRepository(
-        notifications_repository.NotificationsRepository):
+        super(NotificationsRepository, self).__init__()
 
-    def notification_from_result(self, result):
-        notification = dict(id=result.id,
-                            name=result.name,
-                            type=result.type,
-                            address=result.address)
-        return notification
+    def create_notification(self, tenant_id, name,
+                            notification_type, address):
 
-    def exists(self, tenant_id, name):
-        try:
-            return (Notification_Method.select().where(
-                (Notification_Method.tenant_id == tenant_id) & (
-                    Notification_Method.name == name)).count() > 0)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
 
-    def create_notification(
-            self, id, tenant_id, name, notification_type, address):
-        try:
+        with cnxn:
+
+            query = """
+                select *
+                from notification_method
+                where tenant_id = %s and name = %s"""
+
+            parms = [tenant_id, name.encode('utf8')]
+
+            cursor.execute(query, parms)
+
+            if cursor.rowcount > 0:
+                raise exceptions.AlreadyExistsException('Notification already '
+                                                        'exists')
+
             now = datetime.datetime.utcnow()
-            Notification_Method.create(
-                id=id,
-                tenant_id=tenant_id,
-                name=name,
-                notification_type=notification_type,
-                address=address,
-                created_at=now,
-                updated_at=now)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
+            notification_id = uuidutils.generate_uuid()
+            query = """
+                insert into notification_method(
+                  id,
+                  tenant_id,
+                  name,
+                  type,
+                  address,
+                  created_at,
+                  updated_at
+                ) values (%s, %s, %s, % s, %s, %s, %s)"""
 
+            parms = [notification_id,
+                     tenant_id,
+                     name.encode('utf8'),
+                     notification_type.encode('utf8'),
+                     address.encode('utf8'),
+                     now,
+                     now]
+
+            cursor.execute(query, parms)
+
+        return notification_id
+
+    @mysql_repository.mysql_try_catch_block
     def list_notifications(self, tenant_id):
-        try:
-            q = Notification_Method.select().where(
-                Notification_Method.tenant_id == tenant_id)
-            results = q.execute()
 
-            notifications = [
-                self.notification_from_result(result) for result in results]
-            return notifications
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
+        query = """
+            select *
+            from notification_method
+            where tenant_id = %s"""
 
-    def delete_notification(self, tenant_id, notification_id):
+        parms = [tenant_id]
 
-        try:
-            q = Notification_Method.delete().where(
-                (Notification_Method.tenant_id == tenant_id) & (
-                    Notification_Method.id == notification_id))
-            num_rows_deleted = q.execute()
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
+        rows = self._execute_query(query, parms)
 
-        if num_rows_deleted < 1:
-            raise exceptions.DoesNotExistException()
+        return rows
 
-        return
+    @mysql_repository.mysql_try_catch_block
+    def delete_notification(self, tenant_id, id):
 
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+        with cnxn:
+
+            query = """
+                select *
+                from notification_method
+                where tenant_id = %s and id = %s"""
+
+            parms = [tenant_id, id]
+
+            cursor.execute(query, parms)
+
+            if cursor.rowcount < 1:
+                raise exceptions.DoesNotExistException
+
+            query = """
+                delete
+                from notification_method
+                where tenant_id = %s and id = %s"""
+
+            cursor.execute(query, parms)
+
+    @mysql_repository.mysql_try_catch_block
     def list_notification(self, tenant_id, notification_id):
-        try:
-            result = Notification_Method.get(
-                (Notification_Method.tenant_id == tenant_id) & (
-                    Notification_Method.id == notification_id))
-            return (self.notification_from_result(result))
-        except Notification_Method.DoesNotExist as e:
-            raise exceptions.DoesNotExistException(str(e))
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
 
-    def update_notification(
-            self, id, tenant_id, name, notification_type, address):
-        now = datetime.datetime.utcnow()
-        try:
-            q = Notification_Method.update(
-                name=name,
-                type=notification_type,
-                address=address,
-                created_at=now,
-                updated_at=now).where(
-                (Notification_Method.tenant_id == tenant_id) & (
-                    Notification_Method.id == id))
-            # Execute the query, updating the database.
-            num_rows_updated = q.execute()
-        except Exception as ex:
-            LOG.exception(ex)
-            raise exceptions.RepositoryException(ex)
+        parms = [tenant_id, notification_id]
+
+        query = """
+                select *
+                from notification_method
+                where tenant_id = %s and id = %s"""
+
+        rows = self._execute_query(query, parms)
+
+        if rows:
+            return rows[0]
         else:
-            if num_rows_updated == 0:
+            raise exceptions.DoesNotExistException
+
+    @mysql_repository.mysql_try_catch_block
+    def update_notification(
+            self, id, tenant_id, name, type, address):
+
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+
+        with cnxn:
+
+            now = datetime.datetime.utcnow()
+
+            query = """
+                update notification_method
+                set name = %s,
+                    type = %s,
+                    address = %s,
+                    created_at = %s,
+                    updated_at = %s
+                 where tenant_id = %s and id = %s"""
+
+            parms = [name.encode('utf8'), type.encode('utf8'), address.encode(
+                'utf8'), now, now, tenant_id, id]
+
+            cursor.execute(query, parms)
+
+            if cursor.rowcount < 1:
                 raise exceptions.DoesNotExistException('Not Found')

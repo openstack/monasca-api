@@ -19,3 +19,7 @@ class RepositoryException(Exception):
 
 class DoesNotExistException(RepositoryException):
     pass
+
+
+class AlreadyExistsException(RepositoryException):
+    pass
