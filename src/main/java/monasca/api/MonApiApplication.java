@@ -52,7 +52,6 @@ import monasca.api.resource.exception.JsonMappingExceptionManager;
 import monasca.api.resource.exception.JsonProcessingExceptionMapper;
 import monasca.api.resource.exception.ThrowableExceptionMapper;
 import monasca.api.resource.serialization.SubAlarmExpressionSerializer;
-import monasca.common.messaging.kafka.KafkaHealthCheck;
 import monasca.common.middleware.AuthConstants;
 import monasca.common.middleware.TokenAuth;
 import monasca.common.util.Injector;
@@ -111,9 +110,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
     module.addSerializer(new SubAlarmExpressionSerializer());
     environment.getObjectMapper().registerModule(module);
 
-    /** Configure health checks */
-    environment.healthChecks().register("kafka", new KafkaHealthCheck(config.kafka));
-
+    
     /** Configure CORS filter */
     Dynamic corsFilter = environment.servlets().addFilter("cors", CrossOriginFilter.class);
     corsFilter.addMappingForUrlPatterns(null, true, "/*");
