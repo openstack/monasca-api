@@ -15,6 +15,7 @@ import datetime
 
 from monasca.common.repositories import alarm_definitions_repository as adr
 from monasca.common.repositories import exceptions
+from monasca.common.repositories.model import sub_alarm_definition
 from monasca.common.repositories.mysql import mysql_repository
 from monasca.openstack.common import log
 from monasca.openstack.common import uuidutils
@@ -331,7 +332,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             old_sub_alarm_defs_dict_by_id = {}
 
             for row in rows:
-                sad = mysql_repository.SubAlarmDefinition(row=row)
+                sad = sub_alarm_definition.SubAlarmDefinition(row=row)
                 old_sub_alarm_defs_dict_by_id[sad.id] = sad
 
             old_sub_alarm_defs_set = set(
@@ -339,7 +340,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
             new_sub_alarm_defs_set = set()
             for sub_expr in sub_expr_list:
-                sad = mysql_repository.SubAlarmDefinition(sub_expr=sub_expr)
+                sad = sub_alarm_definition.SubAlarmDefinition(
+                    sub_expr=sub_expr)
                 # Inject the alarm definition id.
                 sad.alarm_definition_id = alarm_definition_id.decode('utf8')
                 new_sub_alarm_defs_set.add(sad)
