@@ -78,8 +78,10 @@ public class PostAuthenticationFilter implements Filter {
 
       Object tenantId = request.getAttribute(X_TENANT_ID_ATTRIBUTE);
 
-      if (tenantId == null)
+      if (tenantId == null) {
         sendAuthError(res, null, null, null);
+        return;
+      }
       tenantIdStr = tenantId.toString();
 
       boolean authenticated = isAuthenticated(req);
@@ -120,21 +122,24 @@ public class PostAuthenticationFilter implements Filter {
    */
   private boolean isAuthorized(HttpServletRequest request) {
     Object rolesFromKeystone = request.getAttribute(X_ROLES_ATTRIBUTE);
-    boolean validUser = false;
     if (rolesFromKeystone == null)
       return false;
 
+    boolean agentUser = false;
     for (String role : rolesFromKeystone.toString().split(",")) {
       String lowerCaseRole = role.toLowerCase();
-      if ((defaultAuthorizedRoles != null && defaultAuthorizedRoles.contains(lowerCaseRole))
-          || (agentAuthorizedRoles != null && agentAuthorizedRoles.contains(lowerCaseRole))) {
-        if (agentAuthorizedRoles.contains(lowerCaseRole)) {
-          request.setAttribute(X_MONASCA_AGENT, true);
-        }
-        validUser = true;
+      if ((defaultAuthorizedRoles != null) && defaultAuthorizedRoles.contains(lowerCaseRole)) {
+        return true;
+      }
+      if ((agentAuthorizedRoles != null) && agentAuthorizedRoles.contains(lowerCaseRole)) {
+        agentUser = true;
       }
     }
-    return validUser;
+    if (agentUser) {
+      request.setAttribute(X_MONASCA_AGENT, true);
+      return true;
+    }
+    return false;
   }
 
   /**
