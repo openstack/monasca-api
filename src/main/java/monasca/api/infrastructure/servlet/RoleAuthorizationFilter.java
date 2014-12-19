@@ -15,15 +15,22 @@
 package monasca.api.infrastructure.servlet;
 
 import monasca.api.resource.exception.Exceptions;
+import monasca.common.middleware.AuthConstants;
+
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 
 import static monasca.api.infrastructure.servlet.PostAuthenticationFilter.X_MONASCA_AGENT;
 
 public class RoleAuthorizationFilter implements ContainerRequestFilter {
-
+  private static final Logger logger = LoggerFactory.getLogger
+      (ContainerRequestFilter.class);
     @Context
     private HttpServletRequest httpServletRequest;
     private static final String VALID_MONASCA_AGENT_PATH = "/v2.0/metrics";
@@ -34,11 +41,13 @@ public class RoleAuthorizationFilter implements ContainerRequestFilter {
         Object isAgent = httpServletRequest.getAttribute(X_MONASCA_AGENT);
         String pathInfo = httpServletRequest.getPathInfo();
 
+        // X_MONASCA_AGENT is only set if the only valid role for this user is an agent role
         if (isAgent != null) {
-            if (!pathInfo.equals(VALID_MONASCA_AGENT_PATH)) {
-                throw Exceptions.badRequest("Tenant is missing a required role to perform this request");
-            } else if (pathInfo.equals(VALID_MONASCA_AGENT_PATH) && !method.equals("POST")) {
-                throw Exceptions.badRequest("Tenant is missing a required role to perform this request");
+            if (!pathInfo.equals(VALID_MONASCA_AGENT_PATH) || !method.equals("POST")) { 
+                logger.warn("User {} is missing a required role to {} on {}",
+                                                    httpServletRequest.getAttribute(AuthConstants.AUTH_USER_NAME),
+                                                    method, pathInfo);
+                throw Exceptions.badRequest("User is missing a required role to perform this request");
             }
         }
         return containerRequest;

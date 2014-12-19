@@ -18,6 +18,36 @@ mvn clean install
 java -jar target/monasca-api.jar server config-file.yml
 ```
 
+## Keystone Configuration
+
+For secure operation of the Monasca API, the API must be configured to use Keystone in the configuration file under the middleware section. Monasca only works with a Keystone v3 server. The important parts of the configuration are explained below:
+
+* serverVIP - This is the hostname or IP Address of the Keystone server
+* serverPort - The port for the Keystone server
+* useHttps - Whether to use https when making requests of the Keystone API
+* truststore - If useHttps is true and the Keystone server is not using a certificate signed by a public CA recognized by Java, the CA certificate can be placed in a truststore so the Monasca API will trust it, otherwise it will reject the https connection. This must be a JKS truststore
+* truststorePassword - The password for the above truststore
+* connSSLClientAuth - If the Keystone server requires the SSL client used by the Monasca server to have a specific client certificate, this should be true, false otherwise
+* keystore - The keystore holding the SSL Client certificate if connSSLClientAuth is true
+* keystorePassword - The password for the keystore
+* defaultAuthorizedRoles - An array of roles that authorize a user to access the complete Monasca API. User must have at least one of these roles. See below
+* agentAuthorizedRoles - An array of roles that authorize only the posting of metrics.  See Keystone Roles below
+* adminAuthMethod - "password" if the Monasca API should adminUser and adminPassword to login to the Keystone server to check the user's token, "token" if the Monasca API should use adminToken
+* adminUser - Admin user name
+* adminPassword - Admin user password
+* adminToken - A valid admin user token if adminAuthMethod is token
+* timeToCacheToken - How long the Monasca API should cache the user's token before checking it again
+
+### Keystone Roles
+
+The Monasca API has two levels of access:
+# Full access - user can read/write metrics and Alarm Definitions and Alarms
+# Agent access - user can only write metrics
+
+The reason for the "Agent access" level is because the Monasca Agent must be configured to use a Keystone user. Since the user and password are configured onto the all of the systems running the Monasca Agent, this user is most in danger of being compromised. If this user is limited to only writing metrics, then the damage can be limited.
+
+To configure the user to have full access, the user must have a role that is listed in defaultAuthorizedRoles. To configure a user to have only "Agent access", the user must have a role in agentAuthorizedRoles and none of the roles in defaultAuthorizedRoles.
+
 ## Design Overview
 
 ### Architectural layers
