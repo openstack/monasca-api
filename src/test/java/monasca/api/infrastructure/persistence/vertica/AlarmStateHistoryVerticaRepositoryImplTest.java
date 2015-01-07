@@ -67,6 +67,6 @@ public class AlarmStateHistoryVerticaRepositoryImplTest {
   @Test
   public void shouldCreateAndFind() throws Exception {
     create("bob", "123", AlarmState.UNDETERMINED, AlarmState.ALARM, "foo", "bar", new DateTime());
-    assertEquals(repo.findById("bob", "123").size(), 1);
+    assertEquals(repo.findById("bob", "123", null).size(), 1);
   }
 }

@@ -88,7 +88,7 @@ public class MeasurementVerticaRepositoryImplTest {
 
   public void shouldFindWithoutDimensions() throws Exception {
     Collection<Measurements> measurements =
-        repo.find("bob", "cpu_utilization", null, new DateTime(2014, 1, 1, 0, 0, 0), null);
+        repo.find("bob", "cpu_utilization", null, new DateTime(2014, 1, 1, 0, 0, 0), null, null);
     assertEquals(measurements.size(), 3);
   }
 
@@ -98,11 +98,11 @@ public class MeasurementVerticaRepositoryImplTest {
     dims.put("instance_id", "123");
 
     Collection<Measurements> measurements =
-        repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null);
+        repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null, null);
     assertEquals(measurements.size(), 2);
 
     dims.put("flavor_id", "2");
-    measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null);
+    measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null, null);
     assertEquals(measurements.size(), 1);
   }
 }

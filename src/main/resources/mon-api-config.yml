@@ -17,14 +17,14 @@ databaseConfiguration:
 
 kafka:
   brokerUris:
-    - 192.168.59.103:9092
+    - 192.168.10.4:9092
   zookeeperUris:
-    - 192.168.59.103:2181
+    - 192.168.10.4:2181
   healthCheckTopic: healthcheck
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://192.168.59.103:3306/mon?connectTimeout=5000&autoReconnect=true
+  url: jdbc:mysql://192.168.10.4:3306/mon?connectTimeout=5000&autoReconnect=true
   user: monapi
   password: password
   maxWaitForConnection: 1s
@@ -49,7 +49,7 @@ vertica:
 influxDB:
   name: mon
   replicationFactor: 1
-  url: http://192.168.59.103:8086
+  url: http://192.168.10.4:8086
   user:  root
   password: root
 

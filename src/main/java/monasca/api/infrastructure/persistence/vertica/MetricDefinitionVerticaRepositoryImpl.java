@@ -48,7 +48,10 @@ public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRe
   }
 
   @Override
-  public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions) {
+  public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                                     String offset) {
+    // Todo. Use offset for pagination.
+
     try (Handle h = db.open()) {
       // Build sql
       StringBuilder sbWhere = new StringBuilder();

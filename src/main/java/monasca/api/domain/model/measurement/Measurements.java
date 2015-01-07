@@ -16,10 +16,12 @@ package monasca.api.domain.model.measurement;
 import java.util.List;
 import java.util.Map;
 
+import monasca.common.model.domain.common.AbstractEntity;
+
 /**
  * Encapsulates a metric measurements.
  */
-public class Measurements {
+public class Measurements extends AbstractEntity {
   private static final String[] COLUMNS = new String[] {"id", "timestamp", "value"};
 
   private String name;
@@ -102,6 +104,10 @@ public class Measurements {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   @Override

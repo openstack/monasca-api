@@ -50,9 +50,9 @@ public class AlarmStateHistoryInfluxDbRepositoryImplTest {
 
     String er = "select alarm_id, metrics, old_state, new_state, reason, " +
         "" + "reason_data from alarm_state_history where tenant_id = 'tenant-id' and alarm_id = "
-        + "'alarm-id'";
+        + "'alarm-id' ";
     String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFindById("tenant-id",
-        "alarm-id");
+        "alarm-id", null);
 
     assert (er.equals(r));
 
@@ -77,10 +77,10 @@ public class AlarmStateHistoryInfluxDbRepositoryImplTest {
   public void buildQueryForFindTest() throws Exception {
     String er = "select alarm_id, metrics, old_state, new_state, reason, " +
         "" + "reason_data from alarm_state_history where tenant_id = 'tenant-id'  and time > " +
-        "1388559600s and time < 1388559601s  and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' )";
+        "1388559600s and time < 1388559601s  and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' ) ";
     String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFind("tenant-id",
         " and time > 1388559600s and time < 1388559601s", " and ( alarm_id = 'id-1'  or  " +
-            "alarm_id" + " = 'id-2' )");
+            "alarm_id" + " = 'id-2' )", "");
 
     assert (er.equals(r));
   }

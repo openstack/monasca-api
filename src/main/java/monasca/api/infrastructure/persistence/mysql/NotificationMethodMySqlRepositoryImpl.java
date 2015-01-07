@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
+import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
@@ -93,11 +94,22 @@ public class NotificationMethodMySqlRepositoryImpl implements NotificationMethod
   }
 
   @Override
-  public List<NotificationMethod> find(String tenantId) {
+  public List<NotificationMethod> find(String tenantId, String offset) {
+
     try (Handle h = db.open()) {
-      return h.createQuery("select * from notification_method where tenant_id = :tenantId")
-          .bind("tenantId", tenantId)
-          .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+
+      if (offset != null) {
+
+        return h.createQuery(
+            "select * from notification_method where tenant_id = :tenantId and id > :offset order by id asc limit :limit")
+            .bind("tenantId", tenantId).bind("offset", offset).bind("limit", Paged.LIMIT)
+            .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+      } else {
+
+        return h.createQuery("select * from notification_method where tenant_id = :tenantId")
+            .bind("tenantId", tenantId)
+            .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+      }
     }
   }
 

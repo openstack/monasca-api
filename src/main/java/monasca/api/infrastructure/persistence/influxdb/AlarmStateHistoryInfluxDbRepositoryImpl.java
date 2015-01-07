@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.inject.Inject;
 
 import monasca.api.MonApiConfiguration;
+import monasca.api.domain.model.common.Paged;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
@@ -75,21 +76,22 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   }
 
   @Override
-  public List<AlarmStateHistory> findById(String tenantId, String alarmId) throws Exception {
+  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset) throws Exception {
     // InfluxDB orders queries by time stamp desc by default.
-    String query = buildQueryForFindById(tenantId, alarmId);
+    String query = buildQueryForFindById(tenantId, alarmId, offset);
     return queryInfluxDBForAlarmStateHistory(query);
   }
 
-  String buildQueryForFindById(String tenantId, String alarmId) throws Exception {
+  String buildQueryForFindById(String tenantId, String alarmId, String offset) throws Exception {
+    String offsetPart = Utils.buildOffsetPart(offset);
     return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
-        + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s'",
-        Utils.SQLSanitizer.sanitize(tenantId), Utils.SQLSanitizer.sanitize(alarmId));
+        + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s' %3$s",
+        Utils.SQLSanitizer.sanitize(tenantId), Utils.SQLSanitizer.sanitize(alarmId), offsetPart);
   }
 
   @Override
-  public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime) throws Exception {
+  public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime, String offset) throws Exception {
 
     List<String> alarmIds = null;
     // Find alarm Ids for dimensions
@@ -111,8 +113,9 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     logger.debug("AlarmStateHistory alarmIds {}", alarmIds);
     String timePart = buildTimePart(startTime, endTime);
     String alarmsPart = buildAlarmsPart(alarmIds);
+    String offsetPart = Utils.buildOffsetPart(offset);
 
-    String query = buildQueryForFind(tenantId, timePart, alarmsPart);
+    String query = buildQueryForFind(tenantId, timePart, alarmsPart, offsetPart);
     logger.debug("AlarmStateHistory query for influxdb '{}'", query);
 
     return queryInfluxDBForAlarmStateHistory(query);
@@ -142,10 +145,10 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     return Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
   }
 
-  String buildQueryForFind(String tenantId, String timePart, String alarmsPart) throws Exception {
+  String buildQueryForFind(String tenantId, String timePart, String alarmsPart, String offsetPart) throws Exception {
     return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
-        + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s",
-        Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
+        + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s %4$s",
+        Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart, offsetPart);
   }
 
   String buildAlarmsPart(List<String> alarmIds) {

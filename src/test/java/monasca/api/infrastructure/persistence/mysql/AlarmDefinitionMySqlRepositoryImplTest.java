@@ -238,7 +238,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<AlarmDefinition> alarms = repo.find("bob", null, null);
+    List<AlarmDefinition> alarms = repo.find("bob", null, null, null);
 
     assertEquals(
         alarms,
@@ -260,7 +260,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
   }
 
   public void shouldFindByName() {
-    List<AlarmDefinition> alarms = repo.find("bob", "90% CPU", null);
+    List<AlarmDefinition> alarms = repo.find("bob", "90% CPU", null, null);
 
     assertEquals(alarms, Arrays.asList(new AlarmDefinition("123", "90% CPU", null, "LOW",
         "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10", Arrays

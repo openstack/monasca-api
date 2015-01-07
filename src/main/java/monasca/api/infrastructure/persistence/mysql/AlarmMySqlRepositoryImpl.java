@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.mysql;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepository;
+import monasca.api.domain.model.common.Paged;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
@@ -54,7 +55,7 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
           + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
           + "left join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
           + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
-          + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id";
+          + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
 
   @Inject
   public AlarmMySqlRepositoryImpl(@Named("mysql") DBI db) {
@@ -87,8 +88,10 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
 
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
-      Map<String, String> metricDimensions, AlarmState state) {
+      Map<String, String> metricDimensions, AlarmState state, String offset) {
+
     try (Handle h = db.open()) {
+
       StringBuilder sbWhere = new StringBuilder();
 
       if (alarmDefId != null) {
@@ -108,8 +111,12 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
       if (state != null) {
         sbWhere.append(" and a.state = :state");
       }
+      if (offset != null) {
+        sbWhere.append(" and a.id > :offset");
+      }
+      String limit = offset != null ? " limit :limit" : "";
 
-      String sql = String.format(ALARM_SQL, sbWhere);
+      String sql = String.format(ALARM_SQL, sbWhere, limit);
       final Query<Map<String, Object>> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (alarmDefId != null) {
@@ -121,6 +128,11 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
       if (state != null) {
         q.bind("state", state.name());
       }
+      if (offset != null) {
+        q.bind("offset", offset);
+        q.bind("limit", Paged.LIMIT);
+      }
+
       DimensionQueries.bindDimensionsToQuery(q, metricDimensions);
 
       final long start = System.currentTimeMillis();
@@ -139,7 +151,7 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
   }
 
   private Alarm findAlarm(String tenantId, String alarmId, Handle h) {
-    final String sql = String.format(ALARM_SQL, " and a.id = :id");
+    final String sql = String.format(ALARM_SQL, " and a.id = :id", "");
 
     final List<Map<String, Object>> rows =
         h.createQuery(sql).bind("id", alarmId).bind("tenantId", tenantId).list();

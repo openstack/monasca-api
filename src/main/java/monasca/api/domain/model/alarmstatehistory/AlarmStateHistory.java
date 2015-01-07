@@ -18,9 +18,10 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.domain.common.AbstractEntity;
 import monasca.common.model.metric.MetricDefinition;
 
-public class AlarmStateHistory {
+public class AlarmStateHistory  extends AbstractEntity {
   private String alarmId;
   private List<MetricDefinition> metrics;
   private AlarmState oldState;
@@ -33,6 +34,7 @@ public class AlarmStateHistory {
 
   public AlarmStateHistory(String alarmId, List<MetricDefinition> metrics, AlarmState oldState,
       AlarmState newState, String reason, String reasonData, DateTime timestamp) {
+    id = new Long(timestamp.getMillis()).toString();
     this.alarmId = alarmId;
     this.setMetrics(metrics);
     this.oldState = oldState;
@@ -151,6 +153,8 @@ public class AlarmStateHistory {
 
   public void setTimestamp(DateTime timestamp) {
     this.timestamp = timestamp;
+    // Set the id in the AbstractEntity class.
+    id = new Long(timestamp.getMillis()).toString();
   }
 
   @Override

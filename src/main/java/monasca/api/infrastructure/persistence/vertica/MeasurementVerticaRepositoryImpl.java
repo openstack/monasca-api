@@ -56,8 +56,11 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   }
 
   @Override
-  public Collection<Measurements> find(String tenantId, String name,
-      Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime) {
+  public List<Measurements> find(String tenantId, String name,
+      Map<String, String> dimensions, DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) {
+
+    // Todo. Use offset for pagination.
+
     try (Handle h = db.open()) {
       // Build sql
       StringBuilder sbWhere = new StringBuilder();
@@ -104,7 +107,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
         measurements.addMeasurement(new Object[] {measurementId, timestamp, value});
       }
 
-      return results.values();
+      return new ArrayList(results.values());
     }
   }
 }

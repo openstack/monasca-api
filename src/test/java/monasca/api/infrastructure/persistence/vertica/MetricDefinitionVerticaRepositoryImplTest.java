@@ -86,7 +86,7 @@ public class MetricDefinitionVerticaRepositoryImplTest {
   }
 
   public void shouldFindWithoutDimensions() throws Exception {
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null);
+    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null, null);
     assertEquals(defs.size(), 3);
   }
 
@@ -95,11 +95,11 @@ public class MetricDefinitionVerticaRepositoryImplTest {
     dims.put("service", "compute");
     dims.put("instance_id", "123");
 
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", dims);
+    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", dims, null);
     assertEquals(defs.size(), 2);
 
     dims.put("flavor_id", "2");
-    defs = repo.find("bob", "cpu_utilization", dims);
+    defs = repo.find("bob", "cpu_utilization", dims, null);
     assertEquals(defs.size(), 1);
   }
 }
