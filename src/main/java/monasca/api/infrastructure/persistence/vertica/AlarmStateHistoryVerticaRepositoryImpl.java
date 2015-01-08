@@ -63,7 +63,10 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
   }
 
   @Override
-  public List<AlarmStateHistory> findById(String tenantId, String alarmId) {
+  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset) {
+
+    // Todo. Use offset for pagination.
+
     try (Handle h = vertica.open()) {
       return h
           .createQuery(
@@ -74,8 +77,11 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
   }
 
   @Override
-  public Collection<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime) {
+  public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) {
+
+    // Todo. Use offset for pagination.
+
     List<String> alarmIds = null;
 
     // Find alarm Ids for dimensions

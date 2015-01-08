@@ -29,6 +29,8 @@ import org.skife.jdbi.v2.util.StringMapper;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+
+import monasca.api.domain.model.common.Paged;
 import monasca.common.model.alarm.AggregateFunction;
 import monasca.common.model.alarm.AlarmOperator;
 import monasca.common.model.alarm.AlarmState;
@@ -118,24 +120,38 @@ public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionReposi
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions) {
+  public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions, String offset) {
     try (Handle h = db.open()) {
       String query =
           "select distinct ad.id, ad.description, ad.tenant_id, ad.severity, ad.expression, ad.match_by, ad.name, ad.actions_enabled, ad.created_at, ad.updated_at, ad.deleted_at "
               + "from alarm_definition ad join sub_alarm_definition sub on ad.id = sub.alarm_definition_id "
               + "left outer join sub_alarm_definition_dimension dim on sub.id = dim.sub_alarm_definition_id%s "
-              + "where tenant_id = :tenantId and deleted_at is NULL %s order by ad.created_at";
+              + "where tenant_id = :tenantId and deleted_at is NULL %s order by %s ad.created_at %s" ;
       StringBuilder sbWhere = new StringBuilder();
 
       if (name != null) {
         sbWhere.append(" and ad.name = :name");
       }
 
-      String sql = String.format(query, SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere);
+      if (offset != null) {
+        sbWhere.append(" and ad.id > :offset");
+      }
+
+      String orderBy = offset != null ? "ad.id," : "";
+
+      String limit = offset != null ? " limit :limit" : "";
+
+      String sql = String.format(query, SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere, orderBy,
+                                 limit);
       Query<?> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (name != null) {
         q.bind("name", name);
+      }
+
+      if (offset != null) {
+        q.bind("offset", offset);
+        q.bind("limit", Paged.LIMIT);
       }
 
       q = q.map(new BeanMapper<AlarmDefinition>(AlarmDefinition.class));

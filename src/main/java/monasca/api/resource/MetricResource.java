@@ -65,22 +65,26 @@ public class MetricResource {
   @Timed
   @Consumes(MediaType.APPLICATION_JSON)
   public void create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @HeaderParam("X-Roles") String roles, @QueryParam("tenant_id") String crossTenantId,
-      @Valid CreateMetricCommand[] commands) {
-    boolean isDelegate =
-            !Strings.isNullOrEmpty(roles)
-                    && COMMA_SPLITTER.splitToList(roles).contains(MONITORING_DELEGATE_ROLE);
+                     @HeaderParam("X-Roles") String roles,
+                     @QueryParam("tenant_id") String crossTenantId,
+                     @Valid CreateMetricCommand[] commands) {
+    boolean
+        isDelegate =
+        !Strings.isNullOrEmpty(roles) && COMMA_SPLITTER.splitToList(roles)
+            .contains(MONITORING_DELEGATE_ROLE);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
         if (command.dimensions != null) {
           String service = command.dimensions.get(Services.SERVICE_DIMENSION);
-          if (service != null && Services.isReserved(service))
-            throw Exceptions.forbidden("Project %s cannot POST metrics for the hpcs service",
-                tenantId);
+          if (service != null && Services.isReserved(service)) {
+            throw Exceptions
+                .forbidden("Project %s cannot POST metrics for the hpcs service", tenantId);
+          }
         }
-        if (!Strings.isNullOrEmpty(crossTenantId))
+        if (!Strings.isNullOrEmpty(crossTenantId)) {
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
+        }
       }
 
       command.validate();
@@ -93,12 +97,16 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<MetricDefinition> getMetrics(@HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr)
-      throws Exception {
-    Map<String, String> dimensions =
-        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation.parseAndValidateNameAndDimensions(
-            name, dimensionsStr);
-    return metricRepo.find(tenantId, name, dimensions);
+  public Object getMetrics(@Context UriInfo uriInfo,
+                                           @HeaderParam("X-Tenant-Id") String tenantId,
+                                           @QueryParam("name") String name,
+                                           @QueryParam("dimensions") String dimensionsStr,
+                                           @QueryParam("offset") String offset) throws Exception {
+    Map<String, String>
+        dimensions =
+        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
+            .parseAndValidateNameAndDimensions(name, dimensionsStr);
+
+    return Links.paginate(offset, metricRepo.find(tenantId, name, dimensions, offset), uriInfo);
   }
 }

@@ -25,6 +25,7 @@ public interface MetricDefinitionRepository {
   /**
    * Finds metrics for the given criteria.
    */
-  List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions)
+  List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                              String offset)
       throws Exception;
 }

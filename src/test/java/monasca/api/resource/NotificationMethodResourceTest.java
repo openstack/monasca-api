@@ -53,7 +53,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     when(repo.create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString()))
         .thenReturn(notificationMethodWebhook);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
-    when(repo.find(eq("abc"))).thenReturn(Arrays.asList(notificationMethod));
+    when(repo.find(eq("abc"), anyString())).thenReturn(Arrays.asList(notificationMethod));
 
     addResources(new NotificationMethodResource(repo));
   }
@@ -187,7 +187,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .get(new GenericType<List<NotificationMethod>>() {});
 
     assertEquals(notificationMethods, Arrays.asList(notificationMethod));
-    verify(repo).find(eq("abc"));
+    verify(repo).find(eq("abc"), anyString());
   }
 
   public void shouldGet() {
@@ -229,7 +229,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should500OnInternalException() {
-    doThrow(new RuntimeException("")).when(repo).find(anyString());
+    doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString());
 
     try {
       client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")

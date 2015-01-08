@@ -85,7 +85,7 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<NotificationMethod> nms = repo.find("444");
+    List<NotificationMethod> nms = repo.find("444", null);
 
     assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MySMS",
         NotificationMethodType.SMS, "8675309")));

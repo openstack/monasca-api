@@ -56,18 +56,20 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
   }
 
   @Override
-  public Collection<Measurements> find(String tenantId, String name,
+  public List<Measurements> find(String tenantId, String name,
                                        Map<String, String> dimensions, DateTime startTime,
-                                       @Nullable DateTime endTime)
+                                       @Nullable DateTime endTime, @Nullable String offset)
       throws Exception {
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 
     String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
 
+    String offsetPart = Utils.buildOffsetPart(offset);
+
     String query =
-        String.format("select value " + "from /%1$s/ where 1 = 1 " + " %2$s ",
-                      serieNameRegex, timePart);
+        String.format("select value " + "from /%1$s/ where 1 = 1 " + " %2$s  %3$s",
+                      serieNameRegex, timePart, offsetPart);
     logger.debug("Query string: {}", query);
 
     List<Serie> result = null;
@@ -111,6 +113,8 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
         objArry[0] = ((Double) row.get(serie.getColumns()[1])).longValue();
         // time
         Double timeDouble = (Double) row.get(serie.getColumns()[0]);
+        // last id wins. ids should be in descending order.
+        measurements.setId(String.valueOf(timeDouble.longValue()));
         objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
         objArry[2] = (Double) row.get(serie.getColumns()[2]);

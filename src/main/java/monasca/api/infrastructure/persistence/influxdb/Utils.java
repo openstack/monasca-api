@@ -24,6 +24,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import monasca.api.domain.model.common.Paged;
+
 final class Utils {
 
   // Serie names match this pattern.
@@ -233,5 +235,21 @@ final class Utils {
     return m.matches();
   }
 
+  public static  String buildOffsetPart(String offset) {
+
+    if (offset != null) {
+
+      if (!offset.isEmpty()) {
+
+        return " and time < " + offset + "ms limit " + Paged.LIMIT;
+      } else {
+        return " limit " + Paged.LIMIT;
+      }
+
+    } else {
+      return "";
+    }
+
+  }
 }
 

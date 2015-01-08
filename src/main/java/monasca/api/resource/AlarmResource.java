@@ -95,37 +95,22 @@ public class AlarmResource {
   @Timed
   @Path("/{alarm_id}/state-history")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<AlarmStateHistory> getStateHistory(@Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId)
+  public Object getStateHistory(@Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId,
+      @QueryParam("offset") String offset)
       throws Exception {
-    return stateHistoryRepo.findById(tenantId, alarmId);
-  }
-
-  @GET
-  @Timed
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Alarm> list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @QueryParam("alarm_definition_id") String alarmDefId,
-      @QueryParam("metric_name") String metricName,
-      @QueryParam("metric_dimensions") String metricDimensionsStr,
-      @QueryParam("state") AlarmState state) throws Exception {
-    Map<String, String> metricDimensions =
-        Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
-    final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state);
-    for (final Alarm alarm : alarms) {
-      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
-    }
-    return Links.hydrate(alarms, uriInfo);
+    return Links.paginate(offset, stateHistoryRepo.findById(tenantId, alarmId, offset), uriInfo);
   }
 
   @GET
   @Timed
   @Path("/state-history")
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<AlarmStateHistory> listStateHistory(
+  public Object listStateHistory(
+      @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr)
+      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
+      @QueryParam("offset") String offset)
       throws Exception {
 
     // Validate query parameters
@@ -137,7 +122,27 @@ public class AlarmResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
-    return stateHistoryRepo.find(tenantId, dimensions, startTime, endTime);
+    return Links.paginate(offset, stateHistoryRepo.find(tenantId, dimensions, startTime, endTime, offset), uriInfo);
+  }
+
+  @GET
+  @Timed
+  @Produces(MediaType.APPLICATION_JSON)
+  public Object list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("alarm_definition_id") String alarmDefId,
+      @QueryParam("metric_name") String metricName,
+      @QueryParam("metric_dimensions") String metricDimensionsStr,
+      @QueryParam("state") AlarmState state,
+      @QueryParam("offset") String offset) throws Exception {
+    Map<String, String> metricDimensions =
+        Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
+            .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
+    final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
+                                         offset);
+    for (final Alarm alarm : alarms) {
+      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
+    }
+    return Links.paginate(offset, Links.hydrate(alarms, uriInfo), uriInfo);
   }
 
   @PATCH

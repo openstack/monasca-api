@@ -86,13 +86,15 @@ public class AlarmDefinitionResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<AlarmDefinition> list(@Context UriInfo uriInfo,
+  public Object list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
-      @QueryParam("dimensions") String dimensionsStr) {
+      @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("offset") String offset) {
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
-    return Links.hydrate(repo.find(tenantId, name, dimensions), uriInfo);
+
+    return Links.paginate(offset, Links.hydrate(repo.find(tenantId, name, dimensions, offset), uriInfo), uriInfo);
   }
 
   @GET

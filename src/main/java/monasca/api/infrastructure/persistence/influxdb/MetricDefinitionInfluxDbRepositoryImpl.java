@@ -15,10 +15,6 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 import com.google.inject.Inject;
 
-import monasca.api.MonApiConfiguration;
-import monasca.common.model.metric.MetricDefinition;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
-
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
 import org.slf4j.Logger;
@@ -29,12 +25,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import monasca.api.MonApiConfiguration;
+import monasca.api.domain.model.common.Paged;
+import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.common.model.metric.MetricDefinition;
+
 import static monasca.api.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
 
-  private static final Logger logger = LoggerFactory.getLogger
-      (MetricDefinitionInfluxDbRepositoryImpl.class);
+  private static final Logger
+      logger =
+      LoggerFactory.getLogger(MetricDefinitionInfluxDbRepositoryImpl.class);
 
   private final MonApiConfiguration config;
   private final InfluxDB influxDB;
@@ -46,36 +48,55 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
   }
 
   @Override
-  public List<MetricDefinition> find(String tenantId, String name, Map<String,
-      String> dimensions) throws Exception {
+  public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                                     String offset) throws Exception {
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 
     String query = String.format("list series /%1$s/", serieNameRegex);
     logger.debug("Query string: {}", query);
 
-    List<Serie> result = this.influxDB.Query(this.config.influxDB.getName(), query,
-                                             TimeUnit.SECONDS);
-    return buildMetricDefList(result);
+    List<Serie>
+        result =
+        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.SECONDS);
+    return buildMetricDefList(result, offset);
   }
 
-  private List<MetricDefinition> buildMetricDefList(List<Serie> result) throws Exception {
+  private List<MetricDefinition> buildMetricDefList(List<Serie> result, String offset)
+      throws Exception {
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
     for (Serie serie : result) {
-      for (Map<String,Object> point : serie.getRows()) {
+      for (Map<String, Object> point : serie.getRows()) {
+
+        String encodedMetricName = (String) point.get("name");
+
+        if (offset != null) {
+          if (encodedMetricName.compareTo(offset) <= 0) {
+            continue;
+          }
+        }
 
         Utils.SerieNameDecoder serieNameDecoder;
+
         try {
-          serieNameDecoder = new Utils.SerieNameDecoder((String) point.get("name"));
+          serieNameDecoder = new Utils.SerieNameDecoder(encodedMetricName);
         } catch (Utils.SerieNameDecodeException e) {
           logger.warn("Dropping series name that is not decodable: {}", point.get("name"), e);
           continue;
         }
 
-        MetricDefinition metricDefinition = new MetricDefinition(serieNameDecoder.getMetricName(),
-                                                                 serieNameDecoder
-                                                                     .getDimensions());
+        MetricDefinition
+            metricDefinition =
+            new MetricDefinition(serieNameDecoder.getMetricName(),
+                                 serieNameDecoder.getDimensions());
+        metricDefinition.setId(encodedMetricName);
         metricDefinitionList.add(metricDefinition);
+
+        if (offset != null) {
+          if (metricDefinitionList.size() >= Paged.LIMIT) {
+            return metricDefinitionList;
+          }
+        }
       }
     }
     return metricDefinitionList;

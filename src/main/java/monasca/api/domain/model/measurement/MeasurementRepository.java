@@ -16,7 +16,7 @@ package monasca.api.domain.model.measurement;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +26,6 @@ public interface MeasurementRepository {
   /**
    * Finds measurements for the given criteria.
    */
-  Collection<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime) throws Exception;
+  List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) throws Exception;
 }

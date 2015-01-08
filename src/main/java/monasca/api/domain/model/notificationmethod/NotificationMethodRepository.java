@@ -46,5 +46,5 @@ public interface NotificationMethodRepository {
   NotificationMethod update(String tenantId, String notificationMethodId, String name,
       NotificationMethodType type, String address);
 
-  List<NotificationMethod> find(String tenantId);
+  List<NotificationMethod> find(String tenantId, String offset);
 }

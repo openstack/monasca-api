@@ -47,7 +47,8 @@ public interface AlarmDefinitionRepository {
   /**
    * Returns alarms for the given criteria.
    */
-  List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions);
+  List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                             String offset);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmDefId}
