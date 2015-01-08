@@ -305,7 +305,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
             ad = {u'id': alarm_definition_row['id'].decode('utf8'),
                   u'name': alarm_definition_row['name'].decode("utf8"),
                   u'description': alarm_definition_row['description'].decode(
-                      'utf8'),
+                      'utf8') if alarm_definition_row['description'] else u'',
                   u'expression': alarm_definition_row['expression'].decode(
                       'utf8'), u'match_by': match_by,
                   u'severity': alarm_definition_row['severity'].decode(
