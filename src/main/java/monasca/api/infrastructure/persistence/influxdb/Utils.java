@@ -91,6 +91,7 @@ final class Utils {
     if (name != null) {
       regex.append("&");
       regex.append(urlEncodeUTF8(name));
+      regex.append("(&|$)");
     }
 
     // Dimensions are optional.
@@ -100,10 +101,11 @@ final class Utils {
       final TreeSet<Dimension> dimSortedSet = buildSortedDimSet(dimensions);
 
       for (final Dimension dim : dimSortedSet) {
-        regex.append(".*&");
+        regex.append("(.*&)*");
         regex.append(urlEncodeUTF8(dim.name));
         regex.append("=");
         regex.append(urlEncodeUTF8(dim.value));
+        regex.append("(&|$)");
       }
     }
     return regex.toString();
