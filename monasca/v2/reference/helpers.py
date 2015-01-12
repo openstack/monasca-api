@@ -19,6 +19,7 @@ import urlparse
 import falcon
 import simplejson
 
+from monasca.common.repositories import constants
 from monasca.openstack.common import log
 from monasca.v2.common.schemas import dimensions_schema
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
@@ -111,6 +112,28 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
             tenant_id = params['tenant_id']
             return tenant_id
     return get_tenant_id(req)
+
+
+def get_query_param(req, param_name, required=False, default_val=None):
+
+    try:
+        params = falcon.uri.parse_query_string(req.query_string)
+        if param_name in params:
+            param_val = params[param_name].decode('utf8')
+            return param_val
+        else:
+            if required:
+                raise Exception("Missing " + param_name)
+            else:
+                return default_val
+    except Exception as ex:
+        LOG.debug(ex)
+        raise falcon.HTTPBadRequest('Bad request', ex.message)
+
+
+def normalize_offset(offset):
+
+    return u'' if offset == u'x' else offset
 
 
 def get_query_name(req, name_required=False):
@@ -250,6 +273,108 @@ def validate_query_dimensions(dimensions):
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
+def paginate(resource, uri, offset):
+
+    if offset is not None:
+
+        if resource:
+
+            if len(resource) >= constants.PAGE_LIMIT:
+
+                new_offset = resource[-1]['id']
+
+                parsed_uri = urlparse.urlparse(uri)
+
+                next_link = build_base_uri(parsed_uri)
+
+                new_query_params = [u'offset' + '=' + str(new_offset).decode(
+                    'utf8')]
+
+                for query_param in parsed_uri.query.split('&'):
+                    query_param_name, query_param_val = query_param.split('=')
+                    if query_param_name.lower() != 'offset':
+                        new_query_params.append(query_param)
+
+                next_link += '?' + '&'.join(new_query_params)
+
+                resource = {u'links':
+                            [{u'rel': u'self', u'href': uri.decode('utf8')},
+                             {u'rel': u'next',
+                                u'href': next_link.decode('utf8')}],
+                            u'elements': resource}
+
+            else:
+
+                resource = {u'links':
+                            [{u'rel': u'self', u'href': uri.decode('utf8')}],
+                            u'elements': resource}
+
+    return resource
+
+
+def paginate_measurement(measurement, uri, offset):
+
+    if offset is not None:
+
+        if measurement['measurements']:
+
+            if len(measurement['measurements']) >= constants.PAGE_LIMIT:
+
+                new_offset = measurement['id']
+
+                parsed_uri = urlparse.urlparse(uri)
+
+                next_link = build_base_uri(parsed_uri)
+
+                new_query_params = [u'offset' + '=' + str(new_offset).decode(
+                    'utf8')]
+
+                # Add the query parms back to the URL without the original
+                # offset and dimensions.
+                for query_param in parsed_uri.query.split('&'):
+                    query_param_name, query_param_val = query_param.split('=')
+                    if (query_param_name.lower() != 'offset' and
+                            query_param_name.lower() != 'dimensions'):
+                        new_query_params.append(query_param)
+
+                next_link += '?' + '&'.join(new_query_params)
+
+                # Add the dimensions for this particular measurement.
+                if measurement['dimensions']:
+                    dims = []
+                    for k, v in measurement['dimensions'].iteritems():
+                        dims.append(k + ":" + v)
+
+                    if dims:
+                        next_link += '&dimensions' + ','.join(dims)
+
+                measurement = {u'links': [{u'rel': u'self',
+                                           u'href': uri.decode('utf8')},
+                                          {u'rel': u'next', u'href':
+                                              next_link.decode('utf8')}],
+                               u'elements': measurement}
+
+            else:
+
+                measurement = {
+                    u'links': [
+                        {u'rel': u'self',
+                         u'href': uri.decode('utf8')}],
+                    u'elements': measurement
+                }
+
+        return measurement
+
+    else:
+
+        return measurement
+
+
+def build_base_uri(parsed_uri):
+
+    return parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
+
+
 def get_link(uri, resource_id, rel='self'):
     """Returns a link dictionary containing href, and rel.
 
@@ -257,7 +382,7 @@ def get_link(uri, resource_id, rel='self'):
     :param resource_id: the id of the resource
     """
     parsed_uri = urlparse.urlparse(uri)
-    href = parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
+    href = build_base_uri(parsed_uri)
     href += '/' + resource_id
 
     if rel:

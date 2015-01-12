@@ -40,5 +40,5 @@ class AlarmsRepository(object):
         pass
 
     @abc.abstractmethod
-    def get_alarms(self, tenant_id, query_parms):
+    def get_alarms(self, tenant_id, query_parms, offset):
         pass

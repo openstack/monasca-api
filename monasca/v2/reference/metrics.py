@@ -95,7 +95,7 @@ class Metrics(monasca_api_v2.V2API):
         else:
             _send_metric(metrics)
 
-    def _list_metrics(self, tenant_id, name, dimensions):
+    def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset):
         """Query the metric repo for the metrics, format them and return them.
 
         :param tenant_id:
@@ -105,24 +105,43 @@ class Metrics(monasca_api_v2.V2API):
         """
 
         try:
-            return self._metrics_repo.list_metrics(tenant_id,
-                                                   self._region,
-                                                   name,
-                                                   dimensions)
+            result = self._metrics_repo.list_metrics(tenant_id,
+                                                     self._region,
+                                                     name,
+                                                     dimensions, offset)
+
+            return helpers.paginate(result, req_uri, offset)
+
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
                                                 ex.message, 60)
 
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
-                          end_timestamp):
+                          end_timestamp, req_uri, offset):
         try:
-            return self._metrics_repo.measurement_list(tenant_id,
-                                                       self._region,
-                                                       name,
-                                                       dimensions,
-                                                       start_timestamp,
-                                                       end_timestamp)
+            result = self._metrics_repo.measurement_list(tenant_id,
+                                                         self._region,
+                                                         name,
+                                                         dimensions,
+                                                         start_timestamp,
+                                                         end_timestamp,
+                                                         offset)
+
+            if offset is not None:
+
+                paginated_result = []
+                for measurement in result:
+                    paginated_result.append(
+                        helpers.paginate_measurement(measurement,
+                                                     req_uri, offset))
+
+                result = {u'links': [{u'rel': u'self',
+                                      u'href': req_uri.decode('utf8')}],
+                          u'elements': paginated_result}
+
+            return result
+
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
@@ -166,7 +185,10 @@ class Metrics(monasca_api_v2.V2API):
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
-        result = self._list_metrics(tenant_id, name, dimensions)
+        offset = helpers.normalize_offset(helpers.get_query_param(req,
+                                                                  'offset'))
+        result = self._list_metrics(tenant_id, name, dimensions,
+                                    req.uri, offset)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
@@ -180,8 +202,12 @@ class Metrics(monasca_api_v2.V2API):
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
+        offset = helpers.normalize_offset(helpers.get_query_param(req,
+                                                                  'offset'))
         result = self._measurement_list(tenant_id, name, dimensions,
-                                        start_timestamp, end_timestamp)
+                                        start_timestamp, end_timestamp,
+                                        req.uri, offset)
+
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 

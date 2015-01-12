@@ -14,6 +14,7 @@
 import datetime
 
 from monasca.common.repositories import alarm_definitions_repository as adr
+from monasca.common.repositories import constants
 from monasca.common.repositories import exceptions
 from monasca.common.repositories.model import sub_alarm_definition
 from monasca.common.repositories.mysql import mysql_repository
@@ -75,7 +76,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
-    def get_alarm_definitions(self, tenant_id, name, dimensions):
+    def get_alarm_definitions(self, tenant_id, name, dimensions, offset):
 
         parms = [tenant_id]
 
@@ -87,7 +88,15 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             where_clause += " and ad.name = %s "
             parms.append(name.encode('utf8'))
 
-        order_by_clause = " order by ad.created_at "
+        if offset is not None:
+            order_by_clause = " order by ad.id, ad.created_at "
+            where_clause += " and ad.id > %s "
+            parms.append(offset.encode('utf8'))
+            limit_clause = " limit %s "
+            parms.append(constants.PAGE_LIMIT)
+        else:
+            order_by_clause = " order by ad.created_at "
+            limit_clause = ""
 
         if dimensions:
             inner_join = """ inner join sub_alarm_definition as sad
@@ -100,8 +109,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                         inner join
                             (select distinct sub_alarm_definition_id
                              from sub_alarm_definition_dimension
-                              where dimension_name = %s and value = %s) as
-                              sadd{}
+                             where dimension_name = %s and value = %s) as
+                               sadd{}
                         on sadd{}.sub_alarm_definition_id = sad.id
                         """.format(i, i)
                 inner_join_parms += [n.encode('utf8'), v.encode('utf8')]
@@ -110,7 +119,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             select_clause += inner_join
             parms = inner_join_parms + parms
 
-        query = select_clause + where_clause + order_by_clause
+        query = select_clause + where_clause + order_by_clause + limit_clause
 
         return self._execute_query(query, parms)
 
