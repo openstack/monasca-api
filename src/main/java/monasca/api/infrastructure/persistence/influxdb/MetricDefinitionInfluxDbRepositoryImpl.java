@@ -31,6 +31,8 @@ import monasca.api.domain.model.metric.MetricDefinitionRepository;
 import monasca.common.model.metric.MetricDefinition;
 
 import static monasca.api.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
+import static monasca.api.infrastructure.persistence.influxdb.Utils.urlDecodeUTF8;
+import static monasca.api.infrastructure.persistence.influxdb.Utils.urlEncodeUTF8;
 
 public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
 
@@ -64,14 +66,19 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
 
   private List<MetricDefinition> buildMetricDefList(List<Serie> result, String offset)
       throws Exception {
+
+    // offset comes in as url encoded.
+    String decodedOffset = urlDecodeUTF8(offset);
+
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
     for (Serie serie : result) {
       for (Map<String, Object> point : serie.getRows()) {
 
         String encodedMetricName = (String) point.get("name");
 
+
         if (offset != null) {
-          if (encodedMetricName.compareTo(offset) <= 0) {
+          if (encodedMetricName.compareTo(decodedOffset) <= 0) {
             continue;
           }
         }
@@ -89,7 +96,8 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
             metricDefinition =
             new MetricDefinition(serieNameDecoder.getMetricName(),
                                  serieNameDecoder.getDimensions());
-        metricDefinition.setId(encodedMetricName);
+        // Must url encode offset because it is part of a url.
+        metricDefinition.setId(urlEncodeUTF8(encodedMetricName));
         metricDefinitionList.add(metricDefinition);
 
         if (offset != null) {
