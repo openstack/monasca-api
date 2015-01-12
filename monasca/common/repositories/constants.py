@@ -1,0 +1,1 @@
+PAGE_LIMIT = 50

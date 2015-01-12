@@ -14,6 +14,7 @@
 
 import datetime
 
+from monasca.common.repositories import constants
 from monasca.common.repositories import exceptions
 from monasca.common.repositories.mysql import mysql_repository
 from monasca.common.repositories import notifications_repository as nr
@@ -77,7 +78,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         return notification_id
 
     @mysql_repository.mysql_try_catch_block
-    def list_notifications(self, tenant_id):
+    def list_notifications(self, tenant_id, offset):
 
         query = """
             select *
@@ -85,6 +86,11 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
             where tenant_id = %s"""
 
         parms = [tenant_id]
+
+        if offset is not None:
+            query += " and id > %s order by id limit %s"
+            parms.append(offset.encode('utf8'))
+            parms.append(constants.PAGE_LIMIT)
 
         rows = self._execute_query(query, parms)
 

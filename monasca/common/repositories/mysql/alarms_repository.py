@@ -13,6 +13,7 @@
 # under the License.
 
 from monasca.common.repositories import alarms_repository
+from monasca.common.repositories import constants
 from monasca.common.repositories import exceptions
 from monasca.common.repositories.mysql import mysql_repository
 from monasca.openstack.common import log
@@ -194,7 +195,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             return rows
 
     @mysql_repository.mysql_try_catch_block
-    def get_alarms(self, tenant_id, query_parms):
+    def get_alarms(self, tenant_id, query_parms, offset):
 
         parms = [tenant_id]
 
@@ -203,6 +204,14 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         order_by_clause = " order by a.id "
 
         where_clause = " where ad.tenant_id = %s "
+
+        if offset is not None:
+            where_clause += " and ad.id > %s"
+            parms.append(offset.encode('utf8'))
+            limit_clause = " limit %s "
+            parms.append(constants.PAGE_LIMIT)
+        else:
+            limit_clause = ""
 
         if 'alarm_definition_id' in query_parms:
             parms.append(query_parms['alarm_definition_id'])
@@ -257,6 +266,6 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             parms += sub_select_parms
             where_clause += sub_select_clause
 
-        query = select_clause + where_clause + order_by_clause
+        query = select_clause + where_clause + order_by_clause + limit_clause
 
         return self._execute_query(query, parms)
