@@ -50,7 +50,6 @@ import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmExpression;
-import monasca.common.model.alarm.AlarmState;
 
 /**
  * Alarm definition resource implementation.
@@ -136,9 +135,6 @@ public class AlarmDefinitionResource {
     String severity = (String) fields.get("severity");
     String expression = (String) fields.get("expression");
     List<String> matchBy = (List<String>) fields.get("match_by");
-    String stateStr = (String) fields.get("state");
-    AlarmState state =
-        stateStr == null ? null : Validation.parseAndValidate(AlarmState.class, stateStr);
     Boolean enabled = (Boolean) fields.get("actions_enabled");
     List<String> alarmActions = (List<String>) fields.get("alarm_actions");
     List<String> okActions = (List<String>) fields.get("ok_actions");
@@ -149,7 +145,7 @@ public class AlarmDefinitionResource {
         expression == null ? null : AlarmValidation.validateNormalizeAndGet(expression);
 
     return Links.hydrate(service.patch(tenantId, alarmDefinitionId, name, description, severity,
-        expression, alarmExpression, matchBy, state, enabled, alarmActions, okActions,
+        expression, alarmExpression, matchBy, enabled, alarmActions, okActions,
         undeterminedActions), uriInfo, true);
   }
 
