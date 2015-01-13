@@ -112,17 +112,19 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         # name - optional
         if name:
             from_clause += '&' + urllib.quote(name.encode('utf8'), safe='')
+            from_clause += '(&|$)'
 
         # dimensions - optional
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.iteritems())):
-                from_clause += '.*&'
+                from_clause += '(.*&)*'
                 from_clause += urllib.quote(dimension_name.encode('utf8'),
                                             safe='')
                 from_clause += '='
                 from_clause += urllib.quote(dimension_value.encode('utf8'),
                                             safe='')
+                from_clause += '(&|$)'
 
         from_clause += '/'
 
