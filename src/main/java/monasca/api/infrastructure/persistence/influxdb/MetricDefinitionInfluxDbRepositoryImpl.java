@@ -68,7 +68,10 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
       throws Exception {
 
     // offset comes in as url encoded.
-    String decodedOffset = urlDecodeUTF8(offset);
+    String decodedOffset = null;
+    if (offset != null) {
+      decodedOffset = urlDecodeUTF8(offset);
+    }
 
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
     for (Serie serie : result) {
