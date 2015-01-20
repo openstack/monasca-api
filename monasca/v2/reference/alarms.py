@@ -17,19 +17,19 @@ import re
 import falcon
 from oslo.config import cfg
 
-from monasca.api.alarms_api_v2 import AlarmsV2API
+from monasca.api import alarms_api_v2
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
 from monasca.openstack.common import log
 from monasca.v2.reference.alarming import Alarming
 from monasca.v2.reference import helpers
-from monasca.v2.reference.resource import resource_try_catch_block
+from monasca.v2.reference import resource
 
 
 LOG = log.getLogger(__name__)
 
 
-class Alarms(AlarmsV2API, Alarming):
+class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
     def __init__(self, global_conf):
 
@@ -153,7 +153,7 @@ class Alarms(AlarmsV2API, Alarming):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_update(self, tenant_id, id, new_state):
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
@@ -185,7 +185,7 @@ class Alarms(AlarmsV2API, Alarming):
                                                     alarm_metric_rows,
                                                     old_state, new_state)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, query_parms, req_uri, offset):
 
@@ -205,14 +205,14 @@ class Alarms(AlarmsV2API, Alarming):
 
         return helpers.paginate(result, req_uri, offset)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_history(self, tenant_id, alarm_id, req_uri, offset):
 
         result = self._metrics_repo.alarm_history(tenant_id, alarm_id, offset)
 
         return helpers.paginate(result, req_uri, offset)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_delete(self, tenant_id, id):
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
@@ -227,7 +227,7 @@ class Alarms(AlarmsV2API, Alarming):
                                alarm_definition_id, alarm_metric_rows,
                                sub_alarm_rows)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_show(self, req_uri, tenant_id, id):
 
         alarm_rows = self._alarms_repo.get_alarm(tenant_id, id)
@@ -265,7 +265,7 @@ class Alarms(AlarmsV2API, Alarming):
 
         return alarm
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_list(self, req_uri, tenant_id, query_parms, offset):
 
         alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms,
