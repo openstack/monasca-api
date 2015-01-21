@@ -23,7 +23,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
@@ -241,7 +240,9 @@ public class AlarmDefinitionServiceTest {
         new AlarmDefinitionUpdatedEvent(TENANT_ID, oldAlarmDef.getId(), newName, newDescription,
             newExprStr, matchBy, newEnabled, newSeverity, emptyMap, changedSubExpressions,
             unchangedSubExpressions, emptyMap);
-    verify(producer, times(2)).send(new KeyedMessage<String, String>(config.eventsTopic, TENANT_ID, Serialization.toJson(event)));
+    verify(producer).send(
+        new KeyedMessage<String, String>(config.eventsTopic,
+            String.valueOf(service.eventCount - 1), Serialization.toJson(event)));
   }
 
   public void shouldPatchExpression() {
@@ -293,7 +294,9 @@ public class AlarmDefinitionServiceTest {
             oldAlarmDef.getDescription(), newExprStr, oldAlarmDef.getMatchBy(),
             oldAlarmDef.isActionsEnabled(), oldAlarmDef.getSeverity(), emptyMap,
             changedSubExpressions, unchangedSubExpressions, emptyMap);
-    verify(producer).send(new KeyedMessage<String, String>(config.eventsTopic, TENANT_ID, Serialization.toJson(event)));
+    verify(producer).send(
+        new KeyedMessage<String, String>(config.eventsTopic,
+            String.valueOf(service.eventCount - 1), Serialization.toJson(event)));
     verify(repo).update(TENANT_ID, oldAlarmDef.getId(), true, oldAlarmDef.getName(),
         oldAlarmDef.getDescription(), newExprStr, oldAlarmDef.getMatchBy(),
         oldAlarmDef.getSeverity(), oldAlarmDef.isActionsEnabled(), oldSubAlarmIds,
@@ -316,56 +319,56 @@ public class AlarmDefinitionServiceTest {
         oldAlarmDef.getSeverity(), null, oldAlarmDef.isActionsEnabled(), null,
         oldAlarmDef.getAlarmActions(), null,
         oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 1);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), newDescription, newDescription,
         null, oldAlarmDef.getSeverity(), null, oldAlarmDef.isActionsEnabled(), null,
         oldAlarmDef.getAlarmActions(), null,
         oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 1);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         newSeverity, newSeverity, null, oldAlarmDef.isActionsEnabled(), null,
         oldAlarmDef.getAlarmActions(), null,
         oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 1);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, null,
         oldAlarmDef.getAlarmActions(), null, oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 1);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), null, oldAlarmDef.isActionsEnabled(),
         newAlarmActions, newAlarmActions,
         null, oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 1);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, null,
         oldAlarmDef.getAlarmActions(), newOkActions, newOkActions, null,
-        oldAlarmDef.getUndeterminedActions(), 2);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, null,
         oldAlarmDef.getAlarmActions(), null, oldAlarmDef.getOkActions(), newUndeterminedActions,
-        newUndeterminedActions, 3);
+        newUndeterminedActions);
 
     final List<String> emptyActionList = new ArrayList<>();
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, emptyActionList,
         emptyActionList, null, oldAlarmDef.getOkActions(), null,
-        oldAlarmDef.getUndeterminedActions(), 4);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, null,
         oldAlarmDef.getAlarmActions(), emptyActionList, emptyActionList, null,
-        oldAlarmDef.getUndeterminedActions(), 5);
+        oldAlarmDef.getUndeterminedActions());
 
     doPatch(matchBy, oldAlarmDef, null, oldAlarmDef.getName(), null, oldAlarmDef.getDescription(),
         null, oldAlarmDef.getSeverity(), newEnabled, newEnabled, null,
         oldAlarmDef.getAlarmActions(), null, oldAlarmDef.getOkActions(), emptyActionList,
-        emptyActionList, 6);
+        emptyActionList);
   }
 
   private void doPatch(final List<String> matchBy, final AlarmDefinition oldAlarmDef,
@@ -374,8 +377,7 @@ public class AlarmDefinitionServiceTest {
       final Boolean actionsEnabled, final boolean expectedActionsEnabled,
       final List<String> newAlarmActions, final List<String> expectedAlarmActions,
       final List<String> newOkActions, final List<String> expectedOkActions,
-      final List<String> newUndeterminedActions, final List<String> expectedUndeterminedActions,
-      int expectedTimes) {
+      final List<String> newUndeterminedActions, final List<String> expectedUndeterminedActions) {
     final Map<String, AlarmSubExpression> emptyMap = new HashMap<>();
     final Map<String, AlarmSubExpression> changedSubExpressions = new HashMap<>();
     final Map<String, AlarmSubExpression> unchangedSubExpressions = new HashMap<>();
@@ -404,7 +406,9 @@ public class AlarmDefinitionServiceTest {
             expectedDescription, oldAlarmDef.getExpression(), matchBy,
             expectedActionsEnabled, expectedSeverity, emptyMap,
             changedSubExpressions, unchangedSubExpressions, emptyMap);
-    verify(producer, times(expectedTimes)).send(new KeyedMessage<String, String>(config.eventsTopic, TENANT_ID, Serialization.toJson(event)));
+    verify(producer).send(
+        new KeyedMessage<String, String>(config.eventsTopic,
+            String.valueOf(service.eventCount - 1), Serialization.toJson(event)));
     verify(repo).update(TENANT_ID, oldAlarmDef.getId(), true, expectedName,
         expectedDescription, oldAlarmDef.getExpression(), matchBy,
         expectedSeverity, expectedActionsEnabled, oldSubAlarmIds,

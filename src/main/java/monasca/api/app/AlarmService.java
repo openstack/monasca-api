@@ -119,7 +119,7 @@ public class AlarmService {
       String event =
           Serialization.toJson(new AlarmUpdatedEvent(alarmId, alarmDef.getId(),
               tenantId, alarm.getMetrics(), subAlarms, newState, oldState));
-      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+      producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(messageCount++), event));
 
       // Notify interested parties of transitioned alarm state
       if (!oldState.equals(newState)) {
@@ -128,7 +128,7 @@ public class AlarmService {
                 .getId(), alarm.getMetrics(), alarmDef.getName(), alarmDef.getDescription(),
                 oldState, newState, alarmDef.getSeverity(), alarmDef.isActionsEnabled(),
                 stateChangeReasonFor(oldState, newState), System.currentTimeMillis() / 1000));
-        producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, tenantId, event));
+        producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, String.valueOf(messageCount++), event));
       }
       alarm.setState(newState);
       return alarm;

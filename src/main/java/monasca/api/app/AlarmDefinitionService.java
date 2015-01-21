@@ -65,6 +65,7 @@ public class AlarmDefinitionService {
   private final AlarmDefinitionRepository repo;
   private final AlarmRepository alarmRepo;
   private final NotificationMethodRepository notificationMethodRepo;
+  long eventCount;
 
   @Inject
   public AlarmDefinitionService(MonApiConfiguration config, Producer<String, String> producer,
@@ -123,7 +124,7 @@ public class AlarmDefinitionService {
       String event =
           Serialization.toJson(new AlarmDefinitionCreatedEvent(tenantId, alarmDefId, name,
               description, expression, subAlarms, matchBy));
-      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+      producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(eventCount++), event));
 
       return alarm;
     } catch (Exception e) {
@@ -157,7 +158,7 @@ public class AlarmDefinitionService {
     // Notify interested parties of alarm definition deletion
     String event =
         Serialization.toJson(new AlarmDefinitionDeletedEvent(alarmDefId, subAlarmMetricDefs));
-    producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+    producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(eventCount++), event));
 
     // Notify about the Deletion of the Alarms second because that is the order that thresh
     // wants it so Alarms don't get recreated
@@ -165,7 +166,7 @@ public class AlarmDefinitionService {
       String alarmDeletedEvent =
           Serialization.toJson(new AlarmDeletedEvent(tenantId, alarm.getId(), alarm.getMetrics(),
               alarmDefId, alarmSubExpressions.get(alarm.getId())));
-      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, alarmDeletedEvent));
+      producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(eventCount++), alarmDeletedEvent));
     }
   }
 
@@ -274,7 +275,7 @@ public class AlarmDefinitionService {
               description, expression, matchBy, enabled, severity, subExpressions.oldAlarmSubExpressions,
               subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
               subExpressions.newAlarmSubExpressions));
-      producer.send(new KeyedMessage<>(config.eventsTopic, tenantId, event));
+      producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(eventCount++), event));
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Error updating alarm definition for project / tenant %s",
           tenantId);
