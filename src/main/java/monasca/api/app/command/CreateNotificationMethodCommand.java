@@ -76,6 +76,9 @@ public class CreateNotificationMethodCommand {
         if (!urlValidator.isValid(address))
           throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
       }; break;
+      case PAGERDUTY : {
+        // No known validation for PAGERDUTY type at this time
+      }; break;
     }
   }
 }
