@@ -10,11 +10,6 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
-databaseConfiguration:
-# vertica | influxdb
-  #databaseType: influxdb
-  databaseType: influxdb
-
 kafka:
   brokerUris:
     - 192.168.10.4:9092
@@ -34,10 +29,24 @@ mysql:
   checkConnectionWhileIdle: false
   checkConnectionOnBorrow: true
 
+databaseConfiguration:
+# vertica | influxdb
+  databaseType: influxdb
+
+# Uncomment if databaseType is influxDB
+influxDB:
+  name: mon
+  replicationFactor: 1
+  url: http://192.168.10.4:8086
+  user: mon_api
+  password: password
+
+# Uncomment if databaseType is vertica
+# As of 7/10 there is a bug in the monasca-api that requires this section even if databaseType is set to influxdb
 vertica:
   driverClass: com.vertica.jdbc.Driver
-  url: jdbc:vertica://192.168.10.4/mon
-  user: mon_api
+  url: jdbc:vertica://localhost/mon
+  user: dbadmin
   password: password
   maxWaitForConnection: 1s
   validationQuery: "/* MyService Health Check */ SELECT 1"
@@ -45,19 +54,10 @@ vertica:
   maxSize: 32
   checkConnectionWhileIdle: false
 
-
-influxDB:
-  name: mon
-  replicationFactor: 1
-  url: http://192.168.10.4:8086
-  user:  root
-  password: root
-
 middleware:
-  enabled: false
+  enabled: true
   serverVIP: 192.168.10.5
   serverPort: 5000
-  useHttps: false
   connTimeout: 500
   connSSLClientAuth: false
   connPoolMaxActive: 3
@@ -66,12 +66,12 @@ middleware:
   connPoolMinIdleTime: 600000
   connRetryTimes: 2
   connRetryInterval: 50
-  defaultAuthorizedRoles: [user, domainuser, domainadmin,heat_stack_owner,_member_]
+  defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user]
   agentAuthorizedRoles: [monasca-agent]
   adminAuthMethod: password
   adminUser: admin
-  adminPassword: password
-  adminToken: ADMIN
+  adminPassword: admin
+  adminToken:
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576
 
@@ -80,38 +80,36 @@ server:
     - type: http
       maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
 
-
 # Logging settings.
 logging:
 
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: debug
+  level: INFO
 
   # Logger-specific levels.
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
     com.example.app: DEBUG
-    monasca.api: debug
 
   appenders:
     - type: console
-      threshold: debug
+      threshold: ALL
       timeZone: UTC
       target: stdout
       logFormat: # TODO
 
     - type: file
-      currentLogFilename: /var/log/mon-api/mon-api.log
-      threshold: debug
+      currentLogFilename: /var/log/monasca/monasca-api.log
+      threshold: ALL
       archive: true
-      archivedLogFilenamePattern: /var/log/mon-api/mon-api-%d.log.gz
+      archivedLogFilenamePattern: /var/log/monasca/monasca-api-%d.log.gz
       archivedFileCount: 5
       timeZone: UTC
       logFormat: # TODO
 
     - type: syslog
-      host: localhost
+      host: 192.168.10.4
       port: 514
       facility: local0
       threshold: ALL
