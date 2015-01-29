@@ -80,14 +80,14 @@ def validate_authorization(req, authorized_roles):
     str_roles = req.get_header('X-ROLES')
     if str_roles is None:
         raise falcon.HTTPUnauthorized('Forbidden',
-                                      'Tenant does not have any roles', '')
+                                      'Tenant does not have any roles')
     roles = str_roles.lower().split(',')
     for role in roles:
         if role in authorized_roles:
             return
     raise falcon.HTTPUnauthorized('Forbidden',
                                   'Tenant ID is missing a required role to '
-                                  'access this service', '')
+                                  'access this service')
 
 
 def get_tenant_id(req):
