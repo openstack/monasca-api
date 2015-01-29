@@ -22,7 +22,7 @@ from monasca.v2.common.schemas import (exceptions as schemas_exceptions)
 from monasca.v2.common.schemas import (
     notifications_request_body_schema as schemas_notifications)
 from monasca.v2.reference import helpers
-from monasca.v2.reference.resource import resource_try_catch_block
+from monasca.v2.reference import resource
 
 
 LOG = log.getLogger(__name__)
@@ -52,7 +52,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
             LOG.debug(ex)
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _create_notification(self, tenant_id, notification, uri):
 
         name = notification['name'].decode('utf8')
@@ -70,7 +70,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
                                                   address,
                                                   uri)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _update_notification(self, id, tenant_id, notification, uri):
 
         name = notification['name'].decode('utf8')
@@ -98,7 +98,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
         return helpers.add_links_to_resource(response, uri)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _list_notifications(self, tenant_id, uri, offset):
 
         rows = self._notifications_repo.list_notifications(tenant_id, offset)
@@ -108,7 +108,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
         return helpers.paginate(result, uri, offset)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _list_notification(self, tenant_id, notification_id, uri):
 
         row = self._notifications_repo.list_notification(
@@ -130,7 +130,7 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
 
         return result
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _delete_notification(self, tenant_id, notification_id):
 
         self._notifications_repo.delete_notification(tenant_id,

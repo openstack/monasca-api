@@ -18,7 +18,7 @@ import falcon
 from oslo.config import cfg
 import pyparsing
 
-from monasca.api.alarm_definitions_api_v2 import AlarmDefinitionsV2API
+from monasca.api import alarm_definitions_api_v2
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
 import monasca.expression_parser.alarm_expr_parser
@@ -26,16 +26,16 @@ from monasca.openstack.common import log
 from monasca.v2.common.schemas import (alarm_definition_request_body_schema
                                        as schema_alarms)
 from monasca.v2.common.schemas import exceptions as schemas_exceptions
-from monasca.v2.reference.alarming import Alarming
+from monasca.v2.reference import alarming
 from monasca.v2.reference import helpers
-from monasca.v2.reference.helpers import read_json_msg_body
-from monasca.v2.reference.resource import resource_try_catch_block
+from monasca.v2.reference import resource
 
 
 LOG = log.getLogger(__name__)
 
 
-class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
+class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
+                       alarming.Alarming):
     def __init__(self, global_conf):
 
         try:
@@ -64,7 +64,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
     def do_post_alarm_definitions(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        alarm_definition = read_json_msg_body(req)
+        alarm_definition = helpers.read_json_msg_body(req)
 
         self._validate_alarm_definition(alarm_definition)
 
@@ -107,7 +107,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        alarm_definition = read_json_msg_body(req)
+        alarm_definition = helpers.read_json_msg_body(req)
 
         self._validate_alarm_definition(alarm_definition)
 
@@ -176,7 +176,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        alarm_definition = read_json_msg_body(req)
+        alarm_definition = helpers.read_json_msg_body(req)
 
         tenant_id = helpers.get_tenant_id(req)
 
@@ -226,7 +226,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         self._alarm_definition_delete(tenant_id, id)
         res.status = falcon.HTTP_204
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_definition_show(self, tenant_id, id):
 
         alarm_definition_row = (
@@ -263,7 +263,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         return result
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_definition_delete(self, tenant_id, id):
 
         sub_alarm_definition_rows = (
@@ -283,7 +283,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
         self._send_alarm_event(u'alarm-deleted', tenant_id, id,
                                alarm_metric_rows, sub_alarm_rows)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri,
                                offset):
 
@@ -335,7 +335,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
             LOG.debug(ex)
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_definition_update_or_patch(self, tenant_id,
                                           id,
                                           name,
@@ -444,7 +444,7 @@ class AlarmDefinitions(AlarmDefinitionsV2API, Alarming):
 
         return sub_alarm_def_update_dict
 
-    @resource_try_catch_block
+    @resource.resource_try_catch_block
     def _alarm_definition_create(self, tenant_id, name, expression,
                                  description, severity, match_by,
                                  alarm_actions, undetermined_actions,
