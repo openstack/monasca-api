@@ -84,4 +84,10 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
 
     newNotificationMethod.validate();
   }
+
+  public void testValidationForPagerduty() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyPagerduty", NotificationMethodType.PAGERDUTY, "nzH2LVRdMzun11HNC2oD");
+      newNotificationMethod.validate();
+  }
 }

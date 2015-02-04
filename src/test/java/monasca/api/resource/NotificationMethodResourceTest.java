@@ -36,7 +36,7 @@ import static org.testng.Assert.*;
 
 @Test
 public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
-  private NotificationMethod notificationMethod, notificationMethodWebhook;
+  private NotificationMethod notificationMethod, notificationMethodWebhook, notificationMethodPagerduty;
   private NotificationMethodRepository repo;
 
   @Override
@@ -44,14 +44,18 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
     notificationMethod =
         new NotificationMethod("123", "Joe's SMS", NotificationMethodType.SMS, "8675309");
-      notificationMethodWebhook =
+    notificationMethodWebhook =
         new NotificationMethod("1234", "MyWh", NotificationMethodType.WEBHOOK, "http://localhost");
+    notificationMethodPagerduty =
+        new NotificationMethod("12345", "MyPd", NotificationMethodType.PAGERDUTY, "nzH2LVRdMzun11HNC2oD");
 
     repo = mock(NotificationMethodRepository.class);
     when(repo.create(eq("abc"), eq("MySMS"), eq(NotificationMethodType.SMS), anyString()))
         .thenReturn(notificationMethod);
     when(repo.create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString()))
         .thenReturn(notificationMethodWebhook);
+    when(repo.create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString()))
+        .thenReturn(notificationMethodPagerduty);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
     when(repo.find(eq("abc"), anyString())).thenReturn(Arrays.asList(notificationMethod));
 
@@ -263,21 +267,39 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
         "The request entity was empty");
   }
 
-    public void shouldCreateEndpointNotification() {
-        ClientResponse response =
-                client()
-                        .resource("/v2.0/notification-methods")
-                        .header("X-Tenant-Id", "abc")
-                        .header("Content-Type", MediaType.APPLICATION_JSON)
-                        .post(ClientResponse.class,
-                                new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
-                                        "http://localhost"));
+  public void shouldCreateWebhookNotification() {
+    ClientResponse response =
+        client().resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
+                    "http://localhost"));
 
-        NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
-        String location = response.getHeaders().get("Location").get(0);
-        assertEquals(response.getStatus(), 201);
-        assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
-        assertEquals(newNotificationMethod, notificationMethodWebhook);
-        verify(repo).create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString());
-    }
+    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
+    String location = response.getHeaders().get("Location").get(0);
+
+    assertEquals(response.getStatus(), 201);
+    assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
+    assertEquals(newNotificationMethod, notificationMethodWebhook);
+    verify(repo).create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString());
+  }
+
+  public void shouldCreatePagerdutyNotification() {
+    ClientResponse response =
+        client().resource("/v2.0/notification-methods")
+            .header("X-Tenant-Id", "abc")
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class,
+                new CreateNotificationMethodCommand("MyPd", NotificationMethodType.PAGERDUTY,
+                    "http://localhost"));
+
+    NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
+    String location = response.getHeaders().get("Location").get(0);
+
+    assertEquals(response.getStatus(), 201);
+    assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
+    assertEquals(newNotificationMethod, notificationMethodPagerduty);
+    verify(repo).create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString());
+  }
 }
