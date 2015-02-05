@@ -342,7 +342,7 @@ public class ITInfluxDBTest {
 
     String alarmId = from(json).get("id");
 
-    given().headers("Accept", "application/json", "Content-Type", "application/json-patch+json",
+    given().headers("Accept", "application/json", "Content-Type", "application/json",
                     "X-Auth-Token", "82510970543135").body("{}").patch("v2.0/alarms/" + alarmId)
         .then()
         .assertThat().statusCode(200);
