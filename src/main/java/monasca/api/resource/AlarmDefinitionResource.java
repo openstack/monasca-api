@@ -125,7 +125,7 @@ public class AlarmDefinitionResource {
   @PATCH
   @Timed
   @Path("/{alarm_definition_id}")
-  @Consumes("application/json-patch+json")
+  @Consumes({"application/json-patch+json", MediaType.APPLICATION_JSON})
   @Produces(MediaType.APPLICATION_JSON)
   @SuppressWarnings("unchecked")
   public AlarmDefinition patch(@Context UriInfo uriInfo,

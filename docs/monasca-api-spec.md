@@ -562,7 +562,7 @@ This section documents the common request headers that are used in requests.
 ## Common Http Request Headers
 The standard Http request headers that are used in requests.
 
-* Content-Type - The Internet media type of the request body. Used with POST and PUT requests. Must be `application/json` or `application/json-patch+json`.
+* Content-Type - The Internet media type of the request body. Used with POST and PUT requests. Must be `application/json`.
 * Accept - Internet media types that are acceptable in the response. Must be application/json.
 * X-Requested-With (optional) - Which headers are requested to be allowed. Filled in by browser as part of the CORS protocol.
 * Origin (optional) - The origin of page that is requesting cross origin access. Filled in by browser as part of the CORS protocol.
@@ -1731,7 +1731,7 @@ Update select parameters of the specified alarm definition, and enable/disable i
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string, required) - application/json-patch+json
+* Content-Type (string, required) - application/json
 * Accept (string) - application/json
 
 #### Path Parameters
@@ -1760,7 +1760,7 @@ Only the parameters that are specified will be updated. See Changing Alarm Defin
 PATCH /v2.0/alarm-definitions/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
 Host: 192.168.10.4:8080
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
-Content-Type: application/json-patch+json
+Content-Type: application/json
 Cache-Control: no-cache
 
 {  
@@ -2212,7 +2212,7 @@ Update select parameters of the specified alarm, set the alarm state and enable/
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
-* Content-Type (string, required) - application/json-patch+json
+* Content-Type (string, required) - application/json
 * Accept (string) - application/json
 
 #### Path Parameters
@@ -2231,7 +2231,7 @@ Consists of an alarm with the following mutable properties:
 PATCH /v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83 HTTP/1.1
 Host: 192.168.10.4:8080
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
-Content-Type: application/json-patch+json
+Content-Type: application/json
 Cache-Control: no-cache
 
 {  
