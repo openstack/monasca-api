@@ -338,83 +338,26 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
             rows = cursor.fetchall()
 
-            old_sub_alarm_defs_dict_by_id = {}
+            old_sub_alarm_defs_by_id = {}
 
             for row in rows:
                 sad = sub_alarm_definition.SubAlarmDefinition(row=row)
-                old_sub_alarm_defs_dict_by_id[sad.id] = sad
+                old_sub_alarm_defs_by_id[sad.id] = sad
 
-            old_sub_alarm_defs_set = set(
-                old_sub_alarm_defs_dict_by_id.values())
-
-            new_sub_alarm_defs_set = set()
-            for sub_expr in sub_expr_list:
-                sad = sub_alarm_definition.SubAlarmDefinition(
-                    sub_expr=sub_expr)
-                # Inject the alarm definition id.
-                sad.alarm_definition_id = alarm_definition_id.decode('utf8')
-                new_sub_alarm_defs_set.add(sad)
-
-            # Identify old or changed expressions
-            old_or_changed_sub_alarm_defs_set = (
-                old_sub_alarm_defs_set - new_sub_alarm_defs_set)
-
-            # Identify new or changed expressions
-            new_or_changed_sub_alarm_defs_set = (
-                new_sub_alarm_defs_set - old_sub_alarm_defs_set)
-
-            # Find changed expressions. O(n^2) == bad!
-            # This algo may not work if sub expressions are duplicated.
-            changed_sub_alarm_defs_dict_by_id = {}
-            old_or_changed_sub_alarm_defs_set_to_remove = set()
-            new_or_changed_sub_alarm_defs_set_to_remove = set()
-            for old_or_changed in old_or_changed_sub_alarm_defs_set:
-                for new_or_changed in new_or_changed_sub_alarm_defs_set:
-                    if old_or_changed.same_key_fields(new_or_changed):
-                        old_or_changed_sub_alarm_defs_set_to_remove.add(
-                            old_or_changed
-                        )
-                        new_or_changed_sub_alarm_defs_set_to_remove.add(
-                            new_or_changed
-                        )
-                        changed_sub_alarm_defs_dict_by_id[
-                            old_or_changed.id] = (
-                            new_or_changed)
-
-            old_or_changed_sub_alarm_defs_set = (
-                old_or_changed_sub_alarm_defs_set -
-                old_or_changed_sub_alarm_defs_set_to_remove
-            )
-
-            new_or_changed_sub_alarm_defs_set = (
-                new_or_changed_sub_alarm_defs_set -
-                new_or_changed_sub_alarm_defs_set_to_remove
-            )
-            # Create the list of unchanged expressions
-            unchanged_sub_alarm_defs_dict_by_id = (
-                old_sub_alarm_defs_dict_by_id.copy())
-
-            for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
-                del unchanged_sub_alarm_defs_dict_by_id[old_sub_alarm_def.id]
-
-            for sub_alarm_definition_id in (
-                    changed_sub_alarm_defs_dict_by_id.keys()):
-                del unchanged_sub_alarm_defs_dict_by_id[
-                    sub_alarm_definition_id]
-
-            # Remove old sub expressions
-            temp = {}
-            for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
-                temp[old_sub_alarm_def.id] = old_sub_alarm_def
-            old_sub_alarm_defs_dict_by_id = temp
-
-            # Create IDs for new expressions
-            new_sub_alarm_defs_dict_by_id = {}
-            for new_sub_alarm_def in new_or_changed_sub_alarm_defs_set:
-                sub_alarm_definition_id = uuidutils.generate_uuid()
-                new_sub_alarm_def.id = sub_alarm_definition_id
-                new_sub_alarm_defs_dict_by_id[sub_alarm_definition_id] = (
-                    new_sub_alarm_def)
+            if expression:
+                (
+                    changed_sub_alarm_defs_by_id,
+                    new_sub_alarm_defs_by_id,
+                    old_sub_alarm_defs_by_id,
+                    unchanged_sub_alarm_defs_by_id
+                ) = self._determine_sub_expr_changes(
+                    alarm_definition_id, old_sub_alarm_defs_by_id,
+                    sub_expr_list)
+            else:
+                unchanged_sub_alarm_defs_by_id = old_sub_alarm_defs_by_id
+                changed_sub_alarm_defs_by_id = {}
+                new_sub_alarm_defs_by_id = {}
+                old_sub_alarm_defs_by_id = {}
 
             # Get a common update time
             now = datetime.datetime.utcnow()
@@ -431,27 +374,51 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                     updated_at = %s
                     where tenant_id = %s and id = %s"""
 
+            if name is None:
+                new_name = original_row['name']
+            else:
+                new_name = name.encode('utf8')
+
             if description is None:
-                new_description = original_row['description']
+                if patch:
+                    new_description = original_row['description']
+                else:
+                    new_description = ''
             else:
                 new_description = description.encode('utf8')
 
+            if expression is None:
+                new_expression = original_row['expression']
+            else:
+                new_expression = expression.encode('utf8')
+
             if severity is None:
-                new_severity = original_row['severity']
+                if patch:
+                    new_severity = original_row['severity']
+                else:
+                    new_severity = 'LOW'
             else:
                 new_severity = severity.encode('utf8')
 
             if match_by is None:
-                new_match_by = original_row['match_by']
+                if patch:
+                    new_match_by = original_row['match_by']
+                else:
+                    new_match_by = None
             else:
                 new_match_by = ",".join(match_by).encode('utf8')
 
-            parms = [name.encode('utf8'),
+            if actions_enabled is None:
+                new_actions_enabled = original_row['actions_enabled']
+            else:
+                new_actions_enabled = actions_enabled
+
+            parms = [new_name,
                      new_description,
-                     expression.encode('utf8'),
+                     new_expression,
                      new_match_by,
                      new_severity,
-                     1 if actions_enabled else 0,
+                     1 if new_actions_enabled else 0,
                      now,
                      tenant_id,
                      alarm_definition_id]
@@ -462,7 +429,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             query = """
                 delete from sub_alarm_definition where id = %s"""
 
-            for sub_alarm_def_id in old_sub_alarm_defs_dict_by_id.values():
+            for sub_alarm_def_id in old_sub_alarm_defs_by_id.values():
                 parms = [sub_alarm_def_id]
                 cursor.execute(query, parms)
 
@@ -475,7 +442,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                 where id = %s"""
 
             for sub_alarm_definition_id, sub_alarm_def in (
-                    changed_sub_alarm_defs_dict_by_id.iteritems()):
+                    changed_sub_alarm_defs_by_id.iteritems()):
                 parms = [sub_alarm_def.operator, sub_alarm_def.threshold,
                          now, sub_alarm_definition_id]
                 cursor.execute(query, parms)
@@ -502,7 +469,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                   value)
                 values(%s, %s,%s)"""
 
-            for sub_alarm_def in new_sub_alarm_defs_dict_by_id.values():
+            for sub_alarm_def in new_sub_alarm_defs_by_id.values():
                 parms = [sub_alarm_def.id,
                          sub_alarm_def.alarm_definition_id,
                          sub_alarm_def.function.encode('utf8'),
@@ -571,16 +538,90 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
 
             updated_row = cursor.fetchall()[0]
 
-            sub_alarm_defs_dict = {'old': old_sub_alarm_defs_dict_by_id,
+            sub_alarm_defs_dict = {'old': old_sub_alarm_defs_by_id,
                                    'changed':
-                                       changed_sub_alarm_defs_dict_by_id,
+                                       changed_sub_alarm_defs_by_id,
                                    'new':
-                                       new_sub_alarm_defs_dict_by_id,
+                                       new_sub_alarm_defs_by_id,
                                    'unchanged':
-                                       unchanged_sub_alarm_defs_dict_by_id}
+                                       unchanged_sub_alarm_defs_by_id}
 
             # Return the alarm def and the sub alarm defs
             return updated_row, sub_alarm_defs_dict
+
+    def _determine_sub_expr_changes(self, alarm_definition_id,
+                                    old_sub_alarm_defs_by_id,
+                                    sub_expr_list):
+
+        old_sub_alarm_defs_set = set(
+            old_sub_alarm_defs_by_id.values())
+
+        new_sub_alarm_defs_set = set()
+        for sub_expr in sub_expr_list:
+            sad = sub_alarm_definition.SubAlarmDefinition(
+                sub_expr=sub_expr)
+            # Inject the alarm definition id.
+            sad.alarm_definition_id = alarm_definition_id.decode('utf8')
+            new_sub_alarm_defs_set.add(sad)
+
+        # Identify old or changed expressions
+        old_or_changed_sub_alarm_defs_set = (
+            old_sub_alarm_defs_set - new_sub_alarm_defs_set)
+        # Identify new or changed expressions
+        new_or_changed_sub_alarm_defs_set = (
+            new_sub_alarm_defs_set - old_sub_alarm_defs_set)
+        # Find changed expressions. O(n^2) == bad!
+        # This algo may not work if sub expressions are duplicated.
+        changed_sub_alarm_defs_by_id = {}
+        old_or_changed_sub_alarm_defs_set_to_remove = set()
+        new_or_changed_sub_alarm_defs_set_to_remove = set()
+        for old_or_changed in old_or_changed_sub_alarm_defs_set:
+            for new_or_changed in new_or_changed_sub_alarm_defs_set:
+                if old_or_changed.same_key_fields(new_or_changed):
+                    old_or_changed_sub_alarm_defs_set_to_remove.add(
+                        old_or_changed
+                    )
+                    new_or_changed_sub_alarm_defs_set_to_remove.add(
+                        new_or_changed
+                    )
+                    changed_sub_alarm_defs_by_id[
+                        old_or_changed.id] = (
+                        new_or_changed)
+        old_or_changed_sub_alarm_defs_set = (
+            old_or_changed_sub_alarm_defs_set -
+            old_or_changed_sub_alarm_defs_set_to_remove
+        )
+        new_or_changed_sub_alarm_defs_set = (
+            new_or_changed_sub_alarm_defs_set -
+            new_or_changed_sub_alarm_defs_set_to_remove
+        )
+        # Create the list of unchanged expressions
+        unchanged_sub_alarm_defs_by_id = (
+            old_sub_alarm_defs_by_id.copy())
+        for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
+            del unchanged_sub_alarm_defs_by_id[old_sub_alarm_def.id]
+        for sub_alarm_definition_id in (
+                changed_sub_alarm_defs_by_id.keys()):
+            del unchanged_sub_alarm_defs_by_id[
+                sub_alarm_definition_id]
+
+        # Remove old sub expressions
+        temp = {}
+        for old_sub_alarm_def in old_or_changed_sub_alarm_defs_set:
+            temp[old_sub_alarm_def.id] = old_sub_alarm_def
+        old_sub_alarm_defs_by_id = temp
+        # Create IDs for new expressions
+        new_sub_alarm_defs_by_id = {}
+        for new_sub_alarm_def in new_or_changed_sub_alarm_defs_set:
+            sub_alarm_definition_id = uuidutils.generate_uuid()
+            new_sub_alarm_def.id = sub_alarm_definition_id
+            new_sub_alarm_defs_by_id[sub_alarm_definition_id] = (
+                new_sub_alarm_def)
+
+        return (changed_sub_alarm_defs_by_id,
+                new_sub_alarm_defs_by_id,
+                old_sub_alarm_defs_by_id,
+                unchanged_sub_alarm_defs_by_id)
 
     def _delete_alarm_actions(self, cursor, id, alarm_action_name):
 
