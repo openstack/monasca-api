@@ -24,7 +24,8 @@ notification_schema = {
         voluptuous.All(voluptuous.Any(str, unicode),
                        voluptuous.Length(max=250))),
     voluptuous.Required('type'): voluptuous.Schema(
-        voluptuous.Any("EMAIL", "email", "WEBHOOK", "webhook")),
+        voluptuous.Any("EMAIL", "email", "WEBHOOK", "webhook",
+                       "PAGERDUTY", "pagerduty")),
     voluptuous.Required('address'): voluptuous.Schema(
         voluptuous.All(voluptuous.Any(str, unicode),
                        voluptuous.Length(max=100)))}
