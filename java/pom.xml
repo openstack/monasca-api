@@ -5,7 +5,7 @@
 
     <groupId>monasca-api</groupId>
     <artifactId>monasca-api</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <url>http://github.com/stackforge/monasca-api</url>
     <packaging>jar</packaging>
 
