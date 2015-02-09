@@ -17,7 +17,7 @@
   </fileSets>
   <files>
     <file>
-      <source>${project.build.directory}/${computedName}.jar</source>
+      <source>${project.build.directory}/${shadedJarName}.jar</source>
       <outputDirectory>/</outputDirectory>
       <destName>monasca-api.jar</destName>
     </file>
