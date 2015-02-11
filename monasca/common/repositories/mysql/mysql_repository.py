@@ -70,6 +70,8 @@ def mysql_try_catch_block(fun):
 
         except exceptions.DoesNotExistException:
             raise
+        except exceptions.InvalidUpdateException:
+            raise
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)

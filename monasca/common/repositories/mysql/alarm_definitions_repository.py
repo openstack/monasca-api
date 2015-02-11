@@ -353,6 +353,17 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                 ) = self._determine_sub_expr_changes(
                     alarm_definition_id, old_sub_alarm_defs_by_id,
                     sub_expr_list)
+                if old_sub_alarm_defs_by_id or new_sub_alarm_defs_by_id:
+                    new_count = (len(new_sub_alarm_defs_by_id) +
+                                 len(changed_sub_alarm_defs_by_id) +
+                                 len(unchanged_sub_alarm_defs_by_id))
+                    old_count = len(old_sub_alarm_defs_by_id)
+                    if new_count != old_count:
+                        msg = 'number of subexpressions must not change'
+                    else:
+                        msg = 'metrics in subexpression must not change'
+                    raise exceptions.InvalidUpdateException(
+                        msg.encode('utf8'))
             else:
                 unchanged_sub_alarm_defs_by_id = old_sub_alarm_defs_by_id
                 changed_sub_alarm_defs_by_id = {}
@@ -407,6 +418,10 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                     new_match_by = None
             else:
                 new_match_by = ",".join(match_by).encode('utf8')
+
+            if new_match_by != original_row['match_by']:
+                msg = "match_by must not change".encode('utf8')
+                raise exceptions.InvalidUpdateException(msg)
 
             if actions_enabled is None:
                 new_actions_enabled = original_row['actions_enabled']

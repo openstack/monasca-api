@@ -36,6 +36,8 @@ def resource_try_catch_block(fun):
             raise
         except exceptions.AlreadyExistsException as ex:
             raise falcon.HTTPConflict(ex.__class__.__name__, ex.message)
+        except exceptions.InvalidUpdateException as ex:
+            raise falcon.HTTPBadRequest(ex.__class__.__name__, ex.message)
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
             msg = " ".join(map(str, ex.message.args))

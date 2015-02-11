@@ -23,3 +23,7 @@ class DoesNotExistException(RepositoryException):
 
 class AlreadyExistsException(RepositoryException):
     pass
+
+
+class InvalidUpdateException(RepositoryException):
+    pass
