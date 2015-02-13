@@ -312,7 +312,7 @@ Before using the API, you must first get a valid auth token from Keystone. All A
 A metric is uniquely identified by a name and set of dimensions.
 
 ### Name
-Defines the name of a metric. A name is of type string(100).
+Defines the name of a metric. A name is of type string(255).
 
 ### Dimensions
 A dictionary of (key, value) pairs. The key and value are of type string(255). The first character in the dimension is restricted to the following: `a-z A-Z 0-9 _ / \ $`. 
@@ -710,7 +710,7 @@ None.
 #### Request Body
 Consists of a single metric object or an array of metric objects. A metric has the following properties:
 
-* name (string(100), required) - The name of the metric.
+* name (string(255), required) - The name of the metric.
 * dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
 * timestamp (string, required) - The timestamp in seconds from the Epoch.
 * value (float, required) - Value of the metric. Values with base-10 exponents greater than 126 or less than -130 are truncated.
@@ -793,7 +793,7 @@ Get metrics
 None.
 
 #### Query Parameters
-* name (string(100), optional) - A metric name to filter metrics by.
+* name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 
 #### Request Body
@@ -853,7 +853,7 @@ Get measurements for metrics.
 None.
 
 #### Query Parameters
-* name (string(100), optional) - A metric name to filter metrics by.
+* name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
@@ -877,7 +877,7 @@ Cache-Control: no-cache
 #### Response Body
 Returns a JSON array of measurements objects for each unique metric with the following fields:
 
-* name (string(100)) - A name of a metric.
+* name (string(255)) - A name of a metric.
 * dimensions ({string(255): string(255)}) - The dimensions of a metric.
 * columns (array[string]) - An array of column names corresponding to the columns in measurements.
 * measurements (array[array[]]) - A two dimensional array of measurements for each timestamp.
@@ -938,7 +938,7 @@ Get statistics for metrics.
 None.
 
 #### Query Parameters
-* name (string(100), required) - A metric name to filter metrics by.
+* name (string(255), required) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * statistics (string, required) - A comma separate array of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
@@ -965,7 +965,7 @@ Cache-Control: no-cache
 #### Response Body
 Returns a JSON array of statistic objects for each unique metric with the following fields:
 
-* name (string(100)) - A name of a metric.
+* name (string(255)) - A name of a metric.
 * dimensions ({string(255): string(255)}) - The dimensions of a metric.
 * columns (array[string]) - An array of column names corresponding to the columns in statistics.
 * statistics (array[array[]]) - A two dimensional array of statistics for each period.

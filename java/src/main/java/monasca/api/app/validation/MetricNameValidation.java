@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import monasca.common.model.Services;
+import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.resource.exception.Exceptions;
 import com.sun.jersey.spi.container.WebApplication;
 
@@ -47,9 +48,9 @@ public class MetricNameValidation {
     // General validations
     if (Strings.isNullOrEmpty(metricName))
       throw Exceptions.unprocessableEntity("Metric name is required");
-    if (metricName.length() > 64)
-      throw Exceptions.unprocessableEntity("Metric name %s must be 64 characters or less",
-          metricName);
+    if (metricName.length() > CreateMetricCommand.MAX_NAME_LENGTH)
+      throw Exceptions.unprocessableEntity("Metric name %s must be %d characters or less",
+          metricName, CreateMetricCommand.MAX_NAME_LENGTH);
     if (!Services.isReserved(metricName) && !VALID_METRIC_NAME.matcher(metricName).matches())
       throw Exceptions.unprocessableEntity("Metric name %s may only contain: a-z A-Z 0-9 _ - .",
           metricName);

@@ -168,11 +168,15 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   public void shouldErrorOnCreateWithTooLongName() {
     ClientResponse response =
         createResponseFor(new CreateMetricCommand(
+            "1234567890123456789012345678901234567890123456789012345678901234567890" +
+            "1234567890123456789012345678901234567890123456789012345678901234567890" +
+            "1234567890123456789012345678901234567890123456789012345678901234567890" +
+            "1234567890123456789012345678901234567890123456789012345678901234567890" +
             "1234567890123456789012345678901234567890123456789012345678901234567890", dimensions,
             timestamp, 22.0));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "[name size must be between 1 and 64");
+        String.format("[name size must be between 1 and %d", CreateMetricCommand.MAX_NAME_LENGTH));
   }
 
   public void shouldErrorOnCreateWithReservedService() {
