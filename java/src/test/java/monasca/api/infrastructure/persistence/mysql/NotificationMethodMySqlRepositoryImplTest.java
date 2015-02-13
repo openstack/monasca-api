@@ -60,11 +60,11 @@ public class NotificationMethodMySqlRepositoryImplTest {
   protected void beforeMethod() {
     handle.execute("truncate table notification_method");
     handle
-        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('123', '444', 'MyEmail', 'EMAIL', 'a@b', NOW(), NOW())");
   }
 
   public void shouldCreate() {
-    NotificationMethod nmA = repo.create("555", "MySMS", NotificationMethodType.SMS, "5555555");
+    NotificationMethod nmA = repo.create("555", "MyEmail", NotificationMethodType.EMAIL, "a@b");
     NotificationMethod nmB = repo.findById("555", nmA.getId());
 
     assertEquals(nmA, nmB);
@@ -80,15 +80,15 @@ public class NotificationMethodMySqlRepositoryImplTest {
     NotificationMethod nm = repo.findById("444", "123");
 
     assertEquals(nm.getId(), "123");
-    assertEquals(nm.getType(), NotificationMethodType.SMS);
-    assertEquals(nm.getAddress(), "8675309");
+    assertEquals(nm.getType(), NotificationMethodType.EMAIL);
+    assertEquals(nm.getAddress(), "a@b");
   }
 
   public void shouldFind() {
     List<NotificationMethod> nms = repo.find("444", null);
 
-    assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MySMS",
-        NotificationMethodType.SMS, "8675309")));
+    assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MyEmail",
+        NotificationMethodType.EMAIL, "a@b")));
   }
 
   public void shouldUpdate() {

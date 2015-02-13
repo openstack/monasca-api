@@ -31,7 +31,7 @@ public class NotificationMethodTest extends AbstractModelTest {
 
   public NotificationMethodTest() {
     notificationMethod =
-        new NotificationMethod("123", "MySMS", NotificationMethodType.SMS, "9228675309");
+        new NotificationMethod("123", "MyEmail", NotificationMethodType.EMAIL, "a@b");
     notificationMethod.setLinks(Arrays.asList(new Link("self",
         "https://cloudsvc.example.com/v1.0")));
   }

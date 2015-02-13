@@ -78,9 +78,9 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
     handle.execute("truncate table alarm");
     handle.execute("truncate table notification_method");
     handle
-        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'alarm-test', 'MyEmail', 'EMAIL', 'a@b', NOW(), NOW())");
     handle
-        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MyEmail', 'EMAIL', 'a@b', NOW(), NOW())");
     mysqlDb.close(handle);
 
     repo = new AlarmDefinitionMySqlRepositoryImpl(mysqlDb);

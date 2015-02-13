@@ -56,7 +56,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
     Handle handle = db.open();
     handle.execute("truncate table notification_method");
     handle
-        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'notification-method-test', 'MySMS', 'SMS', '8675309', NOW(), NOW())");
+        .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'notification-method-test', 'MyEmaila', 'EMAIL', 'a@b', NOW(), NOW())");
     db.close(handle);
 
     repo = new NotificationMethodMySqlRepositoryImpl(db);
@@ -76,7 +76,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
 
     // Fixtures
     notificationMethod =
-        new NotificationMethod("123", "Joe's SMS", NotificationMethodType.SMS, "8675309");
+        new NotificationMethod("123", "Joe's Email", NotificationMethodType.EMAIL, "a@b");
   }
 
   public void shouldCreate() throws Exception {
@@ -106,7 +106,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
             .header("X-Tenant-Id", TENANT_ID)
             .type(MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "8675309"));
+                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b"));
 
     assertEquals(response.getStatus(), 409);
   }

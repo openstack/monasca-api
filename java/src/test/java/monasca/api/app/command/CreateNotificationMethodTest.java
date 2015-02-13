@@ -31,7 +31,7 @@ import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 public class CreateNotificationMethodTest extends AbstractModelTest {
   public void shouldDeserializeFromJson() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod =
-        new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "9228675309");
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b");
 
     String json = jsonFixture("fixtures/newNotificationMethod.json");
     CreateNotificationMethodCommand other = fromJson(json, CreateNotificationMethodCommand.class);
@@ -40,7 +40,7 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
 
   public void shouldDeserializeFromJsonLowerCaseEnum() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod =
-        new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "9228675309");
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b");
 
     String json = jsonFixture("fixtures/newNotificationMethodWithLowercaseEnum.json");
     CreateNotificationMethodCommand other = fromJson(json, CreateNotificationMethodCommand.class);
@@ -50,7 +50,7 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
   @Test(expectedExceptions = JsonMappingException.class)
   public void shouldDeserializeFromJsonEnumError() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod =
-        new CreateNotificationMethodCommand("MySMS", NotificationMethodType.SMS, "9228675309");
+        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b");
 
     String json = jsonFixture("fixtures/newNotificationMethodWithInvalidEnum.json");
     CreateNotificationMethodCommand other = fromJson(json, CreateNotificationMethodCommand.class);
