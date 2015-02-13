@@ -56,16 +56,10 @@ _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 common_cli_opts = [
-    cfg.BoolOpt('debug',
-                short='d',
-                default=False,
-                help='Print debugging output (set logging level to '
-                     'DEBUG instead of default WARNING level).'),
-    cfg.BoolOpt('verbose',
-                short='v',
-                default=False,
-                help='Print more verbose output (set logging level to '
-                     'INFO instead of default WARNING level).'),
+    cfg.StrOpt('log_level',
+               default="WARNING",
+               help='Log output level (INFO, DEBUG, ERROR or WARNING) '
+                    'Default: WARNING.'),
 ]
 
 logging_cli_opts = [
@@ -524,11 +518,16 @@ def _setup_logging_from_conf(project, version):
             handler.setFormatter(ContextFormatter(project=project,
                                                   version=version,
                                                   datefmt=datefmt))
-
-    if CONF.debug:
-        log_root.setLevel(logging.DEBUG)
-    elif CONF.verbose:
-        log_root.setLevel(logging.INFO)
+    log_level = CONF.log_level
+    if log_level:
+        if log_level == "DEBUG":
+            log_root.setLevel(logging.DEBUG)
+        elif log_level == "INFO":
+            log_root.setLevel(logging.INFO)
+        elif log_level == "WARNING":
+            log_root.setLevel(logging.WARNING)
+        elif log_level == "ERROR":
+            log_root.setLevel(logging.ERROR)
     else:
         log_root.setLevel(logging.WARNING)
 
