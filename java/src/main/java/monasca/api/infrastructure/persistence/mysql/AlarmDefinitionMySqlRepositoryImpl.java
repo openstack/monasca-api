@@ -40,7 +40,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
-import monasca.api.infrastructure.persistence.SubAlarmQueries;
+import monasca.api.infrastructure.persistence.SubAlarmDefinitionQueries;
 import monasca.common.persistence.BeanMapper;
 
 /**
@@ -141,7 +141,7 @@ public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionReposi
 
       String limit = offset != null ? " limit :limit" : "";
 
-      String sql = String.format(query, SubAlarmQueries.buildJoinClauseFor(dimensions), sbWhere, orderBy,
+      String sql = String.format(query, SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere, orderBy,
                                  limit);
       Query<?> q = h.createQuery(sql).bind("tenantId", tenantId);
 

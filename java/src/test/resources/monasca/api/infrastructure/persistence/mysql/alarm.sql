@@ -81,8 +81,8 @@ CREATE TABLE `sub_alarm` (
 );
 
 CREATE TABLE `alarm_action` (
-  `alarm_id` varchar(36) NOT NULL,
+  `alarm_definition_id` varchar(36) NOT NULL,
   `alarm_state` varchar(20) NOT NULL check alarm_state in ('UNDETERMINED','OK','ALARM'),
   `action_id` varchar(36) NOT NULL DEFAULT '',
-  PRIMARY KEY (`alarm_id`,`alarm_state`,`action_id`)
+  PRIMARY KEY (`alarm_definition_id`,`alarm_state`,`action_id`)
 );
