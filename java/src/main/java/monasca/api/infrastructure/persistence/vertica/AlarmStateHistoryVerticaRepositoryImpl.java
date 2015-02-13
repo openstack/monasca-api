@@ -34,7 +34,7 @@ import org.skife.jdbi.v2.util.StringMapper;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
 import monasca.api.infrastructure.persistence.DimensionQueries;
-import monasca.api.infrastructure.persistence.SubAlarmQueries;
+import monasca.api.infrastructure.persistence.SubAlarmDefinitionQueries;
 import monasca.common.persistence.BeanMapper;
 
 /**
@@ -86,7 +86,7 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
 
     // Find alarm Ids for dimensions
     try (Handle h = mysql.open()) {
-      String sql = String.format(FIND_ALARMS_SQL, SubAlarmQueries.buildJoinClauseFor(dimensions));
+      String sql = String.format(FIND_ALARMS_SQL, SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions));
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
       alarmIds = query.map(StringMapper.FIRST).list();
