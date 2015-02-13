@@ -31,9 +31,10 @@ import monasca.api.resource.exception.Exceptions;
 public class CreateMetricCommand {
   private static final long TIME_2MIN = 120;
   private static final long TIME_2WEEKS = 1209600;
+  public static final int MAX_NAME_LENGTH = 255;
 
   @NotEmpty
-  @Size(min = 1, max = 64)
+  @Size(min = 1, max = MAX_NAME_LENGTH)
   public String name;
   public Map<String, String> dimensions;
   public long timestamp;
