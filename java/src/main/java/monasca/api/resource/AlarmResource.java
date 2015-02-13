@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.joda.time.DateTime;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +43,8 @@ import monasca.api.app.AlarmService;
 import monasca.api.app.command.UpdateAlarmCommand;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarm.Alarm;
-import monasca.api.domain.model.alarm.AlarmRepository;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import monasca.api.domain.model.alarm.AlarmRepo;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmState;
 
@@ -56,12 +54,12 @@ import monasca.common.model.alarm.AlarmState;
 @Path("/v2.0/alarms")
 public class AlarmResource {
   private final AlarmService service;
-  private final AlarmRepository repo;
-  private final AlarmStateHistoryRepository stateHistoryRepo;
+  private final AlarmRepo repo;
+  private final AlarmStateHistoryRepo stateHistoryRepo;
 
   @Inject
-  public AlarmResource(AlarmService service, AlarmRepository repo,
-      AlarmStateHistoryRepository stateHistoryRepo) {
+  public AlarmResource(AlarmService service, AlarmRepo repo,
+      AlarmStateHistoryRepo stateHistoryRepo) {
     this.service = service;
     this.repo = repo;
     this.stateHistoryRepo = stateHistoryRepo;

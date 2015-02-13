@@ -30,14 +30,20 @@ mysql:
   checkConnectionOnBorrow: true
 
 databaseConfiguration:
-# vertica | influxdb
+# databaseType can be (vertica | influxdb)
   databaseType: influxdb
 
 # Uncomment if databaseType is influxDB
 influxDB:
+  # version can be (V8 | V9)
+  # If noversion set then defaults to V8.
+  version: V8
+  # Used only if version is V9.
+  maxHttpConnections: 100
   name: mon
   replicationFactor: 1
   url: http://192.168.10.4:8086
+#  url: http://10.10.10.2:8086
   user: mon_api
   password: password
 
@@ -84,7 +90,7 @@ server:
 logging:
 
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: INFO
+  level: debug
 
   # Logger-specific levels.
   loggers:

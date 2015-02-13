@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.common.model.metric.Metric;
 import monasca.common.model.metric.MetricEnvelope;
 import monasca.common.model.metric.MetricEnvelopes;
@@ -41,13 +41,13 @@ import monasca.common.model.metric.MetricEnvelopes;
  * Metric service implementation.
  */
 public class MetricService {
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final Producer<String, String> producer;
   private final Meter metricMeter;
   private final Meter batchMeter;
 
   @Inject
-  public MetricService(MonApiConfiguration config, Producer<String, String> producer,
+  public MetricService(ApiConfig config, Producer<String, String> producer,
       MetricRegistry metricRegistry) {
     this.config = config;
     this.producer = producer;

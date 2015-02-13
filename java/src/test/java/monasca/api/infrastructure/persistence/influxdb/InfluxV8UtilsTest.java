@@ -25,26 +25,26 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 @Test
-public class UtilsTest {
+public class InfluxV8UtilsTest {
   public void SQLSanitizerSanitizeGoodDataTest() throws Exception {
     String goodString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_" +
         ".?/%=&鱼鸟";
 
-    assert (goodString.equals(Utils.SQLSanitizer.sanitize(goodString)));
+    assert (goodString.equals(InfluxV8Utils.SQLSanitizer.sanitize(goodString)));
   }
 
   @Test(expectedExceptions = {Exception.class})
   public void SQLSanitizerSanitizeBadDataTest1() throws Exception {
     String badStringWithSemicolon = "abcdefghijklmnopqrs;tuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
 
-    assert (badStringWithSemicolon.equals(Utils.SQLSanitizer.sanitize(badStringWithSemicolon)));
+    assert (badStringWithSemicolon.equals(InfluxV8Utils.SQLSanitizer.sanitize(badStringWithSemicolon)));
   }
 
   @Test(expectedExceptions = {Exception.class})
   public void SQLSanitizerSanitizeBadDataTest2() throws Exception {
     String badStringWithSingleQuote = "'a'bcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "-_.";
 
-    assert (badStringWithSingleQuote.equals(Utils.SQLSanitizer.sanitize(badStringWithSingleQuote)));
+    assert (badStringWithSingleQuote.equals(InfluxV8Utils.SQLSanitizer.sanitize(badStringWithSingleQuote)));
   }
 
   public void whereClauseBuilderBuildTimePartTest() {
@@ -52,7 +52,7 @@ public class UtilsTest {
     DateTime startTime = new DateTime(2014, 01, 01, 01, 01, 01, DateTimeZone.UTC);
     DateTime endTime = new DateTime(2014, 01, 01, 01, 01, 02, DateTimeZone.UTC);
 
-    assert (expectedResult.equals(Utils.WhereClauseBuilder.buildTimePart(startTime, endTime)));
+    assert (expectedResult.equals(InfluxV8Utils.WhereClauseBuilder.buildTimePart(startTime, endTime)));
   }
 
   public void testBuildSerieNameRegex() throws Exception {
@@ -63,12 +63,12 @@ public class UtilsTest {
 
     // This doesn't ensure that influxdb will evaluate this correctly because it is written in GO, but it
     // should give a good idea of the likelihood of  success
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", null), seriesNoDims, true);
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", null), seriesWithDims, true);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", null), seriesNoDims, true);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", null), seriesWithDims, true);
 
     // There was a bug where it was effectively doing a "startsWith" instead of pure match so test that
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_per", null), seriesNoDims, false);
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_per", null), seriesWithDims, false);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_per", null), seriesNoDims, false);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_per", null), seriesWithDims, false);
 
     // Make sure it works with the dimension to find in the front, middle and end of the dimensions
     // and that it does an exact match
@@ -81,10 +81,10 @@ public class UtilsTest {
       String name, String goodValue, String badValue) throws Exception {
     final Map<String, String> dimensions = new HashMap<String, String>();
     dimensions.put(name, goodValue);
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", dimensions), seriesWithDims, true);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", dimensions), seriesWithDims, true);
 
     dimensions.put(name, badValue);
-    checkRegex(Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", dimensions), seriesWithDims, false);
+    checkRegex(InfluxV8Utils.buildSerieNameRegex(tenantId, region, "cpu.idle_perc", dimensions), seriesWithDims, false);
   }
 
   private void checkRegex(String regex, final String seriesNoDims, final boolean expected) {

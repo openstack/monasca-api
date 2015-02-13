@@ -41,17 +41,17 @@ import monasca.api.infrastructure.InfrastructureModule;
  * Monitoring API server bindings.
  */
 public class MonApiModule extends AbstractModule {
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final Environment environment;
 
-  public MonApiModule(Environment environment, MonApiConfiguration config) {
+  public MonApiModule(Environment environment, ApiConfig config) {
     this.environment = environment;
     this.config = config;
   }
 
   @Override
   protected void configure() {
-    bind(MonApiConfiguration.class).toInstance(config);
+    bind(ApiConfig.class).toInstance(config);
     bind(MetricRegistry.class).toInstance(environment.metrics());
     bind(DataSourceFactory.class).annotatedWith(Names.named("mysql")).toInstance(config.mysql);
     bind(DataSourceFactory.class).annotatedWith(Names.named("vertica")).toInstance(config.vertica);

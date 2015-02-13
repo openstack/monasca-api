@@ -33,7 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import monasca.api.app.validation.Validation;
-import monasca.api.domain.model.statistic.StatisticRepository;
+import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
 // import monasca.common.util.stats.Statistics;
@@ -45,10 +45,10 @@ import monasca.api.domain.model.statistic.Statistics;
 public class StatisticResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
-  private final StatisticRepository repo;
+  private final StatisticRepo repo;
 
   @Inject
-  public StatisticResource(StatisticRepository repo) {
+  public StatisticResource(StatisticRepo repo) {
     this.repo = repo;
   }
 

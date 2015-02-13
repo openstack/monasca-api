@@ -14,9 +14,8 @@
 
 package monasca.api.infrastructure.persistence.vertica;
 
-import monasca.api.domain.model.measurement.MeasurementRepository;
+import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
-import monasca.api.infrastructure.persistence.vertica.MeasurementVerticaRepositoryImpl;
 
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
@@ -36,14 +35,14 @@ import static org.testng.Assert.assertEquals;
 public class MeasurementVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private MeasurementRepository repo;
+  private MeasurementRepo repo;
 
   @BeforeClass
   protected void setupClass() throws Exception {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MeasurementVerticaRepositoryImpl(db);
+    repo = new MeasurementVerticaRepoImpl(db);
   }
 
   @AfterClass

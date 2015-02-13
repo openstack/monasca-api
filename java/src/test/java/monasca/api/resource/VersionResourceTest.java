@@ -34,13 +34,13 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.version.Version;
 import monasca.api.domain.model.version.Version.VersionStatus;
-import monasca.api.domain.model.version.VersionRepository;
+import monasca.api.domain.model.version.VersionRepo;
 import com.sun.jersey.api.client.GenericType;
 
 @Test
 public class VersionResourceTest extends AbstractMonApiResourceTest {
   private Version version;
-  private VersionRepository repo;
+  private VersionRepo repo;
 
   @Override
   protected void setupResources() throws Exception {
@@ -49,7 +49,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     version.setLinks(Arrays.asList(new Link("self",
         "https://cloudsvc.example.com/v2.0")));
 
-    repo = mock(VersionRepository.class);
+    repo = mock(VersionRepo.class);
     when(repo.findById(eq("v2.0"))).thenReturn(version);
     when(repo.find()).thenReturn(Arrays.asList(version));
     addResources(new VersionResource(repo));

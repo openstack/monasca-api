@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Repository for alarm state history.
  */
-public interface AlarmStateHistoryRepository {
+public interface AlarmStateHistoryRepo {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
    */

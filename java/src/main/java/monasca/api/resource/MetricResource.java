@@ -38,11 +38,10 @@ import javax.ws.rs.core.UriInfo;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.app.validation.Validation;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.Services;
 import monasca.common.model.metric.Metric;
-import monasca.common.model.metric.MetricDefinition;
 
 /**
  * Metric resource implementation.
@@ -53,10 +52,10 @@ public class MetricResource {
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
     private final MetricService service;
-  private final MetricDefinitionRepository metricRepo;
+  private final MetricDefinitionRepo metricRepo;
 
   @Inject
-  public MetricResource(MetricService service, MetricDefinitionRepository metricRepo) {
+  public MetricResource(MetricService service, MetricDefinitionRepo metricRepo) {
     this.service = service;
     this.metricRepo = metricRepo;
   }

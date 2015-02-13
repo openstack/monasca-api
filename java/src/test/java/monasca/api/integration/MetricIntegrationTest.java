@@ -34,11 +34,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.api.MonApiModule;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.resource.AbstractMonApiResourceTest;
 import monasca.api.resource.MetricResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -49,8 +49,8 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
   private DBI db;
   private MetricService service;
   private Producer<String, String> producer;
-  private MonApiConfiguration config;
-  private MetricDefinitionRepository metricRepo;
+  private ApiConfig config;
+  private MetricDefinitionRepo metricRepo;
   private Map<String, String> dimensions;
 
   @Override
@@ -59,14 +59,14 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     Handle handle = db.open();
     handle.execute("truncate table access");
     db.close(handle);
-    metricRepo = mock(MetricDefinitionRepository.class);
+    metricRepo = mock(MetricDefinitionRepo.class);
     service = new MetricService(config, producer, metricRegistry);
     addResources(new MetricResource(service, metricRepo));
   }
 
   @BeforeTest
   protected void beforeTest() throws Exception {
-    config = getConfiguration("config-test.yml", MonApiConfiguration.class);
+    config = getConfiguration("config-test.yml", ApiConfig.class);
     Injector injector = Guice.createInjector(new MonApiModule(environment, config));
     producer = injector.getInstance(Key.get(new TypeLiteral<Producer<String, String>>() {}));
   }

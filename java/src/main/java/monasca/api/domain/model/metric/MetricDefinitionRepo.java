@@ -11,20 +11,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package monasca.api.domain;
+package monasca.api.domain.model.metric;
 
-import javax.inject.Singleton;
+import monasca.common.model.metric.MetricDefinition;
 
-import com.google.inject.AbstractModule;
-import monasca.api.domain.model.version.VersionRepo;
-import monasca.api.domain.service.impl.VersionRepoImpl;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Domain layer bindings.
+ * Repository for metrics.
  */
-public class DomainModule extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(VersionRepo.class).to(VersionRepoImpl.class).in(Singleton.class);
-  }
+public interface MetricDefinitionRepo {
+  /**
+   * Finds metrics for the given criteria.
+   */
+  List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                              String offset)
+      throws Exception;
 }

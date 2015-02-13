@@ -28,7 +28,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 
-public class MonApiConfiguration extends Configuration {
+public class ApiConfig extends Configuration {
   @NotEmpty
   public String region;
   @NotNull

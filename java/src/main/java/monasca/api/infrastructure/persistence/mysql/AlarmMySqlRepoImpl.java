@@ -15,7 +15,7 @@ package monasca.api.infrastructure.persistence.mysql;
 
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
-import monasca.api.domain.model.alarm.AlarmRepository;
+import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.common.model.alarm.AlarmState;
@@ -41,8 +41,8 @@ import javax.inject.Named;
 /**
  * Alarmed metric repository implementation.
  */
-public class AlarmMySqlRepositoryImpl implements AlarmRepository {
-  private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepositoryImpl.class);
+public class AlarmMySqlRepoImpl implements AlarmRepo {
+  private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
   private static final String ALARM_SQL =
@@ -58,7 +58,7 @@ public class AlarmMySqlRepositoryImpl implements AlarmRepository {
           + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
 
   @Inject
-  public AlarmMySqlRepositoryImpl(@Named("mysql") DBI db) {
+  public AlarmMySqlRepoImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

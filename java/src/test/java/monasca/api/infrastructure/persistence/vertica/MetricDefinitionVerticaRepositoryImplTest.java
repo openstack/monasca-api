@@ -15,8 +15,7 @@
 package monasca.api.infrastructure.persistence.vertica;
 
 import monasca.common.model.metric.MetricDefinition;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
-import monasca.api.infrastructure.persistence.vertica.MetricDefinitionVerticaRepositoryImpl;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -35,14 +34,14 @@ import static org.testng.Assert.assertEquals;
 public class MetricDefinitionVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private MetricDefinitionRepository repo;
+  private MetricDefinitionRepo repo;
 
   @BeforeClass
   protected void setupClass() throws Exception {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MetricDefinitionVerticaRepositoryImpl(db);
+    repo = new MetricDefinitionVerticaRepoImpl(db);
   }
 
   @AfterClass

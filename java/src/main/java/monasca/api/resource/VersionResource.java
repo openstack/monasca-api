@@ -27,7 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import monasca.api.domain.model.version.Version;
-import monasca.api.domain.model.version.VersionRepository;
+import monasca.api.domain.model.version.VersionRepo;
 
 /**
  * Version resource implementation.
@@ -35,10 +35,10 @@ import monasca.api.domain.model.version.VersionRepository;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public class VersionResource {
-  private final VersionRepository repository;
+  private final VersionRepo repository;
 
   @Inject
-  public VersionResource(VersionRepository repository) {
+  public VersionResource(VersionRepo repository) {
     this.repository = repository;
   }
 

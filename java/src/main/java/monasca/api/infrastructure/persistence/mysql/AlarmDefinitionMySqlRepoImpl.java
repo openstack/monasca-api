@@ -42,7 +42,7 @@ import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
+import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.SubAlarmDefinitionQueries;
 
@@ -51,7 +51,7 @@ import com.google.common.collect.Lists;
 /**
  * Alarm repository implementation.
  */
-public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionRepository {
+public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
   private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final String SUB_ALARM_SQL =
       "select sa.*, sad.dimensions from sub_alarm_definition as sa "
@@ -61,7 +61,7 @@ public class AlarmDefinitionMySqlRepositoryImpl implements AlarmDefinitionReposi
   private final DBI db;
 
   @Inject
-  public AlarmDefinitionMySqlRepositoryImpl(@Named("mysql") DBI db) {
+  public AlarmDefinitionMySqlRepoImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

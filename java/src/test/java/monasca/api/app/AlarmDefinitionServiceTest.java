@@ -46,17 +46,17 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.api.app.AlarmDefinitionService.SubExpressions;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.common.model.alarm.AlarmExpression;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.event.AlarmDefinitionUpdatedEvent;
 import monasca.common.util.Serialization;
-import monasca.api.domain.model.alarm.AlarmRepository;
+import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
-import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
+import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
+import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 
 @Test
 public class AlarmDefinitionServiceTest {
@@ -67,19 +67,19 @@ public class AlarmDefinitionServiceTest {
   final static String TENANT_ID = "bob";
 
   AlarmDefinitionService service;
-  MonApiConfiguration config;
+  ApiConfig config;
   Producer<String, String> producer;
-  AlarmDefinitionRepository repo;
-  NotificationMethodRepository notificationMethodRepo;
+  AlarmDefinitionRepo repo;
+  NotificationMethodRepo notificationMethodRepo;
 
   @BeforeMethod
   @SuppressWarnings("unchecked")
   protected void beforeMethod() {
-    config = new MonApiConfiguration();
+    config = new ApiConfig();
     producer = mock(Producer.class);
-    repo = mock(AlarmDefinitionRepository.class);
-    notificationMethodRepo = mock(NotificationMethodRepository.class);
-    AlarmRepository alarmRepo = mock(AlarmRepository.class);
+    repo = mock(AlarmDefinitionRepo.class);
+    notificationMethodRepo = mock(NotificationMethodRepo.class);
+    AlarmRepo alarmRepo = mock(AlarmRepo.class);
     service = new AlarmDefinitionService(config, producer, repo, alarmRepo, notificationMethodRepo);
 
     when(

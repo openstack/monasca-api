@@ -13,6 +13,7 @@
  */
 package monasca.api.domain.model.measurement;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,12 @@ public class Measurements extends AbstractEntity {
     this.name = name;
     this.dimensions = dimensions;
     this.measurements = measurements;
+  }
+
+  public Measurements(String name, Map<String, String> dimensions) {
+    this.name = name;
+    this.dimensions = dimensions;
+    this.measurements = new LinkedList<>();
   }
 
   public void addMeasurement(Object[] measurement) {

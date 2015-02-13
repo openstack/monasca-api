@@ -14,25 +14,36 @@
 package monasca.api.infrastructure.persistence.influxdb;
 
 import org.joda.time.DateTime;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.Query;
+import org.skife.jdbi.v2.util.StringMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import monasca.api.domain.model.common.Paged;
+import monasca.api.infrastructure.persistence.DimensionQueries;
 
-final class Utils {
+final class InfluxV8Utils {
+
+  private static final Logger logger = LoggerFactory
+      .getLogger(InfluxV8Utils.class);
 
   // Serie names match this pattern.
   private static final Pattern serieNamePattern = Pattern.compile("^.+\\?.+&.+(&.+=.+)*$");
   static final String COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG = "Couldn't look up columns";
 
-  private Utils() {
+  private InfluxV8Utils() {
   }
 
   /**
@@ -43,13 +54,13 @@ final class Utils {
     private SQLSanitizer() {
     }
 
-    private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;)+.*$");
+    private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;|\")+.*$");
 
     static String sanitize(final String taintedString) throws Exception {
       Matcher m = sqlUnsafePattern.matcher(taintedString);
       if (m.matches()) {
         throw new Exception(String.format("Input from user contains single quote ['] or " +
-                                          "semi-colon [;] characters[ %1$s ]", taintedString));
+                                          "semi-colon [;] or double quote [\"] characters[ %1$s ]", taintedString));
       }
 
       return taintedString;
@@ -252,6 +263,70 @@ final class Utils {
       return "";
     }
 
+  }
+
+
+  public static List<String> findAlarmIds(DBI mysql, String tenantId,
+                                          Map<String, String> dimensions) {
+
+    final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a " +
+                                   "join alarm_definition as ad on a.alarm_definition_id=ad.id " +
+                                   "%s " +
+                                   "where ad.tenant_id = :tenantId and ad.deleted_at is NULL order by ad.created_at";
+    List<String> alarmIdList = null;
+
+    try (Handle h = mysql.open()) {
+
+      final String sql = String.format(FIND_ALARMS_SQL, buildJoinClauseFor(dimensions));
+
+      Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
+
+      logger.debug("AlarmStateHistory query '{}'", sql);
+
+      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+
+      alarmIdList = query.map(StringMapper.FIRST).list();
+    }
+
+    return alarmIdList;
+  }
+
+  private static String buildJoinClauseFor(Map<String, String> dimensions) {
+
+    if ((dimensions == null) || dimensions.isEmpty()) {
+      return "";
+    }
+
+    final StringBuilder sbJoin = new StringBuilder("join alarm_metric as am on a.id=am.alarm_id ");
+    sbJoin.append(
+        "join metric_definition_dimensions as mdd on am.metric_definition_dimensions_id=mdd.id ");
+
+    for (int i = 0; i < dimensions.size(); i++) {
+      final String tableAlias = "md" + i;
+      sbJoin.append(" inner join metric_dimension ").append(tableAlias).append(" on ")
+          .append(tableAlias).append(".name = :dname").append(i).append(" and ").append(tableAlias)
+          .append(".value = :dvalue").append(i).append(" and mdd.metric_dimension_set_id = ")
+          .append(tableAlias).append(".dimension_set_id");
+    }
+
+    return sbJoin.toString();
+  }
+
+  public static String buildAlarmsPart(List<String> alarmIds) {
+
+    StringBuilder sb = new StringBuilder();
+    for (String alarmId : alarmIds) {
+      if (sb.length() > 0) {
+        sb.append(" or ");
+      }
+      sb.append(String.format(" alarm_id = '%1$s' ", alarmId));
+    }
+
+    if (sb.length() > 0) {
+      sb.insert(0, " and (");
+      sb.insert(sb.length(), ")");
+    }
+    return sb.toString();
   }
 }
 

@@ -35,7 +35,7 @@ import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.common.Paged;
-import monasca.api.domain.model.measurement.MeasurementRepository;
+import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
 
 /**
@@ -44,10 +44,10 @@ import monasca.api.domain.model.measurement.Measurements;
 @Path("/v2.0/metrics/measurements")
 public class MeasurementResource {
 
-  private final MeasurementRepository repo;
+  private final MeasurementRepo repo;
 
   @Inject
-  public MeasurementResource(MeasurementRepository repo) {
+  public MeasurementResource(MeasurementRepo repo) {
     this.repo = repo;
   }
 

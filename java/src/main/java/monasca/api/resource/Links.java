@@ -23,7 +23,7 @@ import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Preconditions;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.measurement.Measurements;
 import monasca.common.model.domain.common.AbstractEntity;
@@ -38,7 +38,7 @@ public final class Links {
   static boolean accessedViaHttps;
 
   static {
-    MonApiConfiguration config = Injector.getInstance(MonApiConfiguration.class);
+    ApiConfig config = Injector.getInstance(ApiConfig.class);
     if (config != null && config.accessedViaHttps != null)
       accessedViaHttps = config.accessedViaHttps;
   }

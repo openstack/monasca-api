@@ -15,8 +15,7 @@
 package monasca.api.infrastructure.persistence.vertica;
 
 import monasca.common.model.alarm.AlarmState;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
-import monasca.api.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepositoryImpl;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 
 import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
@@ -34,14 +33,14 @@ import static org.testng.Assert.assertEquals;
 public class AlarmStateHistoryVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private AlarmStateHistoryRepository repo;
+  private AlarmStateHistoryRepo repo;
 
   @BeforeClass
   protected void setupClass() throws Exception {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new AlarmStateHistoryVerticaRepositoryImpl(null, db);
+    repo = new AlarmStateHistoryVerticaRepoImpl(null, db);
   }
 
   @AfterClass

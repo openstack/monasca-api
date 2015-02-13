@@ -28,20 +28,20 @@ import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
-import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
+import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.common.persistence.BeanMapper;
 
 /**
  * Notification method repository implementation.
  */
-public class NotificationMethodMySqlRepositoryImpl implements NotificationMethodRepository {
+public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
   private static final Logger LOG = LoggerFactory
-      .getLogger(NotificationMethodMySqlRepositoryImpl.class);
+      .getLogger(NotificationMethodMySqlRepoImpl.class);
   private final DBI db;
 
   @Inject
-  public NotificationMethodMySqlRepositoryImpl(@Named("mysql") DBI db) {
+  public NotificationMethodMySqlRepoImpl(@Named("mysql") DBI db) {
     this.db = db;
   }
 

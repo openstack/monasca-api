@@ -34,7 +34,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.common.model.event.AlarmDefinitionCreatedEvent;
 import monasca.common.model.event.AlarmDefinitionDeletedEvent;
@@ -47,10 +47,10 @@ import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.exception.InvalidEntityException;
 import monasca.api.domain.model.alarm.Alarm;
-import monasca.api.domain.model.alarm.AlarmRepository;
+import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
-import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
+import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
+import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.common.util.Exceptions;
 import monasca.common.util.Serialization;
 
@@ -60,17 +60,17 @@ import monasca.common.util.Serialization;
 public class AlarmDefinitionService {
   private static final Logger LOG = LoggerFactory.getLogger(AlarmService.class);
 
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final Producer<String, String> producer;
-  private final AlarmDefinitionRepository repo;
-  private final AlarmRepository alarmRepo;
-  private final NotificationMethodRepository notificationMethodRepo;
+  private final AlarmDefinitionRepo repo;
+  private final AlarmRepo alarmRepo;
+  private final NotificationMethodRepo notificationMethodRepo;
   long eventCount;
 
   @Inject
-  public AlarmDefinitionService(MonApiConfiguration config, Producer<String, String> producer,
-      AlarmDefinitionRepository repo, AlarmRepository alarmRepo,
-      NotificationMethodRepository notificationMethodRepo) {
+  public AlarmDefinitionService(ApiConfig config, Producer<String, String> producer,
+      AlarmDefinitionRepo repo, AlarmRepo alarmRepo,
+      NotificationMethodRepo notificationMethodRepo) {
     this.config = config;
     this.producer = producer;
     this.repo = repo;

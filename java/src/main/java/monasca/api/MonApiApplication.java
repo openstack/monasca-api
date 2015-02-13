@@ -59,13 +59,13 @@ import monasca.common.util.Injector;
 /**
  * Monitoring API application.
  */
-public class MonApiApplication extends Application<MonApiConfiguration> {
+public class MonApiApplication extends Application<ApiConfig> {
   public static void main(String[] args) throws Exception {
     new MonApiApplication().run(args);
   }
 
   @Override
-  public void initialize(Bootstrap<MonApiConfiguration> bootstrap) {
+  public void initialize(Bootstrap<ApiConfig> bootstrap) {
     /** Configure bundles */
     bootstrap.addBundle(new DBIExceptionsBundle());
   }
@@ -77,7 +77,7 @@ public class MonApiApplication extends Application<MonApiConfiguration> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void run(MonApiConfiguration config, Environment environment) throws Exception {
+  public void run(ApiConfig config, Environment environment) throws Exception {
     /** Wire services */
     Injector.registerModules(new MonApiModule(environment, config));
 

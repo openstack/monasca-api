@@ -25,26 +25,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import monasca.api.domain.model.common.Paged;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.common.model.metric.MetricDefinition;
 
-import static monasca.api.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
-import static monasca.api.infrastructure.persistence.influxdb.Utils.urlDecodeUTF8;
-import static monasca.api.infrastructure.persistence.influxdb.Utils.urlEncodeUTF8;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildSerieNameRegex;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.urlDecodeUTF8;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.urlEncodeUTF8;
 
-public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionRepository {
+public class InfluxV8MetricDefinitionRepo implements MetricDefinitionRepo {
 
   private static final Logger
       logger =
-      LoggerFactory.getLogger(MetricDefinitionInfluxDbRepositoryImpl.class);
+      LoggerFactory.getLogger(InfluxV8MetricDefinitionRepo.class);
 
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final InfluxDB influxDB;
 
   @Inject
-  public MetricDefinitionInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public InfluxV8MetricDefinitionRepo(ApiConfig config, InfluxDB influxDB) {
     this.config = config;
     this.influxDB = influxDB;
   }
@@ -86,11 +86,11 @@ public class MetricDefinitionInfluxDbRepositoryImpl implements MetricDefinitionR
           }
         }
 
-        Utils.SerieNameDecoder serieNameDecoder;
+        InfluxV8Utils.SerieNameDecoder serieNameDecoder;
 
         try {
-          serieNameDecoder = new Utils.SerieNameDecoder(encodedMetricName);
-        } catch (Utils.SerieNameDecodeException e) {
+          serieNameDecoder = new InfluxV8Utils.SerieNameDecoder(encodedMetricName);
+        } catch (InfluxV8Utils.SerieNameDecodeException e) {
           logger.warn("Dropping series name that is not decodable: {}", point.get("name"), e);
           continue;
         }

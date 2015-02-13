@@ -31,14 +31,14 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import monasca.api.domain.model.statistic.StatisticRepository;
+import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 
 /**
  * Vertica statistic repository implementation.
  */
-public class StatisticVerticaRepositoryImpl implements StatisticRepository {
+public class StatisticVerticaRepoImpl implements StatisticRepo {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL =
@@ -50,7 +50,7 @@ public class StatisticVerticaRepositoryImpl implements StatisticRepository {
   private final DBI db;
 
   @Inject
-  public StatisticVerticaRepositoryImpl(@Named("vertica") DBI db) {
+  public StatisticVerticaRepoImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 

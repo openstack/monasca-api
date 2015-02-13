@@ -27,13 +27,13 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
 import monasca.common.model.metric.MetricDefinition;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 
 /**
  * Vertica metric definition repository implementation.
  */
-public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRepository {
+public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
   private static final String FIND_BY_METRIC_DEF_SQL =
       "select dd.id, def.name, d.name as dname, d.value as dvalue "
           + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions dd "
@@ -43,7 +43,7 @@ public class MetricDefinitionVerticaRepositoryImpl implements MetricDefinitionRe
   private final DBI db;
 
   @Inject
-  public MetricDefinitionVerticaRepositoryImpl(@Named("vertica") DBI db) {
+  public MetricDefinitionVerticaRepoImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 

@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package monasca.api.domain.model.statistic;
+package monasca.api.domain.model.measurement;
 
 import org.joda.time.DateTime;
 
@@ -20,13 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Repository for statistics.
+ * Repository for measurements.
  */
-public interface StatisticRepository {
+public interface MeasurementRepo {
   /**
-   * Finds statistics for the given criteria.
+   * Finds measurements for the given criteria.
    */
-  List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, List<String> statistics, int period)
-      throws Exception;
+  List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
+      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) throws Exception;
 }

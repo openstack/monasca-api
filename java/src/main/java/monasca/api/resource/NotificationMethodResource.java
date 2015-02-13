@@ -16,7 +16,6 @@ package monasca.api.resource;
 import com.codahale.metrics.annotation.Timed;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -37,17 +36,17 @@ import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
-import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
+import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 
 /**
  * Notification Method resource implementation.
  */
 @Path("/v2.0/notification-methods")
 public class NotificationMethodResource {
-  private final NotificationMethodRepository repo;
+  private final NotificationMethodRepo repo;
 
   @Inject
-  public NotificationMethodResource(NotificationMethodRepository repo) {
+  public NotificationMethodResource(NotificationMethodRepo repo) {
     this.repo = repo;
   }
 

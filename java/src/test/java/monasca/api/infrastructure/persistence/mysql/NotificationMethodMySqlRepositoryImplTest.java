@@ -34,13 +34,12 @@ import com.google.common.io.Resources;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
-import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepositoryImpl;
 
 @Test
 public class NotificationMethodMySqlRepositoryImplTest {
   private DBI db;
   private Handle handle;
-  private NotificationMethodMySqlRepositoryImpl repo;
+  private NotificationMethodMySqlRepoImpl repo;
 
   @BeforeClass
   protected void beforeClass() throws Exception {
@@ -48,7 +47,7 @@ public class NotificationMethodMySqlRepositoryImplTest {
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
-    repo = new NotificationMethodMySqlRepositoryImpl(db);
+    repo = new NotificationMethodMySqlRepoImpl(db);
   }
 
   @AfterClass

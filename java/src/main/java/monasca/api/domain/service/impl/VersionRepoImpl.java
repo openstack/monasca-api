@@ -22,12 +22,12 @@ import org.joda.time.DateTimeZone;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.version.Version;
 import monasca.api.domain.model.version.Version.VersionStatus;
-import monasca.api.domain.model.version.VersionRepository;
+import monasca.api.domain.model.version.VersionRepo;
 
 /**
  * Version repository implementation.
  */
-public class VersionRepositoryImpl implements VersionRepository {
+public class VersionRepoImpl implements VersionRepo {
   private static final Version v2_0 = new Version("v2.0", VersionStatus.CURRENT, new DateTime(
       DateTimeZone.UTC));
 

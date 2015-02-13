@@ -24,7 +24,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 /**
  * Repository for alarm definitions.
  */
-public interface AlarmDefinitionRepository {
+public interface AlarmDefinitionRepo {
   /**
    * Creates and returns a new alarm definition for the criteria.
    */

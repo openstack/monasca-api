@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Repository for versions.
  */
-public interface VersionRepository {
+public interface VersionRepo {
   List<Version> find();
 
   /**

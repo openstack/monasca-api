@@ -7,7 +7,7 @@ import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.api.domain.exception.EntityNotFoundException;
 
-public interface AlarmRepository {
+public interface AlarmRepo {
   /**
    * Deletes all alarms associated with the {@code id}.
    */

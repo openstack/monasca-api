@@ -13,7 +13,6 @@
  */
 package monasca.api.infrastructure.persistence.influxdb;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,26 +38,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.inject.Inject;
 
-import monasca.api.MonApiConfiguration;
-import monasca.api.domain.model.common.Paged;
+import monasca.api.ApiConfig;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 
-public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistoryRepository {
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildAlarmsPart;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.findAlarmIds;
+
+public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
+
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
+
   private static final Logger logger = LoggerFactory
-      .getLogger(AlarmStateHistoryInfluxDbRepositoryImpl.class);
-  private static final String FIND_ALARMS_SQL =
-      "select distinct a.id from alarm as a "  +
-      "join alarm_definition as ad on a.alarm_definition_id=ad.id " + 
-      "%s " +
-      "where ad.tenant_id = :tenantId and ad.deleted_at is NULL order by ad.created_at";
-  private final MonApiConfiguration config;
+      .getLogger(InfluxV8AlarmStateHistoryRepo.class);
+
+
+  private final ApiConfig config;
   private final InfluxDB influxDB;
   private final DBI mysql;
 
@@ -68,8 +68,8 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   }
 
   @Inject
-  public AlarmStateHistoryInfluxDbRepositoryImpl(@Named("mysql") DBI mysql,
-      MonApiConfiguration config, InfluxDB influxDB) {
+  public InfluxV8AlarmStateHistoryRepo(@Named("mysql") DBI mysql, ApiConfig config,
+                                       InfluxDB influxDB) {
     this.mysql = mysql;
     this.config = config;
     this.influxDB = influxDB;
@@ -83,37 +83,27 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
   }
 
   String buildQueryForFindById(String tenantId, String alarmId, String offset) throws Exception {
-    String offsetPart = Utils.buildOffsetPart(offset);
+    String offsetPart = InfluxV8Utils.buildOffsetPart(offset);
     return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
         + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s' %3$s",
-        Utils.SQLSanitizer.sanitize(tenantId), Utils.SQLSanitizer.sanitize(alarmId), offsetPart);
+        InfluxV8Utils.SQLSanitizer.sanitize(tenantId), InfluxV8Utils.SQLSanitizer.sanitize(alarmId), offsetPart);
   }
 
   @Override
   public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
       DateTime startTime, @Nullable DateTime endTime, String offset) throws Exception {
 
-    List<String> alarmIds = null;
-    // Find alarm Ids for dimensions
-    try (Handle h = mysql.open()) {
-      final String sql =
-          String.format(FIND_ALARMS_SQL, buildJoinClauseFor(dimensions));
+    List<String> alarmIdList = findAlarmIds(this.mysql, tenantId, dimensions);
 
-      Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
-      logger.debug("AlarmStateHistory query '{}'", sql);
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
-      alarmIds = query.map(StringMapper.FIRST).list();
-    }
-
-    if (alarmIds == null || alarmIds.isEmpty()) {
+    if (alarmIdList == null || alarmIdList.isEmpty()) {
       logger.debug("AlarmStateHistory no alarmIds");
       return Collections.emptyList();
     }
 
-    logger.debug("AlarmStateHistory alarmIds {}", alarmIds);
+    logger.debug("AlarmStateHistory alarmIds {}", alarmIdList);
     String timePart = buildTimePart(startTime, endTime);
-    String alarmsPart = buildAlarmsPart(alarmIds);
-    String offsetPart = Utils.buildOffsetPart(offset);
+    String alarmsPart = buildAlarmsPart(alarmIdList);
+    String offsetPart = InfluxV8Utils.buildOffsetPart(offset);
 
     String query = buildQueryForFind(tenantId, timePart, alarmsPart, offsetPart);
     logger.debug("AlarmStateHistory query for influxdb '{}'", query);
@@ -122,51 +112,16 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
 
   }
 
-  private String buildJoinClauseFor(Map<String, String> dimensions) {
-    if ((dimensions == null) || dimensions.isEmpty()) {
-      return "";
-    }
-    final StringBuilder sbJoin = new StringBuilder("join alarm_metric as am on a.id=am.alarm_id ");
-    sbJoin
-        .append("join metric_definition_dimensions as mdd on am.metric_definition_dimensions_id=mdd.id ");
-    for (int i = 0; i < dimensions.size(); i++) {
-      final String tableAlias = "md" + i;
-      sbJoin.append(" inner join metric_dimension ").append(tableAlias).append(" on ")
-          .append(tableAlias).append(".name = :dname").append(i).append(" and ")
-          .append(tableAlias).append(".value = :dvalue").append(i)
-          .append(" and mdd.metric_dimension_set_id = ")
-          .append(tableAlias).append(".dimension_set_id");
-    }
-
-    return sbJoin.toString();
-  }
-
   String buildTimePart(DateTime startTime, DateTime endTime) {
-    return Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+    return InfluxV8Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
   }
 
   String buildQueryForFind(String tenantId, String timePart, String alarmsPart, String offsetPart) throws Exception {
     return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
         + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s %4$s",
-        Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart, offsetPart);
+        InfluxV8Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart, offsetPart);
   }
 
-  String buildAlarmsPart(List<String> alarmIds) {
-
-    StringBuilder sb = new StringBuilder();
-    for (String alarmId : alarmIds) {
-      if (sb.length() > 0) {
-        sb.append(" or ");
-      }
-      sb.append(String.format(" alarm_id = '%1$s' ", alarmId));
-    }
-
-    if (sb.length() > 0) {
-      sb.insert(0, " and (");
-      sb.insert(sb.length(), ")");
-    }
-    return sb.toString();
-  }
 
   @SuppressWarnings("unchecked")
   private List<AlarmStateHistory> queryInfluxDBForAlarmStateHistory(String query) {
@@ -176,7 +131,7 @@ public class AlarmStateHistoryInfluxDbRepositoryImpl implements AlarmStateHistor
     try {
       result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     } catch (Exception e) {
-      if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
+      if (e.getMessage().startsWith(InfluxV8Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
         return new LinkedList<>();
       } else {
         logger.error("Failed to get data from InfluxDB", e);

@@ -14,6 +14,7 @@
 package monasca.api.domain.model.statistic;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,14 @@ public class Statistics {
 
   public Statistics() {
     statistics = new ArrayList<>();
+  }
+
+  public Statistics(String name, Map<String, String> dimensions, List<String> columns) {
+    this.name = name;
+    this.dimensions = dimensions;
+    this.columns = columns;
+    this.statistics = new LinkedList<>();
+
   }
 
   public void addValues(List<Object> value) {
@@ -65,6 +74,10 @@ public class Statistics {
       return false;
 
     return true;
+  }
+
+  public void addStatistics(List<Object> statistics) {
+    this.statistics.add(statistics);
   }
 
   public List<String> getColumns() {

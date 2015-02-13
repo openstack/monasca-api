@@ -14,7 +14,7 @@
 
 package monasca.api.infrastructure.persistence.influxdb;
 
-import monasca.api.MonApiConfiguration;
+import monasca.api.ApiConfig;
 import org.influxdb.InfluxDB;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -25,21 +25,22 @@ import org.skife.jdbi.v2.DBI;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import scala.actors.threadpool.Arrays;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildAlarmsPart;
 
 @Test
-public class AlarmStateHistoryInfluxDbRepositoryImplTest {
+public class InfluxV8AlarmStateHistoryRepoTest {
 
   @Mock(name = "mysql")
   private DBI mysql;
 
   @Mock
-  private MonApiConfiguration monApiConfiguration;
+  private ApiConfig apiConfig;
 
   @Mock
   private InfluxDB influxDB;
 
   @InjectMocks
-  private AlarmStateHistoryInfluxDbRepositoryImpl alarmStateHistoryInfluxDBRepository;
+  private InfluxV8AlarmStateHistoryRepo alarmStateHistoryInfluxDBRepository;
 
   @BeforeMethod(alwaysRun = true)
   public void initMocks() {
@@ -69,8 +70,7 @@ public class AlarmStateHistoryInfluxDbRepositoryImplTest {
   @SuppressWarnings("unchecked")
   public void buildAlarmsPartTest() {
     String er = " and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' )";
-    String r = this.alarmStateHistoryInfluxDBRepository.buildAlarmsPart(Arrays.asList(new
-        String[]{"id-1", "id-2"}));
+    String r = buildAlarmsPart(Arrays.asList(new String[]{"id-1", "id-2"}));
     assert (er.equals(r));
   }
 

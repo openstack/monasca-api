@@ -27,19 +27,19 @@ import java.util.Map;
 import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
-import monasca.api.domain.model.statistic.StatisticRepository;
+import monasca.api.domain.model.statistic.StatisticRepo;
 import com.sun.jersey.api.client.ClientResponse;
 
 @Test
 public class StatisticResourceTest extends AbstractMonApiResourceTest {
-  private StatisticRepository statisticRepo;
+  private StatisticRepo statisticRepo;
   long timestamp;
 
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
 
-    statisticRepo = mock(StatisticRepository.class);
+    statisticRepo = mock(StatisticRepo.class);
     addResources(new StatisticResource(statisticRepo));
   }
 

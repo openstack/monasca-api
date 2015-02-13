@@ -43,7 +43,7 @@ import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.common.model.alarm.AlarmExpression;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
+import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.common.Link;
 import monasca.api.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
@@ -55,7 +55,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   private AlarmDefinition alarm;
   private AlarmDefinition alarmItem;
   private AlarmDefinitionService service;
-  private AlarmDefinitionRepository repo;
+  private AlarmDefinitionRepo repo;
   private List<String> alarmActions;
 
   @Override
@@ -81,7 +81,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             eq(expression), eq(AlarmExpression.of(expression)), eq(matchBy), any(List.class),
             any(List.class), any(List.class))).thenReturn(alarm);
 
-    repo = mock(AlarmDefinitionRepository.class);
+    repo = mock(AlarmDefinitionRepo.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
     when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), anyString())).thenReturn(
         Arrays.asList(alarmItem));

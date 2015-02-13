@@ -15,8 +15,8 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 import com.google.inject.Inject;
 
-import monasca.api.MonApiConfiguration;
-import monasca.api.domain.model.measurement.MeasurementRepository;
+import monasca.api.ApiConfig;
+import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
 
 import org.influxdb.InfluxDB;
@@ -27,7 +27,6 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,21 +34,21 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import static monasca.api.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildSerieNameRegex;
 
-public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository {
+public class InfluxV8MeasurementRepo implements MeasurementRepo {
 
   private static final Logger logger = LoggerFactory
-      .getLogger(MeasurementInfluxDbRepositoryImpl.class);
+      .getLogger(InfluxV8MeasurementRepo.class);
 
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final InfluxDB influxDB;
 
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
 
   @Inject
-  public MeasurementInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public InfluxV8MeasurementRepo(ApiConfig config, InfluxDB influxDB) {
     this.config = config;
 
     this.influxDB = influxDB;
@@ -63,9 +62,9 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 
-    String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+    String timePart = InfluxV8Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
 
-    String offsetPart = Utils.buildOffsetPart(offset);
+    String offsetPart = InfluxV8Utils.buildOffsetPart(offset);
 
     String query =
         String.format("select value " + "from /%1$s/ where 1 = 1 " + " %2$s  %3$s",
@@ -76,7 +75,7 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
     try {
       result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     } catch (RuntimeException e) {
-      if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
+      if (e.getMessage().startsWith(InfluxV8Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
         return new LinkedList<>();
       } else {
         logger.error("Failed to get data from InfluxDB", e);
@@ -92,10 +91,10 @@ public class MeasurementInfluxDbRepositoryImpl implements MeasurementRepository 
 
     for (Serie serie : result) {
 
-      Utils.SerieNameDecoder serieNameDecoder;
+      InfluxV8Utils.SerieNameDecoder serieNameDecoder;
       try {
-        serieNameDecoder = new Utils.SerieNameDecoder(serie.getName());
-      } catch (Utils.SerieNameDecodeException e) {
+        serieNameDecoder = new InfluxV8Utils.SerieNameDecoder(serie.getName());
+      } catch (InfluxV8Utils.SerieNameDecodeException e) {
         logger.warn("Dropping series name that is not decodable: {}", serie.getName(), e);
         continue;
       }

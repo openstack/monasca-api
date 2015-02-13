@@ -16,7 +16,6 @@ package monasca.api.infrastructure.persistence.vertica;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +31,14 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
-import monasca.api.domain.model.measurement.MeasurementRepository;
+import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 
 /**
  * Vertica measurement repository implementation.
  */
-public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
+public class MeasurementVerticaRepoImpl implements MeasurementRepo {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_BY_METRIC_DEF_SQL =
@@ -51,7 +50,7 @@ public class MeasurementVerticaRepositoryImpl implements MeasurementRepository {
   private final DBI db;
 
   @Inject
-  public MeasurementVerticaRepositoryImpl(@Named("vertica") DBI db) {
+  public MeasurementVerticaRepoImpl(@Named("vertica") DBI db) {
     this.db = db;
   }
 

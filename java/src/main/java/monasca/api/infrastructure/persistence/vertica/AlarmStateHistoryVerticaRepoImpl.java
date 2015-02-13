@@ -14,7 +14,6 @@
 package monasca.api.infrastructure.persistence.vertica;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.util.StringMapper;
 
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepository;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.SubAlarmDefinitionQueries;
 import monasca.common.persistence.BeanMapper;
@@ -40,7 +39,7 @@ import monasca.common.persistence.BeanMapper;
 /**
  * Alarm repository implementation.
  */
-public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistoryRepository {
+public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
   private static final String FIND_ALARMS_SQL =
@@ -56,8 +55,7 @@ public class AlarmStateHistoryVerticaRepositoryImpl implements AlarmStateHistory
   private final DBI vertica;
 
   @Inject
-  public AlarmStateHistoryVerticaRepositoryImpl(@Named("mysql") DBI mysql,
-      @Named("vertica") DBI vertica) {
+  public AlarmStateHistoryVerticaRepoImpl(@Named("mysql") DBI mysql, @Named("vertica") DBI vertica) {
     this.mysql = mysql;
     this.vertica = vertica;
   }

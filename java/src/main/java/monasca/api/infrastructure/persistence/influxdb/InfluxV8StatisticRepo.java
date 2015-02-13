@@ -15,8 +15,8 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 import com.google.inject.Inject;
 
-import monasca.api.MonApiConfiguration;
-import monasca.api.domain.model.statistic.StatisticRepository;
+import monasca.api.ApiConfig;
+import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
 import org.influxdb.InfluxDB;
@@ -35,21 +35,21 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import static monasca.api.infrastructure.persistence.influxdb.Utils.buildSerieNameRegex;
+import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildSerieNameRegex;
 
-public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
+public class InfluxV8StatisticRepo implements StatisticRepo {
 
   private static final Logger logger = LoggerFactory
-      .getLogger(StatisticInfluxDbRepositoryImpl.class);
+      .getLogger(InfluxV8StatisticRepo.class);
 
-  private final MonApiConfiguration config;
+  private final ApiConfig config;
   private final InfluxDB influxDB;
 
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
 
   @Inject
-  public StatisticInfluxDbRepositoryImpl(MonApiConfiguration config, InfluxDB influxDB) {
+  public InfluxV8StatisticRepo(ApiConfig config, InfluxDB influxDB) {
     this.config = config;
     this.influxDB = influxDB;
   }
@@ -62,7 +62,7 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
     String statsPart = buildStatsPart(statistics);
-    String timePart = Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
+    String timePart = InfluxV8Utils.WhereClauseBuilder.buildTimePart(startTime, endTime);
     String periodPart = buildPeriodPart(period);
 
     String query =
@@ -74,7 +74,7 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
     try {
       result = this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     } catch (RuntimeException e) {
-      if (e.getMessage().startsWith(Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
+      if (e.getMessage().startsWith(InfluxV8Utils.COULD_NOT_LOOK_UP_COLUMNS_EXC_MSG)) {
         return new LinkedList<>();
       } else {
         logger.error("Failed to get data from InfluxDB", e);
@@ -90,10 +90,10 @@ public class StatisticInfluxDbRepositoryImpl implements StatisticRepository {
     List<Statistics> statisticsList = new LinkedList<Statistics>();
     for (Serie serie : result) {
 
-      Utils.SerieNameDecoder serieNameDecoder;
+      InfluxV8Utils.SerieNameDecoder serieNameDecoder;
       try {
-        serieNameDecoder = new Utils.SerieNameDecoder(serie.getName());
-      } catch (Utils.SerieNameDecodeException e) {
+        serieNameDecoder = new InfluxV8Utils.SerieNameDecoder(serie.getName());
+      } catch (InfluxV8Utils.SerieNameDecodeException e) {
         logger.warn("Dropping series name that is not decodable: {}", serie.getName(), e);
         continue;
       }

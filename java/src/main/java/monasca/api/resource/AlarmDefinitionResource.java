@@ -47,7 +47,7 @@ import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.api.app.validation.AlarmValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
-import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepository;
+import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmExpression;
 
@@ -57,12 +57,12 @@ import monasca.common.model.alarm.AlarmExpression;
 @Path(AlarmDefinitionResource.ALARM_DEFINITIONS_PATH)
 public class AlarmDefinitionResource {
   private final AlarmDefinitionService service;
-  private final AlarmDefinitionRepository repo;
+  private final AlarmDefinitionRepo repo;
   public final static String ALARM_DEFINITIONS = "alarm-definitions";
   public final static String ALARM_DEFINITIONS_PATH = "/v2.0/" + ALARM_DEFINITIONS;
 
   @Inject
-  public AlarmDefinitionResource(AlarmDefinitionService service, AlarmDefinitionRepository repo) {
+  public AlarmDefinitionResource(AlarmDefinitionService service, AlarmDefinitionRepo repo) {
     this.service = service;
     this.repo = repo;
   }

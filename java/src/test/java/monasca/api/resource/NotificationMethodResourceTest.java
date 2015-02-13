@@ -19,7 +19,7 @@ import com.sun.jersey.api.client.GenericType;
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
-import monasca.api.domain.model.notificationmethod.NotificationMethodRepository;
+import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.resource.exception.ErrorMessages;
 import org.testng.annotations.Test;
@@ -37,7 +37,7 @@ import static org.testng.Assert.*;
 @Test
 public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   private NotificationMethod notificationMethod, notificationMethodWebhook, notificationMethodPagerduty;
-  private NotificationMethodRepository repo;
+  private NotificationMethodRepo repo;
 
   @Override
   protected void setupResources() throws Exception {
@@ -49,7 +49,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     notificationMethodPagerduty =
         new NotificationMethod("12345", "MyPd", NotificationMethodType.PAGERDUTY, "nzH2LVRdMzun11HNC2oD");
 
-    repo = mock(NotificationMethodRepository.class);
+    repo = mock(NotificationMethodRepo.class);
     when(repo.create(eq("abc"), eq("MyEmail"), eq(NotificationMethodType.EMAIL), anyString()))
         .thenReturn(notificationMethod);
     when(repo.create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString()))

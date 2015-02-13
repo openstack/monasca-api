@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
-import monasca.api.domain.model.alarm.AlarmRepository;
+import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
@@ -53,7 +53,7 @@ public class AlarmMySqlRepositoryImplTest {
   private static final String ALARM_ID = "234111";
   private DBI db;
   private Handle handle;
-  private AlarmRepository repo;
+  private AlarmRepo repo;
   private List<String> alarmActions;
   private Alarm compoundAlarm;
   private Alarm alarm1;
@@ -71,7 +71,7 @@ public class AlarmMySqlRepositoryImplTest {
     handle
         .execute(Resources.toString(getClass().getResource("alarm.sql"), Charset.defaultCharset()));
         */
-    repo = new AlarmMySqlRepositoryImpl(db);
+    repo = new AlarmMySqlRepoImpl(db);
 
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");

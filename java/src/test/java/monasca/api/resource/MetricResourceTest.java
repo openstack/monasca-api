@@ -34,7 +34,7 @@ import org.testng.annotations.Test;
 
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
-import monasca.api.domain.model.metric.MetricDefinitionRepository;
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -42,7 +42,7 @@ import com.sun.jersey.api.client.ClientResponse;
 public class MetricResourceTest extends AbstractMonApiResourceTest {
   private Map<String, String> dimensions;
   private MetricService service;
-  private MetricDefinitionRepository metricRepo;
+  private MetricDefinitionRepo metricRepo;
   long timestamp;
 
   @Override
@@ -57,7 +57,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     service = mock(MetricService.class);
     doNothing().when(service).create(any(List.class), anyString(), anyString());
 
-    metricRepo = mock(MetricDefinitionRepository.class);
+    metricRepo = mock(MetricDefinitionRepo.class);
     addResources(new MetricResource(service, metricRepo));
   }
 
