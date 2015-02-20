@@ -148,7 +148,7 @@ public class AlarmResource {
   @PATCH
   @Timed
   @Path("/{alarm_id}")
-  @Consumes({"application/json-patch+json", MediaType.APPLICATION_JSON})
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Alarm patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields)
