@@ -42,7 +42,7 @@ public interface AlarmDefinitionRepo {
   /**
    * Returns true if an alarm exists for the given criteria, else false.
    */
-  boolean exists(String tenantId, String name);
+  String exists(String tenantId, String name);
 
   /**
    * Returns alarms for the given criteria.

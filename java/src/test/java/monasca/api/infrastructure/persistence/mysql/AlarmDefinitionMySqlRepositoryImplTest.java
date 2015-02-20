@@ -15,7 +15,6 @@
 package monasca.api.infrastructure.persistence.mysql;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -238,10 +237,10 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
   }
 
   public void testExists() {
-    assertTrue(repo.exists("bob", "90% CPU"));
+    assertEquals(repo.exists("bob", "90% CPU"),"123");
 
     // Negative
-    assertFalse(repo.exists("bob", "999% CPU"));
+    assertNull(repo.exists("bob", "999% CPU"));
   }
 
   public void shouldFind() {

@@ -101,10 +101,11 @@ public class AlarmDefinitionService {
       List<String> alarmActions, @Nullable List<String> okActions,
       @Nullable List<String> undeterminedActions) {
     // Assert no alarm exists by the name
-    if (repo.exists(tenantId, name))
+    String alarmDefID=repo.exists(tenantId, name);
+    if (alarmDefID!=null) {
       throw new EntityExistsException(
           "An alarm definition already exists for project / tenant: %s named: %s", tenantId, name);
-
+    }
     assertActionsExist(tenantId, alarmActions, okActions, undeterminedActions);
 
     Map<String, AlarmSubExpression> subAlarms = new HashMap<String, AlarmSubExpression>();
@@ -170,27 +171,40 @@ public class AlarmDefinitionService {
     }
   }
 
-  /**
-   * Updates the alarm definition for the {@code tenantId} and {@code alarmDefId} to the state of
-   * the {@code command}.
-   * 
-   * @throws EntityNotFoundException if the alarm cannot be found
-   * @throws InvalidEntityException if one of the actions cannot be found
-   */
+    /**
+     * Updates the alarm definition for the {@code tenantId} and
+     * {@code alarmDefId} to the state of the {@code command}.
+     *
+     * @throws EntityNotFoundException
+     *             if the alarm cannot be found
+     * @throws InvalidEntityException
+     *             if one of the actions cannot be found
+     */
   public AlarmDefinition update(String tenantId, String alarmDefId,
-      AlarmExpression alarmExpression, UpdateAlarmDefinitionCommand command) {
-    final AlarmDefinition oldAlarmDefinition = assertAlarmDefinitionExists(tenantId, alarmDefId, command.alarmActions, command.okActions,
-        command.undeterminedActions);
-    final SubExpressions subExpressions =
-        subExpressionsFor(repo.findSubExpressions(alarmDefId), alarmExpression);
-    validateChangesAllowed(command.matchBy, oldAlarmDefinition, subExpressions);
-    updateInternal(tenantId, alarmDefId, false, command.name, command.description,
-        command.expression, command.matchBy, command.severity, alarmExpression,
-        command.actionsEnabled, command.alarmActions, command.okActions,
-        command.undeterminedActions, subExpressions);
-    return new AlarmDefinition(alarmDefId, command.name, command.description, command.severity,
-        command.expression, command.matchBy, command.actionsEnabled, command.alarmActions,
-        command.okActions, command.undeterminedActions);
+          AlarmExpression alarmExpression,
+          UpdateAlarmDefinitionCommand command) {
+      final AlarmDefinition oldAlarmDefinition = assertAlarmDefinitionExists(
+              tenantId, alarmDefId, command.alarmActions, command.okActions,
+              command.undeterminedActions);
+      final SubExpressions subExpressions = subExpressionsFor(
+              repo.findSubExpressions(alarmDefId), alarmExpression);
+      String alarmID = repo.exists(tenantId, command.name);
+      if (alarmID != null && !alarmID.equalsIgnoreCase(alarmDefId)) {
+          throw new EntityExistsException(
+                  "An alarm definition with the same name already exists for project / tenant: %s named: %s",
+                  tenantId, command.name);
+      }
+      validateChangesAllowed(command.matchBy, oldAlarmDefinition,
+              subExpressions);
+      updateInternal(tenantId, alarmDefId, false, command.name,
+              command.description, command.expression, command.matchBy,
+              command.severity, alarmExpression, command.actionsEnabled,
+              command.alarmActions, command.okActions,
+              command.undeterminedActions, subExpressions);
+      return new AlarmDefinition(alarmDefId, command.name,
+              command.description, command.severity, command.expression,
+              command.matchBy, command.actionsEnabled, command.alarmActions,
+              command.okActions, command.undeterminedActions);
   }
 
   /**
@@ -230,57 +244,84 @@ public class AlarmDefinitionService {
    * @throws EntityNotFoundException if the alarm cannot be found
    * @throws InvalidEntityException if one of the actions cannot be found
    */
-  public AlarmDefinition patch(String tenantId, String alarmDefId, String name, String description,
-      String severity, String expression, AlarmExpression alarmExpression, List<String> matchBy,
-      Boolean enabled, List<String> alarmActions, List<String> okActions,
-      List<String> undeterminedActions) {
-    AlarmDefinition oldAlarmDefinition =
-        assertAlarmDefinitionExists(tenantId, alarmDefId, alarmActions, okActions,
-            undeterminedActions);
-    name = name == null ? oldAlarmDefinition.getName() : name;
-    description = description == null ? oldAlarmDefinition.getDescription() : description;
-    expression = expression == null ? oldAlarmDefinition.getExpression() : expression;
-    severity = severity == null ? oldAlarmDefinition.getSeverity() : severity;
-    alarmExpression = alarmExpression == null ? AlarmExpression.of(expression) : alarmExpression;
-    enabled = enabled == null ? oldAlarmDefinition.isActionsEnabled() : enabled;
-    matchBy = matchBy == null ? oldAlarmDefinition.getMatchBy() : matchBy;
+    public AlarmDefinition patch(String tenantId, String alarmDefId,
+            String name, String description, String severity,
+            String expression, AlarmExpression alarmExpression,
+            List<String> matchBy, Boolean enabled, List<String> alarmActions,
+            List<String> okActions, List<String> undeterminedActions) {
+        AlarmDefinition oldAlarmDefinition = assertAlarmDefinitionExists(
+                tenantId, alarmDefId, alarmActions, okActions,
+                undeterminedActions);
+        name = name == null ? oldAlarmDefinition.getName() : name;
+        String alarmID = repo.exists(tenantId, name);
+        if (alarmID != null && !alarmID.equalsIgnoreCase(alarmDefId)) {
+            throw new EntityExistsException(
+                    "An alarm definition with the same name already exists for project / tenant: %s named: %s",
+                    tenantId, name);
+        }
+        description = description == null ? oldAlarmDefinition.getDescription()
+                : description;
+        expression = expression == null ? oldAlarmDefinition.getExpression()
+                : expression;
+        severity = severity == null ? oldAlarmDefinition.getSeverity()
+                : severity;
+        alarmExpression = alarmExpression == null ? AlarmExpression
+                .of(expression) : alarmExpression;
+        enabled = enabled == null ? oldAlarmDefinition.isActionsEnabled()
+                : enabled;
+        matchBy = matchBy == null ? oldAlarmDefinition.getMatchBy() : matchBy;
 
-    final SubExpressions subExpressions =
-        subExpressionsFor(repo.findSubExpressions(alarmDefId), alarmExpression);
-    validateChangesAllowed(matchBy, oldAlarmDefinition, subExpressions);
-    updateInternal(tenantId, alarmDefId, true, name, description, expression, matchBy, severity,
-        alarmExpression, enabled, alarmActions, okActions, undeterminedActions, subExpressions);
+        final SubExpressions subExpressions = subExpressionsFor(
+                repo.findSubExpressions(alarmDefId), alarmExpression);
+        validateChangesAllowed(matchBy, oldAlarmDefinition, subExpressions);
+        updateInternal(tenantId, alarmDefId, true, name, description,
+                expression, matchBy, severity, alarmExpression, enabled,
+                alarmActions, okActions, undeterminedActions, subExpressions);
 
-    return new AlarmDefinition(alarmDefId, name, description, severity, expression, matchBy,
-        enabled, alarmActions == null ? oldAlarmDefinition.getAlarmActions() : alarmActions,
-        okActions == null ? oldAlarmDefinition.getOkActions() : okActions,
-        undeterminedActions == null ? oldAlarmDefinition.getUndeterminedActions() : undeterminedActions);
-  }
-
-  private void updateInternal(String tenantId, String alarmDefId, boolean patch, String name,
-      String description, String expression, List<String> matchBy, String severity,
-      AlarmExpression alarmExpression, Boolean enabled, List<String> alarmActions,
-      List<String> okActions, List<String> undeterminedActions, SubExpressions subExpressions) {
-
-    try {
-      LOG.debug("Updating alarm definition {} for tenant {}", name, tenantId);
-      repo.update(tenantId, alarmDefId, patch, name, description, expression, matchBy, severity,
-          enabled, subExpressions.oldAlarmSubExpressions.keySet(),
-          subExpressions.changedSubExpressions, subExpressions.newAlarmSubExpressions,
-          alarmActions, okActions, undeterminedActions);
-
-      // Notify interested parties of updated alarm
-      String event =
-          Serialization.toJson(new AlarmDefinitionUpdatedEvent(tenantId, alarmDefId, name,
-              description, expression, matchBy, enabled, severity, subExpressions.oldAlarmSubExpressions,
-              subExpressions.changedSubExpressions, subExpressions.unchangedSubExpressions,
-              subExpressions.newAlarmSubExpressions));
-      producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(eventCount++), event));
-    } catch (Exception e) {
-      throw Exceptions.uncheck(e, "Error updating alarm definition for project / tenant %s",
-          tenantId);
+        return new AlarmDefinition(alarmDefId, name, description, severity,
+                expression, matchBy, enabled,
+                alarmActions == null ? oldAlarmDefinition.getAlarmActions()
+                        : alarmActions,
+                okActions == null ? oldAlarmDefinition.getOkActions()
+                        : okActions,
+                undeterminedActions == null ? oldAlarmDefinition
+                        .getUndeterminedActions() : undeterminedActions);
     }
-  }
+
+    private void updateInternal(String tenantId, String alarmDefId,
+            boolean patch, String name, String description, String expression,
+            List<String> matchBy, String severity,
+            AlarmExpression alarmExpression, Boolean enabled,
+            List<String> alarmActions, List<String> okActions,
+            List<String> undeterminedActions, SubExpressions subExpressions) {
+
+        try {
+            LOG.debug("Updating alarm definition {} for tenant {}", name,
+                    tenantId);
+            repo.update(tenantId, alarmDefId, patch, name, description,
+                    expression, matchBy, severity, enabled,
+                    subExpressions.oldAlarmSubExpressions.keySet(),
+                    subExpressions.changedSubExpressions,
+                    subExpressions.newAlarmSubExpressions, alarmActions,
+                    okActions, undeterminedActions);
+
+            // Notify interested parties of updated alarm
+            String event = Serialization
+                    .toJson(new AlarmDefinitionUpdatedEvent(tenantId,
+                            alarmDefId, name, description, expression, matchBy,
+                            enabled, severity,
+                            subExpressions.oldAlarmSubExpressions,
+                            subExpressions.changedSubExpressions,
+                            subExpressions.unchangedSubExpressions,
+                            subExpressions.newAlarmSubExpressions));
+            producer.send(new KeyedMessage<>(config.eventsTopic, String
+                    .valueOf(eventCount++), event));
+        } catch (Exception e) {
+            throw Exceptions.uncheck(e,
+                    "Error updating alarm definition for project / tenant %s",
+                    tenantId);
+        }
+    }
 
   /**
    * Returns an entry containing Maps of old, changed, and new sub expressions by comparing the

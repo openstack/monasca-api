@@ -113,15 +113,24 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
     }
   }
 
-  @Override
-  public boolean exists(String tenantId, String name) {
-    try (Handle h = db.open()) {
-      return h
-          .createQuery(
-              "select exists(select 1 from alarm_definition where tenant_id = :tenantId and name = :name and deleted_at is NULL)")
-          .bind("tenantId", tenantId).bind("name", name).mapTo(Boolean.TYPE).first();
+    @Override
+    public String exists(String tenantId, String name) {
+        try (Handle h = db.open()) {
+            Map<String, Object> map = h
+                    .createQuery(
+                            "select id from alarm_definition where tenant_id = :tenantId and name = :name and deleted_at is NULL")
+                    .bind("tenantId", tenantId).bind("name", name).first();
+            if (map != null) {
+                if (map.values().size() != 0) {
+                    return map.get("id").toString();
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
     }
-  }
 
   @SuppressWarnings("unchecked")
   @Override

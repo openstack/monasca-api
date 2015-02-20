@@ -57,6 +57,7 @@ import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
+import monasca.api.domain.exception.EntityExistsException;
 
 @Test
 public class AlarmDefinitionServiceTest {
@@ -488,5 +489,123 @@ public class AlarmDefinitionServiceTest {
 
     // Assert new expressions
     assertTrue(expressions.newAlarmSubExpressions.isEmpty());
+  }
+
+  @Test(expectedExceptions = EntityExistsException.class)
+  public void testPatchSameName() {
+    String exprStr = EXPR1 + " or " + EXPR2;
+    List<String> alarmActions = Arrays.asList("1", "2", "3");
+    List<String> okActions = Arrays.asList("2", "3");
+    List<String> undeterminedActions = Arrays.asList("3");
+    List<String> matchBy = Arrays.asList("service", "instance_id");
+    AlarmDefinition firstAlarmDef =
+        new AlarmDefinition("123", "91% CPU", "description1", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    AlarmDefinition secondAlarmDef =
+        new AlarmDefinition("234", "92% CPU", "description2", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    when(repo.findById(TENANT_ID, secondAlarmDef.getId())).thenReturn(secondAlarmDef);
+    when(repo.findById(TENANT_ID, firstAlarmDef.getId())).thenReturn(firstAlarmDef);
+    when(repo.exists(TENANT_ID, "91% CPU")).thenReturn("123");
+    when(notificationMethodRepo.exists(eq(TENANT_ID), anyString())).thenReturn(true);
+    service.patch(TENANT_ID, secondAlarmDef.getId(), firstAlarmDef.getName(), "foo", "LOW", exprStr, null,
+        matchBy, true, alarmActions, okActions, undeterminedActions);
+
+  }
+
+  public void testPatchExistingAlarmName() {
+    String exprStr = EXPR1 + " or " + EXPR2;
+    List<String> alarmActions = Arrays.asList("1", "2", "3");
+    List<String> okActions = Arrays.asList("2", "3");
+    List<String> undeterminedActions = Arrays.asList("3");
+    List<String> matchBy = Arrays.asList("service", "instance_id");
+    AlarmDefinition firstAlarmDef =
+        new AlarmDefinition("123", "91% CPU", "description1", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    AlarmDefinition secondAlarmDef =
+        new AlarmDefinition("234", "92% CPU", "description2", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    when(repo.findById(TENANT_ID, secondAlarmDef.getId())).thenReturn(secondAlarmDef);
+    when(repo.findById(TENANT_ID, firstAlarmDef.getId())).thenReturn(firstAlarmDef);
+    when(repo.exists(TENANT_ID, "92% CPU")).thenReturn(secondAlarmDef.getId());
+
+    Map<String, AlarmSubExpression> oldSubExpressions = new HashMap<>();
+    oldSubExpressions.put("444", AlarmSubExpression.of(EXPR1));
+    oldSubExpressions.put("555", AlarmSubExpression.of(EXPR2));
+    when(repo.findSubExpressions(eq("234"))).thenReturn(oldSubExpressions);
+
+    when(notificationMethodRepo.exists(eq(TENANT_ID), anyString())).thenReturn(true);
+    AlarmDefinition alarmPatched = service.patch(TENANT_ID, secondAlarmDef.getId(), "92% CPU", "foo", "LOW", exprStr, null,
+        matchBy, true, alarmActions, okActions, undeterminedActions);
+    assertEquals(alarmPatched.getName(), "92% CPU");
+
+  }
+
+  public void testUpdateExistingAlarmName() {
+    String exprStr = EXPR1 + " or " + EXPR2;
+    List<String> alarmActions = Arrays.asList("1", "2", "3");
+    List<String> okActions = Arrays.asList("2", "3");
+    List<String> undeterminedActions = Arrays.asList("3");
+    List<String> matchBy = Arrays.asList("service", "instance_id");
+    AlarmDefinition firstAlarmDef =
+        new AlarmDefinition("123", "91% CPU", "description1", "LOW", exprStr, matchBy, true,
+            alarmActions, okActions, undeterminedActions);
+
+    AlarmDefinition secondAlarmDef =
+        new AlarmDefinition("234", "92% CPU", "description2", "LOW", exprStr, matchBy, true,
+            alarmActions, okActions, undeterminedActions);
+
+    UpdateAlarmDefinitionCommand updateCommand =
+        new UpdateAlarmDefinitionCommand("92% CPU", "Description1", exprStr, matchBy, "LOW", true,
+            alarmActions, okActions, undeterminedActions);
+
+    when(repo.findById(TENANT_ID, secondAlarmDef.getId())).thenReturn(secondAlarmDef);
+    when(repo.findById(TENANT_ID, firstAlarmDef.getId())).thenReturn(firstAlarmDef);
+    when(repo.exists(TENANT_ID, "92% CPU")).thenReturn(secondAlarmDef.getId());
+
+    Map<String, AlarmSubExpression> oldSubExpressions = new HashMap<>();
+    oldSubExpressions.put("444", AlarmSubExpression.of(EXPR1));
+    oldSubExpressions.put("555", AlarmSubExpression.of(EXPR2));
+    when(repo.findSubExpressions(eq("234"))).thenReturn(oldSubExpressions);
+    AlarmExpression alarmExpression = new AlarmExpression(exprStr);
+
+    when(notificationMethodRepo.exists(eq(TENANT_ID), anyString())).thenReturn(true);
+    AlarmDefinition alarmPatched =
+        service.update(TENANT_ID, secondAlarmDef.getId(), alarmExpression, updateCommand);
+    assertEquals(alarmPatched.getName(), "92% CPU");
+  }
+
+  @Test(expectedExceptions = EntityExistsException.class)
+  public void testUpdateSameName() {
+    String exprStr = EXPR1 + " or " + EXPR2;
+    List<String> alarmActions = Arrays.asList("1", "2", "3");
+    List<String> okActions = Arrays.asList("2", "3");
+    List<String> undeterminedActions = Arrays.asList("3");
+    List<String> matchBy = Arrays.asList("service", "instance_id");
+
+    AlarmDefinition firstAlarmDef =
+        new AlarmDefinition("123", "91% CPU", "description1", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    AlarmDefinition secondAlarmDef =
+        new AlarmDefinition("234", "92% CPU", "description2", "LOW", exprStr, matchBy, true, alarmActions,
+            okActions, undeterminedActions);
+
+    UpdateAlarmDefinitionCommand updateCommand = new UpdateAlarmDefinitionCommand(
+            "91% CPU", "Description1", exprStr, matchBy, "LOW", true,
+            alarmActions, okActions, undeterminedActions);
+
+    when(repo.findById(TENANT_ID, secondAlarmDef.getId())).thenReturn(secondAlarmDef);
+    when(repo.findById(TENANT_ID, firstAlarmDef.getId())).thenReturn(firstAlarmDef);
+    when(repo.exists(TENANT_ID, "91% CPU")).thenReturn("123");
+    when(notificationMethodRepo.exists(eq(TENANT_ID), anyString())).thenReturn(true);
+
+    AlarmExpression alarmExpression = new AlarmExpression(exprStr);
+    service.update(TENANT_ID, secondAlarmDef.getId(),alarmExpression,updateCommand);
+
   }
 }
