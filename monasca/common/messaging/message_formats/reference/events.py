@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
+from oslo_utils import timeutils
 
 
 def transform(event, tenant_id, region):
@@ -22,7 +22,7 @@ def transform(event, tenant_id, region):
             tenantId=tenant_id,
             region=region
         ),
-        creation_time=datetime.now()
+        creation_time=timeutils.utcnow_ts()
     )
 
     return transformed_event
