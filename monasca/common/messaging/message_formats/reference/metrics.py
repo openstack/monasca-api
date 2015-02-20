@@ -12,13 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
+from oslo_utils import timeutils
 
 
 def transform(metrics, tenant_id, region):
     transformed_metric = {'metric': {},
                           'meta': {'tenantId': tenant_id, 'region': region},
-                          'creation_time': datetime.now()}
+                          'creation_time': timeutils.utcnow_ts()}
 
     if isinstance(metrics, list):
         transformed_metrics = []
