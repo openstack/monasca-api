@@ -11,9 +11,8 @@ public class InfluxV9Utils {
 
   public static String namePart(String name) throws Exception {
 
-    sanitize(name);
-
     if (name != null && !name.isEmpty()) {
+      sanitize(name);
       return String.format("from \"%1$s\"", name);
     } else {
       return "";
@@ -23,7 +22,7 @@ public class InfluxV9Utils {
   public static String tenantIdPart(String tenantId) throws Exception {
 
     if (tenantId == null || tenantId.isEmpty()) {
-      throw new Exception(String.format("Found invalid tenant id: %1$s", tenantId));
+      throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
     }
 
     sanitize(tenantId);
@@ -34,13 +33,14 @@ public class InfluxV9Utils {
 
   public static String regionPart(String region) throws Exception {
 
+    if (region == null || region.isEmpty()) {
+      throw new Exception(String.format("Found null or empty region: %1$s", region));
+    }
+
     sanitize(region);
 
-    String s = "";
+    return " and region=" + "'" + region + "'";
 
-    s += " and region=" + "'" + region + "'";
-
-    return s;
   }
 
   public static String dimPart(Map<String, String> dims) throws Exception {
@@ -50,9 +50,11 @@ public class InfluxV9Utils {
     if (dims != null && !dims.isEmpty()) {
       for (String k : dims.keySet()) {
         String v = dims.get(k);
-        sanitize(k);
-        sanitize(v);
-        sb.append(" and " + k + "=" + "'" + v + "'");
+        if (k != null && !k.isEmpty() && v != null && !v.isEmpty()) {
+          sanitize(k);
+          sanitize(v);
+          sb.append(" and " + k + "=" + "'" + v + "'");
+        }
       }
     }
 

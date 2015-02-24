@@ -91,12 +91,12 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
     if (!series.isEmpty()) {
 
-      for (Row row : series.getRows()) {
+      for (Serie serie : series.getSeries()) {
 
         // Influxdb 0.9.0 does not return dimensions at this time.
-        Measurements measurements = new Measurements(row.getName(), new HashMap());
+        Measurements measurements = new Measurements(serie.getName(), new HashMap());
 
-        for (String[] values : row.getValues()) {
+        for (String[] values : serie.getValues()) {
 
           measurements.addMeasurement(new Object[]{values[0], Double.parseDouble(values[1])});
         }

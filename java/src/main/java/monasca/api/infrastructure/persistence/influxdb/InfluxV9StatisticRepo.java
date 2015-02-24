@@ -93,12 +93,12 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
     if (!series.isEmpty()) {
 
-      for (Row row : series.getRows()) {
+      for (Serie serie : series.getSeries()) {
 
-        Statistics statistics = new Statistics(row.getName(), new HashMap<String, String>(),
-                                               Arrays.asList(row.getColumns()));
+        Statistics statistics = new Statistics(serie.getName(), new HashMap<String, String>(),
+                                               Arrays.asList(serie.getColumns()));
 
-        for (Object[] values : row.getValues()) {
+        for (Object[] values : serie.getValues()) {
           statistics.addStatistics(Arrays.asList(values));
         }
 

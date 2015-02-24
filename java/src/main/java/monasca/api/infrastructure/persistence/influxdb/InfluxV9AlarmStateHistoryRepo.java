@@ -133,9 +133,9 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
     if (!series.isEmpty()) {
 
-      for (Row row : series.getRows()) {
+      for (Serie serie : series.getSeries()) {
 
-        for (String[] values : row.getValues()) {
+        for (String[] values : serie.getValues()) {
 
           AlarmStateHistory alarmStateHistory = new AlarmStateHistory();
 

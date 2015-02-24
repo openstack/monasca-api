@@ -84,11 +84,11 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     if (!series.isEmpty()) {
 
-      for (Row row : series.getRows()) {
+      for (Serie serie : series.getSeries()) {
 
-        for (String[] values : row.getValues()) {
+        for (String[] values : serie.getValues()) {
 
-          metricDefinitionList.add(new MetricDefinition(row.getName(), dims(values, row.getColumns())));
+          metricDefinitionList.add(new MetricDefinition(serie.getName(), dims(values, serie.getColumns())));
         }
       }
     }

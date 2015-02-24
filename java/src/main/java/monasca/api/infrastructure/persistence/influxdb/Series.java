@@ -15,26 +15,27 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 public class Series {
 
-  public RowsElement[] results;
+  public SeriesElement[] results;
 
   boolean isEmpty() {
 
-    return this.results[0].rows == null;
+    return this.results[0].series == null;
   }
 
-  Row[] getRows() {
+  Serie[] getSeries() {
 
-    return this.results[0].rows;
+    return this.results[0].series;
   }
 
 }
 
-class RowsElement {
+class SeriesElement {
 
-  public Row[] rows;
+  public Serie[] series;
 
 }
-class Row {
+
+class Serie {
 
   public String name;
   public String[] columns;
