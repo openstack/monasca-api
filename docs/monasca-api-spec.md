@@ -1986,89 +1986,133 @@ None.
 #### Response Body
 Returns a JSON array of alarm state transition objects with the following fields:
 
+* id - Alarm State Transition ID.
 * alarm_id (string) - Alarm ID.
-* metric_name (string(255), optional) - Name of metric to filter by.
-* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* metrics ({string, string, string(255): string(255)}) - The metrics associated with the alarm state transition.
 * old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
+* sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
 
 #### Response Examples
 ```
 [
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "Alarm state updated via API",
-        "reason_data": "{}",
-        "timestamp": "2014-07-19T03:38:15.000Z"
-    },
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
+   {
+        "id": "1424451007002",
+        "alarm_id": "bc7f388d-3522-47bd-b4ae-41567090ab72",
+        "metrics": [
+            {
+                "id": null,
+                "name": "cpu.system_perc",
+                "dimensions": {
+                    "hostname": "devstack"
+                }
+            }
+        ],
         "old_state": "UNDETERMINED",
-        "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
+        "new_state": "OK",
+        "reason": "The alarm threshold(s) have not been exceeded for the sub-alarms: avg(cpu.system_perc{hostname=devstack}) > 15.0 with the values: [1.5]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:42.000Z"
+        "timestamp": "2015-02-20T16:50:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "cpu.system_perc",
+                    "dimensions": {
+                        "hostname": "devstack"
+                    },
+                    "operator": "GT",
+                    "threshold": 15,
+                    "period": 60,
+                    "periods": 1
+                },
+                "sub_alarm_state": "OK",
+                "current_values": [
+                    1.5
+                ]
+            }
+        ]
     },
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
+        "id": "1424448727001",
+        "alarm_id": "5ec51b06-193b-49f7-bcf7-b80d11010137",
+        "metrics": [
+            {
+                "id": null,
+                "name": "mysql.performance.slow_queries",
+                "dimensions": {
+                    "component": "mysql",
+                    "service": "mysql",
+                    "hostname": "devstack"
+                }
+            }
+        ],
         "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "No data was present for the sub-alarms: [avg(cpu.system_perc{hostname=devstack}) > 15.0]",
+        "new_state": "OK",
+        "reason": "The alarm threshold(s) have not been exceeded for the sub-alarms: avg(mysql.performance.slow_queries) > 10.0 times 3 with the values: [29.23069852941176, 20.146139705882355, 7.536764705882352]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:26.000Z"
+        "timestamp": "2015-02-20T16:12:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "mysql.performance.slow_queries",
+                    "dimensions": {},
+                    "operator": "GT",
+                    "threshold": 10,
+                    "period": 60,
+                    "periods": 3
+                },
+                "sub_alarm_state": "OK",
+                "current_values": [
+                    29.23069852941176,
+                    20.146139705882355,
+                    7.536764705882352
+                ]
+            }
+        ]
     },
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "UNDETERMINED",
+        "id": "1424448667000",
+        "alarm_id": "5ec51b06-193b-49f7-bcf7-b80d11010137",
+        "metrics": [
+            {
+                "id": null,
+                "name": "mysql.performance.slow_queries",
+                "dimensions": {
+                    "component": "mysql",
+                    "service": "mysql",
+                    "hostname": "devstack"
+                }
+            }
+        ],
+        "old_state": "OK",
         "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
+        "reason": "Thresholds were exceeded for the sub-alarms: avg(mysql.performance.slow_queries) > 10.0 times 3 with the values: [36.32720588235294, 29.23069852941176, 20.146139705882355]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:18.000Z"
-    },
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "No data was present for the sub-alarms: [avg(cpu.system_perc{hostname=devstack}) > 15.0]",
-        "reason_data": "{}",
-        "timestamp": "2014-07-19T03:26:26.000Z"
-    },
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "UNDETERMINED",
-        "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
-        "reason_data": "{}",
-        "timestamp": "2014-07-19T03:26:20.000Z"
+        "timestamp": "2015-02-20T16:11:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "mysql.performance.slow_queries",
+                    "dimensions": {},
+                    "operator": "GT",
+                    "threshold": 10,
+                    "period": 60,
+                    "periods": 3
+                },
+                "sub_alarm_state": "ALARM",
+                "current_values": [
+                    36.32720588235294,
+                    29.23069852941176,
+                    20.146139705882355
+                ]
+            }
+        ]
     }
 ]
 ```
@@ -2334,7 +2378,7 @@ None.
 
 #### Request Data
 ```
-GET /v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history HTTP/1.1
+GET /v2.0/alarms/37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0/state-history HTTP/1.1
 Host: 192.168.10.4:8080
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Cache-Control: no-cache
@@ -2347,89 +2391,148 @@ Cache-Control: no-cache
 #### Response Body
 Returns a JSON array of alarm state transition objects with the following fields:
 
+* id - Alarm State Transition ID.
 * alarm_id (string) - Alarm ID.
-* metric_name (string(255), optional) - Name of metric to filter by.
-* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* metrics ({string, string, string(255): string(255)}) - The metrics associated with the alarm state transition.
 * old_state (string) - The old state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * new_state (string) - The new state of the alarm. Either `OK`, `ALARM` or `UNDETERMINED`.
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
+* sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
 
 #### Response Examples
 ```
 [
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "Alarm state updated via API",
-        "reason_data": "{}",
-        "timestamp": "2014-07-19T03:38:15.000Z"
-    },
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "UNDETERMINED",
+        "id": "1424452147003",
+        "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
+        "metrics": [
+            {
+                "id": null,
+                "name": "cpu.idle_perc",
+                "dimensions": {
+                    "hostname": "devstack"
+                }
+            }
+        ],
+        "old_state": "OK",
         "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
+        "reason": "Thresholds were exceeded for the sub-alarms: avg(cpu.idle_perc) < 10.0 times 3 with the values: [0.0, 0.0, 0.0]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:42.000Z"
+        "timestamp": "2015-02-20T17:09:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "cpu.idle_perc",
+                    "dimensions": {},
+                    "operator": "LT",
+                    "threshold": 10,
+                    "period": 60,
+                    "periods": 3
+                },
+                "sub_alarm_state": "ALARM",
+                "current_values": [
+                    0,
+                    0,
+                    0
+                ]
+            }
+        ]
     },
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
+        "id": "1424451727002",
+        "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
+        "metrics": [
+            {
+                "id": null,
+                "name": "cpu.idle_perc",
+                "dimensions": {
+                    "hostname": "devstack"
+                }
+            }
+        ],
         "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "No data was present for the sub-alarms: [avg(cpu.system_perc{hostname=devstack}) > 15.0]",
+        "new_state": "OK",
+        "reason": "The alarm threshold(s) have not been exceeded for the sub-alarms: avg(cpu.idle_perc) < 10.0 times 3 with the values: [0.0, 0.0, 72.475]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:26.000Z"
+        "timestamp": "2015-02-20T17:02:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "cpu.idle_perc",
+                    "dimensions": {},
+                    "operator": "LT",
+                    "threshold": 10,
+                    "period": 60,
+                    "periods": 3
+                },
+                "sub_alarm_state": "OK",
+                "current_values": [
+                    0,
+                    0,
+                    72.475
+                ]
+            }
+        ]
     },
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "UNDETERMINED",
+        "id": "1424451367001",
+        "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
+        "metrics": [
+            {
+                "id": null,
+                "name": "cpu.idle_perc",
+                "dimensions": {
+                    "hostname": "devstack"
+                }
+            }
+        ],
+        "old_state": "OK",
         "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
+        "reason": "Thresholds were exceeded for the sub-alarms: avg(cpu.idle_perc) < 10.0 times 3 with the values: [0.0, 0.0, 0.0]",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:37:18.000Z"
+        "timestamp": "2015-02-20T16:56:07.000Z",
+        "sub_alarms": [
+            {
+                "sub_alarm_expression": {
+                    "function": "AVG",
+                    "metric_name": "cpu.idle_perc",
+                    "dimensions": {},
+                    "operator": "LT",
+                    "threshold": 10,
+                    "period": 60,
+                    "periods": 3
+                },
+                "sub_alarm_state": "ALARM",
+                "current_values": [
+                    0,
+                    0,
+                    0
+                ]
+            }
+        ]
     },
     {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
-        "old_state": "ALARM",
-        "new_state": "UNDETERMINED",
-        "reason": "No data was present for the sub-alarms: [avg(cpu.system_perc{hostname=devstack}) > 15.0]",
-        "reason_data": "{}",
-        "timestamp": "2014-07-19T03:26:26.000Z"
-    },
-    {
-        "alarm_id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
-        "metric_name": "cpu.system_perc",
-        "metric_dimensions": {
-          "hostname": "devstack"
-        },
+        "id": "1424444550000",
+        "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
+        "metrics": [
+            {
+                "id": null,
+                "name": "cpu.idle_perc",
+                "dimensions": {
+                    "hostname": "devstack"
+                }
+            }
+        ],
         "old_state": "UNDETERMINED",
-        "new_state": "ALARM",
-        "reason": "Alarm state updated via API",
+        "new_state": "OK",
+        "reason": "The alarm threshold(s) have not been exceeded",
         "reason_data": "{}",
-        "timestamp": "2014-07-19T03:26:20.000Z"
+        "timestamp": "2015-02-20T15:02:30.000Z",
+        "sub_alarms": []
     }
 ]
 ```

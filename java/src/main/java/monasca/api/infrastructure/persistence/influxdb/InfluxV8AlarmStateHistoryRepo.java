@@ -40,6 +40,7 @@ import com.google.inject.Inject;
 
 import monasca.api.ApiConfig;
 import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
@@ -53,7 +54,8 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
-
+  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUBALARMS_TYPE =
+      new TypeReference<List<AlarmTransitionSubAlarm>>() {};
   private static final Logger logger = LoggerFactory
       .getLogger(InfluxV8AlarmStateHistoryRepo.class);
 
@@ -84,7 +86,7 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
   String buildQueryForFindById(String tenantId, String alarmId, String offset) throws Exception {
     String offsetPart = InfluxV8Utils.buildOffsetPart(offset);
-    return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    return String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
         + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s' %3$s",
         InfluxV8Utils.SQLSanitizer.sanitize(tenantId), InfluxV8Utils.SQLSanitizer.sanitize(alarmId), offsetPart);
   }
@@ -117,7 +119,7 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   }
 
   String buildQueryForFind(String tenantId, String timePart, String alarmsPart, String offsetPart) throws Exception {
-    return String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    return String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
         + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s %4$s",
         InfluxV8Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart, offsetPart);
   }
@@ -162,8 +164,16 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
         alarmStateHistory.setNewState(AlarmState.valueOf((String) row.get(colNames[4])));
         alarmStateHistory.setOldState(AlarmState.valueOf((String) row.get(colNames[5])));
+
         alarmStateHistory.setReason((String) row.get(colNames[6]));
         alarmStateHistory.setReasonData((String) row.get(colNames[7]));
+
+        try {
+          alarmStateHistory.setSubAlarms((List<AlarmTransitionSubAlarm>) OBJECT_MAPPER.readValue(
+              (String) row.get(colNames[8]), SUBALARMS_TYPE));
+        } catch (Exception ignore) {
+          alarmStateHistory.setSubAlarms(Collections.<AlarmTransitionSubAlarm>emptyList());
+        }
 
         alarmStateHistoryList.add(alarmStateHistory);
       }

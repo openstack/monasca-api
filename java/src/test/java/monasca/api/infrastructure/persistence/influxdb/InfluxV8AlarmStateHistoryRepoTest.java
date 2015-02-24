@@ -49,7 +49,7 @@ public class InfluxV8AlarmStateHistoryRepoTest {
 
   public void buildQueryForFindByIdTest() throws Exception {
 
-    String er = "select alarm_id, metrics, old_state, new_state, reason, " +
+    String er = "select alarm_id, metrics, old_state, new_state, sub_alarms, reason, " +
         "" + "reason_data from alarm_state_history where tenant_id = 'tenant-id' and alarm_id = "
         + "'alarm-id' ";
     String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFindById("tenant-id",
@@ -75,7 +75,7 @@ public class InfluxV8AlarmStateHistoryRepoTest {
   }
 
   public void buildQueryForFindTest() throws Exception {
-    String er = "select alarm_id, metrics, old_state, new_state, reason, " +
+    String er = "select alarm_id, metrics, old_state, new_state, sub_alarms, reason, " +
         "" + "reason_data from alarm_state_history where tenant_id = 'tenant-id'  and time > " +
         "1388559600s and time < 1388559601s  and ( alarm_id = 'id-1'  or  alarm_id = 'id-2' ) ";
     String r = this.alarmStateHistoryInfluxDBRepository.buildQueryForFind("tenant-id",

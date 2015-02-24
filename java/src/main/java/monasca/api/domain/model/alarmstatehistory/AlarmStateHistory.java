@@ -15,6 +15,7 @@ package monasca.api.domain.model.alarmstatehistory;
 
 import java.util.List;
 
+import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import org.joda.time.DateTime;
 
 import monasca.common.model.alarm.AlarmState;
@@ -29,16 +30,18 @@ public class AlarmStateHistory  extends AbstractEntity {
   private String reason;
   private String reasonData;
   private DateTime timestamp;
+  private List<AlarmTransitionSubAlarm> subAlarms;
 
   public AlarmStateHistory() {}
 
   public AlarmStateHistory(String alarmId, List<MetricDefinition> metrics, AlarmState oldState,
-      AlarmState newState, String reason, String reasonData, DateTime timestamp) {
+      AlarmState newState, List<AlarmTransitionSubAlarm> subAlarms, String reason, String reasonData, DateTime timestamp) {
     id = new Long(timestamp.getMillis()).toString();
     this.alarmId = alarmId;
     this.setMetrics(metrics);
     this.oldState = oldState;
     this.newState = newState;
+    this.subAlarms = subAlarms;
     this.reason = reason;
     this.reasonData = reasonData;
     this.timestamp = timestamp;
@@ -66,6 +69,11 @@ public class AlarmStateHistory  extends AbstractEntity {
     if (newState != other.newState)
       return false;
     if (oldState != other.oldState)
+      return false;
+    if (subAlarms == null) {
+      if (other.subAlarms != null)
+        return false;
+      } else if (!subAlarms.equals(other.subAlarms))
       return false;
     if (reason == null) {
       if (other.reason != null)
@@ -121,6 +129,7 @@ public class AlarmStateHistory  extends AbstractEntity {
     result = prime * result + ((metrics == null) ? 0 : metrics.hashCode());
     result = prime * result + ((newState == null) ? 0 : newState.hashCode());
     result = prime * result + ((oldState == null) ? 0 : oldState.hashCode());
+    result = prime * result + ((subAlarms == null) ? 0 : subAlarms.hashCode());
     result = prime * result + ((reason == null) ? 0 : reason.hashCode());
     result = prime * result + ((reasonData == null) ? 0 : reasonData.hashCode());
     result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
@@ -151,6 +160,14 @@ public class AlarmStateHistory  extends AbstractEntity {
     this.reasonData = reasonData;
   }
 
+  public List<AlarmTransitionSubAlarm> getSubAlarms() {
+    return subAlarms;
+  }
+
+  public void setSubAlarms(List<AlarmTransitionSubAlarm> subAlarms) {
+    this.subAlarms = subAlarms;
+  }
+
   public void setTimestamp(DateTime timestamp) {
     this.timestamp = timestamp;
     // Set the id in the AbstractEntity class.
@@ -160,7 +177,7 @@ public class AlarmStateHistory  extends AbstractEntity {
   @Override
   public String toString() {
     return "AlarmStateHistory [alarmId=" + alarmId + ", metrics=" + metrics + ", oldState="
-        + oldState + ", newState=" + newState + ", reason=" + reason + ", reasonData=" + reasonData
+        + oldState + ", newState=" + newState + ", subAlarms=" + subAlarms + ", reason=" + reason + ", reasonData=" + reasonData
         + ", timestamp=" + timestamp + "]";
   }
 }
