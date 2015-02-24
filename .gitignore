@@ -11,6 +11,7 @@ cover
 .tox
 ChangeLog
 MANIFEST
+monasca.log
 
 
 *.swp
@@ -21,9 +22,9 @@ MANIFEST
 .idea
 .project
 .target/
-debs/*
+java/debs/*
 .settings/
-target/
+target
 test-output/
 logs/
 log/
