@@ -22,10 +22,13 @@ import java.util.Map;
  * Repository for metrics.
  */
 public interface MetricDefinitionRepo {
+
   /**
    * Finds metrics for the given criteria.
    */
   List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
                               String offset, int limit)
       throws Exception;
+
+  List<MetricName> findNames(String tenantId, Map<String, String> dimensions, String offset, int limit) throws Exception;
 }

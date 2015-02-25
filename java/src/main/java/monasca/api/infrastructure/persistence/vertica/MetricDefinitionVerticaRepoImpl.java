@@ -26,9 +26,11 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
+import monasca.api.domain.model.metric.MetricName;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Vertica metric definition repository implementation.
@@ -93,5 +95,10 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
       return metricDefs;
     }
+  }
+
+  @Override
+  public List<MetricName> findNames(String tenantId, Map<String, String> dimensions, String offset, int limit) throws Exception {
+    throw new NotImplementedException();
   }
 }

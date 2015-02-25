@@ -27,6 +27,7 @@ import java.util.Map;
 
 import monasca.api.ApiConfig;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
+import monasca.api.domain.model.metric.MetricName;
 import monasca.common.model.metric.MetricDefinition;
 
 
@@ -86,15 +87,14 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     int startIndex = this.influxV9Utils.startIndex(offset);
 
-    String
-        q =
-        String.format("show series %1$s where %2$s %3$s %4$s %5$s %6$s",
-                      this.influxV9Utils.namePart(name, false),
-                      this.influxV9Utils.tenantIdPart(tenantId),
-                      this.influxV9Utils.regionPart(this.region),
-                      this.influxV9Utils.dimPart(dimensions),
-                      this.influxV9Utils.limitPart(limit),
-                      this.influxV9Utils.offsetPart(startIndex));
+    String q = String.format("show series %1$s "
+                             + "where %2$s %3$s %4$s %5$s %6$s",
+                             this.influxV9Utils.namePart(name, false),
+                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.dimPart(dimensions),
+                             this.influxV9Utils.limitPart(limit),
+                             this.influxV9Utils.offsetPart(startIndex));
 
     logger.debug("Metric definition query: {}", q);
 
@@ -109,7 +109,32 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     return metricDefinitionList;
   }
 
+  @Override
+  public List<MetricName> findNames(String tenantId, Map<String, String> dimensions,
+                                    String offset, int limit) throws Exception {
 
+    int startIndex = this.influxV9Utils.startIndex(offset);
+
+    String q = String.format("show measurements "
+                             + "where %1$s %2$s %3$s %4$s %5$s",
+                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.dimPart(dimensions),
+                             this.influxV9Utils.limitPart(limit),
+                             this.influxV9Utils.offsetPart(startIndex));
+
+    logger.debug("Metric name query: {}", q);
+
+    String r = this.influxV9RepoReader.read(q);
+
+    Series series = this.objectMapper.readValue(r, Series.class);
+
+    List<MetricName> metricNameList = metricNameList(series, startIndex);
+
+    logger.debug("Found {} metric definitions matching query", metricNameList.size());
+
+    return metricNameList;
+  }
 
   private List<MetricDefinition> metricDefinitionList(Series series, int startIndex) {
 
@@ -132,6 +157,26 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     }
 
     return metricDefinitionList;
+  }
+
+  private List<MetricName> metricNameList(Series series, int startIndex) {
+    List<MetricName> metricNameList = new ArrayList<>();
+
+    if (!series.isEmpty()) {
+
+      int index = startIndex;
+
+      Serie serie = series.getSeries()[0];
+
+      for (String[] values : serie.getValues()) {
+        MetricName m =
+            new MetricName(String.valueOf(index++), values[0]);
+        metricNameList.add(m);
+      }
+
+    }
+
+    return metricNameList;
   }
 
   private Map<String, String> dims(String[] vals, String[] cols) {
