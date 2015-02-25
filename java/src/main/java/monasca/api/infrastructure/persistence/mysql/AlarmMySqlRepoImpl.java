@@ -16,8 +16,8 @@ package monasca.api.infrastructure.persistence.mysql;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepo;
-import monasca.api.domain.model.common.Paged;
 import monasca.api.infrastructure.persistence.DimensionQueries;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
@@ -45,6 +45,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
+  private final PersistUtils persistUtils;
+
   private static final String ALARM_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
           + "a.id, a.state, "
@@ -58,8 +60,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
           + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
 
   @Inject
-  public AlarmMySqlRepoImpl(@Named("mysql") DBI db) {
+  public AlarmMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
     this.db = db;
+    this.persistUtils = persistUtils;
   }
 
   private void buildJoinClauseFor(Map<String, String> dimensions, StringBuilder sbJoin) {
@@ -88,7 +91,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
-      Map<String, String> metricDimensions, AlarmState state, String offset) {
+                          Map<String, String> metricDimensions, AlarmState state, String offset,
+                          int limit, boolean enforceLimit) {
 
     try (Handle h = db.open()) {
 
@@ -105,8 +109,11 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
             + "inner join (select distinct id from metric_definition "
             + "            where name = :metricName) as md "
             + "on md.id = mdd.metric_definition_id ");
+
         buildJoinClauseFor(metricDimensions, sbWhere);
+
         sbWhere.append(")");
+
       }
       if (state != null) {
         sbWhere.append(" and a.state = :state");
@@ -114,9 +121,13 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       if (offset != null) {
         sbWhere.append(" and a.id > :offset");
       }
-      String limit = offset != null ? " limit :limit" : "";
 
-      String sql = String.format(ALARM_SQL, sbWhere, limit);
+      String limitPart = "";
+      if (enforceLimit) {
+        limitPart = " limit :limit";
+      }
+
+      String sql = String.format(ALARM_SQL, sbWhere, limitPart);
       final Query<Map<String, Object>> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (alarmDefId != null) {
@@ -130,7 +141,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
       if (offset != null) {
         q.bind("offset", offset);
-        q.bind("limit", Paged.LIMIT);
+      }
+
+      if (enforceLimit) {
+        q.bind("limit", limit + 1);
       }
 
       DimensionQueries.bindDimensionsToQuery(q, metricDimensions);

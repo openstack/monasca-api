@@ -23,6 +23,7 @@ import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.ErrorMessages;
 
 import org.mockito.internal.matchers.Not;
@@ -62,9 +63,9 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     when(repo.create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString()))
         .thenReturn(notificationMethodPagerduty);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
-    when(repo.find(eq("abc"), anyString())).thenReturn(Arrays.asList(notificationMethod));
+    when(repo.find(eq("abc"), anyString(), anyInt())).thenReturn(Arrays.asList(notificationMethod));
 
-    addResources(new NotificationMethodResource(repo));
+    addResources(new NotificationMethodResource(repo, new PersistUtils()));
   }
 
   public void shouldCreate() {
@@ -192,6 +193,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldList() {
 
+
     Map
         lhm =
         (Map) client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")
@@ -203,18 +205,9 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                                NotificationMethodType.fromJson((String) lhm.get("type")),
                                (String) lhm.get("address"));
 
-    List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
-
-    List<Link>
-        linksList =
-        Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
-
-    nm.setLinks(linksList);
-
     List<NotificationMethod> notificationMethods = Arrays.asList(nm);
-
     assertEquals(notificationMethods, Arrays.asList(notificationMethod));
-    verify(repo).find(eq("abc"), anyString());
+    verify(repo).find(eq("abc"), anyString(), anyInt());
   }
 
   public void shouldGet() {
@@ -256,7 +249,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should500OnInternalException() {
-    doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString());
+    doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(), anyInt());
 
     try {
       client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")

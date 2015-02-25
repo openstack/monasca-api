@@ -56,7 +56,13 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
   @Override
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, DateTime endTime, List<String> statistics, int period) {
+                               DateTime startTime, DateTime endTime, List<String> statistics,
+                               int period, String offset, int limit, Boolean mergeMetricsFlag) {
+
+    // Todo. Use mergeMetricsFlag.
+
+    // Todo. Use offset and limit for pagination.
+
     List<Statistics> listStats = new ArrayList<>();
     List<String> copyStatistics = createColumns(statistics);
 

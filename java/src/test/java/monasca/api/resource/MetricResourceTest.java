@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -62,7 +63,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     doNothing().when(service).create(any(List.class), anyString(), anyString());
 
     metricRepo = mock(MetricDefinitionRepo.class);
-    addResources(new MetricResource(service, metricRepo));
+    addResources(new MetricResource(service, metricRepo, new PersistUtils()));
   }
 
   @SuppressWarnings("unchecked")

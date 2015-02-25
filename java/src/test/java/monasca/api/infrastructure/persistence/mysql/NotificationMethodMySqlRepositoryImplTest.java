@@ -34,6 +34,7 @@ import com.google.common.io.Resources;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
+import monasca.api.infrastructure.persistence.PersistUtils;
 
 @Test
 public class NotificationMethodMySqlRepositoryImplTest {
@@ -47,7 +48,7 @@ public class NotificationMethodMySqlRepositoryImplTest {
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
-    repo = new NotificationMethodMySqlRepoImpl(db);
+    repo = new NotificationMethodMySqlRepoImpl(db, new PersistUtils());
   }
 
   @AfterClass
@@ -84,7 +85,7 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<NotificationMethod> nms = repo.find("444", null);
+    List<NotificationMethod> nms = repo.find("444", null, 1);
 
     assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MyEmail",
         NotificationMethodType.EMAIL, "a@b")));

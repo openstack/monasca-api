@@ -21,15 +21,16 @@ import javax.inject.Named;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
-import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.common.persistence.BeanMapper;
 
 /**
@@ -39,10 +40,12 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
   private static final Logger LOG = LoggerFactory
       .getLogger(NotificationMethodMySqlRepoImpl.class);
   private final DBI db;
+  private final PersistUtils persistUtils;
 
   @Inject
-  public NotificationMethodMySqlRepoImpl(@Named("mysql") DBI db) {
+  public NotificationMethodMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
     this.db = db;
+    this.persistUtils = persistUtils;
   }
 
   @Override
@@ -94,22 +97,34 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
   }
 
   @Override
-  public List<NotificationMethod> find(String tenantId, String offset) {
+  public List<NotificationMethod> find(String tenantId, String offset, int limit) {
 
     try (Handle h = db.open()) {
 
+      String rawQuery =
+          "  SELECT nm.id, nm.tenant_id, nm.name, nm.type, nm.address, nm.created_at, nm.updated_at "
+          + "FROM notification_method as nm "
+          + "WHERE tenant_id = :tenantId %1$s order by nm.id asc limit :limit";
+
+      String offsetPart = "";
       if (offset != null) {
-
-        return h.createQuery(
-            "select * from notification_method where tenant_id = :tenantId and id > :offset order by id asc limit :limit")
-            .bind("tenantId", tenantId).bind("offset", offset).bind("limit", Paged.LIMIT)
-            .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
-      } else {
-
-        return h.createQuery("select * from notification_method where tenant_id = :tenantId")
-            .bind("tenantId", tenantId)
-            .map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+        offsetPart = "and nm.id > :offset";
       }
+
+      String query = String.format(rawQuery, offsetPart);
+
+      Query<?> q = h.createQuery(query);
+
+      q.bind("tenantId", tenantId);
+
+      if (offset != null) {
+        q.bind("offset", offset);
+      }
+
+      q.bind("limit", limit + 1);
+
+      return (List<NotificationMethod>) q.map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+
     }
   }
 

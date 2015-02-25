@@ -38,6 +38,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepoImpl;
 import monasca.api.resource.AbstractMonApiResourceTest;
 import monasca.api.resource.NotificationMethodResource;
@@ -59,8 +60,8 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
         .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'notification-method-test', 'MyEmaila', 'EMAIL', 'a@b', NOW(), NOW())");
     db.close(handle);
 
-    repo = new NotificationMethodMySqlRepoImpl(db);
-    addResources(new NotificationMethodResource(repo));
+    repo = new NotificationMethodMySqlRepoImpl(db, new PersistUtils());
+    addResources(new NotificationMethodResource(repo, new PersistUtils()));
   }
 
   @BeforeTest

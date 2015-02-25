@@ -15,6 +15,7 @@
 package monasca.api.resource;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,8 @@ import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import monasca.api.domain.model.statistic.StatisticRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
+
 import com.sun.jersey.api.client.ClientResponse;
 
 @Test
@@ -40,17 +43,19 @@ public class StatisticResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
 
     statisticRepo = mock(StatisticRepo.class);
-    addResources(new StatisticResource(statisticRepo));
+    addResources(new StatisticResource(statisticRepo, new PersistUtils()));
   }
 
   @SuppressWarnings("unchecked")
   public void shouldQueryWithDefaultParams() throws Exception {
+
     client()
         .resource(
             "/v2.0/metrics/statistics?name=cpu_utilization&start_time=2013-11-20T18:43Z&dimensions=service:hpcs.compute,%20instance_id:123&statistics=avg,%20min,%20max&period=60")
         .header("X-Tenant-Id", "abc").get(ClientResponse.class);
     verify(statisticRepo).find(anyString(), anyString(), any(Map.class), any(DateTime.class),
-        any(DateTime.class), any(List.class), anyInt());
+        any(DateTime.class), any(List.class), anyInt(), any(String.class), anyInt(),
+        anyBoolean());
   }
 
   public void queryShouldThrowOnInvalidDateFormat() throws Exception {

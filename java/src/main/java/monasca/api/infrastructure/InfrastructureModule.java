@@ -29,6 +29,7 @@ import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.statistic.StatisticRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV8AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV8MeasurementRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV8MetricDefinitionRepo;
@@ -38,6 +39,7 @@ import monasca.api.infrastructure.persistence.influxdb.InfluxV9MeasurementRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9MetricDefinitionRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9RepoReader;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9StatisticRepo;
+import monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils;
 import monasca.api.infrastructure.persistence.mysql.AlarmDefinitionMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.AlarmMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepoImpl;
@@ -93,6 +95,8 @@ public class InfrastructureModule extends AbstractModule {
 
       } else if (config.influxDB.getVersion().trim().equalsIgnoreCase(INFLUXDB_V9)) {
 
+        bind(PersistUtils.class).in(Singleton.class);
+        bind(InfluxV9Utils.class).in(Singleton.class);
         bind(InfluxV9RepoReader.class).in(Singleton.class);
 
         bind(AlarmStateHistoryRepo.class).to(InfluxV9AlarmStateHistoryRepo.class)

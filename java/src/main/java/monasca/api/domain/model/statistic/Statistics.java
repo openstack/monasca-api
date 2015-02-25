@@ -18,10 +18,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import monasca.common.model.domain.common.AbstractEntity;
+
 /**
  * Encapsulates a metric measurements.
  */
-public class Statistics {
+public class Statistics extends AbstractEntity {
+
   private String name;
   private Map<String, String> dimensions;
   private List<String> columns;
@@ -74,6 +77,10 @@ public class Statistics {
       return false;
 
     return true;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public void addStatistics(List<Object> statistics) {

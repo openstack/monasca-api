@@ -39,6 +39,7 @@ import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.Services;
 import monasca.common.model.metric.Metric;
@@ -51,13 +52,16 @@ public class MetricResource {
   private static final String MONITORING_DELEGATE_ROLE = "monitoring-delegate";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
-    private final MetricService service;
+  private final MetricService service;
   private final MetricDefinitionRepo metricRepo;
+  private final PersistUtils persistUtils;
 
   @Inject
-  public MetricResource(MetricService service, MetricDefinitionRepo metricRepo) {
+  public MetricResource(MetricService service, MetricDefinitionRepo metricRepo,
+                        PersistUtils persistUtils) {
     this.service = service;
     this.metricRepo = metricRepo;
+    this.persistUtils = persistUtils;
   }
 
   @POST
@@ -96,16 +100,18 @@ public class MetricResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public Object getMetrics(@Context UriInfo uriInfo,
-                                           @HeaderParam("X-Tenant-Id") String tenantId,
-                                           @QueryParam("name") String name,
-                                           @QueryParam("dimensions") String dimensionsStr,
-                                           @QueryParam("offset") String offset) throws Exception {
+  public Object getMetrics(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+                           @QueryParam("name") String name,
+                           @QueryParam("dimensions") String dimensionsStr,
+                           @QueryParam("offset") String offset,
+                           @QueryParam("limit") String limit)
+      throws Exception {
     Map<String, String>
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(name, dimensionsStr);
 
-    return Links.paginate(offset, metricRepo.find(tenantId, name, dimensions, offset), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit),
+                          metricRepo.find(tenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
   }
 }

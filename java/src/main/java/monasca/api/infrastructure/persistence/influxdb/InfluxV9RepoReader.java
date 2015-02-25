@@ -84,6 +84,8 @@ public class InfluxV9RepoReader {
 
       int rc = response.getStatusLine().getStatusCode();
 
+      logger.debug("Received {} status code from influx database", rc);
+
       if (rc != HttpStatus.SC_OK) {
 
         HttpEntity entity = response.getEntity();

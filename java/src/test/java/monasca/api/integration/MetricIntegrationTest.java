@@ -39,6 +39,7 @@ import monasca.api.MonApiModule;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.AbstractMonApiResourceTest;
 import monasca.api.resource.MetricResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -62,7 +63,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     db.close(handle);
     metricRepo = mock(MetricDefinitionRepo.class);
     service = new MetricService(config, producer, metricRegistry);
-    addResources(new MetricResource(service, metricRepo));
+    addResources(new MetricResource(service, metricRepo, new PersistUtils()));
   }
 
   @BeforeTest

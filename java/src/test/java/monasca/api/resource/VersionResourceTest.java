@@ -37,6 +37,8 @@ import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.version.Version;
 import monasca.api.domain.model.version.Version.VersionStatus;
 import monasca.api.domain.model.version.VersionRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
+
 import com.sun.jersey.api.client.GenericType;
 
 @Test
@@ -54,7 +56,7 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
     repo = mock(VersionRepo.class);
     when(repo.findById(eq("v2.0"))).thenReturn(version);
     when(repo.find()).thenReturn(Arrays.asList(version));
-    addResources(new VersionResource(repo));
+    addResources(new VersionResource(repo, new PersistUtils()));
   }
 
   public void shouldList() {

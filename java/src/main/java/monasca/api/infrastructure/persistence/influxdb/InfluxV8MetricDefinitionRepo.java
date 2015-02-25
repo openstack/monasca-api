@@ -51,7 +51,9 @@ public class InfluxV8MetricDefinitionRepo implements MetricDefinitionRepo {
 
   @Override
   public List<MetricDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                                     String offset) throws Exception {
+                                     String offset, int limit) throws Exception {
+
+    // Limit is not implemented for Influxdb V8.
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 

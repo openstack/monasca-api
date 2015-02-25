@@ -29,10 +29,6 @@ import monasca.api.ApiConfig;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.common.model.metric.MetricDefinition;
 
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.dimPart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.namePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.regionPart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.tenantIdPart;
 
 public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
@@ -40,6 +36,7 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
   private final ApiConfig config;
   private final InfluxV9RepoReader influxV9RepoReader;
+  private final InfluxV9Utils influxV9Utils;
   private final String region;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -47,23 +44,25 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
   @Inject
   public InfluxV9MetricDefinitionRepo(ApiConfig config,
-                                      InfluxV9RepoReader influxV9RepoReader) {
+                                      InfluxV9RepoReader influxV9RepoReader,
+                                      InfluxV9Utils influxV9Utils) {
     this.config = config;
     this.region = config.region;
     this.influxV9RepoReader = influxV9RepoReader;
+    this.influxV9Utils = influxV9Utils;
 
   }
 
-  @Override
-  public List<MetricDefinition> find(String tenantId, String name,
-                                     Map<String, String> dimensions,
-                                     String offset) throws Exception {
+  boolean isAtMostOneSeries(String tenantId, String name, Map<String, String> dimensions)
+      throws Exception {
 
-    String
-        q =
-        String.format("show series %1$s where %2$s %3$s %4$s", namePart(name), tenantIdPart(
-            tenantId),
-                      regionPart(this.region), dimPart(dimensions));
+    // Set limit to 2. We only care if we get 0, 1, or 2 results back.
+    String q = String.format("show series %1$s "
+                             + "where %2$s %3$s %4$s limit 2",
+                             this.influxV9Utils.namePart(name, false),
+                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.dimPart(dimensions));
 
     logger.debug("Metric definition query: {}", q);
 
@@ -71,24 +70,63 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     Series series = this.objectMapper.readValue(r, Series.class);
 
-    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series);
+    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series, 0);
+
+    logger.debug("Found {} metric definitions matching query", metricDefinitionList.size());
+
+    return metricDefinitionList.size() > 1 ? false : true;
+
+  }
+
+
+  @Override
+  public List<MetricDefinition> find(String tenantId, String name,
+                                     Map<String, String> dimensions,
+                                     String offset, int limit) throws Exception {
+
+    int startIndex = this.influxV9Utils.startIndex(offset);
+
+    String
+        q =
+        String.format("show series %1$s where %2$s %3$s %4$s %5$s %6$s",
+                      this.influxV9Utils.namePart(name, false),
+                      this.influxV9Utils.tenantIdPart(tenantId),
+                      this.influxV9Utils.regionPart(this.region),
+                      this.influxV9Utils.dimPart(dimensions),
+                      this.influxV9Utils.limitPart(limit),
+                      this.influxV9Utils.offsetPart(startIndex));
+
+    logger.debug("Metric definition query: {}", q);
+
+    String r = this.influxV9RepoReader.read(q);
+
+    Series series = this.objectMapper.readValue(r, Series.class);
+
+    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series, startIndex);
 
     logger.debug("Found {} metric definitions matching query", metricDefinitionList.size());
 
     return metricDefinitionList;
   }
 
-  private List<MetricDefinition> metricDefinitionList(Series series) {
+
+
+  private List<MetricDefinition> metricDefinitionList(Series series, int startIndex) {
 
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
 
     if (!series.isEmpty()) {
 
+      int index = startIndex;
+
       for (Serie serie : series.getSeries()) {
 
         for (String[] values : serie.getValues()) {
 
-          metricDefinitionList.add(new MetricDefinition(serie.getName(), dims(values, serie.getColumns())));
+          MetricDefinition m = new MetricDefinition(serie.getName(), dims(values, serie.getColumns()));
+          m.setId(String.valueOf(index++));
+          metricDefinitionList.add(m);
+
         }
       }
     }

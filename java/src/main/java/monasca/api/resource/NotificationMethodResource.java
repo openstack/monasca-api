@@ -37,6 +37,7 @@ import javax.ws.rs.core.UriInfo;
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 
 /**
  * Notification Method resource implementation.
@@ -44,10 +45,12 @@ import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 @Path("/v2.0/notification-methods")
 public class NotificationMethodResource {
   private final NotificationMethodRepo repo;
+  private final PersistUtils persistUtils;
 
   @Inject
-  public NotificationMethodResource(NotificationMethodRepo repo) {
+  public NotificationMethodResource(NotificationMethodRepo repo, PersistUtils persistUtils) {
     this.repo = repo;
+    this.persistUtils = persistUtils;
   }
 
   @POST
@@ -69,9 +72,14 @@ public class NotificationMethodResource {
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
   public Object list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-                     @QueryParam("offset") String offset) {
+                     @QueryParam("offset") String offset,
+                     @QueryParam("limit") String limit)
+   {
 
-    return Links.paginate(offset, Links.hydrate(repo.find(tenantId, offset), uriInfo), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit),
+                          Links.hydrate(repo.find(tenantId, offset,
+                                                  this.persistUtils.getLimit(limit)), uriInfo),
+                          uriInfo);
 
   }
 

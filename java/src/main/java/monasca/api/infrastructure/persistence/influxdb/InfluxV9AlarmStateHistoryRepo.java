@@ -43,8 +43,6 @@ import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
 
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.WhereClauseBuilder.buildTimePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildAlarmsPart;
 import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.findAlarmIds;
 
 public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
@@ -56,6 +54,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private final ApiConfig config;
   private final String region;
   private final InfluxV9RepoReader influxV9RepoReader;
+  private final InfluxV9Utils influxV9Utils;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   private final SimpleDateFormat simpleDateFormat =
@@ -70,23 +69,30 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   @Inject
   public InfluxV9AlarmStateHistoryRepo(@Named("mysql") DBI mysql,
                                        ApiConfig config,
-                                       InfluxV9RepoReader influxV9RepoReader) {
+                                       InfluxV9RepoReader influxV9RepoReader,
+                                       InfluxV9Utils influxV9Utils) {
 
     this.mysql = mysql;
     this.config = config;
     this.region = config.region;
     this.influxV9RepoReader = influxV9RepoReader;
+    this.influxV9Utils = influxV9Utils;
 
   }
 
   @Override
-  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset)
+  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset,
+                                          int limit)
       throws Exception {
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
-                             + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s'",
-                             InfluxV8Utils.SQLSanitizer.sanitize(tenantId),
-                             InfluxV8Utils.SQLSanitizer.sanitize(alarmId));
+
+    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+                             + "from alarm_state_history "
+                             + "where %1$s %2$s %3$s %4$s",
+                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.alarmIdPart(alarmId),
+                             this.influxV9Utils.timeOffsetPart(offset),
+                             this.influxV9Utils.limitPart(limit));
 
     logger.debug("Alarm state history query: {}", q);
 
@@ -104,7 +110,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   @Override
   public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
                                       DateTime startTime, @Nullable DateTime endTime,
-                                      @Nullable String offset) throws Exception {
+                                      @Nullable String offset, int limit) throws Exception {
 
     List<String> alarmIdList = findAlarmIds(this.mysql, tenantId, dimensions);
 
@@ -112,12 +118,15 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
       return new ArrayList<>();
     }
 
-    String timePart = buildTimePart(startTime, endTime);
-    String alarmsPart = buildAlarmsPart(alarmIdList);
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
-                             + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s",
-                             InfluxV8Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
+    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+                             + "from alarm_state_history "
+                             + "where %1$s %2$s %3$s %4$s %5$s",
+                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.startTimeEndTimePart(startTime, endTime),
+                             this.influxV9Utils.alarmIdsPart(alarmIdList),
+                             this.influxV9Utils.timeOffsetPart(offset),
+                             this.influxV9Utils.limitPart(limit));
 
     logger.debug("Alarm state history list query: {}", q);
 

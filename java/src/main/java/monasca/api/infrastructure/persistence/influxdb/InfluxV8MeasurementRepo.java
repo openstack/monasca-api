@@ -65,10 +65,14 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
   }
 
   @Override
-  public List<Measurements> find(String tenantId, String name,
-                                       Map<String, String> dimensions, DateTime startTime,
-                                       @Nullable DateTime endTime, @Nullable String offset)
+  public List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
+                                 DateTime startTime, @Nullable DateTime endTime, @Nullable String offset,
+                                 int limit, Boolean mergeMetricsFlag)
       throws Exception {
+
+    // mergeMetricsFlag is not implemented for Influxdb V8.
+
+    // Limit is not implemented for Influxdb V8.
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
 

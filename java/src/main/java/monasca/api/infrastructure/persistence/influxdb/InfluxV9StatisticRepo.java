@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +32,6 @@ import monasca.api.ApiConfig;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.dimPart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.endTimePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.namePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.regionPart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.startTimePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils.tenantIdPart;
 
 public class InfluxV9StatisticRepo implements StatisticRepo{
 
@@ -48,30 +41,34 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
   private final ApiConfig config;
   private final String region;
   private final InfluxV9RepoReader influxV9RepoReader;
+  private final InfluxV9Utils influxV9Utils;
+  private final InfluxV9MetricDefinitionRepo influxV9MetricDefinitionRepo;
+
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
 
   @Inject
   public InfluxV9StatisticRepo(ApiConfig config,
-                               InfluxV9RepoReader influxV9RepoReader) {
+                               InfluxV9RepoReader influxV9RepoReader,
+                               InfluxV9Utils influxV9Utils,
+                               InfluxV9MetricDefinitionRepo influxV9MetricDefinitionRepo) {
     this.config = config;
     this.region = config.region;
     this.influxV9RepoReader = influxV9RepoReader;
+    this.influxV9Utils = influxV9Utils;
+    this.influxV9MetricDefinitionRepo = influxV9MetricDefinitionRepo;
+
   }
 
   @Override
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
                                DateTime startTime, @Nullable DateTime endTime,
-                               List<String> statistics, int period) throws Exception {
+                               List<String> statistics, int period, String offset, int limit,
+                               Boolean mergeMetricsFlag) throws Exception {
 
-
-    String q = String.format("select %1$s %2$s where %3$s %4$s %5$s %6$s %7$s %8$s",
-                             funcPart(statistics), namePart(name), tenantIdPart(tenantId),
-                             regionPart(this.region), startTimePart(startTime), dimPart(dimensions),
-                             endTimePart(endTime), periodPart(period));
-
-    logger.debug("Measurements query: {}", q);
+    String q = buildQuery(tenantId, name, dimensions, startTime, endTime,
+                   statistics, period, offset, limit, mergeMetricsFlag);
 
     String r = this.influxV9RepoReader.read(q);
 
@@ -85,6 +82,55 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
   }
 
+  private String buildQuery(String tenantId, String name, Map<String, String> dimensions,
+                            DateTime startTime, DateTime endTime, List<String> statistics,
+                            int period, String offset, int limit, Boolean mergeMetricsFlag)
+      throws Exception {
+
+    String q;
+
+    if (Boolean.TRUE.equals(mergeMetricsFlag)) {
+
+      q = String.format("select %1$s %2$s "
+                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s",
+                        funcPart(statistics),
+                        this.influxV9Utils.namePart(name, true),
+                        this.influxV9Utils.tenantIdPart(tenantId),
+                        this.influxV9Utils.regionPart(this.region),
+                        this.influxV9Utils.startTimePart(startTime),
+                        this.influxV9Utils.dimPart(dimensions),
+                        this.influxV9Utils.endTimePart(endTime),
+                        this.influxV9Utils.timeOffsetPart(offset),
+                        this.influxV9Utils.periodPart(period),
+                        this.influxV9Utils.limitPart(limit));
+
+    } else {
+
+
+      if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
+
+        throw new IllegalArgumentException(this.influxV9Utils.getMultipleMetricsErrorMsg());
+      }
+
+      q = String.format("select %1$s %2$s "
+                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s slimit 1",
+                        funcPart(statistics),
+                        this.influxV9Utils.namePart(name, true),
+                        this.influxV9Utils.tenantIdPart(tenantId),
+                        this.influxV9Utils.regionPart(this.region),
+                        this.influxV9Utils.startTimePart(startTime),
+                        this.influxV9Utils.dimPart(dimensions),
+                        this.influxV9Utils.endTimePart(endTime),
+                        this.influxV9Utils.timeOffsetPart(offset),
+                        this.influxV9Utils.periodPartWithGroupBy(period),
+                        this.influxV9Utils.limitPart(limit));
+    }
+
+    logger.debug("Statistics query: {}", q);
+
+    return q;
+  }
+
 
   private List<Statistics> statisticslist(Series series) {
 
@@ -94,7 +140,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
       for (Serie serie : series.getSeries()) {
 
-        Statistics statistics = new Statistics(serie.getName(), new HashMap<String, String>(),
+        Statistics statistics = new Statistics(serie.getName(), serie.getTags(),
                                                Arrays.asList(translateNames(serie.getColumns())));
 
         for (Object[] values : serie.getValues()) {
@@ -125,21 +171,19 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
   private String funcPart(List<String> statistics) {
 
     StringBuilder sb = new StringBuilder();
+
     for (String stat : statistics) {
       if (sb.length() != 0) {
         sb.append(",");
       }
+
       if (stat.trim().toLowerCase().equals("avg")) {
-        sb.append(" mean(value)");
+        sb.append("mean(value)");
       } else {
         sb.append(String.format("%1$s(value)", stat));
       }
     }
 
     return sb.toString();
-  }
-
-  private String periodPart(int period) {
-    return period >= 1 ? String.format("group by time(%1$ds)", period) : "";
   }
 }

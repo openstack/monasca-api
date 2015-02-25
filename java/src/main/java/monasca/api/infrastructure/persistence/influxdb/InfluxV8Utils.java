@@ -269,10 +269,14 @@ final class InfluxV8Utils {
   public static List<String> findAlarmIds(DBI mysql, String tenantId,
                                           Map<String, String> dimensions) {
 
-    final String FIND_ALARMS_SQL = "select distinct a.id from alarm as a " +
-                                   "join alarm_definition as ad on a.alarm_definition_id=ad.id " +
-                                   "%s " +
-                                   "where ad.tenant_id = :tenantId and ad.deleted_at is NULL order by ad.created_at";
+    final String
+        FIND_ALARMS_SQL = "select distinct a.id "
+                           + "from alarm as a "
+                           + "join alarm_definition as ad on a.alarm_definition_id = ad.id "
+                           + "%s "
+                           + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL "
+                           + "order by ad.created_at";
+
     List<String> alarmIdList = null;
 
     try (Handle h = mysql.open()) {

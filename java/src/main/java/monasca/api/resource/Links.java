@@ -13,11 +13,8 @@
  */
 package monasca.api.resource;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.UriInfo;
 
@@ -26,6 +23,7 @@ import com.google.common.base.Preconditions;
 import monasca.api.ApiConfig;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.measurement.Measurements;
+import monasca.api.domain.model.statistic.Statistics;
 import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
@@ -142,106 +140,203 @@ public final class Links {
   }
 
 
-  public static Object paginate(String offset, List<? extends AbstractEntity> elements,
-                                UriInfo uriInfo) {
+  /**
+   * This method handles the case that the elements list size is one greater than the
+   * limit. The next link will be created automatically.
+   *
+   * This method also handles the case that the element size is the limit. The next
+   * link will not be created.
+   *
+   * The convention is for methods that query the DB to request limit + 1 elements.
+   *
+   * Only limit number of elements will be returned.
+   *
+   * @param limit
+   * @param elements
+   * @param uriInfo
+   * @return
+   */
+  public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo) {
 
-    if (offset != null) {
-
+    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    if (limit == 0) {
       Paged paged = new Paged();
-      Link selfLink = new Link();
-      selfLink.rel = "self";
-      selfLink.href = uriInfo.getRequestUri().toString();
-      paged.links.add(selfLink);
+      paged.elements = elements != null ? elements : new ArrayList<>();
+      return paged;
+    }
 
-      if (elements != null) {
-        if (elements.size() >= Paged.LIMIT) {
-          Link nextLink = new Link();
-          nextLink.rel = "next";
-          // Create a new URL with the new offset.
-          nextLink.href =
-              uriInfo.getAbsolutePath().toString() + "?offset=" + elements.get(elements.size() - 1)
-                  .getId();
-          // Add the query parms back to the URL without the original offset.
-          for (String parmKey : uriInfo.getQueryParameters().keySet()) {
-            if (!parmKey.equalsIgnoreCase("offset")) {
-              List<String> parmValList = uriInfo.getQueryParameters().get(parmKey);
-              for (String parmVal : parmValList) {
-                nextLink.href += "&" + parmKey + "=" + parmVal;
-              }
-            }
-          }
-          paged.links.add(nextLink);
-        }
+    Paged paged = new Paged();
+
+    paged.links.add(getSelfLink(uriInfo));
+
+    if (elements != null) {
+
+      if (elements.size() > limit) {
+
+        String offset = elements.get(limit - 1).getId();
+
+        paged.links.add(getNextLink(offset, uriInfo));
+
+        // Truncate the list. Normally this will just truncate one extra element.
+        elements = elements.subList(0, limit);
       }
 
-      paged.elements = elements != null ? elements : new ArrayList();
-
-      return paged;
+      paged.elements = elements;
 
     } else {
 
-      Paged paged = new Paged();
-      paged.elements = elements;
-      return paged;
+      paged.elements = new ArrayList();
+
     }
+
+    return paged;
+
   }
 
-  public static Object paginateMeasurements(String offset, Measurements measurements,
-                                            UriInfo uriInfo) throws UnsupportedEncodingException {
+  public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo) {
 
-    if (offset != null) {
-
+    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    if (limit == 0) {
       Paged paged = new Paged();
-      Link selfLink = new Link();
-      selfLink.rel = "self";
-      selfLink.href = uriInfo.getRequestUri().toString();
-      paged.links.add(selfLink);
-
-      if (measurements.getMeasurements().size() >= Paged.LIMIT) {
-        Link nextLink = new Link();
-        nextLink.rel = "next";
-        // Create a new URL with the new offset.
-        nextLink.href = uriInfo.getAbsolutePath().toString() + "?offset=" + measurements.getId();
-
-        // Add the query parms back to the URL without the original offset and dimensions.
-        for (String parmKey : uriInfo.getQueryParameters().keySet()) {
-          if (!parmKey.equalsIgnoreCase("offset") && !parmKey.equalsIgnoreCase("dimensions")) {
-            List<String> parmValList = uriInfo.getQueryParameters().get(parmKey);
-            for (String parmVal : parmValList) {
-              nextLink.href += "&" + parmKey + "=" + parmVal;
-            }
-          }
-        }
-
-        // Add the dimensions for this particular measurement.
-        Map<String, String> dimensionsMap = measurements.getDimensions();
-        if (dimensionsMap != null && !dimensionsMap.isEmpty()) {
-          nextLink.href += "&dimensions=";
-          boolean firstDimension = true;
-          for (String dimensionKey : dimensionsMap.keySet()) {
-            String dimensionVal = dimensionsMap.get(dimensionKey);
-            if (firstDimension) {
-              firstDimension = false;
-            } else {
-              nextLink.href += URLEncoder.encode(",", "UTF-8");
-            }
-            nextLink.href += dimensionKey + URLEncoder.encode(":", "UTF-8") + dimensionVal;
-          }
-        }
-
-        paged.links.add(nextLink);
-      }
-
-      List<Measurements> measurementsList = new ArrayList();
-      measurementsList.add(measurements);
-      paged.elements = measurementsList;
-
+      paged.elements = elements != null ? elements : new ArrayList<>();
       return paged;
+    }
+
+    Paged paged = new Paged();
+
+    paged.links.add(getSelfLink(uriInfo));
+
+    if (elements != null && !elements.isEmpty()) {
+
+      Measurements m = elements.get(0);
+
+      if (m != null) {
+
+        List<Object[]> l = m.getMeasurements();
+
+        if (l.size() > limit) {
+
+          String offset = (String) l.get(limit - 1)[0];
+
+          m.setId(offset);
+
+          paged.links.add(getNextLink(offset, uriInfo));
+
+          // Truncate the list. Normally this will just truncate one extra element.
+          l = l.subList(0, limit);
+          m.setMeasurements(l);
+
+        }
+
+        // Check if there are any elements.
+        if (l.size() > 0) {
+          // Set the id to the last date in the list.
+          m.setId((String) l.get(l.size() - 1)[0]);
+        }
+        paged.elements = elements;
+
+      } else {
+
+        paged.elements = new ArrayList<>();
+
+      }
 
     } else {
 
-      return measurements;
+      paged.elements = new ArrayList();
     }
+
+    return paged;
+
+  }
+
+  public static Object paginateStatistics(int limit, List<Statistics> elements, UriInfo uriInfo) {
+
+    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    if (limit == 0) {
+      Paged paged = new Paged();
+      paged.elements = elements != null ? elements : new ArrayList<>();
+      return paged;
+    }
+
+    Paged paged = new Paged();
+
+    paged.links.add(getSelfLink(uriInfo));
+
+    if (elements != null && !elements.isEmpty()) {
+
+      Statistics s = elements.get(0);
+
+      if (s != null) {
+
+        List<List<Object>> l = s.getStatistics();
+
+        if (l.size() > limit) {
+
+          String offset = (String) l.get(limit - 1).get(0);
+
+          s.setId(offset);
+
+          paged.links.add(getNextLink(offset, uriInfo));
+
+          // Truncate the list. Normally this will just truncate one extra element.
+          l = l.subList(0, limit);
+          s.setStatistics(l);
+
+        }
+
+        // Check if there are any elements.
+        if (l.size() > 0) {
+          // Set the id to the last date in the list.
+          s.setId((String) l.get(l.size() - 1).get(0));
+        }
+        paged.elements = elements;
+
+      } else {
+
+        paged.elements = new ArrayList<>();
+
+      }
+
+    } else {
+
+      paged.elements = new ArrayList();
+    }
+
+    return paged;
+
+  }
+
+  private static Link getSelfLink(UriInfo uriInfo) {
+
+    Link selfLink = new Link();
+    selfLink.rel = "self";
+    selfLink.href = uriInfo.getRequestUri().toString();
+    return selfLink;
+  }
+
+  private static Link getNextLink(String offset, UriInfo uriInfo) {
+
+    Link nextLink = new Link();
+    nextLink.rel = "next";
+
+    // Create a new URL with the new offset.
+    nextLink.href = uriInfo.getAbsolutePath().toString() + "?offset=" + offset;
+
+    // Add the query parms back to the URL without the original offset.
+    for (String parmKey : uriInfo.getQueryParameters().keySet()) {
+
+      if (!parmKey.equalsIgnoreCase("offset")) {
+
+        List<String> parmValList = uriInfo.getQueryParameters().get(parmKey);
+        for (String parmVal : parmValList) {
+
+          nextLink.href += "&" + parmKey + "=" + parmVal;
+
+        }
+      }
+    }
+    return nextLink;
   }
 
 }

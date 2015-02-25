@@ -93,6 +93,10 @@ public class AlarmStateHistory  extends AbstractEntity {
     return true;
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public String getAlarmId() {
     return alarmId;
   }

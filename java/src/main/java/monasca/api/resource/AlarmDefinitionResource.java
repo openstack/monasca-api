@@ -48,6 +48,7 @@ import monasca.api.app.validation.AlarmValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmExpression;
 
@@ -58,13 +59,17 @@ import monasca.common.model.alarm.AlarmExpression;
 public class AlarmDefinitionResource {
   private final AlarmDefinitionService service;
   private final AlarmDefinitionRepo repo;
+  private final PersistUtils persistUtils;
   public final static String ALARM_DEFINITIONS = "alarm-definitions";
   public final static String ALARM_DEFINITIONS_PATH = "/v2.0/" + ALARM_DEFINITIONS;
 
   @Inject
-  public AlarmDefinitionResource(AlarmDefinitionService service, AlarmDefinitionRepo repo) {
+  public AlarmDefinitionResource(AlarmDefinitionService service,
+                                 AlarmDefinitionRepo repo,
+                                 PersistUtils persistUtils) {
     this.service = service;
     this.repo = repo;
+    this.persistUtils = persistUtils;
   }
 
   @POST
@@ -88,12 +93,16 @@ public class AlarmDefinitionResource {
   public Object list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("offset") String offset) {
+      @QueryParam("offset") String offset,
+      @QueryParam("limit") String limit){
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
-    return Links.paginate(offset, Links.hydrate(repo.find(tenantId, name, dimensions, offset), uriInfo), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit),
+                          Links.hydrate(repo.find(tenantId, name, dimensions, offset,
+                                                  this.persistUtils.getLimit(limit)), uriInfo),
+                          uriInfo);
   }
 
   @GET

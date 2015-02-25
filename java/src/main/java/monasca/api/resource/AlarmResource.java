@@ -45,6 +45,7 @@ import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmState;
 
@@ -55,14 +56,17 @@ import monasca.common.model.alarm.AlarmState;
 public class AlarmResource {
   private final AlarmService service;
   private final AlarmRepo repo;
+  private final PersistUtils persistUtils;
   private final AlarmStateHistoryRepo stateHistoryRepo;
 
   @Inject
   public AlarmResource(AlarmService service, AlarmRepo repo,
-      AlarmStateHistoryRepo stateHistoryRepo) {
+      AlarmStateHistoryRepo stateHistoryRepo,
+      PersistUtils persistUtils) {
     this.service = service;
     this.repo = repo;
     this.stateHistoryRepo = stateHistoryRepo;
+    this.persistUtils = persistUtils;
   }
 
   @DELETE
@@ -95,9 +99,12 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Object getStateHistory(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId,
-      @QueryParam("offset") String offset)
+      @QueryParam("offset") String offset,
+      @QueryParam("limit") String limit)
       throws Exception {
-    return Links.paginate(offset, stateHistoryRepo.findById(tenantId, alarmId, offset), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit),
+                          stateHistoryRepo.findById(tenantId, alarmId, offset,
+                                                    this.persistUtils.getLimit(limit)), uriInfo);
   }
 
   @GET
@@ -108,7 +115,8 @@ public class AlarmResource {
       @Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
-      @QueryParam("offset") String offset)
+      @QueryParam("offset") String offset,
+      @QueryParam("limit") String limit)
       throws Exception {
 
     // Validate query parameters
@@ -120,7 +128,9 @@ public class AlarmResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
-    return Links.paginate(offset, stateHistoryRepo.find(tenantId, dimensions, startTime, endTime, offset), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit),
+                          stateHistoryRepo.find(tenantId, dimensions, startTime,
+                                                endTime, offset, this.persistUtils.getLimit(limit)), uriInfo);
   }
 
   @GET
@@ -131,16 +141,18 @@ public class AlarmResource {
       @QueryParam("metric_name") String metricName,
       @QueryParam("metric_dimensions") String metricDimensionsStr,
       @QueryParam("state") AlarmState state,
-      @QueryParam("offset") String offset) throws Exception {
+      @QueryParam("offset") String offset,
+      @QueryParam("limit") String limit)
+      throws Exception {
     Map<String, String> metricDimensions =
         Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
-                                         offset);
+                                         offset, this.persistUtils.getLimit(limit), true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
     }
-    return Links.paginate(offset, Links.hydrate(alarms, uriInfo), uriInfo);
+    return Links.paginate(this.persistUtils.getLimit(limit), Links.hydrate(alarms, uriInfo), uriInfo);
   }
 
   @PATCH

@@ -28,11 +28,11 @@ public interface AlarmStateHistoryRepo {
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmId}
    */
-  List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset) throws Exception;
+  List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset, int limit) throws Exception;
 
   /**
    * Finds AlarmStateHistory for the given criteria.
    */
   List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) throws Exception;
+      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset, int limit) throws Exception;
 }

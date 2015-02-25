@@ -57,8 +57,13 @@ public class InfluxV8StatisticRepo implements StatisticRepo {
   @Override
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
                                DateTime startTime, @Nullable DateTime endTime,
-                               List<String> statistics, int period)
+                               List<String> statistics, int period, String offset, int limit,
+                               Boolean mergeMetricsFlag)
       throws Exception {
+
+    // mergeMetricsFlag is not implemented for Influxdb V8.
+
+    // Limit is not implemented for Influxdb V8.
 
     String serieNameRegex = buildSerieNameRegex(tenantId, config.region, name, dimensions);
     String statsPart = buildStatsPart(statistics);
@@ -87,7 +92,7 @@ public class InfluxV8StatisticRepo implements StatisticRepo {
 
   private List<Statistics> buildStatisticsList(List<String> statistics, List<Serie> result)
       throws Exception {
-    List<Statistics> statisticsList = new LinkedList<Statistics>();
+    List<Statistics> statisticsList = new LinkedList<>();
     for (Serie serie : result) {
 
       InfluxV8Utils.SerieNameDecoder serieNameDecoder;
@@ -104,7 +109,7 @@ public class InfluxV8StatisticRepo implements StatisticRepo {
       colNamesList.add(0, "timestamp");
       statistic.setColumns(colNamesList);
       statistic.setDimensions(serieNameDecoder.getDimensions());
-      List<List<Object>> valObjArryArry = new LinkedList<List<Object>>();
+      List<List<Object>> valObjArryArry = new LinkedList<>();
       statistic.setStatistics(valObjArryArry);
       for (Map<String, Object> row : serie.getRows()) {
         List<Object> valObjArry = new ArrayList<>();

@@ -50,6 +50,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.mysql.AlarmDefinitionMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.AlarmMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepoImpl;
@@ -83,11 +84,11 @@ public class AlarmIntegrationTest extends AbstractMonApiResourceTest {
         .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('77778687', 'alarm-test', 'MyEmail', 'EMAIL', 'a@b', NOW(), NOW())");
     mysqlDb.close(handle);
 
-    repo = new AlarmDefinitionMySqlRepoImpl(mysqlDb);
+    repo = new AlarmDefinitionMySqlRepoImpl(mysqlDb, new PersistUtils());
     service =
-        new AlarmDefinitionService(config, producer, repo, new AlarmMySqlRepoImpl(mysqlDb),
-            new NotificationMethodMySqlRepoImpl(mysqlDb));
-    addResources(new AlarmDefinitionResource(service, repo));
+        new AlarmDefinitionService(config, producer, repo, new AlarmMySqlRepoImpl(mysqlDb, new PersistUtils()),
+            new NotificationMethodMySqlRepoImpl(mysqlDb, new PersistUtils()));
+    addResources(new AlarmDefinitionResource(service, repo, new PersistUtils()));
   }
 
   @BeforeTest

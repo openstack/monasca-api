@@ -19,8 +19,6 @@ import com.codahale.metrics.annotation.Timed;
 
 import org.joda.time.DateTime;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -34,9 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.validation.Validation;
-import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.measurement.MeasurementRepo;
-import monasca.api.domain.model.measurement.Measurements;
+import monasca.api.infrastructure.persistence.PersistUtils;
 
 /**
  * Measurement resource implementation.
@@ -45,10 +42,12 @@ import monasca.api.domain.model.measurement.Measurements;
 public class MeasurementResource {
 
   private final MeasurementRepo repo;
+  private final PersistUtils persistUtils;
 
   @Inject
-  public MeasurementResource(MeasurementRepo repo) {
+  public MeasurementResource(MeasurementRepo repo, PersistUtils persistUtils) {
     this.repo = repo;
+    this.persistUtils = persistUtils;
   }
 
   @GET
@@ -57,7 +56,10 @@ public class MeasurementResource {
   public Object get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
                     @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
                     @QueryParam("start_time") String startTimeStr,
-                    @QueryParam("end_time") String endTimeStr, @QueryParam("offset") String offset)
+                    @QueryParam("end_time") String endTimeStr,
+                    @QueryParam("offset") String offset,
+                    @QueryParam("limit") String limit,
+                    @QueryParam("merge_metrics") Boolean mergeMetricsFlag)
       throws Exception {
 
     // Validate query parameters
@@ -69,21 +71,9 @@ public class MeasurementResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(name, dimensionsStr);
 
-    List<Measurements> measurementsList = repo.find(tenantId, name, dimensions, startTime, endTime, offset);
-    List<Object> pagedList = new LinkedList();
+    return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
+                          repo.find(tenantId, name, dimensions, startTime, endTime,
+                                    offset, this.persistUtils.getLimit(limit), mergeMetricsFlag), uriInfo);
 
-    for (Measurements measurements : measurementsList) {
-      pagedList.add(Links.paginateMeasurements(offset, measurements, uriInfo));
-    }
-
-    if (offset != null) {
-      Paged paged = new Paged();
-      paged.elements = pagedList;
-      return paged;
-    } else {
-      Paged paged = new Paged();
-      paged.elements = pagedList;
-      return paged;
-    }
   }
 }

@@ -15,6 +15,7 @@
 package monasca.api.resource;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -30,6 +31,7 @@ import static org.testng.Assert.fail;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +43,7 @@ import monasca.api.app.AlarmDefinitionService;
 import monasca.api.app.command.CreateAlarmDefinitionCommand;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.api.domain.model.common.Paged;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.common.model.alarm.AlarmExpression;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
@@ -84,10 +87,10 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
     repo = mock(AlarmDefinitionRepo.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
-    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), anyString())).thenReturn(
+    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), anyString(), anyInt())).thenReturn(
         Arrays.asList(alarmItem));
 
-    addResources(new AlarmDefinitionResource(service, repo));
+    addResources(new AlarmDefinitionResource(service, repo, new PersistUtils()));
   }
 
   @SuppressWarnings("unchecked")
@@ -269,37 +272,35 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   @SuppressWarnings("unchecked")
   public void shouldList() {
 
-    Map
-        lhm =
-        (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
-            .get(Paged.class).elements.get(0);
 
-    AlarmDefinition
-        ad =
-        new AlarmDefinition((String) lhm.get("id"), (String) lhm.get("name"),
-                            (String) lhm.get("description"), (String) lhm.get("severity"),
-                            (String) lhm.get("expression"), (List<String>) lhm.get("match_by"),
-                            (boolean) lhm.get("actions_enabled"),
-                            (List<String>) lhm.get("alarm_actions"),
-                            (List<String>) lhm.get("ok_actions"),
-                            (List<String>) lhm.get("undetermined_actions"));
+    Map lhm = (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
+        .get(Paged.class).elements.get(0);
+
+    AlarmDefinition ad = new AlarmDefinition((String) lhm.get("id"), (String) lhm.get("name"),
+                                             (String) lhm.get("description"),
+                                             (String) lhm.get("severity"),
+                                             (String) lhm.get("expression"),
+                                             (List<String>) lhm.get("match_by"),
+                                             (boolean) lhm.get("actions_enabled"),
+                                             (List<String>) lhm.get("alarm_actions"),
+                                             (List<String>) lhm.get("ok_actions"),
+                                             (List<String>) lhm.get("undetermined_actions"));
+
 
     List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
-    List<Link>
-        linksList =
-        Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
+    List<Link> linksList = Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
 
     ad.setLinks(linksList);
 
     List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), anyString());
+
+    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), anyString(), anyInt());
   }
 
   @SuppressWarnings("unchecked")
   public void shouldListByName() throws Exception {
-
     Map
         lhm =
         (Map) client()
@@ -326,7 +327,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), anyString());
+    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), anyString(),
+                      anyInt());
   }
 
   public void shouldGet() {
@@ -370,8 +372,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   @SuppressWarnings("unchecked")
   public void should500OnInternalException() {
     doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(),
-                                                      (Map<String, String>) anyObject(),
-                                                      anyString());
+
+        (Map<String, String>) anyObject(), anyString(), anyInt());
 
     try {
       client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc").get(List.class);
@@ -382,8 +384,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldHydateLinksOnList() {
-    List<Link> expected =
-        Arrays.asList(new Link("self", "/v2.0/alarm-definitions/123"));
+    List<Link> expected = Arrays.asList(new Link("self", "/v2.0/alarm-definitions/123"));
 
     Map
         lhm =

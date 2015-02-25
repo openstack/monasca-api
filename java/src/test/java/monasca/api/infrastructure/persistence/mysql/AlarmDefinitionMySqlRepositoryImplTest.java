@@ -38,6 +38,7 @@ import org.testng.annotations.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.common.model.alarm.AggregateFunction;
 import monasca.common.model.alarm.AlarmOperator;
 import monasca.common.model.alarm.AlarmSubExpression;
@@ -61,7 +62,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
     handle = db.open();
     handle
         .execute(Resources.toString(getClass().getResource("alarm.sql"), Charset.defaultCharset()));
-    repo = new AlarmDefinitionMySqlRepoImpl(db);
+    repo = new AlarmDefinitionMySqlRepoImpl(db, new PersistUtils());
 
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
@@ -153,7 +154,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
     // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmDefinitionMySqlRepoImpl(db);
+    repo = new AlarmDefinitionMySqlRepoImpl(db, new PersistUtils());
     beforeMethod();
 
     List<String> oldSubAlarmIds = Arrays.asList("222");
@@ -197,7 +198,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
     // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmDefinitionMySqlRepoImpl(db);
+    repo = new AlarmDefinitionMySqlRepoImpl(db, new PersistUtils());
     beforeMethod();
 
     assertEquals(
@@ -220,7 +221,7 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
     // Warning, this will truncate your mini-mon database
     db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
     handle = db.open();
-    repo = new AlarmDefinitionMySqlRepoImpl(db);
+    repo = new AlarmDefinitionMySqlRepoImpl(db, new PersistUtils());
     beforeMethod();
 
     assertEquals(
@@ -244,36 +245,36 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    assertEquals(Arrays.asList(alarmDef_123, alarmDef_234), repo.find("bob", null, null, null));
+    assertEquals(Arrays.asList(alarmDef_123, alarmDef_234), repo.find("bob", null, null, null, 1));
 
     // Make sure it still finds AlarmDefinitions with no notifications
     handle.execute("delete from alarm_action");
     alarmDef_123.setAlarmActions(new ArrayList<String>(0));
     alarmDef_234.setAlarmActions(new ArrayList<String>(0));
-    assertEquals(Arrays.asList(alarmDef_123, alarmDef_234), repo.find("bob", null, null, null));
+    assertEquals(Arrays.asList(alarmDef_123, alarmDef_234), repo.find("bob", null, null, null, 1));
 
-    assertEquals(0, repo.find("bill", null, null, null).size());
+    assertEquals(0, repo.find("bill", null, null, null, 1).size());
   }
 
   public void shouldFindByDimension() {
     final Map<String, String> dimensions = new HashMap<>();
     dimensions.put("image_id", "888");
     assertEquals(Arrays.asList(alarmDef_123, alarmDef_234),
-        repo.find("bob", null, dimensions, null));
+        repo.find("bob", null, dimensions, null, 1));
 
     dimensions.clear();
     dimensions.put("device", "1");
-    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", null, dimensions, null));
+    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", null, dimensions, null, 1));
 
     dimensions.clear();
     dimensions.put("Not real", "AA");
-    assertEquals(0, repo.find("bob", null, dimensions, null).size());
+    assertEquals(0, repo.find("bob", null, dimensions, null, 1).size());
   }
 
   public void shouldFindByName() {
-    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", "90% CPU", null, null));
+    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", "90% CPU", null, null, 1));
 
-    assertEquals(0, repo.find("bob", "Does not exist", null, null).size());
+    assertEquals(0, repo.find("bob", "Does not exist", null, null, 1).size());
   }
 
   public void shouldDeleteById() {
@@ -284,6 +285,6 @@ public class AlarmDefinitionMySqlRepositoryImplTest {
       fail();
     } catch (EntityNotFoundException expected) {
     }
-    assertEquals(Arrays.asList(alarmDef_234), repo.find("bob", null, null, null));
+    assertEquals(Arrays.asList(alarmDef_234), repo.find("bob", null, null, null, 1));
   }
 }

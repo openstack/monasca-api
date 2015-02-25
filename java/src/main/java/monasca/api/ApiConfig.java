@@ -37,6 +37,8 @@ public class ApiConfig extends Configuration {
   public String metricsTopic = "metrics";
   @NotEmpty
   public String eventsTopic = "events";
+  @NotNull
+  public int maxQueryLimit;
   @NotEmpty
   public String alarmStateTransitionsTopic = "alarm-state-transitions";
 

@@ -27,6 +27,7 @@ public interface StatisticRepo {
    * Finds statistics for the given criteria.
    */
   List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, List<String> statistics, int period)
+                        DateTime startTime, @Nullable DateTime endTime, List<String> statistics,
+                        int period, String offset, int limit, Boolean mergeMetricsFlag)
       throws Exception;
 }

@@ -61,9 +61,9 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   }
 
   @Override
-  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset) {
+  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset, int limit) {
 
-    // Todo. Use offset for pagination.
+    // Todo. Use offset and limit for pagination.
 
     try (Handle h = vertica.open()) {
       return h
@@ -76,9 +76,9 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
   @Override
   public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset) {
+      DateTime startTime, @Nullable DateTime endTime, @Nullable String offset, int limit) {
 
-    // Todo. Use offset for pagination.
+    // Todo. Use offset and limit for pagination.
 
     List<String> alarmIds = null;
 

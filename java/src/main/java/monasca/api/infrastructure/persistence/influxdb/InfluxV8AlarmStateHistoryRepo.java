@@ -27,9 +27,6 @@ import org.influxdb.dto.Serie;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.Query;
-import org.skife.jdbi.v2.util.StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +41,6 @@ import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 
 import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildAlarmsPart;
 import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.findAlarmIds;
@@ -78,7 +74,11 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   }
 
   @Override
-  public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset) throws Exception {
+  public List<AlarmStateHistory> findById(String tenantId, String alarmId,
+                                          String offset, int limit) throws Exception {
+
+    // Limit is not implemented for Influxdb V8.
+
     // InfluxDB orders queries by time stamp desc by default.
     String query = buildQueryForFindById(tenantId, alarmId, offset);
     return queryInfluxDBForAlarmStateHistory(query);
@@ -93,7 +93,9 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
   @Override
   public List<AlarmStateHistory> find(String tenantId, Map<String, String> dimensions,
-      DateTime startTime, @Nullable DateTime endTime, String offset) throws Exception {
+      DateTime startTime, @Nullable DateTime endTime, String offset, int limit) throws Exception {
+
+    // Limit is not implemented for Influxdb V8.
 
     List<String> alarmIdList = findAlarmIds(this.mysql, tenantId, dimensions);
 
