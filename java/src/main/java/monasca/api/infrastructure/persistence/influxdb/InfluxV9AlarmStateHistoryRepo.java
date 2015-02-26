@@ -58,7 +58,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   private final SimpleDateFormat simpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
@@ -115,6 +115,8 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                              + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s",
                              InfluxV8Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
 
+    logger.debug("Alarm state history list query: {}", q);
+
     String r = this.influxV9RepoReader.read(q);
 
     Series series = this.objectMapper.readValue(r, Series.class);
@@ -141,7 +143,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
           Date date;
           try {
-            date = this.simpleDateFormat.parse(values[0] + " UTC");
+            date = this.simpleDateFormat.parse(values[0]);
           } catch (ParseException e) {
             logger.error("Failed to parse time", e);
             continue;
