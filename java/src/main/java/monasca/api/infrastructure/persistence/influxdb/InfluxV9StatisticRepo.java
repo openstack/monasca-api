@@ -115,12 +115,14 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
     StringBuilder sb = new StringBuilder();
     for (String stat : statistics) {
-
       if (sb.length() != 0) {
         sb.append(",");
       }
-
-      sb.append(String.format("%1$s(value)", stat));
+      if (stat.trim().toLowerCase().equals("avg")) {
+        sb.append(" mean(value)");
+      } else {
+        sb.append(String.format("%1$s(value)", stat));
+      }
     }
 
     return sb.toString();
