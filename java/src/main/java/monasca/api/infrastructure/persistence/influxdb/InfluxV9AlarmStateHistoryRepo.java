@@ -40,6 +40,7 @@ import monasca.api.ApiConfig;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
 
 import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.WhereClauseBuilder.buildTimePart;
@@ -63,6 +64,9 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
 
+  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUBALARMS_TYPE =
+      new TypeReference<List<AlarmTransitionSubAlarm>>() {};
+
   @Inject
   public InfluxV9AlarmStateHistoryRepo(@Named("mysql") DBI mysql,
                                        ApiConfig config,
@@ -79,7 +83,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset)
       throws Exception {
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    String q = String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
                              + "from alarm_state_history where tenant_id = '%1$s' and alarm_id = '%2$s'",
                              InfluxV8Utils.SQLSanitizer.sanitize(tenantId),
                              InfluxV8Utils.SQLSanitizer.sanitize(alarmId));
@@ -111,7 +115,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
     String timePart = buildTimePart(startTime, endTime);
     String alarmsPart = buildAlarmsPart(alarmIdList);
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    String q = String.format("select alarm_id, metrics, old_state, new_state, sub_alarms, reason, reason_data "
                              + "from alarm_state_history where tenant_id = '%1$s' %2$s %3$s",
                              InfluxV8Utils.SQLSanitizer.sanitize(tenantId), timePart, alarmsPart);
 
@@ -168,6 +172,16 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
           alarmStateHistory.setNewState(AlarmState.valueOf(values[4]));
           alarmStateHistory.setReason(values[5]);
           alarmStateHistory.setReasonData(values[6]);
+
+          List<AlarmTransitionSubAlarm> subAlarmList;
+          try {
+              subAlarmList = this.objectMapper.readValue(values[7], SUBALARMS_TYPE);
+          } catch (IOException e) {
+            logger.error("Failed to parse sub-alarms", e);
+            continue;
+          }
+
+          alarmStateHistory.setSubAlarms(subAlarmList);
 
           alarmStateHistoryList.add(alarmStateHistory);
         }
