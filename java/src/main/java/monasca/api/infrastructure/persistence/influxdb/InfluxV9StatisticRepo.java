@@ -67,9 +67,8 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
 
     String q = String.format("select %1$s %2$s where %3$s %4$s %5$s %6$s %7$s %8$s",
-                             funcPart(statistics), namePart(name),
-                             tenantIdPart(tenantId), regionPart(this.region),
-                             startTimePart(startTime), dimPart(dimensions),
+                             funcPart(statistics), namePart(name), tenantIdPart(tenantId),
+                             regionPart(this.region), startTimePart(startTime), dimPart(dimensions),
                              endTimePart(endTime), periodPart(period));
 
     logger.debug("Measurements query: {}", q);
@@ -96,7 +95,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
       for (Serie serie : series.getSeries()) {
 
         Statistics statistics = new Statistics(serie.getName(), new HashMap<String, String>(),
-                                               Arrays.asList(serie.getColumns()));
+                                               Arrays.asList(translateNames(serie.getColumns())));
 
         for (Object[] values : serie.getValues()) {
           statistics.addStatistics(Arrays.asList(values));
@@ -109,6 +108,18 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
     }
 
     return statisticsList;
+  }
+
+  private String[] translateNames(String[] columnNamesArry) {
+
+    for (int i = 0; i < columnNamesArry.length; i++) {
+
+      columnNamesArry[i] = columnNamesArry[i].replaceAll("^time$", "timestamp");
+      columnNamesArry[i] = columnNamesArry[i].replaceAll("^mean$", "avg");
+
+    }
+
+    return columnNamesArry;
   }
 
   private String funcPart(List<String> statistics) {
