@@ -30,7 +30,6 @@ LOG = log.getLogger(__name__)
 
 
 class MetricsRepository(metrics_repository.MetricsRepository):
-
     def __init__(self):
 
         try:
@@ -55,10 +54,10 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
     def _build_list_series_query(self, dimensions, name, tenant_id, region):
 
-        from_clause = self._build_from_clause(dimensions, name, tenant_id,
-                                              region)
+        regex_clause = self._build_regex_clause(dimensions, name, tenant_id,
+                                                region)
 
-        query = 'list series ' + from_clause
+        query = 'list series ' + regex_clause
 
         return query
 
@@ -98,43 +97,51 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return query
 
-    def _build_from_clause(self, dimensions, name, tenant_id, region,
-                           start_timestamp=None, end_timestamp=None):
+    def _build_regex_clause(self, dimensions, name, tenant_id, region,
+                            start_timestamp=None, end_timestamp=None):
 
-        from_clause = 'from /^'
+        regex_clause = '/^'
 
         # tenant id
-        from_clause += urllib.quote(tenant_id.encode('utf8'), safe='')
+        regex_clause += urllib.quote(tenant_id.encode('utf8'), safe='')
 
         # region
-        from_clause += '\?' + urllib.quote(region.encode('utf8'), safe='')
+        regex_clause += '\?' + urllib.quote(region.encode('utf8'), safe='')
 
         # name - optional
         if name:
-            from_clause += '&' + urllib.quote(name.encode('utf8'), safe='')
-            from_clause += '(&|$)'
+            regex_clause += '&' + urllib.quote(name.encode('utf8'), safe='')
+            regex_clause += '(&|$)'
 
         # dimensions - optional
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.iteritems())):
-                from_clause += '(.*&)*'
-                from_clause += urllib.quote(dimension_name.encode('utf8'),
-                                            safe='')
-                from_clause += '='
-                from_clause += urllib.quote(dimension_value.encode('utf8'),
-                                            safe='')
-                from_clause += '(&|$)'
+                regex_clause += '(.*&)*'
+                regex_clause += urllib.quote(dimension_name.encode('utf8'),
+                                             safe='')
+                regex_clause += '='
+                regex_clause += urllib.quote(dimension_value.encode('utf8'),
+                                             safe='')
+                regex_clause += '(&|$)'
 
-        from_clause += '/'
+        regex_clause += '/'
 
         if start_timestamp is not None:
             # subtract 1 from timestamp to get >= semantics
-            from_clause += " where time > " + str(start_timestamp - 1) + "s"
+            regex_clause += " where time > " + str(start_timestamp - 1) + "s"
             if end_timestamp is not None:
                 # add 1 to timestamp to get <= semantics
-                from_clause += " and time < " + str(end_timestamp + 1) + "s"
+                regex_clause += " and time < " + str(end_timestamp + 1) + "s"
 
+        return regex_clause
+
+    def _build_from_clause(self, dimensions, name, tenant_id, region,
+                           start_timestamp=None, end_timestamp=None):
+        from_clause = 'from '
+        from_clause += self._build_regex_clause(dimensions, name, tenant_id,
+                                                region, start_timestamp,
+                                                end_timestamp)
         return from_clause
 
     def list_metrics(self, tenant_id, region, name, dimensions, offset):
@@ -310,7 +317,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                              end_timestamp, offset)
 
             try:
-                result = self.influxdb_client.query(query, 's')
+                result = self.influxdb_client.query(query, 'ms')
             except client.InfluxDBClientError as ex:
                 # check for non-existent serie name.
                 msg = "Couldn't look up columns"
@@ -334,8 +341,10 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                            columns]
 
                 # format the utc date in the points
-                fmtd_pts = [[time.strftime("%Y-%m-%dT%H:%M:%SZ",
-                                           time.gmtime(point[0])), point[1],
+                fmtd_pts = [['%s.%03dZ' % (time.strftime('%Y-%m-%dT%H:%M:%S',
+                                                         time.gmtime(
+                                                             point[0] / 1000)),
+                                           point[0] % 1000), point[1],
                              point[2]] for point in serie['points']]
 
                 # Set the last point's time as the id. Used for next link.
@@ -498,7 +507,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             alarm_id_where_clause_list = (
                 [" alarm_id = '{}' ".format(id.encode('utf8'))
-                    for id in alarm_id_list])
+                 for id in alarm_id_list])
 
             alarm_id_where_clause = " or ".join(alarm_id_where_clause_list)
 
