@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.influxdb;
 public class Series {
 
   public SeriesElement[] results;
+  public String error;
 
   boolean isEmpty() {
 
@@ -27,11 +28,17 @@ public class Series {
     return this.results[0].series;
   }
 
+  public String getError() {
+
+    return this.error;
+
+  }
 }
 
 class SeriesElement {
 
   public Serie[] series;
+  public String error;
 
 }
 
