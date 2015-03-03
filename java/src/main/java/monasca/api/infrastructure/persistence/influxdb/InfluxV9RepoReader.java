@@ -99,7 +99,25 @@ public class InfluxV9RepoReader {
                    this.influxName, this.influxUrl);
 
       HttpEntity entity = response.getEntity();
-      return entity != null ? EntityUtils.toString(entity) : null;
+
+      if (entity != null) {
+
+        String entityString = EntityUtils.toString(entity);
+
+        if (entityString.equals("{\"results\":[{\"error\":\"measurement not found\"}]}")) {
+
+          logger.debug("Translating 'measurement not found' message to empty list");
+          return "{\"results\":[{}]}";
+
+        } else {
+
+          return entityString;
+        }
+
+      } else {
+
+        return null;
+      }
 
     } finally {
 
