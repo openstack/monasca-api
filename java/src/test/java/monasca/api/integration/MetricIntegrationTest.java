@@ -52,6 +52,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
   private ApiConfig config;
   private MetricDefinitionRepo metricRepo;
   private Map<String, String> dimensions;
+  private Map<String, String> valueMeta;
 
   @Override
   protected void setupResources() throws Exception {
@@ -81,6 +82,9 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     dimensions.put("instance_id", "937");
     dimensions.put("az", "2");
     dimensions.put("instance_uuid", "abc123");
+    valueMeta = new HashMap<String, String>();
+    valueMeta.put("rc", "404");
+    valueMeta.put("errMsg", "Not Found");
     long timestamp = System.currentTimeMillis() / 1000;
     ClientResponse response =
         client()
@@ -88,26 +92,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", TENANT_ID)
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateMetricCommand("test_namespace", dimensions, timestamp, 22.0));
-
-    assertEquals(response.getStatus(), 204);
-  }
-
-  public void shouldCreateList() throws Exception {
-    dimensions = new HashMap<String, String>();
-    dimensions.put("instance_id", "937");
-    dimensions.put("az", "2");
-    dimensions.put("instance_uuid", "abc123");
-    long timestamp = System.currentTimeMillis() / 1000;
-    double timestampD = (double) timestamp;
-    double[][] timeValues = { {timestampD, 22.0}, {timestampD + 1, 23.0}};
-    ClientResponse response =
-        client()
-            .resource("/v2.0/metrics")
-            .header("X-Tenant-Id", TENANT_ID)
-            .header("Content-Type", MediaType.APPLICATION_JSON)
-            .post(ClientResponse.class,
-                new CreateMetricCommand("test_namespace", dimensions, timestamp, timeValues));
+                new CreateMetricCommand("test_namespace", dimensions, timestamp, 22.0, valueMeta));
 
     assertEquals(response.getStatus(), 204);
   }

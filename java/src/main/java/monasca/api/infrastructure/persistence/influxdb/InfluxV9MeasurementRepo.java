@@ -98,7 +98,10 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
         for (String[] values : serie.getValues()) {
 
-          measurements.addMeasurement(new Object[]{values[0], Double.parseDouble(values[1])});
+          // TODO: Really support valueMeta
+          final Map<String, String> valueMeta = new HashMap<>();
+          measurements.addMeasurement(new Object[]{values[0], values[0], Double.parseDouble(values[1]),
+              valueMeta});
         }
 
         measurementsList.add(measurements);

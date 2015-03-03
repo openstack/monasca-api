@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,10 +104,11 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
           results.put(defId, measurements);
         }
 
-        measurements.addMeasurement(new Object[] {measurementId, timestamp, value});
+        // TODO - Really support valueMeta
+        measurements.addMeasurement(new Object[] {measurementId, timestamp, value, new HashMap<String, String>()});
       }
 
-      return new ArrayList(results.values());
+      return new ArrayList<Measurements>(results.values());
     }
   }
 }
