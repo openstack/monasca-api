@@ -180,7 +180,9 @@ public final class Links {
 
     } else {
 
-      return elements;
+      Paged paged = new Paged();
+      paged.elements = elements;
+      return paged;
     }
   }
 

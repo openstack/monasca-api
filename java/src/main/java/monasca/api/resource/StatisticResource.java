@@ -33,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import monasca.api.app.validation.Validation;
+import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
@@ -55,7 +56,7 @@ public class StatisticResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Statistics> get(@HeaderParam("X-Tenant-Id") String tenantId,
+  public Object get(@HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
@@ -73,6 +74,11 @@ public class StatisticResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation.parseAndValidateNameAndDimensions(
             name, dimensionsStr);
 
-    return repo.find(tenantId, name, dimensions, startTime, endTime, statistics, period);
+    List<Statistics> statisticsList =
+        repo.find(tenantId, name, dimensions, startTime, endTime, statistics, period);
+
+    Paged paged = new Paged();
+    paged.elements = statisticsList;
+    return paged;
   }
 }

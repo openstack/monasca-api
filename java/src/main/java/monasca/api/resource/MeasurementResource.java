@@ -81,7 +81,9 @@ public class MeasurementResource {
       paged.elements = pagedList;
       return paged;
     } else {
-      return pagedList;
+      Paged paged = new Paged();
+      paged.elements = pagedList;
+      return paged;
     }
   }
 }

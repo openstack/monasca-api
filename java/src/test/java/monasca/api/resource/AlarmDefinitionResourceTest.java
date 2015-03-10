@@ -40,6 +40,7 @@ import org.testng.annotations.Test;
 import monasca.api.app.AlarmDefinitionService;
 import monasca.api.app.command.CreateAlarmDefinitionCommand;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
+import monasca.api.domain.model.common.Paged;
 import monasca.common.model.alarm.AlarmExpression;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
@@ -101,9 +102,9 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     assertEquals(location, "/v2.0/alarm-definitions/" + newAlarm.getId());
     assertEquals(newAlarm, alarm);
     verify(service).create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class),
-        eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)),
-        eq(Arrays.asList("service", "instance_id")), any(List.class), any(List.class),
-        any(List.class));
+                           eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)),
+                           eq(Arrays.asList("service", "instance_id")), any(List.class),
+                           any(List.class), any(List.class));
   }
 
   public void shouldUpdate() {
@@ -115,10 +116,10 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             .resource("/v2.0/alarm-definitions/123")
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
-            .put(
-                ClientResponse.class,
-                new UpdateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null, expression,
-                    Arrays.asList("service", "instance_id"), "LOW", true, alarmActions, null, null));
+            .put(ClientResponse.class,
+                 new UpdateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null, expression,
+                                                  Arrays.asList("service", "instance_id"), "LOW",
+                                                  true, alarmActions, null, null));
 
     assertEquals(response.getStatus(), 200);
     verify(service).update(eq("abc"), eq("123"), any(AlarmExpression.class),
@@ -153,8 +154,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "The alarm expression is invalid",
-        "More than one value was given for dimension instance_id");
+                                                                       "The alarm expression is invalid",
+                                                                       "More than one value was given for dimension instance_id");
   }
 
   @SuppressWarnings("unchecked")
@@ -175,7 +176,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
         createResponseFor("{\"alarmasdf\"::{\"name\":\"Disk Exceeds 1k Operations\"}}");
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("bad_request", 400,
-        "Unable to process the provided JSON", "Unexpected character (':'");
+                                                                       "Unable to process the provided JSON",
+                                                                       "Unexpected character (':'");
   }
 
   public void shouldErrorOnCreateWithInvalidOperator() {
@@ -186,7 +188,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "The alarm expression is invalid", "Syntax Error");
+                                                                       "The alarm expression is invalid",
+                                                                       "Syntax Error");
   }
 
   public void shouldErrorOnCreateWith0Period() {
@@ -197,7 +200,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Period must not be 0");
+                                                                       "Period must not be 0");
   }
 
   public void shouldErrorOnCreateWithNonMod60Period() {
@@ -208,7 +211,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Period 61 must be a multiple of 60");
+                                                                       "Period 61 must be a multiple of 60");
   }
 
   public void shouldErrorOnCreateWithPeriodsLessThan1() {
@@ -219,7 +222,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Periods 0 must be greater than or equal to 1");
+                                                                       "Periods 0 must be greater than or equal to 1");
   }
 
   public void shouldErrorOnCreateWithPeriodTimesPeriodsGT2Weeks() {
@@ -246,10 +249,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
     ErrorMessages
         .assertThat(response.getEntity(String.class))
-        .matches(
-            "unprocessable_entity",
-            422,
-            "Name 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 must be 255 characters or less");
+        .matches("unprocessable_entity", 422,
+                 "Name 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 must be 255 characters or less");
   }
 
   public void shouldErrorOnCreateWithTooLongAlarmAction() {
@@ -262,14 +263,35 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     ErrorMessages
         .assertThat(response.getEntity(String.class))
         .matches("unprocessable_entity", 422,
-            "Alarm action 012345678901234567890123456789012345678901234567890 must be 50 characters or less");
+                 "Alarm action 012345678901234567890123456789012345678901234567890 must be 50 characters or less");
   }
 
   @SuppressWarnings("unchecked")
   public void shouldList() {
-    List<AlarmDefinition> alarms =
-        client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
-            .get(new GenericType<List<AlarmDefinition>>() {});
+
+    Map
+        lhm =
+        (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
+            .get(Paged.class).elements.get(0);
+
+    AlarmDefinition
+        ad =
+        new AlarmDefinition((String) lhm.get("id"), (String) lhm.get("name"),
+                            (String) lhm.get("description"), (String) lhm.get("severity"),
+                            (String) lhm.get("expression"), (List<String>) lhm.get("match_by"),
+                            (boolean) lhm.get("actions_enabled"),
+                            (List<String>) lhm.get("alarm_actions"),
+                            (List<String>) lhm.get("ok_actions"),
+                            (List<String>) lhm.get("undetermined_actions"));
+
+    List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
+    List<Link>
+        linksList =
+        Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
+
+    ad.setLinks(linksList);
+
+    List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
     verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), anyString());
@@ -277,9 +299,31 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldListByName() throws Exception {
-    List<AlarmDefinition> alarms =
-        client().resource("/v2.0/alarm-definitions?name=" + URLEncoder.encode("foo bar baz", "UTF-8"))
-            .header("X-Tenant-Id", "abc").get(new GenericType<List<AlarmDefinition>>() {});
+
+    Map
+        lhm =
+        (Map) client()
+            .resource("/v2.0/alarm-definitions?name=" + URLEncoder.encode("foo bar baz", "UTF-8"))
+            .header("X-Tenant-Id", "abc").get(Paged.class).elements.get(0);
+
+    AlarmDefinition
+        ad =
+        new AlarmDefinition((String) lhm.get("id"), (String) lhm.get("name"),
+                            (String) lhm.get("description"), (String) lhm.get("severity"),
+                            (String) lhm.get("expression"), (List<String>) lhm.get("match_by"),
+                            (boolean) lhm.get("actions_enabled"),
+                            (List<String>) lhm.get("alarm_actions"),
+                            (List<String>) lhm.get("ok_actions"),
+                            (List<String>) lhm.get("undetermined_actions"));
+
+    List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
+    List<Link>
+        linksList =
+        Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
+
+    ad.setLinks(linksList);
+
+    List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
     verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), anyString());
@@ -296,7 +340,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     doThrow(new EntityNotFoundException(null)).when(repo).findById(eq("abc"), eq("999"));
 
     try {
-      client().resource("/v2.0/alarm-definitions/999").header("X-Tenant-Id", "abc").get(AlarmDefinition.class);
+      client().resource("/v2.0/alarm-definitions/999").header("X-Tenant-Id", "abc").get(
+          AlarmDefinition.class);
       fail();
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("404"));
@@ -325,7 +370,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   @SuppressWarnings("unchecked")
   public void should500OnInternalException() {
     doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(),
-        (Map<String, String>) anyObject(), anyString());
+                                                      (Map<String, String>) anyObject(),
+                                                      anyString());
 
     try {
       client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc").get(List.class);
@@ -338,10 +384,16 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   public void shouldHydateLinksOnList() {
     List<Link> expected =
         Arrays.asList(new Link("self", "/v2.0/alarm-definitions/123"));
-    List<Link> links =
-        client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
-            .get(new GenericType<List<AlarmDefinition>>() {}).get(0).getLinks();
-    assertEquals(links, expected);
+
+    Map
+        lhm =
+        (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
+            .get(Paged.class).elements.get(0);
+
+    List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
+
+    List<Link> actual = Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
+    assertEquals(actual, expected);
   }
 
   public void shouldHydateLinksOnGet() {
