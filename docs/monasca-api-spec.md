@@ -6,13 +6,15 @@ Document Version: v2.0
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Overview](#overview)
   - [Metric Name and Dimensions](#metric-name-and-dimensions)
     - [Name](#name)
     - [Dimensions](#dimensions)
     - [Text Representation](#text-representation)
+  - [Measurement](#measurement)
+    - [Value Meta](#value-meta)
   - [Alarm Definitions and Alarms](#alarm-definitions-and-alarms)
   - [Alarm Definition Expressions](#alarm-definition-expressions)
     - [Syntax](#syntax)
@@ -56,6 +58,7 @@ Document Version: v2.0
       - [Request Body](#request-body-2)
       - [Request Examples](#request-examples-2)
         - [Single metric](#single-metric)
+        - [Single metric with value_meta](#single-metric-with-value_meta)
         - [Array of metrics](#array-of-metrics)
     - [Response](#response-2)
       - [Status Code](#status-code)
@@ -320,6 +323,17 @@ However, the next characters may be any character except for the following: `; }
 
 ### Text Representation
 In this document, metrics will be represented in the form `name{name=value,name=value}` where name is the metric name and the name=value pairs in the curly braces are the dimensions. For example, `cpu.idle_perc{service=monitoring,hostname=mini-mon}` represents a metric with the name "cpu.idle_perc" and the dimensions "service=monitoring" and "hostname=mini-mon".
+
+## Measurement
+A measurement is a value with a timestamp for a specific Metric. The value is represented by a double, e.g. 42.0 or 42.42.
+
+### Value Meta
+Optionally, a measurement may also contain extra data about the value which is known as value meta. Value meta is a set of name/value pairs that add textual data to the value of the measurement.  The value meta will be returned from the API when the measurement is read. Only measurements that were written with value meta will have the key value pairs when read from the API. The value meta is ignored when computing statistics such as average on measurements.
+
+For an example of how value meta is used, imagine this metric: http_status{url: http://localhost:8080/healthcheck, hostname=devstack, service=object-storage}.  The measurements for this metric have a value of either 1 or 0 depending if the status check succeeded. If the check fails, it would be helpful to have the actual http status code and error message if possible. So instead of just a value, the measurement will be something like:
+{Timestamp=now(), value=1, value_meta{http_rc=500, error=“Error accessing MySQL”}}
+
+Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and must not be null or empty and has a maximum length of 2048 characters. Whitespace is not trimmed from the values.
 
 ## Alarm Definitions and Alarms
 
@@ -714,6 +728,7 @@ Consists of a single metric object or an array of metric objects. A metric has t
 * dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
 * timestamp (string, required) - The timestamp in seconds from the Epoch.
 * value (float, required) - Value of the metric. Values with base-10 exponents greater than 126 or less than -130 are truncated.
+* value_meta ({string(255): string(2048)}, optional) - A dictionary consisting of (key, value) pairs used to add information about the value.
 
 The name and dimensions are used to uniquely identify a metric.
 
@@ -729,14 +744,39 @@ Content-Type: application/json
 X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
 Cache-Control: no-cache
 
-{  
+{
    "name":"name1",
-   "dimensions":{  
+   "dimensions":{
       "key1":"value1",
       "key2":"value2"
    },
    "timestamp":1405630174,
    "value":1.0
+}
+```
+
+##### Single metric with value_meta
+POST a single metric with value_meta.
+
+```
+POST /v2.0/metrics HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
+Cache-Control: no-cache
+
+{
+   "name":"name1",
+   "dimensions":{
+      "key1":"value1",
+      "key2":"value2"
+   },
+   "timestamp":1405630174,
+   "value":1.0,
+   "value_meta":{
+      "key1":"value1",
+      "key2":"value2"
+   }
 }
 ```
 
@@ -767,7 +807,11 @@ Cache-Control: no-cache
          "key2":"value2"
       },
       "timestamp":1405630174,
-      "value":2.0
+      "value":2.0,
+      "value_meta":{
+         "key1":"value1",
+         "key2":"value2"
+      }
    }
 ]
 ```
@@ -884,40 +928,45 @@ Returns a JSON array of measurements objects for each unique metric with the fol
 
 #### Response Examples
 ```
-[  
-   {  
-      "name":"cpu.system_perc",
-      "dimensions":{  
-         "hostname":"devstack"
-      },
-      "columns":[  
-         "id",
-         "timestamp",
-         "value"
+[
+  {
+    "id": "1425359919000",
+    "name": "http_status"
+    "dimensions": {
+      "url": "http://localhost:8774/v2.0",
+      "hostname": "devstack",
+      "service": "compute"
+    },
+    "columns": [
+      "id",
+      "timestamp",
+      "value",
+      "value_meta"
+    ],
+    "measurements": [
+      [
+        13432920001,
+        "2015-03-03T05:22:28Z",
+        0.0,
+        {}
       ],
-      "measurements":[  
-         [  
-            6254100001,
-            "2014-07-18T03:24:25Z",
-            2.54
-         ],
-         [  
-            6248030003,
-            "2014-07-18T03:23:50Z",
-            2.21
-         ],
-         [  
-            6246680007,
-            "2014-07-18T03:23:14Z",
-            3.17
-         ],
-         [  
-            6242570022,
-            "2014-07-18T03:22:38Z",
-            2.12
-         ]
+      [
+        13430420001,
+        "2015-03-03T05:22:12Z",
+        0.0,
+        {}
+      ],
+      [
+        13427670001,
+        "2015-03-03T05:21:55Z",
+        1.0,
+        {
+          "rc": "404",
+          "error": "Not Found"
+        }
       ]
-   }
+    ],
+  }
 ]
 ```
 ___

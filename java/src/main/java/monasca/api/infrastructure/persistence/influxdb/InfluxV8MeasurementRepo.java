@@ -13,6 +13,8 @@
  */
 package monasca.api.infrastructure.persistence.influxdb;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import monasca.api.ApiConfig;
@@ -27,6 +29,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,12 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
 
   private final ApiConfig config;
   private final InfluxDB influxDB;
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final TypeReference<Map<String, String>> VALUE_META_TYPE =
+      new TypeReference<Map<String, String>>() {};
+  private static final Map<String, String> EMPTY_VALUE_META = Collections
+      .unmodifiableMap(new HashMap<String, String>());
+
 
   public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
       .withZoneUTC();
@@ -67,7 +77,7 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
     String offsetPart = InfluxV8Utils.buildOffsetPart(offset);
 
     String query =
-        String.format("select value " + "from /%1$s/ where 1 = 1 " + " %2$s  %3$s",
+        String.format("select * " + "from /%1$s/ where 1 = 1 " + " %2$s  %3$s",
                       serieNameRegex, timePart, offsetPart);
     logger.debug("Query string: {}", query);
 
@@ -86,12 +96,13 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
     return buildMeasurementList(result);
   }
 
+  @SuppressWarnings("unchecked")
   private List<Measurements> buildMeasurementList(List<Serie> result) throws Exception {
     List<Measurements> measurementsList = new LinkedList<>();
 
     for (Serie serie : result) {
 
-      InfluxV8Utils.SerieNameDecoder serieNameDecoder;
+      final InfluxV8Utils.SerieNameDecoder serieNameDecoder;
       try {
         serieNameDecoder = new InfluxV8Utils.SerieNameDecoder(serie.getName());
       } catch (InfluxV8Utils.SerieNameDecodeException e) {
@@ -106,18 +117,28 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
       List<Object[]> valObjArryList = new LinkedList<>();
       for (Map<String, Object> row : serie.getRows()) {
 
-        Object[] objArry = new Object[3];
+        Object[] objArry = new Object[4];
 
         // sequence_number
-        objArry[0] = ((Double) row.get(serie.getColumns()[1])).longValue();
+        objArry[0] = ((Double) row.get("sequence_number")).longValue();
         // time
-        Double timeDouble = (Double) row.get(serie.getColumns()[0]);
+        Double timeDouble = (Double) row.get("time");
         // last id wins. ids should be in descending order.
         measurements.setId(String.valueOf(timeDouble.longValue()));
         objArry[1] = DATETIME_FORMATTER.print(timeDouble.longValue());
         // value
-        objArry[2] = (Double) row.get(serie.getColumns()[2]);
+        objArry[2] = (Double) row.get("value");
 
+        final Map<String, String> valueMeta;
+        final String valueMetaJsonStr = (String)row.get("value_meta");
+        if (valueMetaJsonStr == null) {
+          valueMeta = EMPTY_VALUE_META;
+        }
+        else {
+          valueMeta =
+              (Map<String, String>) OBJECT_MAPPER.readValue(valueMetaJsonStr, VALUE_META_TYPE);
+        }
+        objArry[3] = valueMeta;
         valObjArryList.add(objArry);
       }
       measurements.setMeasurements(valObjArryList);

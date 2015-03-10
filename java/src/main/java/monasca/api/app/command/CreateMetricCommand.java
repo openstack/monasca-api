@@ -13,7 +13,6 @@
  */
 package monasca.api.app.command;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -22,8 +21,10 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import monasca.api.app.validation.DimensionValidation;
 import monasca.api.app.validation.MetricNameValidation;
+import monasca.api.app.validation.ValueMetaValidation;
 import monasca.common.model.Services;
 import monasca.common.model.metric.Metric;
 import monasca.api.resource.exception.Exceptions;
@@ -39,24 +40,17 @@ public class CreateMetricCommand {
   public Map<String, String> dimensions;
   public long timestamp;
   public double value;
-  public double[][] timeValues;
+  public Map<String, String> valueMeta;
 
   public CreateMetricCommand() {}
 
   public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
-      @Nullable Long timestamp, double value) {
+      @Nullable Long timestamp, double value, @Nullable Map<String, String> valueMeta) {
     setName(name);
     setDimensions(dimensions);
     setTimestamp(timestamp);
+    setValueMeta(valueMeta);
     this.value = value;
-  }
-
-  public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
-      @Nullable Long timestamp, double[][] timeValues) {
-    setName(name);
-    setDimensions(dimensions);
-    setTimestamp(timestamp);
-    this.timeValues = timeValues;
   }
 
   private static void validateTimestamp(long timestamp) {
@@ -84,9 +78,6 @@ public class CreateMetricCommand {
         return false;
     } else if (!name.equals(other.name))
       return false;
-    // Note - Deep Equals is used here
-    if (!Arrays.deepEquals(timeValues, other.timeValues))
-      return false;
     if (timestamp != other.timestamp)
       return false;
     if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
@@ -100,8 +91,6 @@ public class CreateMetricCommand {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    // Note Deep hash code is used here
-    result = prime * result + Arrays.deepHashCode(timeValues);
     result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
     long temp;
     temp = Double.doubleToLongBits(value);
@@ -117,6 +106,11 @@ public class CreateMetricCommand {
   }
 
   @JsonProperty
+  public void setValueMeta(Map<String, String> valueMeta) {
+    this.valueMeta = ValueMetaValidation.normalize(valueMeta);
+  }
+
+  @JsonProperty
   public void setName(String name) {
     this.name = MetricNameValidation.normalize(name);
   }
@@ -129,8 +123,7 @@ public class CreateMetricCommand {
   }
 
   public Metric toMetric() {
-    return timeValues == null || timeValues.length == 0 ? new Metric(name, dimensions, timestamp,
-        value) : new Metric(name, dimensions, timestamp, timeValues);
+    return new Metric(name, dimensions, timestamp, value, valueMeta);
   }
 
   public void validate() {
@@ -140,15 +133,11 @@ public class CreateMetricCommand {
       MetricNameValidation.validate(name, service);
       DimensionValidation.validate(dimensions, service);
     }
+    if (valueMeta != null) {
+      ValueMetaValidation.validate(valueMeta);
+    }
 
     // Validate times and values
     validateTimestamp(timestamp);
-    if (timeValues != null && timeValues.length > 0) {
-      for (double[] timeValuePair : timeValues) {
-        if (timeValuePair.length != 2)
-          throw Exceptions.unprocessableEntity("All times_values must be timestamp / value pairs");
-        validateTimestamp((long) timeValuePair[0]);
-      }
-    }
   }
 }
