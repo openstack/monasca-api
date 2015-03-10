@@ -46,6 +46,8 @@ For secure operation of the Monasca API, the API must be configured to use Keyst
 * adminAuthMethod - "password" if the Monasca API should adminUser and adminPassword to login to the Keystone server to check the user's token, "token" if the Monasca API should use adminToken
 * adminUser - Admin user name
 * adminPassword - Admin user password
+* adminProjectId - Specify the project ID the api should use to request an admin token. Defaults to the admin user's default project. The adminProjectId option takes precedence over adminProjectName.
+* adminProjectName - Specify the project name the api should use to request an admin token. Defaults to the admin user's default project. The adminProjectId option takes precedence over adminProjectName.
 * adminToken - A valid admin user token if adminAuthMethod is token
 * timeToCacheToken - How long the Monasca API should cache the user's token before checking it again
 

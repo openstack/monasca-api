@@ -157,6 +157,8 @@ public class MonApiApplication extends Application<ApiConfig> {
       authInitParams.put("AdminAuthMethod", config.middleware.adminAuthMethod);
       authInitParams.put("AdminUser", config.middleware.adminUser);
       authInitParams.put("AdminPassword", config.middleware.adminPassword);
+      authInitParams.put(AuthConstants.ADMIN_PROJECT_ID, config.middleware.adminProjectId);
+      authInitParams.put(AuthConstants.ADMIN_PROJECT_NAME, config.middleware.adminProjectName);
       authInitParams.put("MaxTokenCacheSize", config.middleware.maxTokenCacheSize);
       setIfNotNull(authInitParams, AuthConstants.TRUSTSTORE, config.middleware.truststore);
       setIfNotNull(authInitParams, AuthConstants.TRUSTSTORE_PASS, config.middleware.truststorePassword);
