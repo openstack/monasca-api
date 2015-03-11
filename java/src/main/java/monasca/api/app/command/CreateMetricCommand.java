@@ -30,8 +30,8 @@ import monasca.common.model.metric.Metric;
 import monasca.api.resource.exception.Exceptions;
 
 public class CreateMetricCommand {
-  private static final long TIME_2MIN = 120;
-  private static final long TIME_2WEEKS = 1209600;
+  private static final long TIME_2MIN_MILLIS = 120*1000;
+  private static final long TIME_2WEEKS_MILLIS = 1209600*1000;
   public static final int MAX_NAME_LENGTH = 255;
 
   @NotEmpty
@@ -54,8 +54,8 @@ public class CreateMetricCommand {
   }
 
   private static void validateTimestamp(long timestamp) {
-    long time = System.currentTimeMillis() / 1000;
-    if (timestamp > time + TIME_2MIN || timestamp < time - TIME_2WEEKS)
+    long time = System.currentTimeMillis();
+    if (timestamp > time + TIME_2MIN_MILLIS || timestamp < time - TIME_2WEEKS_MILLIS)
       throw Exceptions.unprocessableEntity("Timestamp %s is out of legal range", timestamp);
   }
 
@@ -118,7 +118,7 @@ public class CreateMetricCommand {
   @JsonProperty
   public void setTimestamp(Long timestamp) {
     this.timestamp =
-        timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis() / 1000L
+        timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis()
             : timestamp.longValue();
   }
 

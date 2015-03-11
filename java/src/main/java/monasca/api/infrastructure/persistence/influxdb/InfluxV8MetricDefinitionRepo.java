@@ -60,7 +60,7 @@ public class InfluxV8MetricDefinitionRepo implements MetricDefinitionRepo {
 
     List<Serie>
         result =
-        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.SECONDS);
+        this.influxDB.Query(this.config.influxDB.getName(), query, TimeUnit.MILLISECONDS);
     return buildMetricDefList(result, offset);
   }
 

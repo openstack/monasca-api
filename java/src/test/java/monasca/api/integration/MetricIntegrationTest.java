@@ -85,7 +85,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     valueMeta = new HashMap<String, String>();
     valueMeta.put("rc", "404");
     valueMeta.put("errMsg", "Not Found");
-    long timestamp = System.currentTimeMillis() / 1000;
+    long timestamp = System.currentTimeMillis();
     ClientResponse response =
         client()
             .resource("/v2.0/metrics")

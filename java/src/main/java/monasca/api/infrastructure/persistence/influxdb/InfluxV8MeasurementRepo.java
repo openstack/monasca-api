@@ -54,7 +54,7 @@ public class InfluxV8MeasurementRepo implements MeasurementRepo {
       .unmodifiableMap(new HashMap<String, String>());
 
 
-  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTimeNoMillis()
+  public static final DateTimeFormatter DATETIME_FORMATTER = ISODateTimeFormat.dateTime()
       .withZoneUTC();
 
   @Inject

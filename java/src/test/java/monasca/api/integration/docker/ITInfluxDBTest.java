@@ -443,7 +443,7 @@ public class ITInfluxDBTest {
   @Test
   public void metricCreateRawTest() {
 
-    long unixTime = System.currentTimeMillis() / 1000L;
+    long unixTime = System.currentTimeMillis();
 
     given().headers("Accept", "application/json", "Content-Type", "application/json",
                     "X-Auth-Token", "82510970543135")

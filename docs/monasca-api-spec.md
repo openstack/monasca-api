@@ -726,7 +726,7 @@ Consists of a single metric object or an array of metric objects. A metric has t
 
 * name (string(255), required) - The name of the metric.
 * dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
-* timestamp (string, required) - The timestamp in seconds from the Epoch.
+* timestamp (string, required) - The timestamp in milliseconds from the Epoch.
 * value (float, required) - Value of the metric. Values with base-10 exponents greater than 126 or less than -130 are truncated.
 * value_meta ({string(255): string(2048)}, optional) - A dictionary consisting of (key, value) pairs used to add information about the value.
 
