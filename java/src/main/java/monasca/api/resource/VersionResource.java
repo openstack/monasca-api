@@ -44,8 +44,8 @@ public class VersionResource {
 
   @GET
   @Timed
-  public List<Version> list(@Context UriInfo uriInfo) {
-    return Links.hydrate(repository.find(), uriInfo);
+  public Object list(@Context UriInfo uriInfo) {
+    return Links.paginate(null, Links.hydrate(repository.find(), uriInfo), uriInfo);
   }
 
   @GET

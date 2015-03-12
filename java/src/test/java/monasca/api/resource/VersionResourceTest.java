@@ -26,12 +26,14 @@ import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.common.Link;
+import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.version.Version;
 import monasca.api.domain.model.version.Version.VersionStatus;
 import monasca.api.domain.model.version.VersionRepo;
@@ -56,8 +58,24 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void shouldList() {
-    List<Version> versions = client().resource("/").get(new GenericType<List<Version>>() {});
-    assertEquals(versions, Arrays.asList(version));
+
+    Map
+        lhm =
+        (Map) client().resource("/").header("X-Tenant-Id", "abc").get(Paged.class).elements.get(0);
+
+    Version
+        actual =
+        new Version((String) lhm.get("id"), VersionStatus.valueOf((String) lhm.get("status")),
+                    new DateTime((int) lhm.get("updated")));
+
+    List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");
+    List<Link>
+        linksList =
+        Arrays.asList(new Link(links.get(0).get("rel"), links.get(0).get("href")));
+
+    actual.setLinks(linksList);
+
+    assertEquals(actual, version);
     verify(repo).find();
   }
 
