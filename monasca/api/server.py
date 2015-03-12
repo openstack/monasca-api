@@ -70,5 +70,5 @@ if __name__ == '__main__':
     wsgi_app = (
         paste.deploy.loadapp('config:etc/monasca.ini',
                              relative_to=os.getcwd()))
-    httpd = simple_server.make_server('127.0.0.1', 9000, wsgi_app)
+    httpd = simple_server.make_server('127.0.0.1', 8080, wsgi_app)
     httpd.serve_forever()
