@@ -9,6 +9,10 @@
     <url>http://github.com/stackforge/monasca-api</url>
     <packaging>jar</packaging>
 
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
+
     <properties>
         <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion>
         <computedName>${project.artifactId}-${computedVersion}</computedName>

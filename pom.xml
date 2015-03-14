@@ -4,21 +4,13 @@
 
   <groupId>monasca</groupId>
   <artifactId>monasca-api-base</artifactId>
-  <version>${computedVersion}</version>
+  <version>1.0.0-SNAPSHOT</version>
   <url>http://github.com/stackforge/monasca-api</url>
   <packaging>pom</packaging>
 
-  <!--
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-   -->
-
   <properties>
     <!-- Versioning -->
-    <versionNumber>1.0.0</versionNumber>
-    <computedVersion>${versionNumber}-SNAPSHOT</computedVersion>
-
+    <exec.args>${version} ${sun.java.command}</exec.args>
     <skipITs>true</skipITs>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -29,55 +21,30 @@
     <developerConnection>scm:git:git@github.com:stackforge/monasca-api</developerConnection>
   </scm>
 
-  <modules>
-    <module>download</module>
-    <module>java</module>
-  </modules>
-
-  <profiles>
-    <profile>
-      <id>release-deploy-url-override</id>
-      <activation>
-        <property>
-          <name>BUILD_NUM</name>
-        </property>
-      </activation>
-      <properties>
-        <computedVersion>${project.version}</computedVersion>
-      </properties>
-    </profile>
-  </profiles>
-
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-scm-plugin</artifactId>
-        <version>1.9</version>
-        <configuration>
-          <tag>${project.version}</tag>
-        </configuration>
-      </plugin>
   <plugin>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>exec-maven-plugin</artifactId>
     <version>1.1.1</version>
     <executions>
       <execution>
-        <id>some-execution</id>
+        <id>package-execution</id>
         <phase>package</phase>
+        <goals>
+          <goal>exec</goal>
+        </goals>
+      </execution>
+      <execution>
+        <id>clean-execution</id>
+        <phase>clean</phase>
         <goals>
           <goal>exec</goal>
         </goals>
       </execution>
     </executions>
     <configuration>
-      <executable>ln</executable>
-<arguments>
-            <argument>-sf</argument>
-            <argument>java/target</argument>
-            <argument>target</argument>
-</arguments>
+      <executable>run_maven.sh</executable>
     </configuration>
   </plugin>
     </plugins>
