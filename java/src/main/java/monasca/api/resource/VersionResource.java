@@ -15,6 +15,7 @@ package monasca.api.resource;
 
 import com.codahale.metrics.annotation.Timed;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -51,7 +52,7 @@ public class VersionResource {
   @Timed
   public Object list(@Context UriInfo uriInfo,
                      @QueryParam("offset") String offset,
-                     @QueryParam("limit") String limit) {
+                     @QueryParam("limit") String limit) throws UnsupportedEncodingException {
 
     return Links.paginate(this.persistUtils.getLimit(limit),
                           Links.hydrate(repository.find(), uriInfo), uriInfo);

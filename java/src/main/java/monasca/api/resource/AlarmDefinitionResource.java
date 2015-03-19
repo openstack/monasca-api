@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class AlarmDefinitionResource {
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("offset") String offset,
-      @QueryParam("limit") String limit){
+      @QueryParam("limit") String limit) throws UnsupportedEncodingException {
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);

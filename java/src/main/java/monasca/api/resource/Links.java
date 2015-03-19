@@ -13,6 +13,8 @@
  */
 package monasca.api.resource;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,7 +158,8 @@ public final class Links {
    * @param uriInfo
    * @return
    */
-  public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo) {
+  public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
+      throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
     if (limit == 0) {
@@ -193,7 +196,8 @@ public final class Links {
 
   }
 
-  public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo) {
+  public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo)
+      throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
     if (limit == 0) {
@@ -250,7 +254,8 @@ public final class Links {
 
   }
 
-  public static Object paginateStatistics(int limit, List<Statistics> elements, UriInfo uriInfo) {
+  public static Object paginateStatistics(int limit, List<Statistics> elements, UriInfo uriInfo)
+      throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
     if (limit == 0) {
@@ -315,13 +320,15 @@ public final class Links {
     return selfLink;
   }
 
-  private static Link getNextLink(String offset, UriInfo uriInfo) {
+  private static Link getNextLink(String offset, UriInfo uriInfo)
+      throws UnsupportedEncodingException {
 
     Link nextLink = new Link();
     nextLink.rel = "next";
 
     // Create a new URL with the new offset.
-    nextLink.href = uriInfo.getAbsolutePath().toString() + "?offset=" + offset;
+    nextLink.href = uriInfo.getAbsolutePath().toString()
+                    + "?offset=" + URLEncoder.encode(offset, "UTF-8");
 
     // Add the query parms back to the URL without the original offset.
     for (String parmKey : uriInfo.getQueryParameters().keySet()) {
@@ -331,11 +338,13 @@ public final class Links {
         List<String> parmValList = uriInfo.getQueryParameters().get(parmKey);
         for (String parmVal : parmValList) {
 
-          nextLink.href += "&" + parmKey + "=" + parmVal;
+          nextLink.href +=
+              "&" + URLEncoder.encode(parmKey, "UTF-8") + "=" + URLEncoder.encode(parmVal, "UTF-8");
 
         }
       }
     }
+
     return nextLink;
   }
 

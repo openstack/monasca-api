@@ -15,6 +15,7 @@ package monasca.api.resource;
 
 import com.codahale.metrics.annotation.Timed;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 import javax.inject.Inject;
@@ -73,8 +74,7 @@ public class NotificationMethodResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Object list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
                      @QueryParam("offset") String offset,
-                     @QueryParam("limit") String limit)
-   {
+                     @QueryParam("limit") String limit) throws UnsupportedEncodingException {
 
     return Links.paginate(this.persistUtils.getLimit(limit),
                           Links.hydrate(repo.find(tenantId, offset,
