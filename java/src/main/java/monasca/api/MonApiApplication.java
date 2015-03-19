@@ -61,7 +61,28 @@ import monasca.common.util.Injector;
  */
 public class MonApiApplication extends Application<ApiConfig> {
   public static void main(String[] args) throws Exception {
+    /*
+     * This should allow command line options to show the current version
+     * java -jar monasca-api.jar --version
+     * java -jar monasca-api.jar -version
+     * java -jar monasca-api.jar version
+     * Really anything with the word version in it will show the
+     * version as long as there is only one argument
+     * */
+    if (args.length == 1 && args[0].toLowerCase().contains("version")) {
+      showVersion();
+      System.exit(0);
+    }
+
     new MonApiApplication().run(args);
+  }
+
+  private static void showVersion() {
+    Package pkg;
+    pkg = Package.getPackage("monasca.api");
+
+    System.out.println("-------- Version Information --------");
+    System.out.println(pkg.getImplementationVersion());
   }
 
   @Override

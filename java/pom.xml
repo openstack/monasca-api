@@ -14,7 +14,10 @@
     </prerequisites>
 
     <properties>
-        <computedVersion>${project.version}-${timestamp}-${buildNumber}</computedVersion>
+        <gitRevision></gitRevision>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
+        <computedVersion>${project.version}-${timestamp}-${gitRevision}</computedVersion>
         <computedName>${project.artifactId}-${computedVersion}</computedName>
         <mon.common.version>1.0.0-SNAPSHOT</mon.common.version>
         <dropwizard.version>0.7.0</dropwizard.version>
@@ -336,8 +339,11 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <packageName>monasca.api</packageName>
                         </manifest>
+                        <manifestEntries>
+                            <Implementation-Version>${project.artifactId}-${computedVersion}</Implementation-Version>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
