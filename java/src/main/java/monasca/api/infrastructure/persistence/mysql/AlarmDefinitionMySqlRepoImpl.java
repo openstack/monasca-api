@@ -154,7 +154,7 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
           + "      FROM alarm_definition AS ad "
           + "      LEFT OUTER JOIN sub_alarm_definition AS sad ON ad.id = sad.alarm_definition_id "
           + "      LEFT OUTER JOIN sub_alarm_definition_dimension AS dim ON sad.id = dim.sub_alarm_definition_id %1$s "
-          + "      WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s limit :limit) AS t "
+          + "      WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s %3$s) AS t "
           + "LEFT OUTER JOIN alarm_action AS aa ON t.id = aa.alarm_definition_id "
           + "GROUP BY t.id ORDER BY t.id, t.created_at";
 
@@ -169,8 +169,13 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         sbWhere.append(" and ad.id > :offset");
       }
 
+      String limitPart = "";
+      if (limit > 0) {
+        limitPart = " limit :limit";
+      }
+
       String sql = String.format(query,
-          SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere);
+          SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere, limitPart);
 
       Query<?> q = h.createQuery(sql);
 
@@ -184,7 +189,9 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         q.bind("offset", offset);
       }
 
-      q.bind("limit", limit + 1);
+      if (limit > 0) {
+        q.bind("limit", limit + 1);
+      }
 
       q.registerMapper(new AlarmDefinitionMapper());
       q = q.mapTo(AlarmDefinition.class);

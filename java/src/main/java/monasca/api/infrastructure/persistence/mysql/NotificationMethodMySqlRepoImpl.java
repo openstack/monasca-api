@@ -104,14 +104,19 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
       String rawQuery =
           "  SELECT nm.id, nm.tenant_id, nm.name, nm.type, nm.address, nm.created_at, nm.updated_at "
           + "FROM notification_method as nm "
-          + "WHERE tenant_id = :tenantId %1$s order by nm.id asc limit :limit";
+          + "WHERE tenant_id = :tenantId %1$s order by nm.id asc %2$s";
 
       String offsetPart = "";
       if (offset != null) {
         offsetPart = "and nm.id > :offset";
       }
 
-      String query = String.format(rawQuery, offsetPart);
+      String limitPart = "";
+      if (limit > 0) {
+        limitPart = " limit :limit";
+      }
+
+      String query = String.format(rawQuery, offsetPart, limitPart);
 
       Query<?> q = h.createQuery(query);
 
@@ -121,9 +126,11 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
         q.bind("offset", offset);
       }
 
-      q.bind("limit", limit + 1);
+      if (limit > 0) {
+        q.bind("limit", limit + 1);
+      }
 
-      return (List<NotificationMethod>) q.map(new BeanMapper<NotificationMethod>(NotificationMethod.class)).list();
+      return q.map(new BeanMapper<>(NotificationMethod.class)).list();
 
     }
   }

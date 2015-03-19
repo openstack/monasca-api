@@ -123,7 +123,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
 
       String limitPart = "";
-      if (enforceLimit) {
+      if (enforceLimit && limit > 0) {
         limitPart = " limit :limit";
       }
 
@@ -143,7 +143,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
         q.bind("offset", offset);
       }
 
-      if (enforceLimit) {
+      if (enforceLimit && limit > 0) {
         q.bind("limit", limit + 1);
       }
 
