@@ -2204,7 +2204,8 @@ None.
 * alarm_definition_id (string, optional) - Alarm definition ID to filter by.
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
-* state (string) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * offset (string, optional)
 * limit (integer, optional)
 
@@ -2232,6 +2233,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * alarm_definition_id (string) - Name of alarm.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated
+* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created
 
 #### Response Examples
 ```
@@ -2279,6 +2282,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                 }
             ],
             "state": "OK"
+            "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+            "created_timestamp": "2015-03-20T21:03:34.000Z"
         }
     ]
 }

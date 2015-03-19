@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.mysql;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +30,10 @@ import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.testng.annotations.AfterClass;
@@ -36,9 +41,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +57,7 @@ import java.util.Map;
 public class AlarmMySqlRepositoryImplTest {
   private static final String TENANT_ID = "bob";
   private static final String ALARM_ID = "234111";
+  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
   private DBI db;
   private Handle handle;
   private AlarmRepo repo;
@@ -65,7 +71,7 @@ public class AlarmMySqlRepositoryImplTest {
   protected void setupClass() throws Exception {
     // This test won't work without the real mysql database so use mini-mon.
     // Warning, this will truncate your mini-mon database
-    db = new DBI("jdbc:mysql://192.168.10.4/mon", "monapi", "password");
+    db = new DBI("jdbc:mysql://192.168.10.4:3306/mon?connectTimeout=5000&autoReconnect=true&useLegacyDatetimeCode=false", "monapi", "password");
 
     handle = db.open();
     /*
@@ -96,15 +102,20 @@ public class AlarmMySqlRepositoryImplTest {
     handle.execute("truncate table metric_definition_dimensions");
     handle.execute("truncate table metric_dimension");
 
+    DateTime timestamp1 = ISO_8601_FORMATTER.parseDateTime("2015-03-14T09:26:53").withZoneRetainFields(DateTimeZone.forID("UTC"));
+    DateTime timestamp2 = ISO_8601_FORMATTER.parseDateTime("2015-03-14T09:26:54").withZoneRetainFields(DateTimeZone.forID("UTC"));
+    DateTime timestamp3 = ISO_8601_FORMATTER.parseDateTime("2015-03-14T09:26:55").withZoneRetainFields(DateTimeZone.forID("UTC"));
+
     handle
-        .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
+        .execute(
+            "insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
             + "values ('1', 'bob', '90% CPU', 'LOW', 'avg(cpu.idle_perc{flavor_id=777, image_id=888, device=1}) > 10', 'flavor_id,image_id', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('1', '1', 'OK', NOW(), NOW())");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('1', '1', 'OK', '"+timestamp1.toString().replace('Z', ' ')+"', '"+timestamp1.toString().replace('Z', ' ')+"')");
     handle
-        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('2', '1', 'UNDETERMINED', NOW(), NOW())");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('2', '1', 'UNDETERMINED', '"+timestamp2.toString().replace('Z', ' ')+"', '"+timestamp2.toString().replace('Z', ' ')+"')");
     handle
-        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('3', '1', 'ALARM', NOW(), NOW())");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('3', '1', 'ALARM', '"+timestamp3.toString().replace('Z', ' ')+"', '"+timestamp3.toString().replace('Z', ' ')+"')");
     long subAlarmId = 42;
     for (int alarmId = 1; alarmId <= 3; alarmId++) {
       handle
@@ -138,21 +149,27 @@ public class AlarmMySqlRepositoryImplTest {
     alarm1 =
         new Alarm("1", "1", "90% CPU", "LOW", buildAlarmMetrics(
             buildMetricDefinition("cpu.idle_perc", "instance_id", "123", "service", "monitoring"),
-            buildMetricDefinition("cpu.idle_perc", "flavor_id", "222")), AlarmState.OK);
+            buildMetricDefinition("cpu.idle_perc", "flavor_id", "222")),
+                  AlarmState.OK, timestamp1, timestamp1);
 
     alarm2 =
         new Alarm("2", "1", "90% CPU", "LOW", buildAlarmMetrics(
-            buildMetricDefinition("cpu.idle_perc", "instance_id", "123", "service", "monitoring")), AlarmState.UNDETERMINED);
+            buildMetricDefinition("cpu.idle_perc", "instance_id", "123", "service", "monitoring")),
+                  AlarmState.UNDETERMINED, timestamp2, timestamp2);
 
     alarm3 =
         new Alarm("3", "1", "90% CPU", "LOW", buildAlarmMetrics(
-            buildMetricDefinition("cpu.idle_perc", "flavor_id", "222")), AlarmState.ALARM);
+            buildMetricDefinition("cpu.idle_perc", "flavor_id", "222")), AlarmState.ALARM,
+                  timestamp3, timestamp3);
+
+    DateTime timestamp4 = ISO_8601_FORMATTER.parseDateTime("2015-03-15T09:26:53Z");
 
     handle
-        .execute("insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
-            + "values ('234', 'bob', '50% CPU', 'LOW', 'avg(cpu.sys_mem{service=monitoring}) > 20 and avg(cpu.idle_perc{service=monitoring}) < 10', 'hostname,region', 1, NOW(), NOW(), NULL)");
+        .execute(
+        "insert into alarm_definition (id, tenant_id, name, severity, expression, match_by, actions_enabled, created_at, updated_at, deleted_at) "
+        + "values ('234', 'bob', '50% CPU', 'LOW', 'avg(cpu.sys_mem{service=monitoring}) > 20 and avg(cpu.idle_perc{service=monitoring}) < 10', 'hostname,region', 1, NOW(), NOW(), NULL)");
     handle
-        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234111', '234', 'UNDETERMINED', NOW(), NOW())");
+        .execute("insert into alarm (id, alarm_definition_id, state, created_at, updated_at) values ('234111', '234', 'UNDETERMINED', '"+timestamp4.toString().replace('Z', ' ')+"', '"+timestamp4.toString().replace('Z', ' ')+"')");
     handle
         .execute("insert into sub_alarm (id, alarm_id, expression, created_at, updated_at) values ('4343', '234111', 'avg(cpu.sys_mem{service=monitoring}) > 20', NOW(), NOW())");
     handle
@@ -190,7 +207,8 @@ public class AlarmMySqlRepositoryImplTest {
             buildMetricDefinition("cpu.sys_mem", "service", "monitoring", "hostname", "roland",
                 "region", "colorado"),
             buildMetricDefinition("cpu.idle_perc", "service", "monitoring", "hostname", "roland",
-                "region", "colorado", "extra", "vivi")), AlarmState.UNDETERMINED);
+                "region", "colorado", "extra", "vivi")), AlarmState.UNDETERMINED,
+                  timestamp4, timestamp4);
   }
 
   private List<MetricDefinition> buildAlarmMetrics(final MetricDefinition ... metricDefinitions) {
@@ -254,73 +272,85 @@ public class AlarmMySqlRepositoryImplTest {
 
   @Test(groups = "database")
   public void shouldFind() {
-    checkList(repo.find("Not a tenant id", null, null, null, null, null, 1, false));
+    checkList(repo.find("Not a tenant id", null, null, null, null, null, null, 1, false));
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, 1, false), compoundAlarm);
+    checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, 1, false), compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
     checkList(
         repo.find(TENANT_ID, null, "cpu.idle_perc",
-            ImmutableMap.<String, String>builder().put("flavor_id", "222").build(), null, null, 1, false), alarm1,
+            ImmutableMap.<String, String>builder().put("flavor_id", "222").build(), null, null, null, 1, false), alarm1,
         alarm3);
 
     checkList(
         repo.find(TENANT_ID, null, "cpu.idle_perc",
             ImmutableMap.<String, String>builder().put("service", "monitoring")
-                .put("hostname", "roland").build(), null, null, 1, false), compoundAlarm);
+                .put("hostname", "roland").build(), null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, 1, false), alarm2,
-        compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, null, 1, false),
+              alarm2,
+              compoundAlarm);
 
     checkList(
         repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", ImmutableMap
-            .<String, String>builder().put("service", "monitoring").build(), null, null, 1, false), alarm1, alarm2);
+            .<String, String>builder().put("service", "monitoring").build(), null, null, null, 1, false), alarm1, alarm2);
 
     checkList(
-        repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, 1, false),
+        repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, null, 1, false),
         alarm1, alarm2, alarm3);
 
     checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null,
-        AlarmState.UNDETERMINED, null, 1, false), compoundAlarm);
+        AlarmState.UNDETERMINED, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, 1, false),
+    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, null, 1, false),
         compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder()
-        .put("service", "monitoring").build(), AlarmState.UNDETERMINED, null, 1,false), alarm2, compoundAlarm);
+        .put("service", "monitoring").build(), AlarmState.UNDETERMINED, null, null, 1,false), alarm2, compoundAlarm);
 
     checkList(repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc",
         ImmutableMap.<String, String>builder().put("service", "monitoring").build(),
-        AlarmState.UNDETERMINED, null, 1, false), alarm2);
+        AlarmState.UNDETERMINED, null, null, 1, false), alarm2);
+
+    checkList(repo.find(TENANT_ID, null, null, null, null, DateTime.now(DateTimeZone.forID("UTC")), null, 0, false));
+
+    checkList(repo.find(TENANT_ID, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false), compoundAlarm);
+
+    checkList(
+        repo.find(TENANT_ID, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null,
+                  1, false), alarm1, alarm2, alarm3, compoundAlarm);
   }
 
   @Test(groups = "database")
-  public void shouldUpdate() throws InterruptedException {    
+  public void shouldUpdate() throws InterruptedException {
     final Alarm originalAlarm = repo.findById(TENANT_ID, ALARM_ID);
-    final Date originalUpdatedAt = getAlarmUpdatedDate(ALARM_ID);
+    final DateTime originalUpdatedAt = getAlarmUpdatedDate(ALARM_ID);
     assertEquals(originalAlarm.getState(), AlarmState.UNDETERMINED);
 
     Thread.sleep(1000);
-    final Alarm updatedAlarm = repo.update(TENANT_ID, ALARM_ID, AlarmState.OK);
-    final Date newUpdatedAt = getAlarmUpdatedDate(ALARM_ID);
-    assertFalse(newUpdatedAt.equals(originalUpdatedAt), "updated_at did not change");
+    final Alarm newAlarm = repo.update(TENANT_ID, ALARM_ID, AlarmState.OK);
+    final DateTime newUpdatedAt = getAlarmUpdatedDate(ALARM_ID);
+    assertNotEquals(newUpdatedAt.getMillis(), originalUpdatedAt.getMillis(),
+                    "updated_at did not change");
 
-    assertEquals(updatedAlarm, originalAlarm);
+    assertEquals(newAlarm, originalAlarm);
 
-    updatedAlarm.setState(AlarmState.OK);
+    newAlarm.setState(AlarmState.OK);
+
+    newAlarm.setStateUpdatedTimestamp(newUpdatedAt);
 
     // Make sure it was updated in the DB
-    assertEquals(repo.findById(TENANT_ID, ALARM_ID), updatedAlarm);
+    assertEquals(repo.findById(TENANT_ID, ALARM_ID), newAlarm);
 
     Thread.sleep(1000);
     final Alarm unchangedAlarm = repo.update(TENANT_ID, ALARM_ID, AlarmState.OK);
     assertTrue(getAlarmUpdatedDate(ALARM_ID).equals(newUpdatedAt), "updated_at did change");
-    assertEquals(unchangedAlarm, updatedAlarm);
+    assertEquals(unchangedAlarm, newAlarm);
   }
 
   @Test(groups = "database", expectedExceptions=EntityNotFoundException.class)
@@ -329,12 +359,12 @@ public class AlarmMySqlRepositoryImplTest {
     repo.update(TENANT_ID, "Not a valid alarm id", AlarmState.UNDETERMINED);
   }
 
-  private Date getAlarmUpdatedDate(final String alarmId) {
+  private DateTime getAlarmUpdatedDate(final String alarmId) {
     final List<Map<String, Object>> rows =
         handle.createQuery("select updated_at from alarm where id = :alarmId")
             .bind("alarmId", alarmId).list();
     final Object updated_at = rows.get(0).get("updated_at");
-    return (Date) updated_at;
+    return (new DateTime(((Timestamp)updated_at).getTime(), DateTimeZone.forID("UTC")));
   }
 
   @Test(groups = "database")

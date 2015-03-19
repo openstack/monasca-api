@@ -21,10 +21,13 @@ import static org.testng.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import javax.ws.rs.core.UriInfo;
 
@@ -57,7 +60,9 @@ public class LinksTest {
     final URI uri = new URI(base);
     when(uriInfo.getBaseUri()).thenReturn(uri);
     final String alarmDefinitionId = "af72b3d8-51f3-4eee-8086-535b5e7a9dc8";
-    final Alarm alarm = new Alarm(alarmId, alarmDefinitionId, "Test", "LOW", null, AlarmState.OK);
+    final Alarm alarm = new Alarm(alarmId, alarmDefinitionId, "Test", "LOW", null, AlarmState.OK,
+                                  DateTime.parse("2015-03-14T09:26:53"),
+                                  DateTime.parse("2015-03-14T09:26:53"));
     alarm.setId("42");
     Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
     assertEquals(alarm.getAlarmDefinition().getLinks().size(), 1);

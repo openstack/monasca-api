@@ -13,6 +13,8 @@
  */
 package monasca.api.domain.model.alarm;
 
+import org.joda.time.DateTime;
+
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -30,14 +32,18 @@ public class Alarm extends AbstractEntity implements Linked {
   private List<MetricDefinition> metrics;
   private AlarmState state;
   private AlarmDefinitionShort alarmDefinition;
+  private DateTime stateUpdatedTimestamp;
+  private DateTime createdTimestamp;
 
   public Alarm() {}
 
   public Alarm(String id, String alarmDefinitionId, String alarmDefinitionName,
-      String alarmDefinitionSeverity, List<MetricDefinition> metrics, AlarmState state) {
+      String alarmDefinitionSeverity, List<MetricDefinition> metrics, AlarmState state, DateTime stateUpdatedTimestamp, DateTime createdAt) {
     this.id = id;
     setMetrics(metrics);
     setState(state);
+    setStateUpdatedTimestamp(stateUpdatedTimestamp);
+    setCreatedTimestamp(createdAt);
     this.alarmDefinition = new AlarmDefinitionShort(alarmDefinitionId, alarmDefinitionName, alarmDefinitionSeverity);
   }
 
@@ -53,6 +59,10 @@ public class Alarm extends AbstractEntity implements Linked {
     return state;
   }
 
+  public DateTime getStateUpdatedTimestamp() { return stateUpdatedTimestamp; }
+
+  public DateTime getCreatedTimestamp() { return createdTimestamp; }
+
   @XmlElement(name = "id")
   public void setId(String id) {
     this.id = id;
@@ -65,6 +75,14 @@ public class Alarm extends AbstractEntity implements Linked {
 
   public void setState(AlarmState state) {
     this.state = state;
+  }
+
+  public void setStateUpdatedTimestamp(DateTime stateUpdatedTimestamp) {
+    this.stateUpdatedTimestamp = stateUpdatedTimestamp;
+  }
+
+  public void setCreatedTimestamp(DateTime createdTimestamp) {
+    this.createdTimestamp = createdTimestamp;
   }
 
   public List<MetricDefinition> getMetrics() {
@@ -91,6 +109,8 @@ public class Alarm extends AbstractEntity implements Linked {
     result = prime * result + ((links == null) ? 0 : links.hashCode());
     result = prime * result + ((metrics == null) ? 0 : metrics.hashCode());
     result = prime * result + ((state == null) ? 0 : state.hashCode());
+    result = prime * result + ((stateUpdatedTimestamp == null) ? 0 : stateUpdatedTimestamp.hashCode());
+    result = prime * result + ((createdTimestamp == null) ? 0 : createdTimestamp.hashCode());
     return result;
   }
 
@@ -120,6 +140,13 @@ public class Alarm extends AbstractEntity implements Linked {
       return false;
     if (state != other.state)
       return false;
+    // Ignore timezones, only check milliseconds since epoch
+    if (stateUpdatedTimestamp.getMillis() != other.stateUpdatedTimestamp.getMillis()) {
+      return false;
+    }
+    if (createdTimestamp.getMillis() != other.createdTimestamp.getMillis()) {
+      return false;
+    }
     return true;
   }
 

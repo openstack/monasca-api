@@ -23,12 +23,15 @@ import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.common.persistence.BeanMapper;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,6 +45,7 @@ import javax.inject.Named;
  * Alarmed metric repository implementation.
  */
 public class AlarmMySqlRepoImpl implements AlarmRepo {
+
   private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
@@ -49,15 +53,15 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final String ALARM_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-          + "a.id, a.state, "
-          + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
-          + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
-          + "inner join alarm_metric as am on am.alarm_id = a.id "
-          + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
-          + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
-          + "left join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
-          + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
-          + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
+      + "a.id, a.state, a.updated_at as state_updated_timestamp, a.created_at as created_timestamp,"
+      + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
+      + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
+      + "inner join alarm_metric as am on am.alarm_id = a.id "
+      + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
+      + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
+      + "left join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
+      + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
+      + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
 
   @Inject
   public AlarmMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
@@ -71,10 +75,12 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
     }
     for (int i = 0; i < dimensions.size(); i++) {
       final String indexStr = String.valueOf(i);
-      sbJoin.append(" inner join metric_dimension md").append(indexStr).append(" on md").append(indexStr)
-            .append(".name = :dname").append(indexStr).append(" and md").append(indexStr)
-            .append(".value = :dvalue").append(indexStr).append(" and mdd.metric_dimension_set_id = md")
-            .append(indexStr).append(".dimension_set_id");
+      sbJoin.append(" inner join metric_dimension md").append(indexStr).append(" on md")
+          .append(indexStr)
+          .append(".name = :dname").append(indexStr).append(" and md").append(indexStr)
+          .append(".value = :dvalue").append(indexStr)
+          .append(" and mdd.metric_dimension_set_id = md")
+          .append(indexStr).append(".dimension_set_id");
     }
   }
 
@@ -91,7 +97,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
-                          Map<String, String> metricDimensions, AlarmState state, String offset,
+                          Map<String, String> metricDimensions, AlarmState state,
+                          DateTime stateUpdatedStart, String offset,
                           int limit, boolean enforceLimit) {
 
     try (Handle h = db.open()) {
@@ -103,12 +110,12 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
       if (metricName != null) {
         sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
-            + "inner join alarm_metric as am on am.alarm_id = a.id "
-            + "inner join metric_definition_dimensions as mdd "
-            + "  on mdd.id = am.metric_definition_dimensions_id "
-            + "inner join (select distinct id from metric_definition "
-            + "            where name = :metricName) as md "
-            + "on md.id = mdd.metric_definition_id ");
+                       + "inner join alarm_metric as am on am.alarm_id = a.id "
+                       + "inner join metric_definition_dimensions as mdd "
+                       + "  on mdd.id = am.metric_definition_dimensions_id "
+                       + "inner join (select distinct id from metric_definition "
+                       + "            where name = :metricName) as md "
+                       + "on md.id = mdd.metric_definition_id ");
 
         buildJoinClauseFor(metricDimensions, sbWhere);
 
@@ -117,6 +124,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
       if (state != null) {
         sbWhere.append(" and a.state = :state");
+      }
+      if (stateUpdatedStart != null) {
+        sbWhere.append(" and a.updated_at >= :stateUpdatedStart");
       }
       if (offset != null) {
         sbWhere.append(" and a.id > :offset");
@@ -138,6 +148,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
       if (state != null) {
         q.bind("state", state.name());
+      }
+      if (stateUpdatedStart != null) {
+        q.bind("stateUpdatedStart", stateUpdatedStart.toString().replace('Z', ' '));
       }
       if (offset != null) {
         q.bind("offset", offset);
@@ -169,8 +182,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
     final List<Map<String, Object>> rows =
         h.createQuery(sql).bind("id", alarmId).bind("tenantId", tenantId).list();
-    if (rows.isEmpty())
+    if (rows.isEmpty()) {
       throw new EntityNotFoundException("No alarm exists for %s", alarmId);
+    }
 
     return createAlarms(tenantId, rows).get(0);
   }
@@ -186,8 +200,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
         alarmedMetrics = new ArrayList<>();
         alarm =
             new Alarm(alarmId, getString(row, "alarm_definition_id"), getString(row,
-                "alarm_definition_name"), getString(row, "severity"), alarmedMetrics,
-                AlarmState.valueOf(getString(row, "state")));
+                      "alarm_definition_name"), getString(row, "severity"), alarmedMetrics,
+                      AlarmState.valueOf(getString(row, "state")),
+                      new DateTime(((Timestamp)row.get("state_updated_timestamp")).getTime(), DateTimeZone.forID("UTC")),
+                      new DateTime(((Timestamp)row.get("created_timestamp")).getTime(), DateTimeZone.forID("UTC")));
         alarms.add(alarm);
       }
       previousAlarmId = alarmId;
@@ -239,6 +255,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   }
 
   public static class SubAlarm {
+
     private String id;
     private String expression;
 
@@ -253,12 +270,15 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
     public String getId() {
       return id;
     }
+
     public void setId(String id) {
       this.id = id;
     }
+
     public String getExpression() {
       return expression;
     }
+
     public void setExpression(String expression) {
       this.expression = expression;
     }
@@ -285,26 +305,27 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   public Map<String, Map<String, AlarmSubExpression>> findAlarmSubExpressionsForAlarmDefinition(
       String alarmDefinitionId) {
 
-      try (Handle h = db.open()) {
-        final List<Map<String, Object>> rows = h
-            .createQuery("select sa.* from sub_alarm as sa, alarm as a where sa.alarm_id=a.id and a.alarm_definition_id = :alarmDefinitionId")
-            .bind("alarmDefinitionId", alarmDefinitionId).list();
+    try (Handle h = db.open()) {
+      final List<Map<String, Object>> rows = h
+          .createQuery(
+              "select sa.* from sub_alarm as sa, alarm as a where sa.alarm_id=a.id and a.alarm_definition_id = :alarmDefinitionId")
+          .bind("alarmDefinitionId", alarmDefinitionId).list();
 
-        Map<String, Map<String, AlarmSubExpression>> subAlarms = new HashMap<>();
-        for (Map<String, Object> row : rows) {
-          final String alarmId = (String)row.get("alarm_id");
-          Map<String, AlarmSubExpression> alarmMap = subAlarms.get(alarmId);
-          if (alarmMap == null) {
-            alarmMap = new HashMap<>();
-            subAlarms.put(alarmId, alarmMap);
-          }
-          
-          final String id = (String)row.get("id");
-          final String expression = (String)row.get("expression");
-          alarmMap.put(id, AlarmSubExpression.of(expression));
+      Map<String, Map<String, AlarmSubExpression>> subAlarms = new HashMap<>();
+      for (Map<String, Object> row : rows) {
+        final String alarmId = (String) row.get("alarm_id");
+        Map<String, AlarmSubExpression> alarmMap = subAlarms.get(alarmId);
+        if (alarmMap == null) {
+          alarmMap = new HashMap<>();
+          subAlarms.put(alarmId, alarmMap);
         }
 
-        return subAlarms;
+        final String id = (String) row.get("id");
+        final String expression = (String) row.get("expression");
+        alarmMap.put(id, AlarmSubExpression.of(expression));
+      }
+
+      return subAlarms;
     }
   }
 }

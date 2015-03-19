@@ -131,7 +131,7 @@ public class MonApiApplication extends Application<ApiConfig> {
     module.addSerializer(new SubAlarmExpressionSerializer());
     environment.getObjectMapper().registerModule(module);
 
-    
+
     /** Configure CORS filter */
     Dynamic corsFilter = environment.servlets().addFilter("cors", CrossOriginFilter.class);
     corsFilter.addMappingForUrlPatterns(null, true, "/*");
