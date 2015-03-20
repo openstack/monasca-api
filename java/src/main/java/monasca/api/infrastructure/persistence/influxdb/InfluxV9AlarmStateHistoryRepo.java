@@ -17,6 +17,7 @@ import com.google.inject.Inject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -55,7 +56,12 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private final String region;
   private final InfluxV9RepoReader influxV9RepoReader;
   private final InfluxV9Utils influxV9Utils;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+
+  static {
+    objectMapper
+        .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+  }
 
   private final SimpleDateFormat simpleDateFormat =
       new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -63,7 +69,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
 
-  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUBALARMS_TYPE =
+  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUB_ALARMS_TYPE =
       new TypeReference<List<AlarmTransitionSubAlarm>>() {};
 
   @Inject
@@ -86,7 +92,8 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
       throws Exception {
 
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    String q = String.format("select alarm_id, metrics, old_state, new_state, "
+                             + "reason, reason_data, sub_alarms "
                              + "from alarm_state_history "
                              + "where %1$s %2$s %3$s %4$s",
                              this.influxV9Utils.tenantIdPart(tenantId),
@@ -119,7 +126,8 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
     }
 
 
-    String q = String.format("select alarm_id, metrics, old_state, new_state, reason, reason_data "
+    String q = String.format("select alarm_id, metrics, old_state, new_state, "
+                             + "reason, reason_data, sub_alarms "
                              + "from alarm_state_history "
                              + "where %1$s %2$s %3$s %4$s %5$s",
                              this.influxV9Utils.tenantIdPart(tenantId),
@@ -184,7 +192,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
           List<AlarmTransitionSubAlarm> subAlarmList;
           try {
-              subAlarmList = this.objectMapper.readValue(values[7], SUBALARMS_TYPE);
+              subAlarmList = this.objectMapper.readValue(values[7], SUB_ALARMS_TYPE);
           } catch (IOException e) {
             logger.error("Failed to parse sub-alarms", e);
             continue;

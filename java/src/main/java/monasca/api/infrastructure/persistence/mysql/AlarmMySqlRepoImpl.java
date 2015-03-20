@@ -196,9 +196,16 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       // Not all Metrics have dimensions (at least theoretically)
       if (row.containsKey("metric_dimensions")) {
         final String dimensions = getString(row, "metric_dimensions");
-        for (String dimension : dimensions.split(",")) {
-          final String[] parsed_dimension = dimension.split("=");
-          dimensionMap.put(parsed_dimension[0], parsed_dimension[1]);
+        if (dimensions != null && !dimensions.isEmpty()) {
+          for (String dimension : dimensions.split(",")) {
+            final String[] parsed_dimension = dimension.split("=");
+            if (parsed_dimension.length == 2) {
+              dimensionMap.put(parsed_dimension[0], parsed_dimension[1]);
+            } else {
+              logger
+                  .error("Failed to parse dimension. Dimension is malformed: {}", parsed_dimension);
+            }
+          }
         }
       }
 

@@ -50,7 +50,7 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
-  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUBALARMS_TYPE =
+  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUB_ALARMS_TYPE =
       new TypeReference<List<AlarmTransitionSubAlarm>>() {};
   private static final Logger logger = LoggerFactory
       .getLogger(InfluxV8AlarmStateHistoryRepo.class);
@@ -172,7 +172,7 @@ public class InfluxV8AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
         try {
           alarmStateHistory.setSubAlarms((List<AlarmTransitionSubAlarm>) OBJECT_MAPPER.readValue(
-              (String) row.get(colNames[8]), SUBALARMS_TYPE));
+              (String) row.get(colNames[8]), SUB_ALARMS_TYPE));
         } catch (Exception ignore) {
           alarmStateHistory.setSubAlarms(Collections.<AlarmTransitionSubAlarm>emptyList());
         }
