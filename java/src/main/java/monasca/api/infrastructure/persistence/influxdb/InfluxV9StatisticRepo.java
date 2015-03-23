@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -144,7 +145,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
                                                Arrays.asList(translateNames(serie.getColumns())));
 
         for (Object[] values : serie.getValues()) {
-          statistics.addStatistics(Arrays.asList(values));
+          statistics.addStatistics(buildValsList(values));
         }
 
         statisticsList.add(statistics);
@@ -154,6 +155,21 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
     }
 
     return statisticsList;
+  }
+
+  private List<Object> buildValsList(Object[] values) {
+
+    ArrayList<Object> valObjArryList = new ArrayList<>();
+
+    // First value is the timestamp.
+    valObjArryList.add(values[0]);
+
+    // All other values are doubles.
+    for (int i = 1; i < values.length; ++i) {
+      valObjArryList.add(Double.parseDouble((String) values[i]));
+    }
+
+    return valObjArryList;
   }
 
   private String[] translateNames(String[] columnNamesArry) {
