@@ -26,6 +26,10 @@ Document Version: v2.0
   - [Common Http Request Headers](#common-http-request-headers)
   - [Non-standard request headers](#non-standard-request-headers)
 - [Common Responses](#common-responses)
+- [Paging](#paging)
+  - [Offset](#offset)
+  - [Limit](#limit)
+- [JSON RESULTS](#json-results)
 - [Versions](#versions)
   - [List Versions](#list-versions)
     - [GET](#get)
@@ -357,7 +361,7 @@ Alarm Definition 2:
 Alarm 1 - Metrics: cpu.idle_perc{service=monitoring,hostname=mini-mon}
 ```
 
-Now, when the metric cpu.idle_perc{service=monitoring,hostname=devstack} is received, the two Alarm Definitions define different behaviors. Since the value for the hostname dimension is different than the value for the existing Alarm from Alarm Definition 2, an new Alarm will be created.  Alarm Definition 1 does not have a value for match_by, so this metric is added to the existing Alarm. This gives us the following set of Alarm Definitions and Alarms:
+Now, when the metric cpu.idle_perc{service=monitoring,hostname=devstack} is received, the two Alarm Definitions define different behaviors. Since the value for the hostname dimension is different from the value for the existing Alarm from Alarm Definition 2, and Alarm Definition 2 has specified a match_by parameter on `hostname`, a new Alarm will be created.  Alarm Definition 1 does not have a value for match_by, so this metric is added to the existing Alarm. This gives us the following set of Alarm Definitions and Alarms:
 
 Alarm Definition 1:
 ```
@@ -399,7 +403,7 @@ and another will have the metrics:
 avg(cpu.idle_perc{service=monitoring,hostname=devstack}) and avg(cpu.user_perc{service=monitoring,hostname=devstack})
 ```
 
-Note that the value of match_by, "hostname", is used to match the metrics between the subexpressions, hence the name match_by.
+Note that the value of match_by, "hostname", is used to match the metrics between the subexpressions, hence the name 'match_by'.
 
 An Alarm will only get created when metrics are seen that match all subexpressions in the Alarm Definition.  If match_by is set, then each metric must have a value for at least one of the values in match_by. If match_by is not set, only one Alarm will be created for an Alarm Definition.
 
@@ -598,6 +602,99 @@ The Monasca API utilizes HTTP response codes to inform clients of the success or
 * 409 - Conflict
 * 422 - Unprocessable entity
 
+# Paging
+The Monasca API implements a paging mechanism to allow users to 'page' through result sets returned from the API. The paging functionality is limited to resources that return unbounded lists of results. This permits the user to consume as much data from the API as is needed without placing undo memory consumption burdens on the Monasca API Server. The paging mechanism is accomplished by allowing the user to specify an offset and a limit in the request URL as query parameters.
+
+For example:
+
+```
+"http://192.168.10.4:8080/v2.0/metrics/measurements?offset=2015-03-03T05%3A21%3A55Z&limit=1000&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2014-07-18T03%3A00%3A00Z"
+
+```
+
+Results sets that would otherwise return more results if there had not been a limit will include a next link with the offset prepopulated. The user only need use the next link to get the next set of results.
+
+If no limit is specified in the request URL, then a server-wide configurable limit is applied.
+
+
+## Offset
+Offsets can be either integer offsets, string offsets, or timestamp offsets. The use of either integer, string, or timestamp is determined by the resource being queried.
+
+For example, an integer offset would look like this:
+
+```
+offset=999
+
+```
+Integer offsets are zero based.
+
+A string offset would look like this:
+
+```
+offset=c60ec47e-5038-4bf1-9f95-4046c6e9a759
+
+```
+
+A timestamp offset would look like this:
+
+```
+offset=2104-01-01T00:00:01Z
+
+```
+
+Different resources use different offset types because of the internal implementation of different resources depends on different types of mechanisms for indexing and identifying resources. The type and form of the offsets for each resource can be determined by referring to the examples in each resource section below.
+
+The offset is determined by the ID of the last element in the result list. Users wishing to manually create a query URL can use the ID of the last element in the previously returned result set as the offset. The proceeding result set will return all elements with an ID greater than the offset up to the limit. The automatically generated offset in the next link does exactly this; it uses the ID in the last element.
+
+The offset can take the form of an integer, string, or timestamp, but the user should treat the offset as an opaque reference. When using offsets in manually generated URLs, users enter them as strings that look like integers, timestamps, or strings. Future releases may change the type and form of the offsets for each resource.
+
+## Limit
+The Monasca API has a server-wide default limit that is applied. Users may specifiy their own limit in the URL, but the server-wide limit may not be exceeded. The Monasca server-wide limit is configured in the Monasca API config file as maxQueryLimit. Users may specify a limit up to the maxQueryLimit.
+
+```
+limit=1000
+
+```
+# JSON Results
+All Monasca API results are in the form of JSON. For resources that return a list of elements, the JSON object returned will contain a 'links' array and an 'elements' array.
+
+The 'links' array will contain a 'self' element that is the original URL of the request that was used to generate the result. The 'links' array may also contain a 'next' element if the number of elements in the result would exceed the query limit. The 'next' link can be used to query the Monasca API for the next set of results, thus allowing the user to page through lengthy data sets.
+
+The 'elements' array will contain the items from the resource that match the query parameters. Each element will have an 'id' element. The 'id' element of the last item in the elements list is used as the offset in the 'next' link.
+
+For example:
+
+```
+{
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/metrics&limit=2"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/metrics?offset=1&limit=2"
+        }
+    ],
+    "elements": [
+        {
+            "id": 0,
+            "name": "name1",
+            "dimensions": {
+                "key1": "value1"
+            }
+        },
+        {
+            "id": 1,
+            "name": "name2",
+            "dimensions": {
+                "key1": "value1"
+            }
+        }
+    ]
+}
+```
+
 # Versions
 The versions resource supplies operations for accessing information about supported versions of the API.
 
@@ -633,12 +730,17 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of supported versions.
+Returns a JSON object with a 'links' array of links and an 'elements' array of supported versions.
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/"
+        }
+    ],
     "elements": [
         {
             "id": "v2.0",
@@ -842,6 +944,8 @@ None.
 #### Query Parameters
 * name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
+* offset (integer, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -860,7 +964,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of metric definition objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of metric definition objects with the following fields:
 
 * name (string)
 * dimensions ({string(255): string(255)})
@@ -868,7 +972,16 @@ Returns a JSON object with an 'elements' array of metric definition objects with
 #### Response Examples
 ````
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/metrics"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/metrics?offset=1"
+        }
+    ],
     "elements": [
         {
             "name": "name1",
@@ -884,7 +997,6 @@ Returns a JSON object with an 'elements' array of metric definition objects with
         }
     ]
 }
-
 ````
 ___
 
@@ -908,6 +1020,8 @@ None.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
+* offset (timestamp, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -926,7 +1040,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of measurements objects for each unique metric with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of measurements objects for each unique metric with the following fields:
 
 * name (string(255)) - A name of a metric.
 * dimensions ({string(255): string(255)}) - The dimensions of a metric.
@@ -936,7 +1050,16 @@ Returns a JSON object with an 'elements' array of measurements objects for each 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?start_time=2014-07-18T03%3A00%3A00Z&name=cpu.system_perc&dimensions=hostname%3Adevstack"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?offset=2015-03-03T05%3A21%3A55Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2014-07-18T03%3A00%3A00Z"
+        }
+    ],
     "elements": [
         {
             "id": "1425359919000",
@@ -978,7 +1101,6 @@ Returns a JSON object with an 'elements' array of measurements objects for each 
         }
     ]
 }
-
 ```
 ___
 
@@ -1004,6 +1126,8 @@ None.
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * period (integer, optional) - The time period to aggregate measurements by. Default is 300 seconds.
+* offset (timestamp, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -1023,7 +1147,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of statistic objects for each unique metric with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of statistic objects for each unique metric with the following fields:
 
 * name (string(255)) - A name of a metric.
 * dimensions ({string(255): string(255)}) - The dimensions of a metric.
@@ -1033,7 +1157,16 @@ Returns a JSON object with an 'elements' array of statistic objects for each uni
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/metrics/statistics?start_time=2014-07-18T03%3A00%3A00Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&statistics=avg%2Cmin%2Cmax%2Csum%2Ccount"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/metrics/statistics?offset=2014-07-18T03%3A22%3A00Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2014-07-18T03%3A00%3A00Z&statistics=avg%2Cmin%2Cmax%2Csum%2Ccount"
+        }
+    ],
     "elements": [
         {
             "name": "cpu.system_perc",
@@ -1058,7 +1191,7 @@ Returns a JSON object with an 'elements' array of statistic objects for each uni
                     8
                 ],
                 [
-                    "2014-07-18T03:10:00Z",
+                    "2014-07-18T03:21:00Z",
                     2.412941176470588,
                     1.71,
                     4.09,
@@ -1066,7 +1199,7 @@ Returns a JSON object with an 'elements' array of statistic objects for each uni
                     17
                 ],
                 [
-                    "2014-07-18T03:00:00Z",
+                    "2014-07-18T03:22:00Z",
                     2.1135294117647065,
                     1.62,
                     3.85,
@@ -1077,7 +1210,6 @@ Returns a JSON object with an 'elements' array of statistic objects for each uni
         }
     ]
 }
-
 ```
 ___
 
@@ -1184,18 +1316,29 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of notification method objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of notification method objects with the following fields:
 
 * id (string) - ID of notification method
 * links ([link]) 
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/notification-methods"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/notification-methods?offset=c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+        }
+    ],
     "elements": [
         {
             "id": "35cc6f1c-3a29-49fb-a6fc-d9d97d190508",
@@ -1223,7 +1366,6 @@ Returns a JSON object with an 'elements' array of notification method objects wi
         }
     ]
 }
-
 ```
 ___
 
@@ -1516,6 +1658,8 @@ None.
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
 * dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -1534,7 +1678,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of alarm objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of alarm objects with the following fields:
 
 * id (string) - ID of alarm definition.
 * links ([link]) - Links to alarm definition.
@@ -1548,11 +1692,22 @@ Returns a JSON object with an 'elements' array of alarm objects with the followi
 * alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
 * ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
 * undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarm-definitions?name=CPU%20percent%20greater%20than%2010&dimensions=hostname:devstack&state=UNDETERMINED"
+        },
+        {
+            "rel": "next",
+            "href": "http://localhost:8080/v2.0/alarm-definitions?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&name=CPU%20percent%20greater%20than%2010&dimensions=hostname:devstack&state=UNDETERMINED"
+        }
+    ],
     "elements": [
         {
             "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
@@ -1593,7 +1748,6 @@ Returns a JSON object with an 'elements' array of alarm objects with the followi
         }
     ]
 }
-
 ```
 ___
 
@@ -1985,18 +2139,29 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of alarm objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of alarm objects with the following fields:
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
 * alarm_definition_id (string) - Name of alarm.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarms?name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/alarms?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+        }
+    ],
     "elements": [
         {
             "id": "f9935bcc-9641-4cbf-8224-0993a947ea83",
@@ -2061,7 +2226,7 @@ None.
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of alarm state transition objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of alarm state transition objects with the following fields:
 
 * id - Alarm State Transition ID.
 * alarm_id (string) - Alarm ID.
@@ -2072,11 +2237,22 @@ Returns a JSON object with an 'elements' array of alarm state transition objects
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 * sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
+* offset (integer, optional)
+* limit (integer, optional)
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarms/state-history?dimensions=hostname%3Adevstack"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/alarms/state-history?offset=1424448667000&dimensions=hostname%3Adevstack"
+        }
+    ],
     "elements": [
         {
             "id": "1424451007002",
@@ -2471,7 +2647,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with an 'elements' array of alarm state transition objects with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of alarm state transition objects with the following fields:
 
 * id - Alarm State Transition ID.
 * alarm_id (string) - Alarm ID.
@@ -2482,11 +2658,22 @@ Returns a JSON object with an 'elements' array of alarm state transition objects
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 * sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
+* offset (integer, optional)
+* limit (integer, optional)
 
 #### Response Examples
 ```
 {
-    "links": [],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/alarms/37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0/state-history"
+        },
+        {
+            "rel": "next",
+            "href": "http://192.168.10.4:8080/v2.0/alarms/37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0/state-history?offset=1424451367001"
+        }
+    ],
     "elements": [
         {
             "id": "1424452147003",
