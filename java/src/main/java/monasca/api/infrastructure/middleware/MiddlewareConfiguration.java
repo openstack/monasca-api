@@ -59,6 +59,10 @@ public class MiddlewareConfiguration {
   @JsonProperty
   public String adminPassword;
   @JsonProperty
+  public String adminProjectId = "";
+  @JsonProperty
+  public String adminProjectName = "";
+  @JsonProperty
   public String maxTokenCacheSize = "1048576";
   @JsonProperty
   public String truststore;
