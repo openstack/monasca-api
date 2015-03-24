@@ -82,7 +82,7 @@ public class StatisticResource {
         Validation.parseValidateAndNormalizeStatistics(COMMA_SPLITTER.split(statisticsStr));
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation.parseAndValidateNameAndDimensions(
-            name, dimensionsStr);
+            name, dimensionsStr, true);
 
 
     return Links.paginateStatistics(this.persistUtils.getLimit(limit),

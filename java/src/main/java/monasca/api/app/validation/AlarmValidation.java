@@ -87,7 +87,7 @@ public final class AlarmValidation {
 
       // Normalize and validate namespace
       metricDef.name = MetricNameValidation.normalize(metricDef.name);
-      MetricNameValidation.validate(metricDef.name, service);
+      MetricNameValidation.validate(metricDef.name, service, true);
 
       // Normalize and validate dimensions
       if (metricDef.dimensions != null) {

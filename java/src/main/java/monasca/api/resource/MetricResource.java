@@ -110,7 +110,7 @@ public class MetricResource {
     Map<String, String>
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(name, dimensionsStr);
+            .parseAndValidateNameAndDimensions(name, dimensionsStr, false);
 
     return Links.paginate(this.persistUtils.getLimit(limit),
                           metricRepo.find(tenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
@@ -128,7 +128,7 @@ public class MetricResource {
     Map<String, String>
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions("null", dimensionsStr);
+            .parseAndValidateDimensions(dimensionsStr);
 
     return Links.paginate(this.persistUtils.getLimit(limit),
                           metricRepo.findNames(tenantId, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);

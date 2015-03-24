@@ -69,7 +69,7 @@ public class MeasurementResource {
     Map<String, String>
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(name, dimensionsStr);
+            .parseAndValidateNameAndDimensions(name, dimensionsStr, true);
 
     return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
                           repo.find(tenantId, name, dimensions, startTime, endTime,

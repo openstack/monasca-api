@@ -24,7 +24,8 @@ import java.util.Map;
 public class ValidationTest {
 
   public void testSimpleParseAndValidateNameAndDimensions() {
-    final Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions("cpu.idle_perc", "aa:bb,cc:dd");
+    final Map<String, String> dimensions = Validation.parseAndValidateNameAndDimensions("cpu.idle_perc", "aa:bb,cc:dd",
+                                                                                        true);
     assertEquals(dimensions.size(), 2);
     assertEquals(dimensions.get("aa"), "bb");
     assertEquals(dimensions.get("cc"), "dd");

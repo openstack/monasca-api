@@ -130,7 +130,7 @@ public class CreateMetricCommand {
     // Validate name and dimensions
     if (dimensions != null) {
       String service = dimensions.get(Services.SERVICE_DIMENSION);
-      MetricNameValidation.validate(name, service);
+      MetricNameValidation.validate(name, service, true);
       DimensionValidation.validate(dimensions, service);
     }
     if (valueMeta != null) {
