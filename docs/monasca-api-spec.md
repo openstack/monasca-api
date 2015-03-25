@@ -90,9 +90,9 @@ Document Version: v2.0
       - [Status Code](#status-code-2)
       - [Response Body](#response-body-4)
       - [Response Examples](#response-examples-3)
-- [Statistics](#statistics)
-  - [List statistics](#list-statistics)
-    - [GET /v2.0/metrics/statistics](#get-v20metricsstatistics)
+- [Metric Names](#metric-names)
+  - [List names](#list-names)
+    - [GET /v2.0/metrics/names](#get-v20metricsnames)
       - [Headers](#headers-5)
       - [Path Parameters](#path-parameters-5)
       - [Query Parameters](#query-parameters-5)
@@ -102,9 +102,9 @@ Document Version: v2.0
       - [Status Code](#status-code-3)
       - [Response Body](#response-body-5)
       - [Response Examples](#response-examples-4)
-- [Notification Methods](#notification-methods)
-  - [Create Notification Method](#create-notification-method)
-    - [POST /v2.0/notification-methods](#post-v20notification-methods)
+- [Statistics](#statistics)
+  - [List statistics](#list-statistics)
+    - [GET /v2.0/metrics/statistics](#get-v20metricsstatistics)
       - [Headers](#headers-6)
       - [Path Parameters](#path-parameters-6)
       - [Query Parameters](#query-parameters-6)
@@ -114,8 +114,9 @@ Document Version: v2.0
       - [Status Code](#status-code-4)
       - [Response Body](#response-body-6)
       - [Response Examples](#response-examples-5)
-  - [List Notification Methods](#list-notification-methods)
-    - [GET /v2.0/notification-methods](#get-v20notification-methods)
+- [Notification Methods](#notification-methods)
+  - [Create Notification Method](#create-notification-method)
+    - [POST /v2.0/notification-methods](#post-v20notification-methods)
       - [Headers](#headers-7)
       - [Path Parameters](#path-parameters-7)
       - [Query Parameters](#query-parameters-7)
@@ -125,8 +126,8 @@ Document Version: v2.0
       - [Status Code](#status-code-5)
       - [Response Body](#response-body-7)
       - [Response Examples](#response-examples-6)
-  - [Get Notification Method](#get-notification-method)
-    - [GET /v2.0/notification-methods/{notification_method_id}](#get-v20notification-methodsnotification_method_id)
+  - [List Notification Methods](#list-notification-methods)
+    - [GET /v2.0/notification-methods](#get-v20notification-methods)
       - [Headers](#headers-8)
       - [Path Parameters](#path-parameters-8)
       - [Query Parameters](#query-parameters-8)
@@ -136,8 +137,8 @@ Document Version: v2.0
       - [Status Code](#status-code-6)
       - [Response Body](#response-body-8)
       - [Response Examples](#response-examples-7)
-  - [Update Notification Method](#update-notification-method)
-    - [PUT /v2.0/notification-methods/{notification_method_id}](#put-v20notification-methodsnotification_method_id)
+  - [Get Notification Method](#get-notification-method)
+    - [GET /v2.0/notification-methods/{notification_method_id}](#get-v20notification-methodsnotification_method_id)
       - [Headers](#headers-9)
       - [Path Parameters](#path-parameters-9)
       - [Query Parameters](#query-parameters-9)
@@ -147,8 +148,8 @@ Document Version: v2.0
       - [Status Code](#status-code-7)
       - [Response Body](#response-body-9)
       - [Response Examples](#response-examples-8)
-  - [Delete Notification Method](#delete-notification-method)
-    - [DELETE /v2.0/notification-methods/{notification_method_id}](#delete-v20notification-methodsnotification_method_id)
+  - [Update Notification Method](#update-notification-method)
+    - [PUT /v2.0/notification-methods/{notification_method_id}](#put-v20notification-methodsnotification_method_id)
       - [Headers](#headers-10)
       - [Path Parameters](#path-parameters-10)
       - [Query Parameters](#query-parameters-10)
@@ -157,9 +158,9 @@ Document Version: v2.0
     - [Response](#response-10)
       - [Status Code](#status-code-8)
       - [Response Body](#response-body-10)
-- [Alarm Definitions](#alarm-definitions)
-  - [Create Alarm Definition](#create-alarm-definition)
-    - [POST /v2.0/alarm-definitions](#post-v20alarm-definitions)
+      - [Response Examples](#response-examples-9)
+  - [Delete Notification Method](#delete-notification-method)
+    - [DELETE /v2.0/notification-methods/{notification_method_id}](#delete-v20notification-methodsnotification_method_id)
       - [Headers](#headers-11)
       - [Path Parameters](#path-parameters-11)
       - [Query Parameters](#query-parameters-11)
@@ -168,9 +169,9 @@ Document Version: v2.0
     - [Response](#response-11)
       - [Status Code](#status-code-9)
       - [Response Body](#response-body-11)
-      - [Response Examples](#response-examples-9)
-  - [List Alarm Definitions](#list-alarm-definitions)
-    - [GET /v2.0/alarm-definitions](#get-v20alarm-definitions)
+- [Alarm Definitions](#alarm-definitions)
+  - [Create Alarm Definition](#create-alarm-definition)
+    - [POST /v2.0/alarm-definitions](#post-v20alarm-definitions)
       - [Headers](#headers-12)
       - [Path Parameters](#path-parameters-12)
       - [Query Parameters](#query-parameters-12)
@@ -180,29 +181,29 @@ Document Version: v2.0
       - [Status Code](#status-code-10)
       - [Response Body](#response-body-12)
       - [Response Examples](#response-examples-10)
-  - [Get Alarm Definition](#get-alarm-definition)
-    - [GET /v2.0/alarm-definitions/{alarm_definition_id}](#get-v20alarm-definitionsalarm_definition_id)
+  - [List Alarm Definitions](#list-alarm-definitions)
+    - [GET /v2.0/alarm-definitions](#get-v20alarm-definitions)
       - [Headers](#headers-13)
       - [Path Parameters](#path-parameters-13)
       - [Query Parameters](#query-parameters-13)
       - [Request Body](#request-body-13)
+      - [Request Examples](#request-examples-13)
     - [Response](#response-13)
       - [Status Code](#status-code-11)
       - [Response Body](#response-body-13)
       - [Response Examples](#response-examples-11)
-  - [Update Alarm Definition](#update-alarm-definition)
-    - [PUT /v2.0/alarm-definitions/{alarm_definition_id}](#put-v20alarm-definitionsalarm_definition_id)
+  - [Get Alarm Definition](#get-alarm-definition)
+    - [GET /v2.0/alarm-definitions/{alarm_definition_id}](#get-v20alarm-definitionsalarm_definition_id)
       - [Headers](#headers-14)
       - [Path Parameters](#path-parameters-14)
       - [Query Parameters](#query-parameters-14)
       - [Request Body](#request-body-14)
-      - [Request Examples](#request-examples-13)
     - [Response](#response-14)
       - [Status Code](#status-code-12)
       - [Response Body](#response-body-14)
       - [Response Examples](#response-examples-12)
-  - [Patch Alarm Definition](#patch-alarm-definition)
-    - [PATCH /v2.0/alarm-definitions/{alarm_definition_id}](#patch-v20alarm-definitionsalarm_definition_id)
+  - [Update Alarm Definition](#update-alarm-definition)
+    - [PUT /v2.0/alarm-definitions/{alarm_definition_id}](#put-v20alarm-definitionsalarm_definition_id)
       - [Headers](#headers-15)
       - [Path Parameters](#path-parameters-15)
       - [Query Parameters](#query-parameters-15)
@@ -212,8 +213,8 @@ Document Version: v2.0
       - [Status Code](#status-code-13)
       - [Response Body](#response-body-15)
       - [Response Examples](#response-examples-13)
-  - [Delete Alarm Definition](#delete-alarm-definition)
-    - [DELETE /v2.0/alarm-definitions/{alarm_definition_id}](#delete-v20alarm-definitionsalarm_definition_id)
+  - [Patch Alarm Definition](#patch-alarm-definition)
+    - [PATCH /v2.0/alarm-definitions/{alarm_definition_id}](#patch-v20alarm-definitionsalarm_definition_id)
       - [Headers](#headers-16)
       - [Path Parameters](#path-parameters-16)
       - [Query Parameters](#query-parameters-16)
@@ -222,8 +223,9 @@ Document Version: v2.0
     - [Response](#response-16)
       - [Status Code](#status-code-14)
       - [Response Body](#response-body-16)
-  - [List Alarms](#list-alarms)
-    - [GET /v2.0/alarms](#get-v20alarms)
+      - [Response Examples](#response-examples-14)
+  - [Delete Alarm Definition](#delete-alarm-definition)
+    - [DELETE /v2.0/alarm-definitions/{alarm_definition_id}](#delete-v20alarm-definitionsalarm_definition_id)
       - [Headers](#headers-17)
       - [Path Parameters](#path-parameters-17)
       - [Query Parameters](#query-parameters-17)
@@ -232,19 +234,19 @@ Document Version: v2.0
     - [Response](#response-17)
       - [Status Code](#status-code-15)
       - [Response Body](#response-body-17)
-      - [Response Examples](#response-examples-14)
-  - [List Alarms State History](#list-alarms-state-history)
-    - [GET /v2.0/alarms/state-history](#get-v20alarmsstate-history)
+  - [List Alarms](#list-alarms)
+    - [GET /v2.0/alarms](#get-v20alarms)
       - [Headers](#headers-18)
       - [Path Parameters](#path-parameters-18)
       - [Query Parameters](#query-parameters-18)
       - [Request Body](#request-body-18)
+      - [Request Examples](#request-examples-17)
     - [Response](#response-18)
       - [Status Code](#status-code-16)
       - [Response Body](#response-body-18)
       - [Response Examples](#response-examples-15)
-  - [Get Alarm](#get-alarm)
-    - [GET /v2.0/alarms/{alarm_id}](#get-v20alarmsalarm_id)
+  - [List Alarms State History](#list-alarms-state-history)
+    - [GET /v2.0/alarms/state-history](#get-v20alarmsstate-history)
       - [Headers](#headers-19)
       - [Path Parameters](#path-parameters-19)
       - [Query Parameters](#query-parameters-19)
@@ -253,19 +255,18 @@ Document Version: v2.0
       - [Status Code](#status-code-17)
       - [Response Body](#response-body-19)
       - [Response Examples](#response-examples-16)
-  - [Update Alarm](#update-alarm)
-    - [PUT /v2.0/alarms/{alarm_id}](#put-v20alarmsalarm_id)
+  - [Get Alarm](#get-alarm)
+    - [GET /v2.0/alarms/{alarm_id}](#get-v20alarmsalarm_id)
       - [Headers](#headers-20)
       - [Path Parameters](#path-parameters-20)
       - [Query Parameters](#query-parameters-20)
       - [Request Body](#request-body-20)
-      - [Request Examples](#request-examples-17)
     - [Response](#response-20)
       - [Status Code](#status-code-18)
       - [Response Body](#response-body-20)
       - [Response Examples](#response-examples-17)
-  - [Patch Alarm](#patch-alarm)
-    - [PATCH /v2.0/alarms/{alarm_id}](#patch-v20alarmsalarm_id)
+  - [Update Alarm](#update-alarm)
+    - [PUT /v2.0/alarms/{alarm_id}](#put-v20alarmsalarm_id)
       - [Headers](#headers-21)
       - [Path Parameters](#path-parameters-21)
       - [Query Parameters](#query-parameters-21)
@@ -275,8 +276,8 @@ Document Version: v2.0
       - [Status Code](#status-code-19)
       - [Response Body](#response-body-21)
       - [Response Examples](#response-examples-18)
-  - [Delete Alarm](#delete-alarm)
-    - [DELETE /v2.0/alarms/{alarm_id}](#delete-v20alarmsalarm_id)
+  - [Patch Alarm](#patch-alarm)
+    - [PATCH /v2.0/alarms/{alarm_id}](#patch-v20alarmsalarm_id)
       - [Headers](#headers-22)
       - [Path Parameters](#path-parameters-22)
       - [Query Parameters](#query-parameters-22)
@@ -285,17 +286,28 @@ Document Version: v2.0
     - [Response](#response-22)
       - [Status Code](#status-code-20)
       - [Response Body](#response-body-22)
-  - [List Alarm State History](#list-alarm-state-history)
-    - [GET /v2.0/alarms/{alarm_id}/state-history](#get-v20alarmsalarm_idstate-history)
+      - [Response Examples](#response-examples-19)
+  - [Delete Alarm](#delete-alarm)
+    - [DELETE /v2.0/alarms/{alarm_id}](#delete-v20alarmsalarm_id)
       - [Headers](#headers-23)
       - [Path Parameters](#path-parameters-23)
       - [Query Parameters](#query-parameters-23)
       - [Request Body](#request-body-23)
-      - [Request Data](#request-data)
+      - [Request Examples](#request-examples-20)
     - [Response](#response-23)
       - [Status Code](#status-code-21)
       - [Response Body](#response-body-23)
-      - [Response Examples](#response-examples-19)
+  - [List Alarm State History](#list-alarm-state-history)
+    - [GET /v2.0/alarms/{alarm_id}/state-history](#get-v20alarmsalarm_idstate-history)
+      - [Headers](#headers-24)
+      - [Path Parameters](#path-parameters-24)
+      - [Query Parameters](#query-parameters-24)
+      - [Request Body](#request-body-24)
+      - [Request Data](#request-data)
+    - [Response](#response-24)
+      - [Status Code](#status-code-22)
+      - [Response Body](#response-body-24)
+      - [Response Examples](#response-examples-20)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -1098,6 +1110,72 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
                     }
                 ]
             ]
+        }
+    ]
+}
+```
+___
+
+# Metric Names
+Operations for accessing names of metrics.
+
+## List names
+Get names for metrics.
+
+### GET /v2.0/metrics/names
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Accept (string) - application/json
+
+#### Path Parameters
+None.
+
+#### Query Parameters
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
+* offset (integer, optional)
+* limit (integer, optional)
+
+#### Request Body
+None.
+
+#### Request Examples
+```
+GET /v2.0/metrics/names HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+```
+
+### Response
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON object with a 'links' array of links and an 'elements' array of metric name objects for each unique metric name (not including dimensions) with the following fields:
+
+* name (string(255)) - A name of a metric.
+
+#### Response Examples
+```
+{
+    "elements": [
+        {
+            "name":"name1"
+        },
+        {
+            "name":"name2"
+        }
+    ],
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://192.168.10.4:8080/v2.0/metrics/names?offset=tenantId%3region%26name1%26dimensionKey1%3DdimensionValue1%26dimensionKey2%3DdimensionValue2"
+        },
+        {
+            "rel": "next"
+            "href": http://192.168.10.4:8080/v2.0/metrics/names?offset=tenantId%3region%26name3%26dimensionKey1%3DdimensionValue1%26dimensionKey2%3DdimensionValue2
         }
     ]
 }
