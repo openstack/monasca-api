@@ -146,7 +146,7 @@ public class AlarmResource {
       throws Exception {
     Map<String, String> metricDimensions =
         Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr);
+            .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr, false);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
                                          offset, this.persistUtils.getLimit(limit), true);
     for (final Alarm alarm : alarms) {

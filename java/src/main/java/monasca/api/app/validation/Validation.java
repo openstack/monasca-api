@@ -83,11 +83,12 @@ public final class Validation {
    * @throws WebApplicationException if the {@code value} is null or empty.
    */
   public static Map<String, String> parseAndValidateNameAndDimensions(String name,
-      String dimensionsStr) {
+                                                                      String dimensionsStr,
+                                                                      boolean nameRequiredFlag) {
     Map<String, String> dimensions = parseAndValidateDimensions(dimensionsStr);
 
     String service = dimensions.get(Services.SERVICE_DIMENSION);
-    MetricNameValidation.validate(name, service);
+    MetricNameValidation.validate(name, service, nameRequiredFlag);
     return dimensions;
   }
 
