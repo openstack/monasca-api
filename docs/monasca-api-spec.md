@@ -2341,7 +2341,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/state-history?offset=1424448667000&dimensions=hostname%3Adevstack"
+            "href": "http://192.168.10.4:8080/v2.0/alarms/state-history?offset=1424451007004&dimensions=hostname%3Adevstack"
         }
     ],
     "elements": [
@@ -2383,7 +2383,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             ]
         },
         {
-            "id": "1424448727001",
+            "id": "1424451007003",
             "alarm_id": "5ec51b06-193b-49f7-bcf7-b80d11010137",
             "metrics": [
                 {
@@ -2422,7 +2422,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             ]
         },
         {
-            "id": "1424448667000",
+            "id": "1424451007004",
             "alarm_id": "5ec51b06-193b-49f7-bcf7-b80d11010137",
             "metrics": [
                 {
