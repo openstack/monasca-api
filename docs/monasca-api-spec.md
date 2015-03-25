@@ -29,7 +29,7 @@ Document Version: v2.0
 - [Paging](#paging)
   - [Offset](#offset)
   - [Limit](#limit)
-- [JSON RESULTS](#json-results)
+- [JSON Results](#json-results)
 - [Versions](#versions)
   - [List Versions](#list-versions)
     - [GET](#get)
@@ -996,12 +996,14 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
     ],
     "elements": [
         {
+            "id": 0,
             "name": "name1",
             "dimensions": {
                 "key1": "value1"
             }
         },
         {
+            "id": 1,
             "name": "name2",
             "dimensions": {
                 "key1": "value1"
@@ -1017,6 +1019,10 @@ Operations for accessing measurements of metrics.
 
 ## List measurements
 Get measurements for metrics.
+
+Metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to futher qualify the metric with a name and additional dimensions.
+
+If users do not wish to see measurements for a single metric, but would prefer to have measurements from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all meaurements for all metrics that satisfy the query parameters will be merged into a single list of measurements.
 
 ### GET /v2.0/metrics/measurements
 
@@ -1034,13 +1040,14 @@ None.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
 * offset (timestamp, optional)
 * limit (integer, optional)
+* merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of measurements.
 
 #### Request Body
 None.
 
 #### Request Examples
 ```
-GET /v2.0/metrics/measurements?name=cpu.system_perc&dimensions=hostname:devstack&start_time=2014-07-18T03:00:00Z HTTP/1.1
+GET /v2.0/metrics/measurements?name=cpu.system_perc&dimensions=hostname:devstack&start_time=2015-03-00T00:00:01Z HTTP/1.1
 Host: 192.168.10.4:8080
 Content-Type: application/json
 X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
@@ -1065,16 +1072,16 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
     "links": [
         {
             "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?start_time=2014-07-18T03%3A00%3A00Z&name=cpu.system_perc&dimensions=hostname%3Adevstack"
+            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?start_time=2015-03-00T00%3A00%3A00Z&name=cpu.system_perc&dimensions=hostname%3Adevstack"
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?offset=2015-03-03T05%3A21%3A55Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2014-07-18T03%3A00%3A00Z"
+            "href": "http://192.168.10.4:8080/v2.0/metrics/measurements?offset=2015-03-03T05%3A24%3A55Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2015-03-00T00%3A00%3A00Z"
         }
     ],
     "elements": [
         {
-            "id": "1425359919000",
+            "id": "2015-03-03T05:24:55Z",
             "name": "http_status",
             "dimensions": {
                 "url": "http://localhost:8774/v2.0",
@@ -1089,20 +1096,20 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
             ],
             "measurements": [
                 [
-                    13432920001,
+                    "2015-03-03T05:22:28Z",
                     "2015-03-03T05:22:28Z",
                     0,
                     {}
                 ],
                 [
-                    13430420001,
-                    "2015-03-03T05:22:12Z",
+                    "2015-03-03T05:23:12Z,
+                    "2015-03-03T05:23:12Z",
                     0,
                     {}
                 ],
                 [
-                    13427670001,
-                    "2015-03-03T05:21:55Z",
+                    "2015-03-03T05:24:55Z",
+                    "2015-03-03T05:24:55Z",
                     1,
                     {
                         "rc": "404",
@@ -1185,6 +1192,10 @@ ___
 # Statistics
 Operations for calculating statistics of metrics.
 
+Metrics must be fully qualified with name and dimensions so that only statistics are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to futher qualify the metric with a name and additional dimensions.
+
+If users do not wish to see statistics for a single metric, but would prefer to have statistics from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all statistics for all metrics that satisfy the query parameters will be merged into a single list of statistics.
+
 ## List statistics
 Get statistics for metrics.
 
@@ -1206,6 +1217,7 @@ None.
 * period (integer, optional) - The time period to aggregate measurements by. Default is 300 seconds.
 * offset (timestamp, optional)
 * limit (integer, optional)
+* merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of statistics.
 
 #### Request Body
 None.
@@ -1247,6 +1259,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of s
     ],
     "elements": [
         {
+            "id": "2014-07-18T03:22:00Z",
             "name": "cpu.system_perc",
             "dimensions": {
                 "hostname": "devstack"
@@ -2749,7 +2762,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8080/v2.0/alarms/37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0/state-history?offset=1424451367001"
+            "href": "http://192.168.10.4:8080/v2.0/alarms/37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0/state-history?offset=1424452147006"
         }
     ],
     "elements": [
@@ -2791,7 +2804,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             ]
         },
         {
-            "id": "1424451727002",
+            "id": "1424452147004",
             "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
             "metrics": [
                 {
@@ -2828,7 +2841,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             ]
         },
         {
-            "id": "1424451367001",
+            "id": "1424452147005",
             "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
             "metrics": [
                 {
@@ -2865,7 +2878,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             ]
         },
         {
-            "id": "1424444550000",
+            "id": "1424452147006",
             "alarm_id": "37d1ddf0-d7e3-4fc0-979b-25ac3779d9e0",
             "metrics": [
                 {
