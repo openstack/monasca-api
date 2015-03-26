@@ -1089,7 +1089,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
                 "service": "compute"
             },
             "columns": [
-                "id",
                 "timestamp",
                 "value",
                 "value_meta"
@@ -1097,18 +1096,15 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
             "measurements": [
                 [
                     "2015-03-03T05:22:28Z",
-                    "2015-03-03T05:22:28Z",
                     0,
                     {}
                 ],
                 [
-                    "2015-03-03T05:23:12Z,
                     "2015-03-03T05:23:12Z",
                     0,
                     {}
                 ],
                 [
-                    "2015-03-03T05:24:55Z",
                     "2015-03-03T05:24:55Z",
                     1,
                     {
@@ -1387,7 +1383,8 @@ List all notification methods.
 None.
 
 #### Query Parameters
-None.
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -1414,8 +1411,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of n
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
-* offset (string, optional)
-* limit (integer, optional)
 
 #### Response Examples
 ```
@@ -1783,8 +1778,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * alarm_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `ALARM` state.
 * ok_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `OK` state.
 * undetermined_actions ([string]) - Array of notification method IDs that are invoked when the alarms for this definition transition to the `UNDETERMINED` state.
-* offset (string, optional)
-* limit (integer, optional)
 
 #### Response Examples
 ```
@@ -2212,6 +2205,8 @@ None.
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * state (string) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* offset (string, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -2237,8 +2232,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * alarm_definition_id (string) - Name of alarm.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
-* offset (string, optional)
-* limit (integer, optional)
 
 #### Response Examples
 ```
@@ -2308,6 +2301,8 @@ None.
 * dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
+* offset (integer, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -2328,8 +2323,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 * sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
-* offset (integer, optional)
-* limit (integer, optional)
 
 #### Response Examples
 ```
@@ -2720,7 +2713,8 @@ List the alarm state history for the specified alarm.
 * alarm_id (string, required)
 
 #### Query Parameters
-None.
+* offset (integer, optional)
+* limit (integer, optional)
 
 #### Request Body
 None.
@@ -2749,8 +2743,6 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
 * sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
-* offset (integer, optional)
-* limit (integer, optional)
 
 #### Response Examples
 ```

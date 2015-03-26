@@ -23,7 +23,7 @@ import monasca.common.model.domain.common.AbstractEntity;
  * Encapsulates a metric measurements.
  */
 public class Measurements extends AbstractEntity {
-  private static final String[] COLUMNS = new String[] {"id", "timestamp", "value", "value_meta"};
+  private static final String[] COLUMNS = new String[] {"timestamp", "value", "value_meta"};
 
   private String name;
   private Map<String, String> dimensions;

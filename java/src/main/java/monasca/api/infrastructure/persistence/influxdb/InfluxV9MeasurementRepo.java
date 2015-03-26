@@ -65,7 +65,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
   @Override
   public List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
                                  DateTime startTime, @Nullable DateTime endTime,
-                                 @Nullable String offset, int limit, Boolean mergeMetricsFlag) throws Exception {
+                                 @Nullable String offset, int limit, Boolean mergeMetricsFlag)
+      throws Exception {
 
     String q = buildQuery(tenantId, name, dimensions, startTime, endTime,
                           offset, limit, mergeMetricsFlag);
@@ -141,8 +142,7 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
         for (String[] values : serie.getValues()) {
 
           measurements.addMeasurement(
-              new Object[]{values[0], values[0], Double.parseDouble(values[1]),
-                           getValueMeta(values)});
+              new Object[]{values[0], Double.parseDouble(values[1]), getValueMeta(values)});
         }
 
         measurementsList.add(measurements);
