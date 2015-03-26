@@ -137,7 +137,9 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
       for (Serie serie : series.getSeries()) {
 
-        Measurements measurements = new Measurements(serie.getName(), serie.getTags());
+        Measurements measurements =
+            new Measurements(serie.getName(),
+                             influxV9Utils.filterPrivateTags(serie.getTags()));
 
         for (String[] values : serie.getValues()) {
 

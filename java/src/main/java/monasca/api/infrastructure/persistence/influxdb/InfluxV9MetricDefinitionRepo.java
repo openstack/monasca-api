@@ -184,9 +184,9 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     Map<String, String> dims = new HashMap<>();
 
     for (int i = 0; i < cols.length; ++i) {
-      if (!cols[i].equals("region")
-          && !cols[i].equals("tenant_id")
-          && !cols[i].equals("id")) {
+      if (!cols[i].equals("_region")
+          && !cols[i].equals("_tenant_id")
+          && !cols[i].equals("_id")) {
         if (!vals[i].equalsIgnoreCase("null")) {
           dims.put(cols[i], vals[i]);
         }

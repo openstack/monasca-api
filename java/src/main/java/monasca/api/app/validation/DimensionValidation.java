@@ -127,6 +127,11 @@ public final class DimensionValidation {
       if (value.length() > 255)
         throw Exceptions.unprocessableEntity("Dimension value %s must be 255 characters or less",
             value);
+      // Dimension names that start with underscores are reserved for internal use only.
+      if (name.startsWith("_")) {
+        throw Exceptions.unprocessableEntity("Dimension name cannot start with underscore (_)",
+                                             name);
+      }
       if (!VALID_DIMENSION_NAME.matcher(name).matches())
         throw Exceptions.unprocessableEntity(
             "Dimension name %s may only contain: a-z A-Z 0-9 _ - .", name);

@@ -141,7 +141,8 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
       for (Serie serie : series.getSeries()) {
 
-        Statistics statistics = new Statistics(serie.getName(), serie.getTags(),
+        Statistics statistics = new Statistics(serie.getName(),
+                                               this.influxV9Utils.filterPrivateTags(serie.getTags()),
                                                Arrays.asList(translateNames(serie.getColumns())));
 
         for (Object[] values : serie.getValues()) {

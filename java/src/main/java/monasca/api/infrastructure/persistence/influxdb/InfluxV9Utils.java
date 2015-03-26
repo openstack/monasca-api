@@ -18,6 +18,7 @@ import com.google.inject.Inject;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +73,7 @@ public class InfluxV9Utils {
       throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
     }
 
-    return " tenant_id=" + "'" + sanitize(tenantId) + "'";
+    return " _tenant_id=" + "'" + sanitize(tenantId) + "'";
 
   }
 
@@ -101,7 +102,7 @@ public class InfluxV9Utils {
       throw new Exception(String.format("Found null or empty region: %1$s", region));
     }
 
-    return " and region=" + "'" + sanitize(region) + "'";
+    return " and _region=" + "'" + sanitize(region) + "'";
 
   }
 
@@ -181,5 +182,15 @@ public class InfluxV9Utils {
 
     return MULTIPLE_METRICS_ERROR_MSG;
 
+  }
+
+  Map<String, String> filterPrivateTags(Map<String, String> tagMap) {
+
+    Map<String, String> filteredMap = new HashMap<>(tagMap);
+
+    filteredMap.remove("_tenant_id");
+    filteredMap.remove("_region");
+
+    return filteredMap;
   }
 }
