@@ -61,8 +61,8 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     String q = String.format("show series %1$s "
                              + "where %2$s %3$s %4$s limit 2",
                              this.influxV9Utils.namePart(name, false),
-                             this.influxV9Utils.tenantIdPart(tenantId),
-                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.privateTenantIdPart(tenantId),
+                             this.influxV9Utils.privateRegionPart(this.region),
                              this.influxV9Utils.dimPart(dimensions));
 
     logger.debug("Metric definition query: {}", q);
@@ -90,8 +90,8 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     String q = String.format("show series %1$s "
                              + "where %2$s %3$s %4$s %5$s %6$s",
                              this.influxV9Utils.namePart(name, false),
-                             this.influxV9Utils.tenantIdPart(tenantId),
-                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.privateTenantIdPart(tenantId),
+                             this.influxV9Utils.privateRegionPart(this.region),
                              this.influxV9Utils.dimPart(dimensions),
                              this.influxV9Utils.limitPart(limit),
                              this.influxV9Utils.offsetPart(startIndex));
@@ -117,8 +117,8 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     String q = String.format("show measurements "
                              + "where %1$s %2$s %3$s %4$s %5$s",
-                             this.influxV9Utils.tenantIdPart(tenantId),
-                             this.influxV9Utils.regionPart(this.region),
+                             this.influxV9Utils.privateTenantIdPart(tenantId),
+                             this.influxV9Utils.privateRegionPart(this.region),
                              this.influxV9Utils.dimPart(dimensions),
                              this.influxV9Utils.limitPart(limit),
                              this.influxV9Utils.offsetPart(startIndex));

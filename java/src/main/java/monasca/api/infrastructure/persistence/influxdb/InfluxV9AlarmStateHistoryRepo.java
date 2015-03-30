@@ -96,7 +96,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                              + "reason, reason_data, sub_alarms "
                              + "from alarm_state_history "
                              + "where %1$s %2$s %3$s %4$s",
-                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.publicTenantIdPart(tenantId),
                              this.influxV9Utils.alarmIdPart(alarmId),
                              this.influxV9Utils.timeOffsetPart(offset),
                              this.influxV9Utils.limitPart(limit));
@@ -130,7 +130,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                              + "reason, reason_data, sub_alarms "
                              + "from alarm_state_history "
                              + "where %1$s %2$s %3$s %4$s %5$s",
-                             this.influxV9Utils.tenantIdPart(tenantId),
+                             this.influxV9Utils.publicTenantIdPart(tenantId),
                              this.influxV9Utils.startTimeEndTimePart(startTime, endTime),
                              this.influxV9Utils.alarmIdsPart(alarmIdList),
                              this.influxV9Utils.timeOffsetPart(offset),

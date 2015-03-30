@@ -93,8 +93,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
       q = String.format("select * %1$s "
                         + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s",
                         this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.tenantIdPart(tenantId),
-                        this.influxV9Utils.regionPart(this.region),
+                        this.influxV9Utils.privateTenantIdPart(tenantId),
+                        this.influxV9Utils.privateRegionPart(this.region),
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
                         this.influxV9Utils.endTimePart(endTime),
@@ -113,8 +113,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
       q = String.format("select * %1$s "
                         + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s slimit 1",
                         this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.tenantIdPart(tenantId),
-                        this.influxV9Utils.regionPart(this.region),
+                        this.influxV9Utils.privateTenantIdPart(tenantId),
+                        this.influxV9Utils.privateRegionPart(this.region),
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
                         this.influxV9Utils.endTimePart(endTime),

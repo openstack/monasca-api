@@ -67,7 +67,17 @@ public class InfluxV9Utils {
     }
   }
 
-  public String tenantIdPart(String tenantId) throws Exception {
+  public String publicTenantIdPart(String tenantId) throws Exception {
+
+    if (tenantId == null || tenantId.isEmpty()) {
+      throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
+    }
+
+    return " tenant_id=" + "'" + sanitize(tenantId) + "'";
+
+  }
+
+  public String privateTenantIdPart(String tenantId) throws Exception {
 
     if (tenantId == null || tenantId.isEmpty()) {
       throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
@@ -96,7 +106,7 @@ public class InfluxV9Utils {
     return String.format(" and time > '%1$s'", offset);
   }
 
-  public String regionPart(String region) throws Exception {
+  public String privateRegionPart(String region) throws Exception {
 
     if (region == null || region.isEmpty()) {
       throw new Exception(String.format("Found null or empty region: %1$s", region));
@@ -169,7 +179,7 @@ public class InfluxV9Utils {
   public String periodPartWithGroupBy(int period) {
 
     return period > 0 ? String.format(" group by time(%1$ds), * fill(0)", period)
-                       : " group by time(300s), * fill(0)";
+                      : " group by time(300s), * fill(0)";
   }
 
   public String periodPart(int period) {
