@@ -1,6 +1,9 @@
 # The region for which all metrics passing through this server will be persisted
 region: region-a
 
+# Maximum rows (Mysql) or points (Influxdb) to return when listing elements
+maxQueryLimit: 10000
+
 # Whether this server is running on a secure port
 accessedViaHttps: false
 
@@ -11,23 +14,36 @@ metricsTopic: metrics
 eventsTopic: events
 
 kafka:
-  brokerUris: 
-    - 192.168.10.10:9092
+  brokerUris:
+    - 192.168.10.4:9092
   zookeeperUris:
-    - 192.168.10.10:2181
+    - 192.168.10.4:2181
   healthCheckTopic: healthcheck
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://192.168.10.6:3306/mon?connectTimeout=5000&autoReconnect=true
+  url: jdbc:mysql://192.168.10.4:3306/mon?connectTimeout=5000&autoReconnect=true&useLegacyDatetimeCode=false
   user: monapi
   password: password
   maxWaitForConnection: 1s
   validationQuery: "/* MyService Health Check */ SELECT 1"
-  minSize: 4
+  minSize: 8
   maxSize: 32
   checkConnectionWhileIdle: false
   checkConnectionOnBorrow: true
+
+databaseConfiguration:
+  databaseType: influxdb
+
+influxDB:
+  version: V9
+  maxHttpConnections: 100
+  # Retention policy may be left blank to indicate default policy.
+  retentionPolicy:
+  name: mon
+  url: http://192.168.10.4:8086
+  user: mon_api
+  password: password
 
 vertica:
   driverClass: com.vertica.jdbc.Driver
@@ -41,31 +57,53 @@ vertica:
   checkConnectionWhileIdle: false
 
 middleware:
-  enabled: false
-  serviceIds: 100
-  endpointIds: 160
+  enabled: true
   serverVIP: identity.example.com
   serverPort: 9543
+  useHttps: true
+  truststore: etc/monasca/truststore.jks
+  truststorePass: changeit
   connTimeout: 500
   connSSLClientAuth: true
   keystore: etc/monasca/keystore.jks
   keystorePass: changeit
-  truststore: etc/monasca/truststore.jks
-  truststorePass: changeit
   connPoolMaxActive: 3
   connPoolMaxIdle: 3
   connPoolEvictPeriod: 600000
   connPoolMinIdleTime: 600000
   connRetryTimes: 2
   connRetryInterval: 50
-  rolesToMatch: [user, domainuser, domainadmin]
+  defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user]
+  agentAuthorizedRoles: [monasca-agent]
+  adminAuthMethod: password
+  adminUser: admin
+  adminPassword: admin
+  adminProjectId:
+  adminProjectName:
+  adminToken:
+  timeToCacheToken: 600
+  maxTokenCacheSize: 1048576
 
+server:
+  applicationConnectors:
+    - type: http
+      port: 8080
+      maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
+  requestLog:
+   timeZone: UTC
+   appenders:
+    - type: file
+      currentLogFilename: /var/log/monasca/api/request.log
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: /var/log/monasca/api/request-%d.log.gz
+      archivedFileCount: 5
 
 # Logging settings.
 logging:
 
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: INFO
+  level: WARN
 
   # Logger-specific levels.
   loggers:
@@ -81,10 +119,10 @@ logging:
       logFormat: # TODO
 
     - type: file
-      currentLogFilename: ./log/monasca-api.log
+      currentLogFilename: /var/log/monasca/api/monasca-api.log
       threshold: ALL
       archive: true
-      archivedLogFilenamePattern: ./log/monasca-api-%d.log
+      archivedLogFilenamePattern: /var/log/monasca/api/monasca-api-%d.log.gz
       archivedFileCount: 5
       timeZone: UTC
       logFormat: # TODO
