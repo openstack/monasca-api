@@ -26,8 +26,6 @@ import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 
 import javax.ws.rs.core.UriInfo;
 

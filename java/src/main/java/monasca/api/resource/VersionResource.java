@@ -16,7 +16,6 @@ package monasca.api.resource;
 import com.codahale.metrics.annotation.Timed;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

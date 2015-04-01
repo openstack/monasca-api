@@ -13,11 +13,9 @@
  */
 package monasca.api.domain.model.metric;
 
-import com.codahale.metrics.Metric;
-
 import monasca.common.model.domain.common.AbstractEntity;
 
-public class MetricName extends AbstractEntity implements Comparable {
+public class MetricName extends AbstractEntity implements Comparable<MetricName> {
 
   private String id;
   private String name;
@@ -74,8 +72,7 @@ public class MetricName extends AbstractEntity implements Comparable {
   public void setName(String name) {this.name = name;}
 
   @Override
-  public int compareTo(Object o) {
-    MetricName other = (MetricName) o;
+  public int compareTo(MetricName other) {
     return this.name.compareTo(other.name);
   }
 }

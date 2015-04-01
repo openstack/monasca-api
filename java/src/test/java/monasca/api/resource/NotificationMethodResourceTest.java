@@ -18,7 +18,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.exception.EntityNotFoundException;
-import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
@@ -26,7 +25,6 @@ import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.ErrorMessages;
 
-import org.mockito.internal.matchers.Not;
 import org.testng.annotations.Test;
 
 import javax.ws.rs.core.MediaType;

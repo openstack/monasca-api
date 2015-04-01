@@ -31,7 +31,6 @@ import static org.testng.Assert.fail;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +50,6 @@ import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.common.Link;
 import monasca.api.resource.exception.ErrorMessages;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 
 @Test
 public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {

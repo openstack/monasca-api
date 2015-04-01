@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.util.List;
 import java.util.Map;

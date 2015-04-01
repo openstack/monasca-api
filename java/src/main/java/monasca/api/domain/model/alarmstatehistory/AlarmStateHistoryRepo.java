@@ -17,7 +17,6 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
