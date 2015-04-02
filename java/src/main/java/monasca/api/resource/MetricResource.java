@@ -86,7 +86,7 @@ public class MetricResource {
                 .forbidden("Project %s cannot POST metrics for the hpcs service", tenantId);
           }
         }
-        if (!Strings.isNullOrEmpty(crossTenantId)) {
+        if (!Strings.isNullOrEmpty(crossTenantId) && !crossTenantId.equals(tenantId)) {
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
         }
       }
