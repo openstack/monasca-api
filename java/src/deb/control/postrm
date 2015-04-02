@@ -1,9 +1,0 @@
-#!/bin/sh
-
-case "$1" in
-  remove|purge)
-    userdel monasca_api
-  ;;
-esac
-
-exit 0

@@ -386,11 +386,6 @@
                                 </data>
                                 <data>
                                     <type>file</type>
-                                    <src>${project.basedir}/src/deb/init/monasca-api.conf</src>
-                                    <dst>/etc/init/monasca-api.conf</dst>
-                                </data>
-                                <data>
-                                    <type>file</type>
                                     <src>${project.basedir}/src/deb/etc/api-config.yml-sample
                                     </src>
                                     <dst>/etc/monasca/api-config.yml-sample</dst>

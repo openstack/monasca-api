@@ -25,9 +25,5 @@
         <source>${project.basedir}/src/deb/etc/api-config.yml-sample</source>
         <outputDirectory>examples</outputDirectory>
     </file>
-    <file>
-        <source>${project.basedir}/src/deb/init/monasca-api.conf</source>
-        <outputDirectory>examples</outputDirectory>
-    </file>
   </files>
 </assembly>
