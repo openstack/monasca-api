@@ -50,6 +50,7 @@ import monasca.api.resource.exception.IllegalArgumentExceptionMapper;
 import monasca.api.resource.exception.InvalidEntityExceptionMapper;
 import monasca.api.resource.exception.JsonMappingExceptionManager;
 import monasca.api.resource.exception.JsonProcessingExceptionMapper;
+import monasca.api.resource.exception.MultipleMetricsExceptionMapper;
 import monasca.api.resource.exception.ThrowableExceptionMapper;
 import monasca.api.resource.serialization.SubAlarmExpressionSerializer;
 import monasca.common.middleware.AuthConstants;
@@ -121,6 +122,7 @@ public class MonApiApplication extends Application<ApiConfig> {
     environment.jersey().register(new JsonMappingExceptionManager());
     environment.jersey().register(new ConstraintViolationExceptionMapper());
     environment.jersey().register(new ThrowableExceptionMapper<Throwable>() {});
+    environment.jersey().register(new MultipleMetricsExceptionMapper());
 
     /** Configure Jackson */
     environment.getObjectMapper().setPropertyNamingStrategy(

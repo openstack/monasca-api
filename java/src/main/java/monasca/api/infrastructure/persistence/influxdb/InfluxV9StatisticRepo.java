@@ -30,11 +30,12 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import monasca.api.ApiConfig;
+import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
 
-public class InfluxV9StatisticRepo implements StatisticRepo{
+public class InfluxV9StatisticRepo implements StatisticRepo {
 
 
   private static final Logger logger = LoggerFactory.getLogger(InfluxV9StatisticRepo.class);
@@ -110,7 +111,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo{
 
       if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
-        throw new IllegalArgumentException(this.influxV9Utils.getMultipleMetricsErrorMsg());
+        throw new MultipleMetricsException(name, dimensions);
       }
 
       q = String.format("select %1$s %2$s "

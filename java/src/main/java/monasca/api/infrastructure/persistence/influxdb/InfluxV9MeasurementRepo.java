@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import monasca.api.ApiConfig;
+import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
 
@@ -84,8 +85,9 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
   }
 
   private String buildQuery(String tenantId, String name, Map<String, String> dimensions,
-                          DateTime startTime, DateTime endTime, String offset, int limit,
-                          Boolean mergeMetricsFlag) throws Exception {
+                            DateTime startTime, DateTime endTime, String offset, int limit,
+                            Boolean mergeMetricsFlag) throws Exception {
+
     String q;
     if (Boolean.TRUE.equals(mergeMetricsFlag)) {
 
@@ -106,7 +108,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
       if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
-        throw new IllegalArgumentException(this.influxV9Utils.getMultipleMetricsErrorMsg());
+        throw new MultipleMetricsException(name, dimensions);
+
       }
 
       // Had to use * to handle value meta. If we select valueMeta and it does not exist, then error.

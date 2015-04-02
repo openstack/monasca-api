@@ -85,9 +85,13 @@ public class StatisticResource {
             name, dimensionsStr, true);
 
 
-    return Links.paginateStatistics(this.persistUtils.getLimit(limit),
-                          repo.find(tenantId, name, dimensions, startTime, endTime, statistics,
-                                    period, offset, this.persistUtils.getLimit(limit),
-                                    mergeMetricsFlag), uriInfo);
+      return Links.paginateStatistics(this.persistUtils.getLimit(limit),
+                                      repo.find(tenantId, name, dimensions, startTime, endTime,
+                                                statistics, period, offset,
+                                                this.persistUtils.getLimit(limit),
+                                                mergeMetricsFlag),
+                                      uriInfo);
+
   }
+
 }
