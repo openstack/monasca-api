@@ -71,9 +71,12 @@ public class MeasurementResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(name, dimensionsStr, true);
 
-    return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
-                          repo.find(tenantId, name, dimensions, startTime, endTime,
-                                    offset, this.persistUtils.getLimit(limit), mergeMetricsFlag), uriInfo);
+      return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
+                                        repo.find(tenantId, name, dimensions, startTime, endTime,
+                                                  offset, this.persistUtils.getLimit(limit),
+                                                  mergeMetricsFlag),
+                                        uriInfo);
 
   }
+
 }

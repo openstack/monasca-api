@@ -30,13 +30,6 @@ import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buil
 
 public class InfluxV9Utils {
 
-  private static final String
-      MULTIPLE_METRICS_ERROR_MSG =
-      "Found multiple metrics matching search criteria. "
-      + "Please refine your search criteria using additional dimensions "
-      + "or specify merge_metrics=true as query param to combine "
-      + "all metrics into a single series.";
-
   private final PersistUtils persistUtils;
 
   @Inject
@@ -186,12 +179,6 @@ public class InfluxV9Utils {
 
     return period > 0 ? String.format(" group by time(%1$ds) fill(0)", period)
                       : " group by time(300s) fill(0)";
-  }
-
-  public String getMultipleMetricsErrorMsg() {
-
-    return MULTIPLE_METRICS_ERROR_MSG;
-
   }
 
   Map<String, String> filterPrivateTags(Map<String, String> tagMap) {

@@ -15,14 +15,16 @@ package monasca.api.domain.model.statistic;
 
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Repository for statistics.
  */
 public interface StatisticRepo {
+
   /**
    * Finds statistics for the given criteria.
    */
