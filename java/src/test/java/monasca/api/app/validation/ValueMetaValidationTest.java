@@ -58,6 +58,22 @@ public class ValueMetaValidationTest {
     ValueMetaValidation.validate(valueMeta);
   }
 
+  @SuppressWarnings("serial")
+  public void emptyValueOk() {
+    final String key = "noValue";
+    HashMap<String, String> emptyValue = new HashMap<String, String>() {
+      {
+        put(key, "");
+      }
+    };
+    ValueMetaValidation.validate(emptyValue);
+    assertEquals(ValueMetaValidation.normalize(emptyValue), new HashMap<String, String>() {
+      {
+        put(key, "");
+      }
+    });
+  }
+
   private String makeString(int num, int len) {
     final StringBuilder builder = new StringBuilder(len);
     while (builder.length() < len) {
@@ -88,30 +104,6 @@ public class ValueMetaValidationTest {
         put("abc", "  1 2 3   ");
         put("ezaz", "do re mi     ");
         put(null, "Bad");
-      }
-    });
-  }
-
-  @Test(expectedExceptions = WebApplicationException.class)
-  @SuppressWarnings("serial")
-  public void shouldThrowOnEmptyValueMetaNameTooLarge() {
-    ValueMetaValidation.validate(new HashMap<String, String>() {
-      {
-        put("abc", "  1 2 3   ");
-        put("ezaz", "do re mi     ");
-        put("abc", null);
-      }
-    });
-  }
-
-  @Test(expectedExceptions = WebApplicationException.class)
-  @SuppressWarnings("serial")
-  public void shouldThrowOnEmptyValueMetaValue() {
-    ValueMetaValidation.validate(new HashMap<String, String>() {
-      {
-        put("abc", "  1 2 3   ");
-        put("ezaz", "do re mi     ");
-        put("abc", null);
       }
     });
   }

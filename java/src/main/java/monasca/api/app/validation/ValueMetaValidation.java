@@ -72,13 +72,14 @@ public final class ValueMetaValidation {
       }
       final String name = CharMatcher.WHITESPACE.trimFrom(valueMeta.getKey());
       String value = valueMeta.getValue();
+      if (value == null) {
+        // Store nulls as empty strings
+        value = "";
+      }
 
       // General validations
       if (Strings.isNullOrEmpty(name)) {
         throw Exceptions.unprocessableEntity("valueMeta name cannot be empty");
-      }
-      if (Strings.isNullOrEmpty(value)) {
-        throw Exceptions.unprocessableEntity("valueMeta %s cannot have an empty value", name);
       }
       if (name.length() > VALUE_META_NAME_MAX_LENGTH) {
         throw Exceptions.unprocessableEntity("valueMeta name %s must be %d characters or less",
