@@ -349,7 +349,7 @@ Optionally, a measurement may also contain extra data about the value which is k
 For an example of how value meta is used, imagine this metric: http_status{url: http://localhost:8080/healthcheck, hostname=devstack, service=object-storage}.  The measurements for this metric have a value of either 1 or 0 depending if the status check succeeded. If the check fails, it would be helpful to have the actual http status code and error message if possible. So instead of just a value, the measurement will be something like:
 {Timestamp=now(), value=1, value_meta{http_rc=500, error=“Error accessing MySQL”}}
 
-Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and must not be null or empty and has a maximum length of 2048 characters. Whitespace is not trimmed from the values.
+Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and has a maximum length of 2048 characters. The value can be an empty string. Whitespace is not trimmed from the values.
 
 ## Alarm Definitions and Alarms
 
