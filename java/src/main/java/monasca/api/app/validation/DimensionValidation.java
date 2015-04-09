@@ -14,6 +14,7 @@
 package monasca.api.app.validation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -147,6 +148,31 @@ public final class DimensionValidation {
           throw Exceptions.unprocessableEntity("%s is not a valid dimension value for service %s",
               value, service);
       }
+    }
+  }
+
+  /**
+   * Validates a list of dimension names
+   * @param names
+   */
+
+  public static void validateNames(List<String> names) {
+    for( String name : names) {
+      if (Strings.isNullOrEmpty(name)) {
+        throw Exceptions.unprocessableEntity("Dimension name cannot be empty");
+      }
+      if (name.length() > 255) {
+        throw Exceptions.unprocessableEntity("Dimension name '%s' must be 255 characters or less",
+                                             name);
+      }
+      // Dimension names that start with underscores are reserved for internal use only.
+      if (name.startsWith("_")) {
+        throw Exceptions.unprocessableEntity("Dimension name cannot start with underscore (_)",
+                                             name);
+      }
+      if (!VALID_DIMENSION_NAME.matcher(name).matches())
+        throw Exceptions.unprocessableEntity(
+            "Dimension name '%s' may only contain: a-z A-Z 0-9 _ - .", name);
     }
   }
 }
