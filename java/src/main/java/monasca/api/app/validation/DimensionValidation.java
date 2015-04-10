@@ -157,22 +157,24 @@ public final class DimensionValidation {
    */
 
   public static void validateNames(List<String> names) {
-    for( String name : names) {
-      if (Strings.isNullOrEmpty(name)) {
-        throw Exceptions.unprocessableEntity("Dimension name cannot be empty");
+    if(names != null) {
+      for (String name : names) {
+        if (Strings.isNullOrEmpty(name)) {
+          throw Exceptions.unprocessableEntity("Dimension name cannot be empty");
+        }
+        if (name.length() > 255) {
+          throw Exceptions.unprocessableEntity("Dimension name '%s' must be 255 characters or less",
+                                               name);
+        }
+        // Dimension names that start with underscores are reserved for internal use only.
+        if (name.startsWith("_")) {
+          throw Exceptions.unprocessableEntity("Dimension name '%s' cannot start with underscore (_)",
+                                               name);
+        }
+        if (!VALID_DIMENSION_NAME.matcher(name).matches())
+          throw Exceptions.unprocessableEntity(
+              "Dimension name '%s' may only contain: a-z A-Z 0-9 _ - .", name);
       }
-      if (name.length() > 255) {
-        throw Exceptions.unprocessableEntity("Dimension name '%s' must be 255 characters or less",
-                                             name);
-      }
-      // Dimension names that start with underscores are reserved for internal use only.
-      if (name.startsWith("_")) {
-        throw Exceptions.unprocessableEntity("Dimension name cannot start with underscore (_)",
-                                             name);
-      }
-      if (!VALID_DIMENSION_NAME.matcher(name).matches())
-        throw Exceptions.unprocessableEntity(
-            "Dimension name '%s' may only contain: a-z A-Z 0-9 _ - .", name);
     }
   }
 }
