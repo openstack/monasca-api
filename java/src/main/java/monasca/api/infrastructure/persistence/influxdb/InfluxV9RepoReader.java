@@ -45,64 +45,80 @@ public class InfluxV9RepoReader {
 
   private static final Logger logger = LoggerFactory.getLogger(InfluxV9RepoReader.class);
 
-  private final ApiConfig config;
-
   private final String influxName;
   private final String influxUrl;
   private final String influxCreds;
   private final String influxUser;
   private final String influxPass;
   private final String baseAuthHeader;
+  private final boolean gzip;
 
   private final CloseableHttpClient httpClient;
 
   @Inject
   public InfluxV9RepoReader(final ApiConfig config) {
-    this.config = config;
 
     this.influxName = config.influxDB.getName();
+    logger.debug("Influxdb database name: {}", this.influxName);
+
     this.influxUrl = config.influxDB.getUrl() + "/query";
+    logger.debug("Influxdb URL: {}", this.influxUrl);
+
     this.influxUser = config.influxDB.getUser();
     this.influxPass = config.influxDB.getPassword();
     this.influxCreds = this.influxUser + ":" + this.influxPass;
 
+    this.gzip = config.influxDB.getGzip();
+    logger.debug("Influxdb gzip responses: {}", this.gzip);
+
+    logger.debug("Setting up basic Base64 authentication");
     this.baseAuthHeader = "Basic " + new String(Base64.encodeBase64(this.influxCreds.getBytes()));
 
+    // We inject InfluxV9RepoReader as a singleton. So, we must share connections safely.
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(config.influxDB.getMaxHttpConnections());
 
-    // We inject InfluxV9RepoReader as a singleton. So, we must share connections safely.
-    this.httpClient =
-        HttpClients.custom().setConnectionManager(cm)
-            .addInterceptorFirst(new HttpRequestInterceptor() {
+    if (this.gzip) {
 
-              public void process(final HttpRequest request, final HttpContext context)
-                  throws HttpException, IOException {
-                if (!request.containsHeader("Accept-Encoding")) {
-                  request.addHeader("Accept-Encoding", "gzip");
+      logger.debug("Setting up gzip responses from Influxdb");
+
+      this.httpClient =
+          HttpClients.custom().setConnectionManager(cm)
+              .addInterceptorFirst(new HttpRequestInterceptor() {
+
+                public void process(final HttpRequest request, final HttpContext context)
+                    throws HttpException, IOException {
+                  if (!request.containsHeader("Accept-Encoding")) {
+                    request.addHeader("Accept-Encoding", "gzip");
+                  }
                 }
-              }
-            }).addInterceptorFirst(new HttpResponseInterceptor() {
+              }).addInterceptorFirst(new HttpResponseInterceptor() {
 
-          public void process(final HttpResponse response, final HttpContext context)
-              throws HttpException, IOException {
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-              Header ceheader = entity.getContentEncoding();
-              if (ceheader != null) {
-                HeaderElement[] codecs = ceheader.getElements();
-                for (int i = 0; i < codecs.length; i++) {
-                  if (codecs[i].getName().equalsIgnoreCase("gzip")) {
-                    response.setEntity(new GzipDecompressingEntity(response.getEntity()));
-                    return;
+            public void process(final HttpResponse response, final HttpContext context)
+                throws HttpException, IOException {
+              HttpEntity entity = response.getEntity();
+              if (entity != null) {
+                Header ceheader = entity.getContentEncoding();
+                if (ceheader != null) {
+                  HeaderElement[] codecs = ceheader.getElements();
+                  for (int i = 0; i < codecs.length; i++) {
+                    if (codecs[i].getName().equalsIgnoreCase("gzip")) {
+                      response.setEntity(new GzipDecompressingEntity(response.getEntity()));
+                      return;
+                    }
                   }
                 }
               }
             }
-          }
+          }).build();
 
-        }).build();
+    } else {
 
+      logger.debug("Setting up non-gzip responses from Influxdb");
+
+      this.httpClient = HttpClients.custom().setConnectionManager(cm).build();
+
+    }
   }
 
   protected String read(final String query) throws Exception {
@@ -122,21 +138,23 @@ public class InfluxV9RepoReader {
 
       int rc = response.getStatusLine().getStatusCode();
 
-      logger.debug("Received {} status code from influx database", rc);
+      logger.debug("Received {} status code from influx database {} at {}", rc, this.influxName,
+                   this.influxUrl);
 
       if (rc != HttpStatus.SC_OK) {
 
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
-        logger.error("Failed to query influx database {} at {}: {}",
-                     this.influxName, this.influxUrl, String.valueOf(rc));
+        logger
+            .error("Failed to query influx database {} at {}: {}", this.influxName, this.influxUrl,
+                   String.valueOf(rc));
         logger.error("Http response: {}", responseString);
 
         throw new Exception(rc + ":" + responseString);
       }
 
-      logger.debug("Successfully queried influx database {} at {}",
-                   this.influxName, this.influxUrl);
+      logger
+          .debug("Successfully queried influx database {} at {}", this.influxName, this.influxUrl);
 
       HttpEntity entity = response.getEntity();
       return entity != null ? EntityUtils.toString(entity) : null;
@@ -147,5 +165,4 @@ public class InfluxV9RepoReader {
 
     }
   }
-
 }
