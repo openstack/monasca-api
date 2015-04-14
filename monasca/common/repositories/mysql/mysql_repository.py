@@ -44,7 +44,7 @@ class MySQLRepository(object):
 
         cnxn = mdb.connect(self.database_server, self.database_uid,
                            self.database_pwd, self.database_name,
-                           use_unicode=True)
+                           use_unicode=True, charset='utf8')
 
         cursor = cnxn.cursor(mdb.cursors.DictCursor)
 
@@ -71,6 +71,8 @@ def mysql_try_catch_block(fun):
         except exceptions.DoesNotExistException:
             raise
         except exceptions.InvalidUpdateException:
+            raise
+        except exceptions.AlreadyExistsException:
             raise
         except Exception as ex:
             LOG.exception(ex)

@@ -1,37 +1,42 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2015 Hewlett-Packard
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from monasca.common import resource_api
 from monasca.openstack.common import log
-
 
 LOG = log.getLogger(__name__)
 
 
-class EventsV2API(object):
+class StreamDefinitionsV2API(object):
+
     def __init__(self, global_conf):
-        LOG.debug('initializing V2API!')
+
+        LOG.debug('initializing StreamDefinitionsV2API!')
         self.global_conf = global_conf
 
-    @resource_api.Restify('/v2.0/events', method='post')
-    def do_post_events(self, req, res):
+    @resource_api.Restify('/v2.0/stream-definitions', method='post')
+    def do_post_stream_definitions(self, req, res):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/events', method='get')
-    def do_get_events(self, req, res):
+    @resource_api.Restify('/v2.0/stream-definitions/{id}', method='get')
+    def do_get_stream_definition(self, req, res, id):
         res.status = '501 Not Implemented'
 
-    @resource_api.Restify('/v2.0/events/{id}', method='get')
-    def do_get_event(self, req, res, id):
+    @resource_api.Restify('/v2.0/stream-definitions', method='get')
+    def do_get_stream_definitions(self, req, res):
+        res.status = '501 Not Implemented'
+
+    @resource_api.Restify(
+        '/v2.0/stream-definitions/{id}', method='delete')
+    def do_delete_stream_definitions(self, req, res, id):
         res.status = '501 Not Implemented'

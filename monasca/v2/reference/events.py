@@ -128,7 +128,7 @@ class Events(monasca_events_api_v2.EventsV2API):
 
         return event_id, event_data
 
-    @resource_api.Restify('/v2.0/events/', method='post')
+    @resource_api.Restify('/v2.0/events', method='post')
     def do_post_events(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._post_events_authorized_roles)
@@ -140,7 +140,7 @@ class Events(monasca_events_api_v2.EventsV2API):
         self._send_event(transformed_event)
         res.status = falcon.HTTP_204
 
-    @resource_api.Restify('/v2.0/events/', method='get')
+    @resource_api.Restify('/v2.0/events', method='get')
     def do_get_events(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
@@ -152,10 +152,10 @@ class Events(monasca_events_api_v2.EventsV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource_api.Restify('/v2.0/events/{event_id}', method='get')
-    def do_get_event(self, req, res, event_id):
+    @resource_api.Restify('/v2.0/events/{id}', method='get')
+    def do_get_event(self, req, res, id):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        result = self._list_event(tenant_id, event_id, req.uri)
+        result = self._list_event(tenant_id, id, req.uri)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
