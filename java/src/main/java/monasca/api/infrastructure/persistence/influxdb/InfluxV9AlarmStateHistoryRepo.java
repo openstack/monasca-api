@@ -64,6 +64,9 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   }
 
   private final SimpleDateFormat simpleDateFormat =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+  private final SimpleDateFormat oldSimpleDateFormat =
       new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
@@ -164,7 +167,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
           Date date;
           try {
-            date = this.simpleDateFormat.parse(values[0]);
+            date = parseTimestamp(values[0]);
           } catch (ParseException e) {
             logger.error("Failed to parse time", e);
             continue;
@@ -206,5 +209,16 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
     }
       return alarmStateHistoryList;
+  }
+
+  private Date parseTimestamp(String timestampString) throws ParseException {
+    try {
+      return this.simpleDateFormat.parse(timestampString);
+    }
+    catch (ParseException pe) {
+      // This extra part is here just to handle dates in the old format of only
+      // having seconds. This should be removed in a month or so
+      return this.oldSimpleDateFormat.parse(timestampString);
+    }
   }
 }

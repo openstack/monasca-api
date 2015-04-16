@@ -127,7 +127,7 @@ public class AlarmService {
             Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, alarmDef
                 .getId(), alarm.getMetrics(), alarmDef.getName(), alarmDef.getDescription(),
                 oldState, newState, alarmDef.getSeverity(), alarmDef.isActionsEnabled(),
-                stateChangeReasonFor(oldState, newState), null, System.currentTimeMillis() / 1000));
+                stateChangeReasonFor(oldState, newState), null, System.currentTimeMillis()));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, String.valueOf(messageCount++), event));
       }
       alarm.setState(newState);
