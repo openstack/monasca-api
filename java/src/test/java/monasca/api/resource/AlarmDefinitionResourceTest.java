@@ -183,7 +183,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithInvalidOperator() {
     String expression =
-        "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) & 90";
+        "avg(hpcs.compute{instance_id=937, az=2, instance_uuid=0ff588fc-d298-482f-bb11-4b52d56801a4, metric_name=disk_read_ops}) ^ 90";
     ClientResponse response =
         createResponseFor(new CreateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null,
             expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
