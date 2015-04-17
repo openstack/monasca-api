@@ -33,7 +33,8 @@ public class RoleAuthorizationFilter implements ContainerRequestFilter {
       (ContainerRequestFilter.class);
     @Context
     private HttpServletRequest httpServletRequest;
-    private static final String VALID_MONASCA_AGENT_PATH = "/v2.0/metrics";
+    private static final String[] VALID_MONASCA_AGENT_POST_PATHS = new String[] { "/v2.0/metrics" };
+    private static final String[] VALID_MONASCA_AGENT_GET_PATHS =  new String[] { "/", "/v2.0" };
 
     @Override
     public ContainerRequest filter(ContainerRequest containerRequest) {
@@ -43,7 +44,8 @@ public class RoleAuthorizationFilter implements ContainerRequestFilter {
 
         // X_MONASCA_AGENT is only set if the only valid role for this user is an agent role
         if (isAgent != null) {
-            if (!pathInfo.equals(VALID_MONASCA_AGENT_PATH) || !method.equals("POST")) { 
+            if (!(method.equals("POST") && validPath(pathInfo, VALID_MONASCA_AGENT_POST_PATHS)) && 
+                !(method.equals("GET") && validPath(pathInfo, VALID_MONASCA_AGENT_GET_PATHS))) { 
                 logger.warn("User {} is missing a required role to {} on {}",
                                                     httpServletRequest.getAttribute(AuthConstants.AUTH_USER_NAME),
                                                     method, pathInfo);
@@ -51,5 +53,18 @@ public class RoleAuthorizationFilter implements ContainerRequestFilter {
             }
         }
         return containerRequest;
+    }
+
+    private boolean validPath(String pathInfo, String[] paths) {
+      // Make the comparison easier by getting rid of trailing slashes
+      while (!pathInfo.isEmpty() && !"/".equals(pathInfo) && pathInfo.endsWith("/")) {
+        pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
+      }
+      for (final String validPath : paths) {
+        if (validPath.equals(pathInfo)) {
+          return true;
+        }
+      }
+      return false;
     }
 }
