@@ -38,10 +38,6 @@ databaseConfiguration:
 
 # Uncomment if databaseType is influxDB
 influxDB:
-  # version can be (V8 | V9)
-  # If no version set then defaults to V8.
-  version: V8
-  # Used only if version is V9.
   maxHttpConnections: 100
   name: mon
   replicationFactor: 1

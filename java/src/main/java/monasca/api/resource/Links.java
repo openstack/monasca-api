@@ -161,7 +161,7 @@ public final class Links {
   public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
-    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
     if (limit == 0) {
       Paged paged = new Paged();
       paged.elements = elements != null ? elements : new ArrayList<>();
@@ -199,7 +199,7 @@ public final class Links {
   public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
-    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
     if (limit == 0) {
       Paged paged = new Paged();
       paged.elements = elements != null ? elements : new ArrayList<>();
@@ -257,7 +257,7 @@ public final class Links {
   public static Object paginateStatistics(int limit, List<Statistics> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
-    // Check for paging turned off. Happens if maxQueryLimit is not set. Used for V8 compatibility.
+    // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
     if (limit == 0) {
       Paged paged = new Paged();
       paged.elements = elements != null ? elements : new ArrayList<>();

@@ -21,22 +21,65 @@ import org.joda.time.format.ISODateTimeFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import monasca.api.infrastructure.persistence.PersistUtils;
-
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.SQLSanitizer.sanitize;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.WhereClauseBuilder.buildTimePart;
-import static monasca.api.infrastructure.persistence.influxdb.InfluxV8Utils.buildAlarmsPart;
 
 public class InfluxV9Utils {
 
   private final PersistUtils persistUtils;
+
+  private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;|\")+.*$");
 
   @Inject
   public InfluxV9Utils(PersistUtils persistUtils) {
 
     this.persistUtils = persistUtils;
 
+  }
+
+  public String sanitize(final String taintedString) throws Exception {
+    Matcher m = sqlUnsafePattern.matcher(taintedString);
+    if (m.matches()) {
+      throw new Exception(String.format("Input from user contains single quote ['] or "
+                                        + "semi-colon [;] or double quote [\"] characters[ %1$s ]",
+                                        taintedString));
+    }
+
+    return taintedString;
+  }
+
+  String buildTimePart(final DateTime startTime, final DateTime endTime) {
+    final StringBuilder sb = new StringBuilder();
+
+    if (startTime != null) {
+      sb.append(String.format(" and time > %1$ds", startTime.getMillis() / 1000));
+    }
+
+    if (endTime != null) {
+      sb.append(String.format(" and time < %1$ds", endTime.getMillis() / 1000));
+    }
+
+    return sb.toString();
+  }
+
+
+  public String buildAlarmsPart(List<String> alarmIds) {
+
+    StringBuilder sb = new StringBuilder();
+    for (String alarmId : alarmIds) {
+      if (sb.length() > 0) {
+        sb.append(" or ");
+      }
+      sb.append(String.format(" alarm_id = '%1$s' ", alarmId));
+    }
+
+    if (sb.length() > 0) {
+      sb.insert(0, " and (");
+      sb.insert(sb.length(), ")");
+    }
+    return sb.toString();
   }
 
   public String groupByPart() {
