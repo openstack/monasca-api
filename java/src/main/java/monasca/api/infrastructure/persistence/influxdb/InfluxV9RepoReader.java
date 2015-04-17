@@ -157,7 +157,7 @@ public class InfluxV9RepoReader {
           .debug("Successfully queried influx database {} at {}", this.influxName, this.influxUrl);
 
       HttpEntity entity = response.getEntity();
-      return entity != null ? EntityUtils.toString(entity) : null;
+      return entity != null ? EntityUtils.toString(entity, "UTF-8") : null;
 
     } finally {
 
