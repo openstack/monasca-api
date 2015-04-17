@@ -20,7 +20,7 @@
 # The above command will install monasca-api base and elasticsearch
 # implementation while leave other implementation dependencies alone.
 
-falcon>=0.1.9
+falcon==0.1.9
 gunicorn>=19.1.0
 keystonemiddleware
 oslo.config>=1.2.1
@@ -38,3 +38,4 @@ pyparsing>=2.0.3
 voluptuous>=0.8.7
 MySQL-python>=1.2.3
 influxdb>=0.2.0
+eventlet
