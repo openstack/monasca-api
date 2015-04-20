@@ -19,7 +19,10 @@ import six
 
 @six.add_metaclass(abc.ABCMeta)
 class EventsRepository(object):
+    @abc.abstractmethod
+    def list_event(self, tenant_id, event_id):
+        return
 
     @abc.abstractmethod
-    def list_events(self, tenant_id, name, dimensions):
+    def list_events(self, tenant_id, offset, limit):
         return
