@@ -34,7 +34,8 @@ public final class DimensionValidation {
   private static final Map<String, DimensionValidator> VALIDATORS;
   private static final Pattern UUID_PATTERN = Pattern
       .compile("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
-  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("^[a-zA-Z0-9_\\.\\-]+$");
+  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("[^><={}(), '\";&]+$");
+  private static final String INVALID_CHAR_STRING = "> < = { } ( ) ' \" , ; &";
 
   private DimensionValidation() {}
 
@@ -135,7 +136,7 @@ public final class DimensionValidation {
       }
       if (!VALID_DIMENSION_NAME.matcher(name).matches())
         throw Exceptions.unprocessableEntity(
-            "Dimension name %s may only contain: a-z A-Z 0-9 _ - .", name);
+            "Dimension name %s may not contain: %s", name, INVALID_CHAR_STRING);
 
       // Service specific validations
       if (service != null) {
@@ -173,7 +174,7 @@ public final class DimensionValidation {
         }
         if (!VALID_DIMENSION_NAME.matcher(name).matches())
           throw Exceptions.unprocessableEntity(
-              "Dimension name '%s' may only contain: a-z A-Z 0-9 _ - .", name);
+              "Dimension name '%s' may not contain: %s", name, INVALID_CHAR_STRING);
       }
     }
   }
