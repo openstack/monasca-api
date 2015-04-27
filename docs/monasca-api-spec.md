@@ -867,7 +867,7 @@ Cache-Control: no-cache
       "key1":"value1",
       "key2":"value2"
    },
-   "timestamp":1405630174,
+   "timestamp":1405630174123,
    "value":1.0
 }
 ```
@@ -888,7 +888,7 @@ Cache-Control: no-cache
       "key1":"value1",
       "key2":"value2"
    },
-   "timestamp":1405630174,
+   "timestamp":1405630174123,
    "value":1.0,
    "value_meta":{
       "key1":"value1",
@@ -914,7 +914,7 @@ Cache-Control: no-cache
          "key1":"value1",
          "key2":"value2"
       },
-      "timestamp":1405630174,
+      "timestamp":1405630174123,
       "value":1.0
    },
    {  
@@ -923,7 +923,7 @@ Cache-Control: no-cache
          "key1":"value1",
          "key2":"value2"
       },
-      "timestamp":1405630174,
+      "timestamp":1405630174123,
       "value":2.0,
       "value_meta":{
          "key1":"value1",
@@ -1095,17 +1095,17 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
             ],
             "measurements": [
                 [
-                    "2015-03-03T05:22:28Z",
+                    "2015-03-03T05:22:28.123Z",
                     0,
                     {}
                 ],
                 [
-                    "2015-03-03T05:23:12Z",
+                    "2015-03-03T05:23:12.123Z",
                     0,
                     {}
                 ],
                 [
-                    "2015-03-03T05:24:55Z",
+                    "2015-03-03T05:24:55.123Z",
                     1,
                     {
                         "rc": "404",
