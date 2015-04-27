@@ -17,7 +17,7 @@ import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.PersistUtils;
-import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
+import monasca.api.infrastructure.persistence.Utils;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
@@ -82,7 +82,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       new TypeReference<List<AlarmTransitionSubAlarm>>() {};
 
   private final DBI vertica;
-  private final MySQLUtils mySQLUtils;
+  private final Utils utils;
   private final PersistUtils persistUtils;
 
   private final SimpleDateFormat simpleDateFormat;
@@ -90,11 +90,11 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   @Inject
   public AlarmStateHistoryVerticaRepoImpl(
       @Named("vertica") DBI vertica,
-      MySQLUtils mySQLUtils,
+      Utils utils,
       PersistUtils persistUtils) {
 
     this.vertica = vertica;
-    this.mySQLUtils = mySQLUtils;
+    this.utils = utils;
     this.persistUtils = persistUtils;
 
     simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -159,7 +159,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       @Nullable String offset,
       int limit) {
 
-    List<String> alarmIds = this.mySQLUtils.findAlarmIds(tenantId, dimensions);
+    List<String> alarmIds = this.utils.findAlarmIds(tenantId, dimensions);
 
     if (alarmIds == null || alarmIds.isEmpty()) {
 

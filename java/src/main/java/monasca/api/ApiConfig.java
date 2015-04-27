@@ -14,6 +14,7 @@
 package monasca.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import monasca.common.hibernate.configuration.HibernateDbConfiguration;
 import monasca.common.messaging.kafka.KafkaConfiguration;
 import monasca.api.infrastructure.middleware.MiddlewareConfiguration;
 import monasca.common.configuration.DatabaseConfiguration;
@@ -59,5 +60,6 @@ public class ApiConfig extends Configuration {
   @Valid
   @JsonProperty
   public DatabaseConfiguration databaseConfiguration;
-
+  @Valid
+  public HibernateDbConfiguration hibernate;
 }
