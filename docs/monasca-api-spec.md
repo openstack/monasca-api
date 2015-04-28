@@ -331,11 +331,10 @@ Before using the API, you must first get a valid auth token from Keystone. All A
 A metric is uniquely identified by a name and set of dimensions.
 
 ### Name
-Defines the name of a metric. A name is of type string(255).
+Defines the name of a metric. A name is of type string(255). The name may include any characters except for the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the name.
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). The first character in the dimension is restricted to the following: `a-z A-Z 0-9 _ / \ $`. 
-However, the next characters may be any character except for the following: `; } { = , & ) ( "`. If one of the restricted characters is needed, this can be achieved by double quoting the dimensions. 
+A dictionary of (key, value) pairs. The key and value are of type string(255). The dimensions string may include any characters except for the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the dimensions.
 
 ### Text Representation
 In this document, metrics will be represented in the form `name{name=value,name=value}` where name is the metric name and the name=value pairs in the curly braces are the dimensions. For example, `cpu.idle_perc{service=monitoring,hostname=mini-mon}` represents a metric with the name "cpu.idle_perc" and the dimensions "service=monitoring" and "hostname=mini-mon".
@@ -2518,6 +2517,8 @@ Returns a JSON alarm object with the following fields:
       }
    }],
    "state":"OK"
+   "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+   "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 ```
 ___
@@ -2592,6 +2593,8 @@ Returns a JSON alarm object with the following parameters:
      }
   }],
   "state":"OK"
+  "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+  "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 ```
 ___
@@ -2667,6 +2670,8 @@ Returns a JSON alarm object with the following fields:
         }
     ],
     "state": "OK"
+    "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+    "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 
 ```
