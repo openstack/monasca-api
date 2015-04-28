@@ -63,7 +63,7 @@ public class MetricIntegrationTest extends AbstractMonApiResourceTest {
     db.close(handle);
     metricRepo = mock(MetricDefinitionRepo.class);
     service = new MetricService(config, producer, metricRegistry);
-    addResources(new MetricResource(service, metricRepo, new PersistUtils()));
+    addResources(new MetricResource(config, service, metricRepo, new PersistUtils()));
   }
 
   @BeforeTest
