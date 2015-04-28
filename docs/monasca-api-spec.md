@@ -586,6 +586,11 @@ Once an Alarm Definition has been created, the value for match_by and any metric
 
 The only option to change metrics or match_by is to delete the existing Alarm Definition and create a new one. Deleting an Alarm Definition will delete all Alarms associated with it.
 
+## Notification Methods
+Notification methods are resources used to specify a notification name, type and address that notifications can be sent to. After a notification method has been created, it can be associated with actions in alarm definitions, such that when an alarm state transition occurs, one or more notifications can be sent.
+
+Currently, notification method types of email, PagerDuty and webhooks are supported. In the case of email, the address is the email address. In the case of PagerDuty, the address is the PagerDuty Service API Key. In the case of a webhook, the address is the URL of the webhook.
+
 # Common Request Headers
 This section documents the common request headers that are used in requests.
 
@@ -713,7 +718,7 @@ The versions resource supplies operations for accessing information about suppor
 ## List Versions
 Lists the supported versions of the Monasca API.
 
-### GET
+### GET /
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
