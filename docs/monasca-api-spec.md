@@ -825,7 +825,7 @@ Returns a JSON version object with details about the specified version.
 ___
 
 # Metrics
-The metrics resource allows metrics to be created and queried.
+The metrics resource allows metrics to be created and queried. The `X-Auth-Token` is used to derive the tenant that submits metrics. Metrics are stored and scoped to the tenant that submits them, or if the `tenant_id` query parameter is specified and the tenant has the `monitoring-delegate` role, the metrics are stored using the specified tenant ID.
 
 ## Create Metric
 Create metrics.
@@ -840,7 +840,7 @@ Create metrics.
 None.
 
 #### Query Parameters
-* tenant_id (string, optional, restricted) - Tenant ID to create metric on behalf of. Usage of this query parameter requires the `monitoring-delegate` role.
+* tenant_id (string, optional, restricted) - Tenant ID to create metrics on behalf of. This parameter can be used to submit metrics from one tenant, to another. Normally, this parameter is used when the Agent is being run as an operational monitoring tenant, such as monitoring OpenStack infrastructure, and needs to submit metrics for an OpenStack resource, such as a VM, but those metrics need to be accessible to the tenant that owns the resource. Usage of this query parameter requires the `monitoring-delegate` role. 
 
 #### Request Body
 Consists of a single metric object or an array of metric objects. A metric has the following properties:
@@ -1068,7 +1068,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
 * name (string(255)) - A name of a metric.
 * dimensions ({string(255): string(255)}) - The dimensions of a metric.
 * columns (array[string]) - An array of column names corresponding to the columns in measurements.
-* measurements (array[array[]]) - A two dimensional array of measurements for each timestamp.
+* measurements (array[array[]]) - A two dimensional array of measurements for each timestamp. The timestamp is in ISO 8601 combined date and time format, with millisecond resolution.
 
 #### Response Examples
 ```
