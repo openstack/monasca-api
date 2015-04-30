@@ -129,7 +129,7 @@ public class AlarmDefinitionResource {
     command.validate();
     AlarmExpression alarmExpression = AlarmValidation.validateNormalizeAndGet(command.expression);
     return Links.hydrate(service.update(tenantId, alarmDefinitionId, alarmExpression, command),
-        uriInfo, true);
+                         uriInfo, true);
   }
 
   @PATCH
@@ -142,23 +142,26 @@ public class AlarmDefinitionResource {
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_definition_id") String alarmDefinitionId,
       @NotEmpty Map<String, Object> fields) throws JsonMappingException {
-    String name = (String) fields.get("name");
-    String description = (String) fields.get("description");
-    String severity = (String) fields.get("severity");
-    String expression = (String) fields.get("expression");
-    List<String> matchBy = (List<String>) fields.get("match_by");
-    Boolean enabled = (Boolean) fields.get("actions_enabled");
-    List<String> alarmActions = (List<String>) fields.get("alarm_actions");
-    List<String> okActions = (List<String>) fields.get("ok_actions");
-    List<String> undeterminedActions = (List<String>) fields.get("undetermined_actions");
+    String name = Validation.parseString(fields.get("name"), "name");
+    String description = Validation.parseString(fields.get("description"), "description");
+    String severity = Validation.parseString(fields.get("severity"), "severity");
+    String expression = Validation.parseString(fields.get("expression"), "expression");
+    List<String> matchBy = Validation.parseListOfStrings(fields.get("match_by"), "match_by");
+    Boolean enabled = Validation.parseBoolean(fields.get("actions_enabled"), "actions_enabled");
+    List<String> alarmActions =
+        Validation.parseListOfStrings(fields.get("alarm_actions"), "alarm_actions");
+    List<String> okActions = Validation.parseListOfStrings(fields.get("ok_actions"), "ok_actions");
+    List<String> undeterminedActions =
+        Validation.parseListOfStrings(fields.get("undetermined_actions"), "undetermined_actions");
+
     AlarmValidation.validate(name, description, severity, alarmActions, okActions,
         undeterminedActions);
     AlarmExpression alarmExpression =
         expression == null ? null : AlarmValidation.validateNormalizeAndGet(expression);
 
     return Links.hydrate(service.patch(tenantId, alarmDefinitionId, name, description, severity,
-        expression, alarmExpression, matchBy, enabled, alarmActions, okActions,
-        undeterminedActions), uriInfo, true);
+                                       expression, alarmExpression, matchBy, enabled, alarmActions,
+                                       okActions, undeterminedActions), uriInfo, true);
   }
 
   @DELETE

@@ -181,7 +181,42 @@ public final class Validation {
     } else {
 
       return Boolean.parseBoolean(mergeMetricsFlag);
+    }
+  }
 
+  public static String parseString(Object input, String parameterName) {
+    try {
+      return (String) input;
+    } catch (ClassCastException ex) {
+      throw Exceptions.unprocessableEntity("Field '%s' requires a string", parameterName);
+    }
+  }
+
+  public static List<String> parseListOfStrings(Object input, String parameterName){
+    try {
+      return (List<String>) input;
+    } catch (ClassCastException ex) {
+    }
+    try {
+      String inputStr = (String) input;
+      List<String> stringList = new ArrayList<>();
+      stringList.add(inputStr);
+      return stringList;
+    } catch (ClassCastException exInner) {
+      throw Exceptions.unprocessableEntity("Field '%s' requires a string or list of strings",
+                                           parameterName);
+    }
+  }
+
+  public static Boolean parseBoolean(Object input, String parameterName) {
+    try {
+      return (Boolean) input;
+    } catch (ClassCastException ex) {
+    }
+    try {
+      return Boolean.parseBoolean((String) input);
+    } catch (ClassCastException ex) {
+      throw Exceptions.unprocessableEntity("Field '%s' must be true or false", parameterName);
     }
   }
 }
