@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.testng.annotations.Test;
 
+import monasca.api.ApiConfig;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
@@ -63,7 +64,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     doNothing().when(service).create(any(List.class), anyString(), anyString());
 
     metricRepo = mock(MetricDefinitionRepo.class);
-    addResources(new MetricResource(service, metricRepo, new PersistUtils()));
+    addResources(new MetricResource(new ApiConfig(), service, metricRepo, new PersistUtils()));
   }
 
   @SuppressWarnings("unchecked")
