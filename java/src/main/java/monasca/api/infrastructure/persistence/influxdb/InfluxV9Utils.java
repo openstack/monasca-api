@@ -160,7 +160,7 @@ public class InfluxV9Utils {
       for (String k : dims.keySet()) {
         String v = dims.get(k);
         if (k != null && !k.isEmpty() && v != null && !v.isEmpty()) {
-          sb.append(" and " + sanitize(k) + "=" + "'" + sanitize(v) + "'");
+          sb.append(" and \"" + sanitize(k) + "\"=" + "'" + sanitize(v) + "'");
         }
       }
     }
