@@ -38,6 +38,7 @@ import javax.ws.rs.core.UriInfo;
 import monasca.api.ApiConfig;
 import monasca.api.app.MetricService;
 import monasca.api.app.command.CreateMetricCommand;
+import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
@@ -113,10 +114,13 @@ public class MetricResource {
                            @QueryParam("offset") String offset,
                            @QueryParam("limit") String limit)
       throws Exception {
-    Map<String, String>
-        dimensions =
-        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(name, dimensionsStr, false);
+      Map<String, String> dimensions = null;
+
+      if (! Strings.isNullOrEmpty(dimensionsStr)) {
+        dimensions = Validation.parseAndValidateNameAndDimensions(name, dimensionsStr, false);
+      } else if (! Strings.isNullOrEmpty(name)) {
+        MetricNameValidation.validate(name, null, false);
+      }
 
     return Links.paginate(this.persistUtils.getLimit(limit),
                           metricRepo.find(tenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
