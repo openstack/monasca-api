@@ -22,9 +22,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.Query;
-import org.skife.jdbi.v2.util.StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +40,7 @@ import javax.inject.Named;
 import monasca.api.ApiConfig;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
-import monasca.api.infrastructure.persistence.DimensionQueries;
+import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
@@ -55,6 +52,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
       .getLogger(InfluxV9AlarmStateHistoryRepo.class);
 
   private final DBI mysql;
+  private final MySQLUtils mySQLUtils;
   private final ApiConfig config;
   private final String region;
   private final InfluxV9RepoReader influxV9RepoReader;
@@ -80,11 +78,13 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
   @Inject
   public InfluxV9AlarmStateHistoryRepo(@Named("mysql") DBI mysql,
+                                       MySQLUtils mySQLUtils,
                                        ApiConfig config,
                                        InfluxV9RepoReader influxV9RepoReader,
                                        InfluxV9Utils influxV9Utils) {
 
     this.mysql = mysql;
+    this.mySQLUtils = mySQLUtils;
     this.config = config;
     this.region = config.region;
     this.influxV9RepoReader = influxV9RepoReader;
@@ -96,7 +96,6 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   public List<AlarmStateHistory> findById(String tenantId, String alarmId, String offset,
                                           int limit)
       throws Exception {
-
 
     String q = String.format("select alarm_id, metrics, old_state, new_state, "
                              + "reason, reason_data, sub_alarms "
@@ -125,12 +124,11 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                                       DateTime startTime, @Nullable DateTime endTime,
                                       @Nullable String offset, int limit) throws Exception {
 
-    List<String> alarmIdList = findAlarmIds(this.mysql, tenantId, dimensions);
+    List<String> alarmIdList = this.mySQLUtils.findAlarmIds(tenantId, dimensions);
 
     if (alarmIdList == null || alarmIdList.isEmpty()) {
       return new ArrayList<>();
     }
-
 
     String q = String.format("select alarm_id, metrics, old_state, new_state, "
                              + "reason, reason_data, sub_alarms "
@@ -215,9 +213,12 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   }
 
   private Date parseTimestamp(String timestampString) throws ParseException {
+
     try {
+
       return this.simpleDateFormat.parse(timestampString);
     }
+
     catch (ParseException pe) {
       // This extra part is here just to handle dates in the old format of only
       // having seconds. This should be removed in a month or so
@@ -225,53 +226,4 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
     }
   }
 
-  public List<String> findAlarmIds(DBI mysql, String tenantId,
-                                          Map<String, String> dimensions) {
-
-    final String
-        FIND_ALARMS_SQL = "select distinct a.id "
-                          + "from alarm as a "
-                          + "join alarm_definition as ad on a.alarm_definition_id = ad.id "
-                          + "%s "
-                          + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL "
-                          + "order by ad.created_at";
-
-    List<String> alarmIdList = null;
-
-    try (Handle h = mysql.open()) {
-
-      final String sql = String.format(FIND_ALARMS_SQL, buildJoinClauseFor(dimensions));
-
-      Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
-
-      logger.debug("AlarmStateHistory query '{}'", sql);
-
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
-
-      alarmIdList = query.map(StringMapper.FIRST).list();
-    }
-
-    return alarmIdList;
-  }
-
-  private String buildJoinClauseFor(Map<String, String> dimensions) {
-
-    if ((dimensions == null) || dimensions.isEmpty()) {
-      return "";
-    }
-
-    final StringBuilder sbJoin = new StringBuilder("join alarm_metric as am on a.id=am.alarm_id ");
-    sbJoin.append(
-        "join metric_definition_dimensions as mdd on am.metric_definition_dimensions_id=mdd.id ");
-
-    for (int i = 0; i < dimensions.size(); i++) {
-      final String tableAlias = "md" + i;
-      sbJoin.append(" inner join metric_dimension ").append(tableAlias).append(" on ")
-          .append(tableAlias).append(".name = :dname").append(i).append(" and ").append(tableAlias)
-          .append(".value = :dvalue").append(i).append(" and mdd.metric_dimension_set_id = ")
-          .append(tableAlias).append(".dimension_set_id");
-    }
-
-    return sbJoin.toString();
-  }
 }

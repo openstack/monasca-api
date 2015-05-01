@@ -113,17 +113,23 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Object listStateHistory(
       @Context UriInfo uriInfo,
-      @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("start_time") String startTimeStr, @QueryParam("end_time") String endTimeStr,
+      @HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("start_time") String startTimeStr,
+      @QueryParam("end_time") String endTimeStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit)
       throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", false);
+
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
-    if (startTime != null)
+
+    if (startTime != null) {
       Validation.validateTimes(startTime, endTime);
+    }
+
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);

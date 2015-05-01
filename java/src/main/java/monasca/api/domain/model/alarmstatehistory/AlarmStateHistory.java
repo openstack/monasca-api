@@ -34,8 +34,16 @@ public class AlarmStateHistory  extends AbstractEntity {
 
   public AlarmStateHistory() {}
 
-  public AlarmStateHistory(String alarmId, List<MetricDefinition> metrics, AlarmState oldState,
-      AlarmState newState, List<AlarmTransitionSubAlarm> subAlarms, String reason, String reasonData, DateTime timestamp) {
+  public AlarmStateHistory(
+      String alarmId,
+      List<MetricDefinition> metrics,
+      AlarmState oldState,
+      AlarmState newState,
+      List<AlarmTransitionSubAlarm> subAlarms,
+      String reason,
+      String reasonData,
+      DateTime timestamp) {
+
     id = new Long(timestamp.getMillis()).toString();
     this.alarmId = alarmId;
     this.setMetrics(metrics);
