@@ -331,10 +331,10 @@ Before using the API, you must first get a valid auth token from Keystone. All A
 A metric is uniquely identified by a name and set of dimensions.
 
 ### Name
-Defines the name of a metric. A name is of type string(255). The name may include any characters except for the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the name.
+Defines the name of a metric. A name is of type string(255). The name may include any characters except the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the name.
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). The dimensions string may include any characters except for the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the dimensions.
+A dictionary of (key, value) pairs. The key and value are of type string(255). Dimension keys may not begin with '_' (underscore). The dimensions string may include any characters except the following: `> < = { } ( ) , ' " ; &`. If one of the restricted characters is needed, this can be achieved by double quoting the dimension key or value containing the character.
 
 ### Text Representation
 In this document, metrics will be represented in the form `name{name=value,name=value}` where name is the metric name and the name=value pairs in the curly braces are the dimensions. For example, `cpu.idle_perc{service=monitoring,hostname=mini-mon}` represents a metric with the name "cpu.idle_perc" and the dimensions "service=monitoring" and "hostname=mini-mon".
