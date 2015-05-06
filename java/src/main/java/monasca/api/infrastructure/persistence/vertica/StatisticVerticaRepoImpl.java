@@ -136,7 +136,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       statistics.setColumns(statisticsColumns);
 
-      if (Boolean.TRUE.equals(mergeMetricsFlag && byteMap.keySet().size() > 1)) {
+      if (Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
 
         // Wipe out the dimensions.
         statistics.setDimensions(new HashMap<String, String>());
