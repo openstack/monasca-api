@@ -13,6 +13,16 @@
  */
 package monasca.api.app.validation;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,16 +31,8 @@ import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import monasca.common.model.Services;
 import monasca.api.resource.exception.Exceptions;
+import monasca.common.model.Services;
 
 /**
  * Validation related utilities.
@@ -163,5 +165,23 @@ public final class Validation {
   public static void validateTimes(DateTime startTime, DateTime endTime) {
     if (!startTime.isBefore(endTime))
         throw Exceptions.badRequest("start_time must be before end_time");
+  }
+
+  public static Boolean validateAndParseMergeMetricsFlag(String mergeMetricsFlag) {
+
+    if (mergeMetricsFlag == null) {
+
+      return false;
+
+    } else if (!"true".equalsIgnoreCase(mergeMetricsFlag)
+               && !"false".equalsIgnoreCase(mergeMetricsFlag)) {
+
+      throw Exceptions.badRequest("merge_metrics must be either 'true' or 'false'");
+
+    } else {
+
+      return Boolean.parseBoolean(mergeMetricsFlag);
+
+    }
   }
 }

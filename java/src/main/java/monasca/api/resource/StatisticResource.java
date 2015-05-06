@@ -60,17 +60,18 @@ public class StatisticResource {
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
 
-  public Object get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+  public Object get(
+      @Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId,
       @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
       @QueryParam("start_time") String startTimeStr,
       @QueryParam("end_time") String endTimeStr,
       @QueryParam("statistics") String statisticsStr,
-      @DefaultValue("300")
-      @QueryParam("period") String periodStr,
+      @DefaultValue("300") @QueryParam("period") String periodStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit,
-      @QueryParam("merge_metrics") Boolean mergeMetricsFlag) throws Exception {
+      @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
@@ -83,15 +84,14 @@ public class StatisticResource {
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation.parseAndValidateNameAndDimensions(
             name, dimensionsStr, true);
+    Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
 
-
-      return Links.paginateStatistics(this.persistUtils.getLimit(limit),
-                                      repo.find(tenantId, name, dimensions, startTime, endTime,
-                                                statistics, period, offset,
-                                                this.persistUtils.getLimit(limit),
-                                                mergeMetricsFlag),
-                                      uriInfo);
-
+    return Links.paginateStatistics(this.persistUtils.getLimit(limit),
+                                    repo.find(tenantId, name, dimensions, startTime, endTime,
+                                              statistics, period, offset,
+                                              this.persistUtils.getLimit(limit),
+                                              mergeMetricsFlagBool),
+                                    uriInfo);
   }
 
 }
