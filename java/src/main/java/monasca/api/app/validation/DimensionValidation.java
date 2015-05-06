@@ -34,8 +34,8 @@ public final class DimensionValidation {
   private static final Map<String, DimensionValidator> VALIDATORS;
   private static final Pattern UUID_PATTERN = Pattern
       .compile("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
-  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("[^><={}(), '\";&]+$");
-  private static final String INVALID_CHAR_STRING = "> < = { } ( ) ' \" , ; &";
+  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("[^><={}(), '\"\\\\;&]+$");
+  private static final String INVALID_CHAR_STRING = "> < = { } ( ) ' \" \\ , ; &";
 
   private DimensionValidation() {}
 
