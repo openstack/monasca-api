@@ -62,8 +62,7 @@ public class MeasurementResource {
       @QueryParam("end_time") String endTimeStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit,
-      @QueryParam("merge_metrics") Boolean mergeMetricsFlag)
-      throws Exception {
+      @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
@@ -73,13 +72,13 @@ public class MeasurementResource {
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateNameAndDimensions(name, dimensionsStr, true);
+    Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
 
-      return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
-                                        repo.find(tenantId, name, dimensions, startTime, endTime,
-                                                  offset, this.persistUtils.getLimit(limit),
-                                                  mergeMetricsFlag),
-                                        uriInfo);
-
+    return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
+                                      repo.find(tenantId, name, dimensions, startTime, endTime,
+                                                offset, this.persistUtils.getLimit(limit),
+                                                mergeMetricsFlagBool),
+                                      uriInfo);
   }
 
 }
