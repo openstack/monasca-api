@@ -14,11 +14,7 @@
 package monasca.api.infrastructure;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
-
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 
 import javax.inject.Singleton;
 
@@ -40,6 +36,7 @@ import monasca.api.infrastructure.persistence.influxdb.InfluxV9Utils;
 import monasca.api.infrastructure.persistence.mysql.AlarmDefinitionMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.AlarmMySqlRepoImpl;
 import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepoImpl;
+import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
 import monasca.api.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepoImpl;
 import monasca.api.infrastructure.persistence.vertica.MeasurementVerticaRepoImpl;
 import monasca.api.infrastructure.persistence.vertica.MetricDefinitionVerticaRepoImpl;
@@ -49,6 +46,7 @@ import monasca.api.infrastructure.persistence.vertica.StatisticVerticaRepoImpl;
  * Infrastructure layer bindings.
  */
 public class InfrastructureModule extends AbstractModule {
+
   private ApiConfig config;
 
   private static final String VERTICA = "vertica";
@@ -64,23 +62,24 @@ public class InfrastructureModule extends AbstractModule {
 
     // Bind repositories
     bind(AlarmRepo.class).to(AlarmMySqlRepoImpl.class).in(Singleton.class);
-    bind(AlarmDefinitionRepo.class).to(AlarmDefinitionMySqlRepoImpl.class).in(
-        Singleton.class);
+    bind(AlarmDefinitionRepo.class).to(AlarmDefinitionMySqlRepoImpl.class).in(Singleton.class);
+
+    bind(MySQLUtils.class);
+
+    bind(PersistUtils.class).in(Singleton.class);
 
     if (config.databaseConfiguration.getDatabaseType().trim().equalsIgnoreCase(VERTICA)) {
 
-      bind(AlarmStateHistoryRepo.class).to(AlarmStateHistoryVerticaRepoImpl.class).in(
-          Singleton.class);
-      bind(MetricDefinitionRepo.class).to(MetricDefinitionVerticaRepoImpl.class).in(
-          Singleton.class);
-      bind(MeasurementRepo.class).to(MeasurementVerticaRepoImpl.class).in(
-          Singleton.class);
+      bind(AlarmStateHistoryRepo.class).to(AlarmStateHistoryVerticaRepoImpl.class)
+          .in(Singleton.class);
+      bind(MetricDefinitionRepo.class).to(MetricDefinitionVerticaRepoImpl.class).in(Singleton.class);
+      bind(MeasurementRepo.class).to(MeasurementVerticaRepoImpl.class).in(Singleton.class);
       bind(StatisticRepo.class).to(StatisticVerticaRepoImpl.class).in(Singleton.class);
 
     } else if (config.databaseConfiguration.getDatabaseType().trim().equalsIgnoreCase(INFLUXDB)) {
 
-      if (config.influxDB.getVersion() != null
-          && !config.influxDB.getVersion().equalsIgnoreCase(INFLUXDB_V9)) {
+      if (config.influxDB.getVersion() != null && !config.influxDB.getVersion()
+          .equalsIgnoreCase(INFLUXDB_V9)) {
 
         System.err.println("Found unsupported Influxdb version: " + config.influxDB.getVersion());
         System.err.println("Supported Influxdb versions are 'v9'");
@@ -89,7 +88,6 @@ public class InfrastructureModule extends AbstractModule {
 
       }
 
-      bind(PersistUtils.class).in(Singleton.class);
       bind(InfluxV9Utils.class).in(Singleton.class);
       bind(InfluxV9RepoReader.class).in(Singleton.class);
 
@@ -100,19 +98,9 @@ public class InfrastructureModule extends AbstractModule {
 
     } else {
 
-      throw new ProvisionException("Failed to detect supported database. Supported databases are "
-          + "'vertica' and 'influxdb'. Check your config file.");
+      throw new ProvisionException("Failed to detect supported database. Supported databases are " + "'vertica' and 'influxdb'. Check your config file.");
     }
 
-    bind(NotificationMethodRepo.class).to(NotificationMethodMySqlRepoImpl.class).in(
-        Singleton.class);
-  }
-
-  @Provides
-  InfluxDB provideInfluxDB() {
-    InfluxDB influxDB =
-        InfluxDBFactory.connect(this.config.influxDB.getUrl(), this.config.influxDB.getUser(),
-            this.config.influxDB.getPassword());
-    return influxDB;
+    bind(NotificationMethodRepo.class).to(NotificationMethodMySqlRepoImpl.class).in(Singleton.class);
   }
 }

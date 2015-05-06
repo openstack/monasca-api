@@ -40,7 +40,7 @@ public class AlarmStateHistoryVerticaRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new AlarmStateHistoryVerticaRepoImpl(null, db);
+    repo = new AlarmStateHistoryVerticaRepoImpl(db, null);
   }
 
   @AfterClass

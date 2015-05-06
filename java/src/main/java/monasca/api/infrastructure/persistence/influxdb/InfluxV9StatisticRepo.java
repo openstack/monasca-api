@@ -108,7 +108,6 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
 
     } else {
 
-
       if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
         throw new MultipleMetricsException(name, dimensions);
@@ -132,7 +131,6 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
 
     return q;
   }
-
 
   private List<Statistics> statisticslist(Series series) {
 

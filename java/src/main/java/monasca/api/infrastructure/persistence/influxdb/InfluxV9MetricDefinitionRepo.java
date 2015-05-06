@@ -42,7 +42,6 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-
   @Inject
   public InfluxV9MetricDefinitionRepo(ApiConfig config,
                                       InfluxV9RepoReader influxV9RepoReader,
@@ -78,7 +77,6 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     return metricDefinitionList.size() > 1 ? false : true;
 
   }
-
 
   @Override
   public List<MetricDefinition> find(String tenantId, String name,

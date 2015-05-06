@@ -45,9 +45,14 @@ public final class Exceptions {
   }
 
   public enum FaultType {
-    SERVER_ERROR(Status.INTERNAL_SERVER_ERROR, true), BAD_REQUEST(Status.BAD_REQUEST, true), UNAUTHORIZED(
-        Status.UNAUTHORIZED, false), NOT_FOUND(Status.NOT_FOUND, true), CONFLICT(Status.CONFLICT,
-        true), UNPROCESSABLE_ENTITY(422, true), FORBIDDEN(Status.FORBIDDEN, true);
+
+    SERVER_ERROR(Status.INTERNAL_SERVER_ERROR, true),
+    BAD_REQUEST(Status.BAD_REQUEST, true),
+    UNAUTHORIZED(Status.UNAUTHORIZED, false),
+    NOT_FOUND(Status.NOT_FOUND, true),
+    CONFLICT(Status.CONFLICT, true),
+    UNPROCESSABLE_ENTITY(422, true),
+    FORBIDDEN(Status.FORBIDDEN, true);
 
     public final int statusCode;
     public final boolean loggable;

@@ -53,13 +53,16 @@ public class MeasurementResource {
   @GET
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
-  public Object get(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-                    @QueryParam("name") String name, @QueryParam("dimensions") String dimensionsStr,
-                    @QueryParam("start_time") String startTimeStr,
-                    @QueryParam("end_time") String endTimeStr,
-                    @QueryParam("offset") String offset,
-                    @QueryParam("limit") String limit,
-                    @QueryParam("merge_metrics") Boolean mergeMetricsFlag)
+  public Object get(
+      @Context UriInfo uriInfo,
+      @HeaderParam("X-Tenant-Id") String tenantId,
+      @QueryParam("name") String name,
+      @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("start_time") String startTimeStr,
+      @QueryParam("end_time") String endTimeStr,
+      @QueryParam("offset") String offset,
+      @QueryParam("limit") String limit,
+      @QueryParam("merge_metrics") Boolean mergeMetricsFlag)
       throws Exception {
 
     // Validate query parameters
