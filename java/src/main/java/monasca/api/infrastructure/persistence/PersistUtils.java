@@ -30,8 +30,16 @@ public class PersistUtils {
 
   public PersistUtils(int maxQueryLimit) {
 
-    this.maxQueryLimit = maxQueryLimit;
+    // maxQueryLimit could be 0 if binding for Google Guice is not setup.
+    if (maxQueryLimit <= 0) {
 
+      this.maxQueryLimit = DEFAULT_MAX_QUERY_LIMIT;
+
+    } else {
+
+      this.maxQueryLimit = maxQueryLimit;
+
+    }
   }
 
   public PersistUtils() {
@@ -49,7 +57,11 @@ public class PersistUtils {
     try {
       limitInt = Integer.parseInt(limit);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException(String.format("Found invalid Limit: '%1$s'. Limit must be an integer.", limit));
+      throw new IllegalArgumentException(String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
+    }
+
+    if (limitInt <= 0) {
+      throw new IllegalArgumentException(String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
     }
 
     if (limitInt <= this.maxQueryLimit) {
