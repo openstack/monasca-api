@@ -66,6 +66,7 @@ public class MeasurementResource {
       throws Exception {
 
     // Validate query parameters
+    Validation.validateNotNullOrEmpty(name, "name");
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     Validation.validateTimes(startTime, endTime);
