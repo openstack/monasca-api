@@ -53,7 +53,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
   private static final String FIND_BY_METRIC_DEF_SQL =
       "select def.name, mes.definition_dimensions_id, defdims.dimension_set_id, defdims.definition_id, "
-      + "mes.id, mes.time_stamp, mes.value, mes.value_meta "
+      + "mes.time_stamp, mes.value, mes.value_meta "
       + "from MonMetrics.Measurements mes, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
       + "%s "
       + "where mes.definition_dimensions_id = defdims.id "
