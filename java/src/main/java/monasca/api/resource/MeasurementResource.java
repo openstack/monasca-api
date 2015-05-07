@@ -65,6 +65,7 @@ public class MeasurementResource {
       @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
 
     // Validate query parameters
+    Validation.validateNotNullOrEmpty(name, "name");
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     Validation.validateTimes(startTime, endTime);

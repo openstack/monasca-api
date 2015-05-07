@@ -1038,7 +1038,7 @@ If users do not wish to see measurements for a single metric, but would prefer t
 None.
 
 #### Query Parameters
-* name (string(255), optional) - A metric name to filter metrics by.
+* name (string(255), required) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.
