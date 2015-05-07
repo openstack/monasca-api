@@ -441,7 +441,7 @@ If instead, match_by is set to `hostname,device`, then four alarms will be creat
 
 ```
 Alarm 1 - Metrics: disk.space_used_perc{device:/dev/sda1,hostname=mini-mon}
-Alarm 2 - Metrics: disk.space_used_perc{device:tmpfs,hostname=devstack}
+Alarm 2 - Metrics: disk.space_used_perc{device:tmpfs,hostname=mini-mon}
 Alarm 3 - Metrics: disk.space_used_perc{device:/dev/sda1,hostname=devstack}
 Alarm 4 - Metrics: disk.space_used_perc{device:tmpfs,hostname=devstack}
 ```
