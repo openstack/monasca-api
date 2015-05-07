@@ -18,11 +18,8 @@ import com.google.common.base.Strings;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -44,6 +41,7 @@ import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.AlarmDefinitionService;
 import monasca.api.app.command.CreateAlarmDefinitionCommand;
+import monasca.api.app.command.PatchAlarmDefinitionCommand;
 import monasca.api.app.command.UpdateAlarmDefinitionCommand;
 import monasca.api.app.validation.AlarmValidation;
 import monasca.api.app.validation.Validation;
@@ -137,31 +135,21 @@ public class AlarmDefinitionResource {
   @Path("/{alarm_definition_id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @SuppressWarnings("unchecked")
   public AlarmDefinition patch(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_definition_id") String alarmDefinitionId,
-      @NotEmpty Map<String, Object> fields) throws JsonMappingException {
-    String name = Validation.parseString(fields.get("name"), "name");
-    String description = Validation.parseString(fields.get("description"), "description");
-    String severity = Validation.parseString(fields.get("severity"), "severity");
-    String expression = Validation.parseString(fields.get("expression"), "expression");
-    List<String> matchBy = Validation.parseListOfStrings(fields.get("match_by"), "match_by");
-    Boolean enabled = Validation.parseBoolean(fields.get("actions_enabled"), "actions_enabled");
-    List<String> alarmActions =
-        Validation.parseListOfStrings(fields.get("alarm_actions"), "alarm_actions");
-    List<String> okActions = Validation.parseListOfStrings(fields.get("ok_actions"), "ok_actions");
-    List<String> undeterminedActions =
-        Validation.parseListOfStrings(fields.get("undetermined_actions"), "undetermined_actions");
-
-    AlarmValidation.validate(name, description, severity, alarmActions, okActions,
-        undeterminedActions);
+      @Valid PatchAlarmDefinitionCommand command) throws JsonMappingException {
+    command.validate();
     AlarmExpression alarmExpression =
-        expression == null ? null : AlarmValidation.validateNormalizeAndGet(expression);
+        command.expression == null ? null : AlarmValidation
+            .validateNormalizeAndGet(command.expression);
 
-    return Links.hydrate(service.patch(tenantId, alarmDefinitionId, name, description, severity,
-                                       expression, alarmExpression, matchBy, enabled, alarmActions,
-                                       okActions, undeterminedActions), uriInfo, true);
+    return Links.hydrate(service.patch(tenantId, alarmDefinitionId, command.name,
+                                       command.description, command.severity, command.expression,
+                                       alarmExpression, command.matchBy, command.actionsEnabled,
+                                       command.alarmActions, command.okActions,
+                                       command.undeterminedActions),
+                         uriInfo, true);
   }
 
   @DELETE
