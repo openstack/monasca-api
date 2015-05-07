@@ -154,7 +154,7 @@ public final class Validation {
   /**
    * @throws WebApplicationException if the {@code value} is null or empty.
    */
-  public static <T extends String> void validateNotNullOrEmpty(T value, String parameterName) {
+  public static void validateNotNullOrEmpty(String value, String parameterName) {
     if (Strings.isNullOrEmpty(value))
       throw Exceptions.unprocessableEntity("%s is required", parameterName);
   }
