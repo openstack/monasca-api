@@ -14,7 +14,9 @@
 package monasca.api.app.validation;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.WebApplicationException;
 
@@ -44,21 +46,36 @@ public final class AlarmValidation {
     if (description != null && description.length() > 255)
       throw Exceptions.unprocessableEntity("Description %s must be 255 characters or less",
           description);
-    if (alarmActions != null)
+    if (alarmActions != null) {
       for (String action : alarmActions)
         if (action.length() > 50)
           throw Exceptions.unprocessableEntity("Alarm action %s must be 50 characters or less",
               action);
+      if (checkForDuplicateNotificationMethodsInAlarmDef(alarmActions)) {
+        throw Exceptions
+            .unprocessableEntity("Alarm definition cannot have Duplicate alarm notification methods");
+      }
+    }
     if (okActions != null)
-      for (String action : okActions)
+      for (String action : okActions) {
         if (action.length() > 50)
           throw Exceptions
               .unprocessableEntity("Ok action %s must be 50 characters or less", action);
-    if (undeterminedActions != null)
+        if (checkForDuplicateNotificationMethodsInAlarmDef(okActions)) {
+          throw Exceptions
+              .unprocessableEntity("Alarm definition cannot have Duplicate OK notification methods");
+        }
+      }
+    if (undeterminedActions != null) {
       for (String action : undeterminedActions)
         if (action.length() > 50)
           throw Exceptions.unprocessableEntity(
               "Undetermined action %s must be 50 characters or less", action);
+      if (checkForDuplicateNotificationMethodsInAlarmDef(undeterminedActions)) {
+        throw Exceptions
+            .unprocessableEntity("Alarm definition cannot have Duplicate Undetermined notification methods");
+      }
+    }
     if (severity != null && !VALID_ALARM_SERVERITY.contains(severity.toLowerCase())) {
       throw Exceptions.unprocessableEntity("%s is not a valid severity", severity);
     }
@@ -113,5 +130,18 @@ public final class AlarmValidation {
     }
 
     return alarmExpression;
+  }
+
+  /**
+   * Method checks for duplicate alarm actions
+   */
+  @SuppressWarnings("unchecked")
+  private static boolean checkForDuplicateNotificationMethodsInAlarmDef(List<String> alarmActions) {
+    @SuppressWarnings("rawtypes")
+    Set inputSet = new HashSet(alarmActions);
+    if (inputSet.size() < alarmActions.size()) {
+      return true;
+    }
+    return false;
   }
 }
