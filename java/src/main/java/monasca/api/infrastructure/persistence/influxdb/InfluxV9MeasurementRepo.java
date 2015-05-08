@@ -157,7 +157,7 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
   private Map<String, String> getValueMeta(String[] values) {
 
-    Map<String, String> valueMeta = new HashMap();
+    Map<String, String> valueMeta = new HashMap<>();
 
     if (values.length >= 3 && values[2] != null && !values[2].isEmpty()) {
 

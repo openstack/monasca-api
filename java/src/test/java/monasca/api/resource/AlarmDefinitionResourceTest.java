@@ -271,7 +271,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   public void shouldList() {
 
 
-    Map lhm = (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
+    Map<String, Object> lhm = (Map<String, Object>) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
         .get(Paged.class).elements.get(0);
 
     AlarmDefinition ad = new AlarmDefinition((String) lhm.get("id"), (String) lhm.get("name"),
@@ -299,9 +299,9 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
   @SuppressWarnings("unchecked")
   public void shouldListByName() throws Exception {
-    Map
+    Map<String, Object>
         lhm =
-        (Map) client()
+        (Map<String, Object>) client()
             .resource("/v2.0/alarm-definitions?name=" + URLEncoder.encode("foo bar baz", "UTF-8"))
             .header("X-Tenant-Id", "abc").get(Paged.class).elements.get(0);
 
@@ -384,9 +384,9 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   public void shouldHydateLinksOnList() {
     List<Link> expected = Arrays.asList(new Link("self", "/v2.0/alarm-definitions/123"));
 
-    Map
+    Map<String, Object>
         lhm =
-        (Map) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
+        (Map<String, Object>) client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc")
             .get(Paged.class).elements.get(0);
 
     List<Map<String, String>> links = (List<Map<String, String>>) lhm.get("links");

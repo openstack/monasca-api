@@ -61,9 +61,9 @@ public class VersionResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldList() {
 
-    Map
+    Map<String, Object>
         lhm =
-        (Map) client().resource("/").header("X-Tenant-Id", "abc").get(Paged.class).elements.get(0);
+        (Map<String, Object>) client().resource("/").header("X-Tenant-Id", "abc").get(Paged.class).elements.get(0);
 
     Version
         actual =

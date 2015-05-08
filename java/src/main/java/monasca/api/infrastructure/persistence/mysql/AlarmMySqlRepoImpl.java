@@ -218,8 +218,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
             if (parsed_dimension.length == 2) {
               dimensionMap.put(parsed_dimension[0], parsed_dimension[1]);
             } else {
-              logger
-                  .error("Failed to parse dimension. Dimension is malformed: {}", parsed_dimension);
+              logger.error("Failed to parse dimension. Dimension is malformed: {}", dimension);
             }
           }
         }

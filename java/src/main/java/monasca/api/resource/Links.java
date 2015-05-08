@@ -188,7 +188,7 @@ public final class Links {
 
     } else {
 
-      paged.elements = new ArrayList();
+      paged.elements = new ArrayList<>();
 
     }
 
@@ -247,7 +247,7 @@ public final class Links {
 
     } else {
 
-      paged.elements = new ArrayList();
+      paged.elements = new ArrayList<>();
     }
 
     return paged;
@@ -305,7 +305,7 @@ public final class Links {
 
     } else {
 
-      paged.elements = new ArrayList();
+      paged.elements = new ArrayList<>();
     }
 
     return paged;
