@@ -29,7 +29,7 @@ public class CreateNotificationMethodCommand {
   @NotNull
   public NotificationMethodType type;
   @NotEmpty
-  @Size(min = 1, max = 100)
+  @Size(min = 1, max = 512)
   public String address;
 
   public CreateNotificationMethodCommand() {}
