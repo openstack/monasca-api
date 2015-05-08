@@ -173,9 +173,9 @@ public class AlarmResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Alarm patch(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
-      @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, Object> fields)
+      @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, String> fields)
       throws JsonMappingException {
-    String stateStr = Validation.parseString(fields.get("state"), "state");
+    String stateStr = fields.get("state");
     AlarmState state =
         stateStr == null ? null : Validation.parseAndValidate(AlarmState.class, stateStr);
 
