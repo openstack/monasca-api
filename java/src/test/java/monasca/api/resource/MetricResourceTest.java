@@ -165,7 +165,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
             valueMeta));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Metric name hpcs{.compute% may not contain: > < = { } ( ) ' \" , ; &");
+        "Metric name hpcs{.compute% may not contain: > < = { } ( ) ' \" \\ , ; &");
   }
 
   public void shouldErrorOnCreateWithTooLongName() {

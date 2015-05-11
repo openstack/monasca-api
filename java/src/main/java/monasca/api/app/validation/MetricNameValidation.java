@@ -28,7 +28,7 @@ import com.sun.jersey.spi.container.WebApplication;
  * Utilities for validating metric names.
  */
 public class MetricNameValidation {
-  private static final Pattern VALID_METRIC_NAME = Pattern.compile("[^><={}(), '\";&]+$");
+  private static final Pattern VALID_METRIC_NAME = Pattern.compile("[^><={}(), '\"\\\\;&]+$");
 
   private MetricNameValidation() {}
 
@@ -60,7 +60,7 @@ public class MetricNameValidation {
       throw Exceptions.unprocessableEntity("Metric name %s must be %d characters or less",
           metricName, CreateMetricCommand.MAX_NAME_LENGTH);
     if (!Services.isReserved(metricName) && !VALID_METRIC_NAME.matcher(metricName).matches())
-      throw Exceptions.unprocessableEntity("Metric name %s may not contain: > < = { } ( ) ' \" , ; &",
+      throw Exceptions.unprocessableEntity("Metric name %s may not contain: > < = { } ( ) ' \" \\ , ; &",
           metricName);
 
     // Service specific validations
