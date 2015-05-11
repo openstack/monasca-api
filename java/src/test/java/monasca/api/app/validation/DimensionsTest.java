@@ -50,6 +50,6 @@ public class DimensionsTest {
         put("ezaz", "do re mi");
         put("abc", null);
       }
-    }, "joe");
+    });
   }
 }

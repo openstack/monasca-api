@@ -18,7 +18,6 @@ import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 
-import monasca.common.model.Services;
 import monasca.common.model.alarm.AlarmExpression;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
@@ -81,18 +80,15 @@ public final class AlarmValidation {
 
     for (AlarmSubExpression subExpression : alarmExpression.getSubExpressions()) {
       MetricDefinition metricDef = subExpression.getMetricDefinition();
-      String service =
-          metricDef.dimensions == null ? null : metricDef.dimensions
-              .get(Services.SERVICE_DIMENSION);
 
       // Normalize and validate namespace
       metricDef.name = MetricNameValidation.normalize(metricDef.name);
-      MetricNameValidation.validate(metricDef.name, service, true);
+      MetricNameValidation.validate(metricDef.name, true);
 
       // Normalize and validate dimensions
       if (metricDef.dimensions != null) {
         metricDef.setDimensions(DimensionValidation.normalize(metricDef.dimensions));
-        DimensionValidation.validate(metricDef.dimensions, service);
+        DimensionValidation.validate(metricDef.dimensions);
       }
 
       // Validate period

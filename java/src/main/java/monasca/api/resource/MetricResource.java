@@ -119,7 +119,7 @@ public class MetricResource {
       if (! Strings.isNullOrEmpty(dimensionsStr)) {
         dimensions = Validation.parseAndValidateNameAndDimensions(name, dimensionsStr, false);
       } else if (! Strings.isNullOrEmpty(name)) {
-        MetricNameValidation.validate(name, null, false);
+        MetricNameValidation.validate(name, false);
       }
 
     return Links.paginate(this.persistUtils.getLimit(limit),

@@ -32,7 +32,6 @@ import java.util.Map;
 import javax.ws.rs.WebApplicationException;
 
 import monasca.api.resource.exception.Exceptions;
-import monasca.common.model.Services;
 
 /**
  * Validation related utilities.
@@ -89,8 +88,7 @@ public final class Validation {
                                                                       boolean nameRequiredFlag) {
     Map<String, String> dimensions = parseAndValidateDimensions(dimensionsStr);
 
-    String service = dimensions.get(Services.SERVICE_DIMENSION);
-    MetricNameValidation.validate(name, service, nameRequiredFlag);
+    MetricNameValidation.validate(name, nameRequiredFlag);
     return dimensions;
   }
 
@@ -107,8 +105,7 @@ public final class Validation {
         dimensions.put(dimensionArr[0], dimensionArr[1]);
     }
 
-    String service = dimensions.get(Services.SERVICE_DIMENSION);
-    DimensionValidation.validate(dimensions, service);
+    DimensionValidation.validate(dimensions);
     return dimensions;
   }
 
