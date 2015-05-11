@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
-
 import falcon
 from oslo.config import cfg
 
@@ -22,10 +20,6 @@ from monasca.common.messaging import exceptions as message_queue_exceptions
 from monasca.common.messaging.message_formats import metrics_transform_factory
 from monasca.common import resource_api
 from monasca.openstack.common import log
-from monasca.v2.common.schemas import (exceptions as schemas_exceptions)
-from monasca.v2.common.schemas import (
-    metrics_request_body_schema as schemas_metrics)
-from monasca.v2.common import utils
 from monasca.v2.reference import helpers
 
 
@@ -68,10 +62,26 @@ class Metrics(monasca_api_v2.V2API):
         :raises falcon.HTTPBadRequest
         """
         try:
-            schemas_metrics.validate(metrics)
-        except schemas_exceptions.ValidationException as ex:
+            if isinstance(metrics, list):
+                for metric in metrics:
+                    self._validate_single_metric(metric)
+            else:
+                self._validate_single_metric(metrics)
+        except Exception as ex:
             LOG.debug(ex)
             raise falcon.HTTPBadRequest('Bad request', ex.message)
+
+    def _validate_single_metric(self, metric):
+        assert isinstance(metric['name'], (str, unicode))
+        assert len(metric['name']) <= 64
+        assert isinstance(metric['timestamp'], (int, float))
+        assert isinstance(metric['value'], (int, long, float, complex))
+        if "dimensions" in metric:
+            for d in metric['dimensions']:
+                assert isinstance(d, (str, unicode))
+                assert len(d) <= 255
+                assert isinstance(metric['dimensions'][d], (str, unicode))
+                assert len(metric['dimensions'][d]) <= 255
 
     def _send_metrics(self, metrics):
         """Send the metrics using the message queue.
@@ -80,20 +90,12 @@ class Metrics(monasca_api_v2.V2API):
         :raises: falcon.HTTPServiceUnavailable
         """
 
-        def _send_metric(metric):
-            try:
-                str_msg = json.dumps(metric, default=utils.date_handler)
-                self._message_queue.send_message(str_msg)
-            except message_queue_exceptions.MessageQueueException as ex:
-                LOG.exception(ex)
-                raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                    ex.message, 60)
-
-        if isinstance(metrics, list):
-            for metric in metrics:
-                _send_metric(metric)
-        else:
-            _send_metric(metrics)
+        try:
+            self._message_queue.send_message_batch(metrics)
+        except message_queue_exceptions.MessageQueueException as ex:
+            LOG.exception(ex)
+            raise falcon.HTTPServiceUnavailable('Service unavailable',
+                                                ex.message, 60)
 
     def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset):
         """Query the metric repo for the metrics, format them and return them.
