@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
+import json
 
 from oslo_utils import timeutils
 
@@ -26,7 +26,7 @@ def transform(metrics, tenant_id, region):
         transformed_metrics = []
         for metric in metrics:
             transformed_metric['metric'] = metric
-            transformed_metrics.append(copy.deepcopy(transformed_metric))
+            transformed_metrics.append(json.dumps(transformed_metric))
         return transformed_metrics
     else:
         transformed_metric['metric'] = metrics

@@ -108,3 +108,17 @@ class KafkaPublisher(publisher.Publisher):
         except Exception:
             LOG.exception('Unknown error.')
             raise exceptions.MessageQueueException()
+
+    def send_message_batch(self, messages):
+        try:
+            if not self._producer:
+                self._init_producer()
+            self._producer.send_messages(self.topic, *messages)
+        except (common.KafkaUnavailableError,
+                common.LeaderNotAvailableError):
+            self._client = None
+            LOG.exception('Error occurred while posting data to Kafka.')
+            raise exceptions.MessageQueueException()
+        except Exception:
+            LOG.exception('Unknown error.')
+            raise exceptions.MessageQueueException()
