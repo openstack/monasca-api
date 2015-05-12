@@ -59,6 +59,8 @@ public class LinksTest {
     when(uriInfo.getBaseUri()).thenReturn(uri);
     final String alarmDefinitionId = "af72b3d8-51f3-4eee-8086-535b5e7a9dc8";
     final Alarm alarm = new Alarm(alarmId, alarmDefinitionId, "Test", "LOW", null, AlarmState.OK,
+                                  "OPEN", null,
+                                  DateTime.parse("2015-03-14T09:26:53"),
                                   DateTime.parse("2015-03-14T09:26:53"),
                                   DateTime.parse("2015-03-14T09:26:53"));
     alarm.setId("42");

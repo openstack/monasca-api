@@ -31,19 +31,27 @@ public class Alarm extends AbstractEntity implements Linked {
   private List<Link> links;
   private List<MetricDefinition> metrics;
   private AlarmState state;
+  private String lifecycleState;
+  private String link;
   private AlarmDefinitionShort alarmDefinition;
   private DateTime stateUpdatedTimestamp;
+  private DateTime updatedTimestamp;
   private DateTime createdTimestamp;
 
   public Alarm() {}
 
   public Alarm(String id, String alarmDefinitionId, String alarmDefinitionName,
-      String alarmDefinitionSeverity, List<MetricDefinition> metrics, AlarmState state, DateTime stateUpdatedTimestamp, DateTime createdAt) {
+      String alarmDefinitionSeverity, List<MetricDefinition> metrics, AlarmState state,
+      String lifecycleState, String link, DateTime stateUpdatedTimestamp,
+      DateTime updatedTimestamp, DateTime createdTimestamp) {
     this.id = id;
     setMetrics(metrics);
     setState(state);
+    setLifecycleState(lifecycleState);
+    setLink(link);
     setStateUpdatedTimestamp(stateUpdatedTimestamp);
-    setCreatedTimestamp(createdAt);
+    setUpdatedTimestamp(updatedTimestamp);
+    setCreatedTimestamp(createdTimestamp);
     this.alarmDefinition = new AlarmDefinitionShort(alarmDefinitionId, alarmDefinitionName, alarmDefinitionSeverity);
   }
 
@@ -59,9 +67,25 @@ public class Alarm extends AbstractEntity implements Linked {
     return state;
   }
 
-  public DateTime getStateUpdatedTimestamp() { return stateUpdatedTimestamp; }
+  public String getLifecycleState() {
+    return lifecycleState;
+  }
 
-  public DateTime getCreatedTimestamp() { return createdTimestamp; }
+  public String getLink() {
+    return link;
+  }
+
+  public DateTime getStateUpdatedTimestamp() {
+    return stateUpdatedTimestamp;
+  }
+
+  public DateTime getUpdatedTimestamp() {
+    return updatedTimestamp;
+  }
+
+  public DateTime getCreatedTimestamp() {
+    return createdTimestamp;
+  }
 
   @XmlElement(name = "id")
   public void setId(String id) {
@@ -77,8 +101,20 @@ public class Alarm extends AbstractEntity implements Linked {
     this.state = state;
   }
 
+  public void setLifecycleState(String lifecycleState) {
+    this.lifecycleState = lifecycleState;
+  }
+
+  public void setLink(String link) {
+    this.link = link;
+  }
+
   public void setStateUpdatedTimestamp(DateTime stateUpdatedTimestamp) {
     this.stateUpdatedTimestamp = stateUpdatedTimestamp;
+  }
+
+  public void setUpdatedTimestamp(DateTime updatedTimestamp) {
+    this.updatedTimestamp = updatedTimestamp;
   }
 
   public void setCreatedTimestamp(DateTime createdTimestamp) {
@@ -109,7 +145,10 @@ public class Alarm extends AbstractEntity implements Linked {
     result = prime * result + ((links == null) ? 0 : links.hashCode());
     result = prime * result + ((metrics == null) ? 0 : metrics.hashCode());
     result = prime * result + ((state == null) ? 0 : state.hashCode());
+    result = prime * result + ((lifecycleState == null) ? 0 : lifecycleState.hashCode());
+    result = prime * result + ((link == null) ? 0 : link.hashCode());
     result = prime * result + ((stateUpdatedTimestamp == null) ? 0 : stateUpdatedTimestamp.hashCode());
+    result = prime * result + ((updatedTimestamp == null) ? 0 : updatedTimestamp.hashCode());
     result = prime * result + ((createdTimestamp == null) ? 0 : createdTimestamp.hashCode());
     return result;
   }
@@ -140,12 +179,37 @@ public class Alarm extends AbstractEntity implements Linked {
       return false;
     if (state != other.state)
       return false;
+    if (lifecycleState == null) {
+      if (other.lifecycleState != null)
+        return false;
+    } else if (!lifecycleState.equals(other.lifecycleState))
+      return false;
+    if (link == null) {
+      if (other.link != null)
+        return false;
+    } else if (!link.equals(other.link))
+      return false;
     // Ignore timezones, only check milliseconds since epoch
-    if (stateUpdatedTimestamp.getMillis() != other.stateUpdatedTimestamp.getMillis()) {
-      return false;
+    if (stateUpdatedTimestamp != other.stateUpdatedTimestamp) {
+      if (stateUpdatedTimestamp == null || other.stateUpdatedTimestamp == null) {
+        return false;
+      } else if (stateUpdatedTimestamp.getMillis() != other.stateUpdatedTimestamp.getMillis()) {
+        return false;
+      }
     }
-    if (createdTimestamp.getMillis() != other.createdTimestamp.getMillis()) {
-      return false;
+    if (updatedTimestamp != other.updatedTimestamp) {
+      if (updatedTimestamp == null || other.updatedTimestamp == null) {
+        return false;
+      } else if (updatedTimestamp.getMillis() != other.updatedTimestamp.getMillis()) {
+        return false;
+      }
+    }
+    if (createdTimestamp != other.createdTimestamp) {
+      if (createdTimestamp == null || other.createdTimestamp == null) {
+        return false;
+      } else if (createdTimestamp.getMillis() != other.createdTimestamp.getMillis()) {
+        return false;
+      }
     }
     return true;
   }

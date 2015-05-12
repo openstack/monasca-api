@@ -53,7 +53,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final String ALARM_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-      + "a.id, a.state, a.updated_at as state_updated_timestamp, a.created_at as created_timestamp,"
+      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp,"
       + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
       + "inner join alarm_metric as am on am.alarm_id = a.id "
@@ -98,7 +99,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
-                          DateTime stateUpdatedStart, String offset,
+                          String lifecycleState, String link, DateTime stateUpdatedStart, String offset,
                           int limit, boolean enforceLimit) {
 
     try (Handle h = db.open()) {
@@ -125,8 +126,14 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       if (state != null) {
         sbWhere.append(" and a.state = :state");
       }
+      if (lifecycleState != null) {
+        sbWhere.append(" and a.lifecycle_state = :lifecycleState");
+      }
+      if (link != null) {
+        sbWhere.append(" and a.link = :link");
+      }
       if (stateUpdatedStart != null) {
-        sbWhere.append(" and a.updated_at >= :stateUpdatedStart");
+        sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
       }
       if (offset != null) {
         sbWhere.append(" and a.id > :offset");
@@ -148,6 +155,12 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
       if (state != null) {
         q.bind("state", state.name());
+      }
+      if (lifecycleState != null) {
+        q.bind("lifecycleState", lifecycleState);
+      }
+      if (link != null) {
+        q.bind("link", link);
       }
       if (stateUpdatedStart != null) {
         q.bind("stateUpdatedStart", stateUpdatedStart.toString().replace('Z', ' '));
@@ -202,7 +215,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
             new Alarm(alarmId, getString(row, "alarm_definition_id"), getString(row,
                       "alarm_definition_name"), getString(row, "severity"), alarmedMetrics,
                       AlarmState.valueOf(getString(row, "state")),
+                      getString(row, "lifecycle_state"),
+                      getString(row, "link"),
                       new DateTime(((Timestamp)row.get("state_updated_timestamp")).getTime(), DateTimeZone.forID("UTC")),
+                      new DateTime(((Timestamp)row.get("updated_timestamp")).getTime(), DateTimeZone.forID("UTC")),
                       new DateTime(((Timestamp)row.get("created_timestamp")).getTime(), DateTimeZone.forID("UTC")));
         alarms.add(alarm);
       }
@@ -234,15 +250,19 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   }
 
   @Override
-  public Alarm update(String tenantId, String id, AlarmState state) {
+  public Alarm update(String tenantId, String id, AlarmState state, String lifecycleState, String link) {
     Handle h = db.open();
 
     try {
       h.begin();
       final Alarm originalAlarm = findAlarm(tenantId, id, h);
       if (!originalAlarm.getState().equals(state)) {
-        h.insert("update alarm set state = ?, updated_at = NOW() where id = ?", state.name(), id);
+        h.insert(
+            "update alarm set state = ?, state_updated_at = NOW() where id = ?",
+            state.name(), id);
       }
+      h.insert("update alarm set lifecycle_state = ?, link = ?, updated_at = NOW() where id = ?",
+               lifecycleState, link, id);
       h.commit();
       return originalAlarm;
     } catch (RuntimeException e) {
