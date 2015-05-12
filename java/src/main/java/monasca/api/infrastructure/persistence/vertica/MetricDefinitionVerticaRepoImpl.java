@@ -13,11 +13,19 @@
  */
 package monasca.api.infrastructure.persistence.vertica;
 
+import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
+import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.metric.MetricDefinition;
-import monasca.api.domain.model.metric.MetricDefinitionRepo;
-import monasca.api.infrastructure.persistence.DimensionQueries;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,22 +36,12 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
   private static final Logger logger = LoggerFactory
       .getLogger(MetricDefinitionVerticaRepoImpl.class);
 
-  private static final String FIND_BY_METRIC_DEF_SQL =
+  private static final String FIND_METRIC_DEFS_SQL =
       "select defdims.id, def.name, dims.name as dname, dims.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
       + "left outer join MonMetrics.Dimensions dims on dims.dimension_set_id = defdims.dimension_set_id "
@@ -52,6 +50,18 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "%s "
       + "order by defdims.id ASC "
       + "limit :limit";
+
+
+  private static final String FIND_METRIC_NAMES_SQL =
+      "select distinct def.id, def.name "
+      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
+      + "left outer join MonMetrics.Dimensions dims on dims.dimension_set_id = defdims.dimension_set_id "
+      + "%s "
+      + "where def.id = defdims.definition_id and def.tenant_id = :tenantId "
+      + "%s "
+      + "order by def.id, def.name ASC "
+      + "limit :limit";
+
 
   private final DBI db;
 
@@ -64,11 +74,138 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
   }
 
   @Override
+  public List<MetricName> findNames(
+      String tenantId,
+      Map<String, String> dimensions,
+      String offset,
+      int limit) throws Exception {
+
+    List<Map<String, Object>> rows = executeMetricNamesQuery(tenantId, dimensions, offset, limit);
+
+    List<MetricName> metricNameList = new ArrayList<>(rows.size());
+
+    for (Map<String, Object> row : rows) {
+
+      byte[] defId = (byte[]) row.get("id");
+
+      String name = (String) row.get("name");
+
+      MetricName metricName = new MetricName(Hex.encodeHexString(defId), name);
+
+      metricNameList.add(metricName);
+
+    }
+
+    return metricNameList;
+
+  }
+
+  private List<Map<String, Object>> executeMetricNamesQuery(
+      String tenantId,
+      Map<String, String> dimensions,
+      String offset,
+      int limit) {
+
+    StringBuilder sb = new StringBuilder();
+
+    if (offset != null && !offset.isEmpty()) {
+
+      sb.append(" and def.id > :offset");
+
+    }
+
+    String
+        sql =
+        String.format(FIND_METRIC_NAMES_SQL, MetricQueries.buildJoinClauseFor(dimensions), sb);
+
+    try (Handle h = db.open()) {
+
+      Query<Map<String, Object>> query =
+          h.createQuery(sql)
+          .bind("tenantId", tenantId)
+          .bind("limit", limit + 1);
+
+
+      if (offset != null && !offset.isEmpty()) {
+
+        logger.debug("binding offset: {}", offset);
+
+        try {
+
+          query.bind("offset", Hex.decodeHex(offset.toCharArray()));
+
+        } catch (DecoderException e) {
+
+          throw Exceptions.badRequest("failed to decode offset " + offset, e);
+        }
+
+      }
+
+      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+
+      return query.list();
+    }
+  }
+
+  @Override
   public List<MetricDefinition> find(
       String tenantId,
       String name,
       Map<String, String> dimensions,
       String offset, int limit) {
+
+    List<Map<String, Object>> rows = executeMetricDefsQuery(tenantId, name, dimensions, offset,
+                                                            limit);
+
+    List<MetricDefinition> metricDefs = new ArrayList<>(rows.size());
+
+    byte[] currentDefDimId = null;
+
+    Map<String, String> dims = null;
+
+    for (Map<String, Object> row : rows) {
+
+      byte[] defDimId = (byte[]) row.get("id");
+
+      String metricName = (String) row.get("name");
+
+      String dimName = (String) row.get("dname");
+
+      String dimValue = (String) row.get("dvalue");
+
+      if (defDimId == null || !Arrays.equals(currentDefDimId, defDimId)) {
+
+        currentDefDimId = defDimId;
+
+        dims = new HashMap<>();
+
+        if (dimName != null && dimValue != null) {
+
+          dims.put(dimName, dimValue);
+
+        }
+
+        MetricDefinition m = new MetricDefinition(metricName, dims);
+        m.setId(Hex.encodeHexString(defDimId));
+        metricDefs.add(m);
+
+
+      } else {
+
+        dims.put(dimName, dimValue);
+
+      }
+    }
+
+    return metricDefs;
+  }
+
+  private List<Map<String, Object>> executeMetricDefsQuery(
+      String tenantId,
+      String name,
+      Map<String, String> dimensions,
+      String offset,
+      int limit) {
 
     StringBuilder sb = new StringBuilder();
 
@@ -84,10 +221,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     }
 
-    String sql =
-        String.format(FIND_BY_METRIC_DEF_SQL,
-                      MetricQueries.buildJoinClauseFor(dimensions),
-                      sb);
+    String
+        sql =
+        String.format(FIND_METRIC_DEFS_SQL, MetricQueries.buildJoinClauseFor(dimensions), sb);
 
     try (Handle h = db.open()) {
 
@@ -121,59 +257,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
-      List<Map<String, Object>> rows = query.list();
-
-      List<MetricDefinition> metricDefs = new ArrayList<>(rows.size());
-
-      byte[] currentDefDimId = null;
-
-      Map<String, String> dims = null;
-
-      for (Map<String, Object> row : rows) {
-
-        byte[] defDimId = (byte[]) row.get("id");
-
-        String metricName = (String) row.get("name");
-
-        String dimName = (String) row.get("dname");
-
-        String dimValue = (String) row.get("dvalue");
-
-        if (defDimId == null || !Arrays.equals(currentDefDimId, defDimId)) {
-
-          currentDefDimId = defDimId;
-
-          dims = new HashMap<>();
-
-          if (dimName != null && dimValue != null) {
-
-            dims.put(dimName, dimValue);
-
-          }
-
-          MetricDefinition m = new MetricDefinition(metricName, dims);
-          m.setId(Hex.encodeHexString(defDimId));
-          metricDefs.add(m);
-
-
-        } else {
-
-          dims.put(dimName, dimValue);
-
-        }
-      }
-
-      return metricDefs;
+      return query.list();
     }
-  }
-
-  @Override
-  public List<MetricName> findNames(
-      String tenantId,
-      Map<String, String> dimensions,
-      String offset, int limit) throws Exception {
-
-    throw new NotImplementedException();
-
   }
 }
