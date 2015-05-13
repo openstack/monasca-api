@@ -127,26 +127,6 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
         any(UpdateAlarmDefinitionCommand.class));
   }
 
-  public void shouldErrorOnCreateWithInvalidMetricName() {
-    String expression = "avg(foo{service=hpcs.compute, instance_id=937}) >= 90";
-    ClientResponse response =
-        createResponseFor(new CreateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null,
-            expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "foo is not a valid metric name for namespace hpcs.compute");
-  }
-
-  public void shouldErrorOnCreateWithInvalidDimensions() {
-    String expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937, foo=bar}) >= 90";
-    ClientResponse response =
-        createResponseFor(new CreateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null,
-            expression, Arrays.asList("service", "instance_id"), "LOW", alarmActions, null, null));
-
-    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "foo is not a valid dimension name for service hpcs.compute");
-  }
-
   public void shouldErrorOnCreateWithDuplicateDimensions() {
     String expression =
         "avg(hpcs.compute{instance_id=937, instance_id=123, az=2, instance_uuid=abc123, metric_name=disk_read_ops}) >= 90";

@@ -15,11 +15,8 @@ package monasca.api.app.validation;
 
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
-import monasca.common.model.Services;
 import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.resource.exception.Exceptions;
 import com.sun.jersey.spi.container.WebApplication;
@@ -44,7 +41,7 @@ public class MetricNameValidation {
    * 
    * @throws WebApplication if validation fails
    */
-  public static void validate(String metricName, @Nullable String service, boolean nameRequiredFlag) {
+  public static void validate(String metricName, boolean nameRequiredFlag) {
 
     // General validations
 
@@ -59,16 +56,8 @@ public class MetricNameValidation {
     if (metricName.length() > CreateMetricCommand.MAX_NAME_LENGTH)
       throw Exceptions.unprocessableEntity("Metric name %s must be %d characters or less",
           metricName, CreateMetricCommand.MAX_NAME_LENGTH);
-    if (!Services.isReserved(metricName) && !VALID_METRIC_NAME.matcher(metricName).matches())
+    if (!VALID_METRIC_NAME.matcher(metricName).matches())
       throw Exceptions.unprocessableEntity("Metric name %s may not contain: > < = { } ( ) ' \" \\ , ; &",
           metricName);
-
-    // Service specific validations
-    if (service != null && Services.isReserved(service)) {
-      if (!Strings.isNullOrEmpty(metricName) && !Services.isValidMetricName(service, metricName)) {
-        throw Exceptions.unprocessableEntity("%s is not a valid metric name for namespace %s",
-            metricName, service);
-      }
-    }
   }
 }

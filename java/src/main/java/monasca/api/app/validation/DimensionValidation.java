@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 
 import com.google.common.base.CharMatcher;
@@ -112,7 +111,7 @@ public final class DimensionValidation {
    * 
    * @throws WebApplicationException if validation fails
    */
-  public static void validate(Map<String, String> dimensions, @Nullable String service) {
+  public static void validate(Map<String, String> dimensions) {
     // Validate dimension names and values
     for (Map.Entry<String, String> dimension : dimensions.entrySet()) {
       String name = dimension.getKey();
@@ -137,18 +136,6 @@ public final class DimensionValidation {
       if (!VALID_DIMENSION_NAME.matcher(name).matches())
         throw Exceptions.unprocessableEntity(
             "Dimension name %s may not contain: %s", name, INVALID_CHAR_STRING);
-
-      // Service specific validations
-      if (service != null) {
-        if (!name.equals(Services.SERVICE_DIMENSION)
-            && !Services.isValidDimensionName(service, name))
-          throw Exceptions.unprocessableEntity("%s is not a valid dimension name for service %s",
-              name, service);
-        DimensionValidator validator = VALIDATORS.get(service);
-        if (validator != null && !validator.isValidDimension(name, value))
-          throw Exceptions.unprocessableEntity("%s is not a valid dimension value for service %s",
-              value, service);
-      }
     }
   }
 
