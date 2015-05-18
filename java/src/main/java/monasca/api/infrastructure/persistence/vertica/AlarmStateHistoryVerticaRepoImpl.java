@@ -44,14 +44,14 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       "select alarm_id, metrics, old_state, new_state, reason, reason_data, sub_alarms, time_stamp as timestamp "
       + "from MonAlarms.StateHistory "
       + "where tenant_id = :tenantId %s "
-      + "order by time_stamp desc "
+      + "order by time_stamp asc "
       + "limit :limit";
 
   private static final String FIND_BY_ALARM_ID_SQL =
       "select alarm_id, metrics, old_state, new_state, reason, reason_data, sub_alarms, time_stamp as timestamp "
       + "from MonAlarms.StateHistory "
       + "where tenant_id = :tenantId and alarm_id = :alarmId %s "
-      + "order by time_stamp desc "
+      + "order by time_stamp asc "
       + "limit :limit";
 
   private final DBI vertica;
