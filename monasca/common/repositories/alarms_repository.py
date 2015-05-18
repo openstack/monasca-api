@@ -32,6 +32,10 @@ class AlarmsRepository(object):
         pass
 
     @abc.abstractmethod
+    def update_alarm(self, tenant_id, alarm_id, state, lifecycle_state, link):
+        pass
+
+    @abc.abstractmethod
     def delete_alarm(self, tenant_id, id):
         pass
 

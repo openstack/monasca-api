@@ -21,6 +21,7 @@ from monasca.api import alarms_api_v2
 from monasca.common.repositories import exceptions
 from monasca.common import resource_api
 from monasca.openstack.common import log
+from monasca.v2.common.schemas import alarm_update_schema as schema_alarm
 from monasca.v2.reference.alarming import Alarming
 from monasca.v2.reference import helpers
 from monasca.v2.reference import resource
@@ -64,9 +65,22 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
         tenant_id = helpers.get_tenant_id(req)
 
-        state = self._get_alarm_state(req)
+        alarm = helpers.read_http_resource(req)
+        schema_alarm.validate(alarm)
 
-        self._alarm_update(tenant_id, id, state)
+        # Validator makes state optional, so check it here
+        if 'state' not in alarm or not alarm['state']:
+            raise falcon.HTTPBadRequest('Bad request',
+                                        "Field 'state' is required")
+
+        # Assume these fields are null if not provided
+        if 'lifecycle_state' not in alarm:
+            alarm['lifecycle_state'] = None
+        if 'link' not in alarm:
+            alarm['link'] = None
+
+        self._alarm_update(tenant_id, id, alarm['state'],
+                           alarm['lifecycle_state'], alarm['link'])
 
         result = self._alarm_show(req.uri, tenant_id, id)
 
@@ -76,8 +90,30 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
     @resource_api.Restify('/v2.0/alarms/{id}', method='patch')
     def do_patch_alarms(self, req, res, id):
 
-        # Same logic as alarm_update
-        return self.do_put_alarms(req, res, id)
+        helpers.validate_authorization(req, self._default_authorized_roles)
+
+        tenant_id = helpers.get_tenant_id(req)
+
+        alarm = helpers.read_http_resource(req)
+        schema_alarm.validate(alarm)
+
+        old_alarm = self._alarms_repo.get_alarm(tenant_id, id)[0]
+
+        # if a field is not present or is None, replace it with the old value
+        if 'state' not in alarm or not alarm['state']:
+            alarm['state'] = old_alarm['state']
+        if 'lifecycle_state' not in alarm or not alarm['lifecycle_state']:
+            alarm['lifecycle_state'] = old_alarm['lifecycle_state']
+        if 'link' not in alarm or not alarm['link']:
+            alarm['link'] = old_alarm['link']
+
+        self._alarm_patch(tenant_id, id, alarm['state'],
+                          alarm['lifecycle_state'], alarm['link'])
+
+        result = self._alarm_show(req.uri, tenant_id, id)
+
+        res.body = helpers.dumpit_utf8(result)
+        res.status = falcon.HTTP_200
 
     @resource_api.Restify('/v2.0/alarms/{id}', method='delete')
     def do_delete_alarms(self, req, res, id):
@@ -156,12 +192,46 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
-    def _alarm_update(self, tenant_id, id, new_state):
+    def _alarm_update(self, tenant_id, id, new_state, lifecycle_state, link):
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, id)
 
-        old_state = self._alarms_repo.update_alarm(tenant_id, id, new_state)
+        old_state = self._alarms_repo.update_alarm(tenant_id, id, new_state,
+                                                   lifecycle_state, link)
+
+        # alarm_definition_id is the same for all rows.
+        alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
+
+        state_info = {u'alarmState': new_state, u'oldAlarmState': old_state}
+
+        self._send_alarm_event(u'alarm-updated', tenant_id,
+                               alarm_definition_id, alarm_metric_rows,
+                               sub_alarm_rows, state_info)
+
+        if old_state != new_state:
+            try:
+                alarm_definition_row = self._alarms_repo.get_alarm_definition(
+                    tenant_id, id)
+            except exceptions.DoesNotExistException:
+                # Alarm definition does not exist. May have been deleted
+                # in another transaction. In that case, all associated
+                # alarms were also deleted, so don't send transition events.
+                pass
+            else:
+                self._send_alarm_transitioned_event(tenant_id, id,
+                                                    alarm_definition_row,
+                                                    alarm_metric_rows,
+                                                    old_state, new_state)
+
+    @resource.resource_try_catch_block
+    def _alarm_patch(self, tenant_id, id, new_state, lifecycle_state, link):
+
+        alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
+        sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, id)
+
+        old_state = self._alarms_repo.update_alarm(tenant_id, id, new_state,
+                                                   lifecycle_state, link)
 
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
@@ -252,6 +322,15 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
                          u'state': alarm_row['state'],
+                         u'lifecycle_state': alarm_row['lifecycle_state'],
+                         u'link': alarm_row['link'],
+                         u'state_updated_timestamp':
+                             alarm_row['state_updated_timestamp'].isoformat() +
+                             'Z',
+                         u'updated_timestamp':
+                             alarm_row['updated_timestamp'].isoformat() + 'Z',
+                         u'created_timestamp':
+                             alarm_row['created_timestamp'].isoformat() + 'Z',
                          u'alarm_definition': ad}
                 helpers.add_links_to_resource(alarm, req_uri)
 
@@ -301,6 +380,15 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
                          u'state': alarm_row['state'],
+                         u'lifecycle_state': alarm_row['lifecycle_state'],
+                         u'link': alarm_row['link'],
+                         u'state_updated_timestamp':
+                             alarm_row['state_updated_timestamp'].isoformat() +
+                             'Z',
+                         u'updated_timestamp':
+                             alarm_row['updated_timestamp'].isoformat() + 'Z',
+                         u'created_timestamp':
+                             alarm_row['created_timestamp'].isoformat() + 'Z',
                          u'alarm_definition': ad}
                 helpers.add_links_to_resource(alarm, req_uri)
 
@@ -319,15 +407,4 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
         result.append(alarm)
 
-        return helpers.paginate(result, req_uri, limit)
-
-    def _get_alarm_state(self, req):
-
-        json_msg = helpers.read_http_resource(req)
-        if 'state' in json_msg:
-            state = json_msg['state'].upper()
-            if state not in ['OK', 'ALARM', 'UNDETERMINED']:
-                raise falcon.HTTPBadRequest('Bad request', 'Invalid state')
-            return state
-        else:
-            raise falcon.HTTPBadRequest('Bad request', 'Missing state')
+        return helpers.paginate(result, req_uri, offset)

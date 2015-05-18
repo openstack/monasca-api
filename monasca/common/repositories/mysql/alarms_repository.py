@@ -26,6 +26,9 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
     base_query = """
           select distinct a.id as alarm_id, a.state,
+          a.state_updated_at as state_updated_timestamp,
+          a.updated_at as updated_timestamp,
+          a.created_at as created_timestamp, a.lifecycle_state, a.link,
           ad.id as alarm_definition_id, ad.name as alarm_definition_name,
           ad.severity,
           md.name as metric_name, mdg.dimensions as metric_dimensions
@@ -81,7 +84,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                    left join (select dimension_set_id,
                    group_concat(name, '=', value) as dimensions
                       from metric_dimension group by dimension_set_id) as mdg
-                          on mdg.dimension_set_id = mdd.metric_dimension_set_id
+                         on mdg.dimension_set_id = mdd.metric_dimension_set_id
                    where a.id = %s
                    order by a.id
                    """
@@ -106,7 +109,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         return self._execute_query(query, parms)
 
     @mysql_repository.mysql_try_catch_block
-    def update_alarm(self, tenant_id, id, state):
+    def update_alarm(self, tenant_id, id, state, lifecycle_state, link):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
@@ -124,29 +127,34 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             if cursor.rowcount < 1:
                 raise exceptions.DoesNotExistException
 
-            prev_state = cursor.fetchone()['state']
+            prev_alarm = cursor.fetchone()
 
-            if state != prev_state:
+            parms = [lifecycle_state, link]
+            set_str = "lifecycle_state = %s, link = %s, updated_at = NOW()"
 
-                parms = [state, tenant_id, id]
+            if state != prev_alarm['state']:
+                parms.append(state)
+                set_str += ",state = %s, state_updated_at = NOW()"
 
-                update_query = """
-                    update alarm
-                    set state = %s
-                    where alarm.id in
-                    (select distinct id
-                      from
-                        (select distinct alarm.id
-                         from alarm
-                         inner join alarm_definition
-                          on alarm_definition.id = alarm.alarm_definition_id
-                      where alarm_definition.tenant_id = %s and alarm.id = %s)
-                      as tmptable
-                    )"""
+            parms.extend([tenant_id, id])
 
-                cursor.execute(update_query, parms)
+            update_query = """
+                update alarm
+                set {}
+                where alarm.id in
+                (select distinct id
+                  from
+                    (select distinct alarm.id
+                     from alarm
+                     inner join alarm_definition
+                      on alarm_definition.id = alarm.alarm_definition_id
+                  where alarm_definition.tenant_id = %s and alarm.id = %s)
+                  as tmptable
+                )""".format(set_str)
 
-            return prev_state
+            cursor.execute(update_query, parms)
+
+            return prev_alarm['state']
 
     @mysql_repository.mysql_try_catch_block
     def delete_alarm(self, tenant_id, id):
@@ -238,6 +246,19 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         if 'state' in query_parms:
             parms.append(query_parms['state'].encode('utf8'))
             where_clause += " and a.state = %s "
+
+        if 'lifecycle_state' in query_parms:
+            parms.append(query_parms['lifecycle_state'].encode('utf8'))
+            where_clause += " and a.lifecycle_state = %s"
+
+        if 'link' in query_parms:
+            parms.append(query_parms['link'].encode('utf8'))
+            where_clause += " and a.link = %s"
+
+        if 'state_updated_start_time' in query_parms:
+            parms.append(query_parms['state_updated_start_time']
+                         .encode("utf8"))
+            where_clause += " and state_updated_at >= %s"
 
         if 'metric_dimensions' in query_parms:
             sub_select_clause = """
