@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from monasca.common.repositories import constants
 from monasca.common.repositories import events_repository as er
 from monasca.common.repositories.mysql import mysql_repository
 from monasca.openstack.common import log
@@ -68,8 +67,6 @@ class EventsRepository(mysql_repository.MySQLRepository,
         return rows
 
     def _find_event_ids(self, offset, limit):
-        if not limit:
-            limit = constants.PAGE_LIMIT
 
         parameters = []
 

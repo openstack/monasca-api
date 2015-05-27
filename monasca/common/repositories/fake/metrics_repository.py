@@ -23,5 +23,5 @@ class MetricsRepository(metrics_repository.MetricsRepository):
     def __init__(self):
         return
 
-    def list_metrics(self, tenant_id, name, dimensions):
+    def list_metrics(self, tenant_id, name, dimensions, offset, limit):
         return {}

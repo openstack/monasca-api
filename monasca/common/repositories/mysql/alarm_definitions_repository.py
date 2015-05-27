@@ -14,7 +14,6 @@
 import datetime
 
 from monasca.common.repositories import alarm_definitions_repository as adr
-from monasca.common.repositories import constants
 from monasca.common.repositories import exceptions
 from monasca.common.repositories.model import sub_alarm_definition
 from monasca.common.repositories.mysql import mysql_repository
@@ -76,7 +75,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
-    def get_alarm_definitions(self, tenant_id, name, dimensions, offset):
+    def get_alarm_definitions(self, tenant_id, name, dimensions, offset,
+                              limit):
 
         parms = [tenant_id]
 
@@ -88,15 +88,14 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             where_clause += " and ad.name = %s "
             parms.append(name.encode('utf8'))
 
-        if offset is not None:
-            order_by_clause = " order by ad.id, ad.created_at "
+        order_by_clause = " order by ad.id, ad.created_at "
+
+        if offset:
             where_clause += " and ad.id > %s "
             parms.append(offset.encode('utf8'))
-            limit_clause = " limit %s "
-            parms.append(constants.PAGE_LIMIT)
-        else:
-            order_by_clause = " order by ad.created_at "
-            limit_clause = ""
+
+        limit_clause = " limit %s "
+        parms.append(limit + 1)
 
         if dimensions:
             inner_join = """ inner join sub_alarm_definition as sad

@@ -14,6 +14,7 @@
 
 import datetime
 import json
+import urllib
 import urlparse
 
 import falcon
@@ -129,11 +130,6 @@ def get_query_param(req, param_name, required=False, default_val=None):
     except Exception as ex:
         LOG.debug(ex)
         raise falcon.HTTPBadRequest('Bad request', ex.message)
-
-
-def normalize_offset(offset):
-
-    return u'' if offset == u'x' else offset
 
 
 def get_query_name(req, name_required=False):
@@ -273,101 +269,180 @@ def validate_query_dimensions(dimensions):
         raise falcon.HTTPBadRequest('Bad request', ex.message)
 
 
-def paginate(resource, uri, offset):
+def paginate(resource, uri, limit):
 
-    if offset is not None:
+    parsed_uri = urlparse.urlparse(uri)
 
-        if resource:
+    self_link = build_base_uri(parsed_uri)
 
-            if len(resource) >= constants.PAGE_LIMIT:
+    old_query_params = _get_old_query_params(parsed_uri)
 
-                new_offset = resource[-1]['id']
+    if old_query_params:
+        self_link += '?' + '&'.join(old_query_params)
 
-                parsed_uri = urlparse.urlparse(uri)
+    if resource and len(resource) > limit:
 
-                next_link = build_base_uri(parsed_uri)
+        if 'timestamp' in resource[limit - 1]:
+            new_offset = resource[limit - 1]['timestamp']
 
-                new_query_params = [u'offset' + '=' + str(new_offset).decode(
-                    'utf8')]
+        if 'id' in resource[limit - 1]:
+            new_offset = resource[limit - 1]['id']
 
-                for query_param in parsed_uri.query.split('&'):
-                    query_param_name, query_param_val = query_param.split('=')
-                    if query_param_name.lower() != 'offset':
-                        new_query_params.append(query_param)
+        next_link = build_base_uri(parsed_uri)
 
-                next_link += '?' + '&'.join(new_query_params)
+        new_query_params = [u'offset' + '=' + urllib.quote(
+            new_offset.encode('utf8'), safe='')]
 
-                resource = {u'links':
-                            [{u'rel': u'self', u'href': uri.decode('utf8')},
-                             {u'rel': u'next',
-                                u'href': next_link.decode('utf8')}],
-                            u'elements': resource}
+        _get_old_query_params_except_offset(new_query_params, parsed_uri)
 
-            else:
+        if new_query_params:
+            next_link += '?' + '&'.join(new_query_params)
 
-                resource = {u'links':
-                            [{u'rel': u'self', u'href': uri.decode('utf8')}],
-                            u'elements': resource}
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')},
+                                {u'rel': u'next',
+                                 u'href': next_link.decode('utf8')}]),
+                    u'elements': resource[:limit]}
+
+    else:
+
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')}]),
+                    u'elements': resource}
 
     return resource
 
 
-def paginate_measurement(measurement, uri, offset):
+def paginate_measurement(measurement, uri, limit):
 
-    if offset is not None:
+    parsed_uri = urlparse.urlparse(uri)
 
-        if measurement['measurements']:
+    self_link = build_base_uri(parsed_uri)
 
-            if len(measurement['measurements']) >= constants.PAGE_LIMIT:
+    old_query_params = _get_old_query_params(parsed_uri)
 
-                new_offset = measurement['id']
+    if old_query_params:
+        self_link += '?' + '&'.join(old_query_params)
 
-                parsed_uri = urlparse.urlparse(uri)
+    if (measurement
+            and measurement[0]
+            and measurement[0]['measurements']
+            and len(measurement[0]['measurements']) > limit):
 
-                next_link = build_base_uri(parsed_uri)
+        new_offset = measurement[0]['measurements'][limit - 1][0]
 
-                new_query_params = [u'offset' + '=' + str(new_offset).decode(
-                    'utf8')]
+        next_link = build_base_uri(parsed_uri)
 
-                # Add the query parms back to the URL without the original
-                # offset and dimensions.
-                for query_param in parsed_uri.query.split('&'):
-                    query_param_name, query_param_val = query_param.split('=')
-                    if (query_param_name.lower() != 'offset' and
-                            query_param_name.lower() != 'dimensions'):
-                        new_query_params.append(query_param)
+        new_query_params = [u'offset' + '=' + urllib.quote(
+            new_offset.encode('utf8'), safe='')]
 
-                next_link += '?' + '&'.join(new_query_params)
+        _get_old_query_params_except_offset(new_query_params, parsed_uri)
 
-                # Add the dimensions for this particular measurement.
-                if measurement['dimensions']:
-                    dims = []
-                    for k, v in measurement['dimensions'].iteritems():
-                        dims.append(k + ":" + v)
+        if new_query_params:
+            next_link += '?' + '&'.join(new_query_params)
 
-                    if dims:
-                        next_link += '&dimensions' + ','.join(dims)
+        truncated_measurement = {u'dimensions': measurement[0]['dimensions'],
+                                 u'measurements': (measurement[0]
+                                                   ['measurements'][:limit]),
+                                 u'name': measurement[0]['name'],
+                                 u'columns': measurement[0]['columns'],
+                                 u'id': new_offset}
 
-                measurement = {u'links': [{u'rel': u'self',
-                                           u'href': uri.decode('utf8')},
-                                          {u'rel': u'next', u'href':
-                                              next_link.decode('utf8')}],
-                               u'elements': measurement}
-
-            else:
-
-                measurement = {
-                    u'links': [
-                        {u'rel': u'self',
-                         u'href': uri.decode('utf8')}],
-                    u'elements': measurement
-                }
-
-        return measurement
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')},
+                                {u'rel': u'next',
+                                 u'href': next_link.decode('utf8')}]),
+                    u'elements': truncated_measurement}
 
     else:
 
-        return measurement
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')}]),
+                    u'elements': measurement}
+
+    return resource
+
+
+def _get_old_query_params(parsed_uri):
+
+    old_query_params = []
+
+    if parsed_uri.query:
+
+        for query_param in parsed_uri.query.split('&'):
+            query_param_name, query_param_val = query_param.split('=')
+
+            old_query_params.append(urllib.quote(
+                query_param_name.encode('utf8'), safe='')
+                + "="
+                + urllib.quote(query_param_val.encode('utf8'), safe=''))
+
+    return old_query_params
+
+
+def _get_old_query_params_except_offset(new_query_params, parsed_uri):
+
+    if parsed_uri.query:
+
+        for query_param in parsed_uri.query.split('&'):
+            query_param_name, query_param_val = query_param.split('=')
+            if query_param_name.lower() != 'offset':
+                new_query_params.append(urllib.quote(
+                    query_param_name.encode(
+                        'utf8'), safe='') + "=" + urllib.quote(
+                    query_param_val.encode(
+                        'utf8'), safe=''))
+
+
+def paginate_statistics(statistic, uri, limit):
+
+    parsed_uri = urlparse.urlparse(uri)
+
+    self_link = build_base_uri(parsed_uri)
+
+    old_query_params = _get_old_query_params(parsed_uri)
+
+    if old_query_params:
+        self_link += '?' + '&'.join(old_query_params)
+
+    if (statistic
+            and statistic[0]
+            and statistic[0]['statistics']
+            and len(statistic[0]['statistics']) > limit):
+
+        new_offset = (
+            statistic[0]['statistics'][limit - 1][0])
+
+        next_link = build_base_uri(parsed_uri)
+
+        new_query_params = [u'offset' + '=' + urllib.quote(
+            new_offset.encode('utf8'), safe='')]
+
+        _get_old_query_params_except_offset(new_query_params, parsed_uri)
+
+        if new_query_params:
+            next_link += '?' + '&'.join(new_query_params)
+
+        truncated_statistic = {u'dimensions': statistic[0]['dimensions'],
+                               u'statistics': (statistic[0]['statistics'][
+                                               :limit]),
+                               u'name': statistic[0]['name'],
+                               u'columns': statistic[0]['columns'],
+                               u'id': new_offset}
+
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')},
+                                {u'rel': u'next',
+                                 u'href': next_link.decode('utf8')}]),
+                    u'elements': truncated_statistic}
+
+    else:
+
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')}]),
+                    u'elements': statistic}
+
+    return resource
 
 
 def build_base_uri(parsed_uri):
@@ -449,3 +524,28 @@ def raise_not_found_exception(resource_name, resource_id, tenant_id):
 def dumpit_utf8(thingy):
 
     return json.dumps(thingy, ensure_ascii=False).encode('utf8')
+
+
+def str_2_bool(s):
+    return s.lower() in ("true")
+
+
+def get_limit(req):
+
+    limit = get_query_param(req, 'limit')
+
+    if limit:
+        if limit.isdigit():
+            limit = int(limit)
+            if limit > constants.PAGE_LIMIT:
+                return constants.PAGE_LIMIT
+            else:
+                return limit
+        else:
+            raise falcon.HTTPBadRequest("Invalid limit",
+                                        "Limit "
+                                        "parameter must "
+                                        "be "
+                                        "an integer")
+    else:
+        return constants.PAGE_LIMIT

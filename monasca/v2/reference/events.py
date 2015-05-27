@@ -88,7 +88,7 @@ class Events(monasca_events_api_v2.EventsV2API):
     @resource.resource_try_catch_block
     def _list_events(self, tenant_id, uri, offset, limit):
         rows = self._events_repo.list_events(tenant_id, offset, limit)
-        return helpers.paginate(self._build_events(rows), uri, offset)
+        return helpers.paginate(self._build_events(rows), uri, limit)
 
     @resource.resource_try_catch_block
     def _list_event(self, tenant_id, event_id, uri):
@@ -144,9 +144,8 @@ class Events(monasca_events_api_v2.EventsV2API):
     def do_get_events(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
-        limit = helpers.get_query_param(req, 'limit')
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
 
         result = self._list_events(tenant_id, req.uri, offset, limit)
         res.body = helpers.dumpit_utf8(result)

@@ -98,10 +98,12 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
         query_parms = falcon.uri.parse_query_string(req.query_string)
 
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
 
-        result = self._alarm_list(req.uri, tenant_id, query_parms, offset)
+        limit = helpers.get_limit(req)
+
+        result = self._alarm_list(req.uri, tenant_id, query_parms, offset,
+                                  limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -130,12 +132,12 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
         start_timestamp = helpers.get_query_starttime_timestamp(req, False)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         query_parms = falcon.uri.parse_query_string(req.query_string)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
 
         result = self._alarm_history_list(tenant_id, start_timestamp,
                                           end_timestamp, query_parms,
-                                          req.uri, offset)
+                                          req.uri, offset, limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -145,10 +147,10 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
 
-        result = self._alarm_history(tenant_id, [id], req.uri, offset)
+        result = self._alarm_history(tenant_id, [id], req.uri, offset, limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -187,7 +189,8 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
     @resource.resource_try_catch_block
     def _alarm_history_list(self, tenant_id, start_timestamp,
-                            end_timestamp, query_parms, req_uri, offset):
+                            end_timestamp, query_parms, req_uri, offset,
+                            limit):
 
         # get_alarms expects 'metric_dimensions' for dimensions key.
         if 'dimensions' in query_parms:
@@ -195,22 +198,24 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
         else:
             new_query_parms = {}
 
-        alarm_rows = self._alarms_repo.get_alarms(tenant_id, new_query_parms)
+        alarm_rows = self._alarms_repo.get_alarms(tenant_id, new_query_parms,
+                                                  None, None)
         alarm_id_list = [alarm_row['alarm_id'] for alarm_row in alarm_rows]
 
         result = self._metrics_repo.alarm_history(tenant_id, alarm_id_list,
-                                                  offset,
+                                                  offset, limit,
                                                   start_timestamp,
                                                   end_timestamp)
 
-        return helpers.paginate(result, req_uri, offset)
+        return helpers.paginate(result, req_uri, limit)
 
     @resource.resource_try_catch_block
-    def _alarm_history(self, tenant_id, alarm_id, req_uri, offset):
+    def _alarm_history(self, tenant_id, alarm_id, req_uri, offset, limit):
 
-        result = self._metrics_repo.alarm_history(tenant_id, alarm_id, offset)
+        result = self._metrics_repo.alarm_history(tenant_id, alarm_id, offset,
+                                                  limit)
 
-        return helpers.paginate(result, req_uri, offset)
+        return helpers.paginate(result, req_uri, limit)
 
     @resource.resource_try_catch_block
     def _alarm_delete(self, tenant_id, id):
@@ -266,10 +271,10 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
         return alarm
 
     @resource.resource_try_catch_block
-    def _alarm_list(self, req_uri, tenant_id, query_parms, offset):
+    def _alarm_list(self, req_uri, tenant_id, query_parms, offset, limit):
 
         alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms,
-                                                  offset)
+                                                  offset, limit)
 
         result = []
 
@@ -314,7 +319,7 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
 
         result.append(alarm)
 
-        return helpers.paginate(result, req_uri, offset)
+        return helpers.paginate(result, req_uri, limit)
 
     def _get_alarm_state(self, req):
 
