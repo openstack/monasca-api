@@ -180,4 +180,22 @@ public final class Validation {
       return Boolean.parseBoolean(mergeMetricsFlag);
     }
   }
+
+  public static void validateLifecycleState(String lifecycleState) {
+    if (lifecycleState != null) {
+      if (lifecycleState.length() > 50) {
+        throw Exceptions
+            .unprocessableEntity("Lifecycle state '%s' must be 50 characters or less",
+                                 lifecycleState);
+      }
+    }
+  }
+
+  public static void validateLink(String link) {
+    if (link != null) {
+      if (link.length() > 512) {
+        throw Exceptions.unprocessableEntity("Link '%s' must be 512 characters or less", link);
+      }
+    }
+  }
 }

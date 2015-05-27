@@ -450,12 +450,15 @@ The second value of match_by will create an Alarm for each device. For each devi
 
 If desired, an Alarm Definition can be created that exactly matches a set of metrics. The match_by should not be set. Only one Alarm will be created for that Alarm Definition.
 
-Alarms have a state that is set by the Threshold Engine based on the incoming metrics. The states are:
-	UNDETERMINED - No metrics for at least one of the subexpressions has been received in (period + 2) times periods (see below for definition of period and periods
-	OK - Metrics have been received and the Alarm Definition Expression evaluates to false for the given metrics
-	ALARM - Metrics have been received and the Alarm Definition Expression evaluates to true for the given metrics
+Alarms have a state that is set by the Threshold Engine based on the incoming metrics.
+
+* UNDETERMINED - No metrics for at least one of the subexpressions has been received in (period + 2) times periods (see below for definition of period and periods
+* OK - Metrics have been received and the Alarm Definition Expression evaluates to false for the given metrics
+* ALARM - Metrics have been received and the Alarm Definition Expression evaluates to true for the given metrics
 
 The Alarms are evaluated and their state is set once per minute.
+
+Alarms contain three fields that may be edited via the API. These are the alarm state, lifecycle state, and the link. The alarm state is updated by Monasca as metrics are evaluated, and can be changed manually as necessary. The lifecycle state and link fields are not maintained or updated by Monasca, instead these are provided for storing information related to external tools.
 
 ## Alarm Definition Expressions
 The alarm definition expression syntax allows the creation of simple or complex alarm definitions to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
@@ -1862,7 +1865,7 @@ None.
 * 200 - OK
 
 #### Response Body
-Returns a JSON alarm object with the following fields:
+Returns a JSON alarm definition object with the following fields:
 
 * id (string) - ID of alarm definition.
 * links ([link]) - Links to alarm definition.
@@ -1983,7 +1986,7 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON alarm object with the following parameters:
+Returns a JSON alarm definition object with the following parameters:
 
 * id (string) - ID of alarm definition.
 * links ([link]) - Links to alarm definition.
@@ -2209,6 +2212,8 @@ None.
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string(50), optional) - Lifecycle state to filter by.
+* link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * offset (string, optional)
 * limit (integer, optional)
@@ -2237,8 +2242,11 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * alarm_definition_id (string) - Name of alarm.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
-* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated
-* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created
+* lifecycle_state (string) - Lifecycle state of alarm.
+* link (string) - Link to an external resource related to the alarm.
+* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated.
+* updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when any field was last updated.
+* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created.
 
 #### Response Examples
 ```
@@ -2285,8 +2293,11 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                     }
                 }
             ],
-            "state": "OK"
+            "state": "OK",
+            "lifecycle_state":"OPEN",
+            "link":"http://somesite.com/this-alarm-info",
             "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+            "updated_timestamp":"2015-03-20T21:04:49.000Z",
             "created_timestamp": "2015-03-20T21:03:34.000Z"
         }
     ]
@@ -2499,6 +2510,11 @@ Returns a JSON alarm object with the following fields:
 * description (string) - ID of the alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string) - Lifecycle state of alarm.
+* link (string) - Link to an external resource related to the alarm.
+* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated.
+* updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when any field was last updated.
+* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created.
 
 #### Response Examples
 ```
@@ -2521,8 +2537,11 @@ Returns a JSON alarm object with the following fields:
          "hostname":"devstack"
       }
    }],
-   "state":"OK"
+   "state":"OK",
+   "lifecycle_state":"OPEN",
+   "link":"http://somesite.com/this-alarm-info",
    "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+   "updated_timestamp": "2015-03-20T21:04:49.000Z",
    "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 ```
@@ -2548,6 +2567,8 @@ None.
 Consists of an alarm definition. An alarm has the following mutable properties:
 
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string(50)) - Lifecycle state of alarm.
+* link (string(512)) - Link to an external resource related to the alarm.
 
 #### Request Examples
 ```
@@ -2558,7 +2579,9 @@ Content-Type: application/json
 Cache-Control: no-cache
 
 {  
-  "state":"OK"
+  "state":"OK",
+  "lifecycle_state":"OPEN",
+  "link":"http://pagerduty.com/"
 }
 ```
 
@@ -2575,6 +2598,11 @@ Returns a JSON alarm object with the following parameters:
 * description (string) - ID of the alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string) - Lifecycle state of alarm.
+* link (string) - Link to an external resource related to the alarm.
+* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated.
+* updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when any field was last updated.
+* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created.
 
 #### Response Examples
 ```
@@ -2597,8 +2625,11 @@ Returns a JSON alarm object with the following parameters:
         "hostname":"devstack"
      }
   }],
-  "state":"OK"
+  "state":"OK",
+  "lifecycle_state":"OPEN",
+  "link":"http://somesite.com/this-alarm-info",
   "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+  "updated_timestamp": "2015-03-20T21:04:49.000Z",
   "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 ```
@@ -2606,7 +2637,7 @@ ___
 
 ## Patch Alarm
 ### PATCH /v2.0/alarms/{alarm_id}
-Update select parameters of the specified alarm, set the alarm state and enable/disable it.
+Update select parameters of the specified alarm, set the alarm state and enable/disable it. To set lifecycle_state or link field to `null`, use an UPDATE Alarm request with `"lifecycle_state":null` and/or `"link":null`.
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -2622,7 +2653,9 @@ None.
 #### Request Body
 Consists of an alarm with the following mutable properties:
 
-* state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* state (string, optional) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string(50), optional) - Lifecycle state of alarm.
+* link (string(512), optional) - Link to an external resource related to the alarm.
 
 #### Request Examples
 ```
@@ -2632,8 +2665,9 @@ X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
 Content-Type: application/json
 Cache-Control: no-cache
 
-{  
-  "state":"OK"
+{
+  "lifecycle_state":"OPEN",
+  "link":"http://somesite.com/this-alarm-info"
 }
 ```
 
@@ -2650,6 +2684,11 @@ Returns a JSON alarm object with the following fields:
 * description (string) - ID of the alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string) - Lifecycle state of the alarm.
+* link (string) - Link to an external resource related to the alarm.
+* state_updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the state was last updated.
+* updated_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when any field was last updated.
+* created_timestamp - Timestamp in ISO 8601 combined date and time format in UTC when the alarm was created.
 
 #### Response Examples
 ```
@@ -2675,7 +2714,10 @@ Returns a JSON alarm object with the following fields:
         }
     ],
     "state": "OK"
+    "lifecycle_state":"OPEN",
+    "link":"http://somesite.com/this-alarm-info",
     "state_updated_timestamp": "2015-03-20T21:04:49.000Z",
+    "updated_timestamp": "2015-03-20T21:04:49.000Z",
     "created_timestamp": "2015-03-20T21:03:34.000Z"
 }
 

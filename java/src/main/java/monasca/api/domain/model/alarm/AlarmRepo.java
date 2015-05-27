@@ -32,7 +32,7 @@ public interface AlarmRepo {
    * Returns alarms for the given criteria.
    */
   List<Alarm> find(String tenantId, String alarmDefId, String metricName, Map<String,
-      String> metricDimensions, AlarmState state, DateTime stateUpdatedStart, String offset, int limit, boolean enforceLimit);
+      String> metricDimensions, AlarmState state, String lifecycleState, String link, DateTime stateUpdatedStart, String offset, int limit, boolean enforceLimit);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code id}
@@ -43,7 +43,7 @@ public interface AlarmRepo {
    * Updates the state and returns the original alarm for the {@code id}.
    * @return the original alarm before any state change
    */
-  Alarm update(String tenantId, String id, AlarmState state);
+  Alarm update(String tenantId, String id, AlarmState state, String lifecycleState, String link);
 
   /**
    * Gets the AlarmSubExpressions mapped by their Ids for an Alarm Id

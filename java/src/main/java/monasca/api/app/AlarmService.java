@@ -85,11 +85,19 @@ public class AlarmService {
    * @throws EntityNotFoundException if the alarm cannot be found
    * @throws InvalidEntityException if one of the actions cannot be found
    */
-  public Alarm patch(String tenantId, String alarmId, AlarmState state) {
-    if (state == null) {
-      throw new InvalidEntityException("State must be specified");
+  public Alarm patch(String tenantId, String alarmId, AlarmState state, String lifecycleState,
+                     String link) {
+    Alarm oldAlarm = repo.findById(tenantId, alarmId);
+
+    if (state == null && lifecycleState == null && link == null) {
+      return oldAlarm;
     }
-    Alarm alarm = updateInternal(tenantId, alarmId, state);
+
+    state = (state == null) ? oldAlarm.getState() : state;
+    lifecycleState = (lifecycleState == null) ? oldAlarm.getLifecycleState() : lifecycleState;
+    link = (link == null) ? oldAlarm.getLink() : link;
+
+    Alarm alarm = updateInternal(tenantId, alarmId, state, lifecycleState, link);
     return alarm;
   }
 
@@ -100,7 +108,7 @@ public class AlarmService {
    * @throws EntityNotFoundException if the alarmed metric cannot be found
    */
   public Alarm update(String tenantId, String alarmId, UpdateAlarmCommand command) {
-    Alarm alarm = updateInternal(tenantId, alarmId, command.state);
+    Alarm alarm = updateInternal(tenantId, alarmId, command.state, command.lifecycleState, command.link);
     return alarm;
   }
 
@@ -108,10 +116,11 @@ public class AlarmService {
     return "Alarm state updated via API";
   }
 
-  private Alarm updateInternal(String tenantId, String alarmId, AlarmState newState) {
+  private Alarm updateInternal(String tenantId, String alarmId, AlarmState newState,
+                               String newLifecycleState, String newLink) {
     try {
       LOG.debug("Updating alarm {} for tenant {}", alarmId, tenantId);
-      final Alarm alarm = repo.update(tenantId, alarmId, newState);
+      final Alarm alarm = repo.update(tenantId, alarmId, newState, newLifecycleState, newLink);
       final AlarmState oldState = alarm.getState();
       // Notify interested parties of updated alarm
       AlarmDefinition alarmDef = alarmDefRepo.findById(tenantId, alarm.getAlarmDefinition().getId());
@@ -131,6 +140,8 @@ public class AlarmService {
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, String.valueOf(messageCount++), event));
       }
       alarm.setState(newState);
+      alarm.setLifecycleState(newLifecycleState);
+      alarm.setLink(newLink);
       return alarm;
     } catch (EntityNotFoundException e) {
       throw e;

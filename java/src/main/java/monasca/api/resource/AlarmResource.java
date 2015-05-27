@@ -147,6 +147,8 @@ public class AlarmResource {
       @QueryParam("metric_name") String metricName,
       @QueryParam("metric_dimensions") String metricDimensionsStr,
       @QueryParam("state") AlarmState state,
+      @QueryParam("lifecycle_state") String lifecycleState,
+      @QueryParam("link") String link,
       @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit)
@@ -159,7 +161,8 @@ public class AlarmResource {
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);
 
-    final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state, stateUpdatedStart,
+    final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
+                                         lifecycleState, link, stateUpdatedStart,
                                          offset, this.persistUtils.getLimit(limit), true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
@@ -176,10 +179,14 @@ public class AlarmResource {
       @PathParam("alarm_id") String alarmId, @NotEmpty Map<String, String> fields)
       throws JsonMappingException {
     String stateStr = fields.get("state");
+    String lifecycleState = fields.get("lifecycle_state");
+    String link = fields.get("link");
     AlarmState state =
         stateStr == null ? null : Validation.parseAndValidate(AlarmState.class, stateStr);
+    Validation.validateLifecycleState(lifecycleState);
+    Validation.validateLink(link);
 
-    return fixAlarmLinks(uriInfo, service.patch(tenantId, alarmId, state));
+    return fixAlarmLinks(uriInfo, service.patch(tenantId, alarmId, state, lifecycleState, link));
   }
 
   @PUT
@@ -189,6 +196,9 @@ public class AlarmResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Alarm update(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @PathParam("alarm_id") String alarmId, @Valid UpdateAlarmCommand command) {
+
+    Validation.validateLifecycleState(command.lifecycleState);
+    Validation.validateLink(command.link);
 
     return fixAlarmLinks(uriInfo, service.update(tenantId, alarmId, command));
   }
