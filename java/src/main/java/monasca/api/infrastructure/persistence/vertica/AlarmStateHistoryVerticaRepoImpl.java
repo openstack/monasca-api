@@ -17,17 +17,29 @@ import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
-import monasca.common.persistence.BeanMapper;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmTransitionSubAlarm;
+import monasca.common.model.metric.MetricDefinition;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +65,27 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       + "where tenant_id = :tenantId and alarm_id = :alarmId %s "
       + "order by time_stamp asc "
       + "limit :limit";
+
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+
+  static {
+    objectMapper
+        .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+  }
+
+  private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
+      new TypeReference<List<MetricDefinition>>() {};
+
+  private static final TypeReference<List<AlarmTransitionSubAlarm>> SUB_ALARMS_TYPE =
+      new TypeReference<List<AlarmTransitionSubAlarm>>() {};
+
+
+  private final SimpleDateFormat simpleDateFormat =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSX");
+
+  private final SimpleDateFormat oldSimpleDateFormat =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX");
+
 
   private final DBI vertica;
   private final MySQLUtils mySQLUtils;
@@ -85,7 +118,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     logger.debug("vertica sql: {}", sql);
 
-    List<AlarmStateHistory> alarmStateHistoryList;
+    List<AlarmStateHistory> alarmStateHistoryList = new ArrayList<>();
 
     try (Handle h = vertica.open()) {
 
@@ -101,8 +134,11 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       }
 
-      alarmStateHistoryList =
-          verticaQuery.map(new BeanMapper<>(AlarmStateHistory.class)).list();
+      for (Map<String, Object> row : verticaQuery.list()) {
+
+        alarmStateHistoryList.add(getAlarmStateHistory(row));
+
+      }
 
     }
 
@@ -168,7 +204,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     logger.debug("vertica sql: {}", sql);
 
-    List<AlarmStateHistory> alarmStateHistoryList;
+    List<AlarmStateHistory> alarmStateHistoryList = new ArrayList<>();
 
     try (Handle h = vertica.open()) {
 
@@ -203,11 +239,85 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       DimensionQueries.bindDimensionsToQuery(verticaQuery, dimensions);
 
-      alarmStateHistoryList = verticaQuery.map(new BeanMapper<>(AlarmStateHistory.class)).list();
+      for (Map<String, Object> row : verticaQuery.list()) {
+
+        alarmStateHistoryList.add(getAlarmStateHistory(row));
+
+      }
 
     }
 
     return alarmStateHistoryList;
 
+  }
+
+  private AlarmStateHistory getAlarmStateHistory(Map<String, Object> row) {
+
+    AlarmStateHistory alarmStateHistory = new AlarmStateHistory();
+
+    Date date;
+
+    try {
+
+      date = parseTimestamp(((Timestamp) row.get("timestamp")).toString() + "Z");
+
+    } catch (ParseException e) {
+
+      logger.error("Failed to parse time", e);
+
+      return null;
+    }
+
+    DateTime dateTime = new DateTime(date.getTime(), DateTimeZone.UTC);
+    alarmStateHistory.setTimestamp(dateTime);
+
+    alarmStateHistory.setAlarmId((String) row.get("alarm_id"));
+
+    List<MetricDefinition> metricDefinitionList;
+    try {
+
+      metricDefinitionList = this.objectMapper.readValue((String) row.get("metrics"), METRICS_TYPE);
+
+    } catch (IOException e) {
+
+      logger.error("Failed to parse metrics", e);
+
+      metricDefinitionList = new ArrayList<>();
+    }
+
+    alarmStateHistory.setMetrics(metricDefinitionList);
+
+    alarmStateHistory.setOldState(AlarmState.valueOf((String) row.get("old_state")));
+    alarmStateHistory.setNewState(AlarmState.valueOf((String) row.get("new_state")));
+    alarmStateHistory.setReason((String) row.get("reason"));
+    alarmStateHistory.setReasonData((String) row.get("reason_data"));
+
+    List<AlarmTransitionSubAlarm> subAlarmList;
+    try {
+
+      subAlarmList = this.objectMapper.readValue((String) row.get("sub_alarms"), SUB_ALARMS_TYPE);
+
+    } catch (IOException e) {
+
+      logger.error("Failed to parse sub-alarms", e);
+
+      subAlarmList = new ArrayList<>();
+    }
+
+    alarmStateHistory.setSubAlarms(subAlarmList);
+
+    return alarmStateHistory;
+  }
+
+  private Date parseTimestamp(String timestampString) throws ParseException {
+
+    try {
+
+      return this.simpleDateFormat.parse(timestampString);
+    } catch (ParseException pe) {
+      // This extra part is here just to handle dates in the old format of only
+      // having seconds. This should be removed in a month or so
+      return this.oldSimpleDateFormat.parse(timestampString);
+    }
   }
 }
