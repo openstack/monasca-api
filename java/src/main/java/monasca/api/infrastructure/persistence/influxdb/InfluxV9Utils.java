@@ -39,10 +39,13 @@ public class InfluxV9Utils {
 
   }
 
-  public String sanitize(final String taintedString) throws Exception {
+  public String sanitize(final String taintedString) {
+
     Matcher m = sqlUnsafePattern.matcher(taintedString);
+
     if (m.matches()) {
-      throw new Exception(String.format("Input from user contains single quote ['] or "
+
+      throw new IllegalArgumentException(String.format("Input from user contains single quote ['] or "
                                         + "semi-colon [;] or double quote [\"] characters[ %1$s ]",
                                         taintedString));
     }
@@ -63,7 +66,6 @@ public class InfluxV9Utils {
 
     return sb.toString();
   }
-
 
   public String buildAlarmsPart(List<String> alarmIds) {
 
@@ -88,11 +90,11 @@ public class InfluxV9Utils {
 
   }
 
-  public String namePart(String name, boolean isRequired) throws Exception {
+  public String namePart(String name, boolean isRequired) {
 
     if (isRequired) {
       if (name == null || name.isEmpty()) {
-        throw new Exception(String.format("Found null or empty name: %1$s", name));
+        throw new IllegalArgumentException(String.format("Found null or empty name: %1$s", name));
       }
     }
 
@@ -103,20 +105,20 @@ public class InfluxV9Utils {
     }
   }
 
-  public String publicTenantIdPart(String tenantId) throws Exception {
+  public String publicTenantIdPart(String tenantId) {
 
     if (tenantId == null || tenantId.isEmpty()) {
-      throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
+      throw new IllegalArgumentException(String.format("Found null or empty tenant id: %1$s", tenantId));
     }
 
     return " tenant_id=" + "'" + sanitize(tenantId) + "'";
 
   }
 
-  public String privateTenantIdPart(String tenantId) throws Exception {
+  public String privateTenantIdPart(String tenantId) {
 
     if (tenantId == null || tenantId.isEmpty()) {
-      throw new Exception(String.format("Found null or empty tenant id: %1$s", tenantId));
+      throw new IllegalArgumentException(String.format("Found null or empty tenant id: %1$s", tenantId));
     }
 
     return " _tenant_id=" + "'" + sanitize(tenantId) + "'";
@@ -142,17 +144,17 @@ public class InfluxV9Utils {
     return String.format(" and time > '%1$s'", offset);
   }
 
-  public String privateRegionPart(String region) throws Exception {
+  public String privateRegionPart(String region) {
 
     if (region == null || region.isEmpty()) {
-      throw new Exception(String.format("Found null or empty region: %1$s", region));
+      throw new IllegalArgumentException(String.format("Found null or empty region: %1$s", region));
     }
 
     return " and _region=" + "'" + sanitize(region) + "'";
 
   }
 
-  public String dimPart(Map<String, String> dims) throws Exception {
+  public String dimPart(Map<String, String> dims) {
 
     StringBuilder sb = new StringBuilder();
 
@@ -191,14 +193,35 @@ public class InfluxV9Utils {
     return String.format(" offset %1$d", startIndex);
   }
 
-  public int startIndex(String offset) {
+  public int startIndex(String offset)  {
 
     if (offset == null || offset.isEmpty()) {
+
       return 0;
+
+    }
+
+    int intOffset;
+
+    try {
+
+      intOffset = Integer.parseInt(offset);
+
+    } catch (NumberFormatException nfe) {
+
+      throw new IllegalArgumentException(
+          String.format("Found non-integer offset '%1$s'. Offset must be a positive integer", offset));
+    }
+
+    if (intOffset < 0) {
+
+      throw new IllegalArgumentException(
+          String.format("Found negative offset '%1$s'. Offset must be a positive integer", offset));
+
     }
 
     // We've already returned up to offset, so return offset + 1.
-    return Integer.parseInt(offset) + 1;
+    return intOffset + 1;
   }
 
   public String startTimeEndTimePart(DateTime startTime, DateTime endTime) {
