@@ -83,6 +83,9 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   private final SimpleDateFormat simpleDateFormat =
       new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSX");
 
+  private final SimpleDateFormat simpleDateFormatOneMilli =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SX");
+
   private final SimpleDateFormat oldSimpleDateFormat =
       new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX");
 
@@ -259,7 +262,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     try {
 
-      date = parseTimestamp(((Timestamp) row.get("timestamp")).toString() + "Z");
+      date = parseTimestamp(row.get("timestamp").toString() + "Z");
 
     } catch (ParseException e) {
 
@@ -313,11 +316,23 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     try {
 
+      // Handles 2 and 3 digit millis.
       return this.simpleDateFormat.parse(timestampString);
-    } catch (ParseException pe) {
-      // This extra part is here just to handle dates in the old format of only
-      // having seconds. This should be removed in a month or so
-      return this.oldSimpleDateFormat.parse(timestampString);
+
+    } catch (ParseException pe0) {
+
+      try {
+
+        // Handles 1 digit millis.
+        return this.simpleDateFormatOneMilli.parse(timestampString);
+
+      } catch (ParseException pe1) {
+
+        // This extra part is here just to handle dates in the old format of only
+        // having seconds. This should be removed in a month or so
+
+        return this.oldSimpleDateFormat.parse(timestampString);
+      }
     }
   }
 }
