@@ -108,9 +108,8 @@ class StreamDefinitions(stream_definitions_api_v2.StreamDefinitionsV2API):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
         name = helpers.get_query_name(req)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
-        limit = helpers.get_query_param(req, 'limit')
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
         result = self._stream_definition_list(tenant_id, name,
                                               req.uri, offset, limit)
 
@@ -219,7 +218,7 @@ class StreamDefinitions(stream_definitions_api_v2.StreamDefinitionsV2API):
             helpers.add_links_to_resource(sd, req_uri)
             result.append(sd)
 
-        result = helpers.paginate(result, req_uri, offset)
+        result = helpers.paginate(result, req_uri, limit)
 
         return result
 

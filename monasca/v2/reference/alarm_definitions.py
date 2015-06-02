@@ -162,11 +162,11 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         tenant_id = helpers.get_tenant_id(req)
         name = helpers.get_query_name(req)
         dimensions = helpers.get_query_dimensions(req)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
 
         result = self._alarm_definition_list(tenant_id, name, dimensions,
-                                             req.uri, offset)
+                                             req.uri, offset, limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -286,12 +286,12 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri,
-                               offset):
+                               offset, limit):
 
         alarm_definition_rows = (
             self._alarm_definitions_repo.get_alarm_definitions(tenant_id, name,
                                                                dimensions,
-                                                               offset))
+                                                               offset, limit))
 
         result = []
         for alarm_definition_row in alarm_definition_rows:
@@ -324,7 +324,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             helpers.add_links_to_resource(ad, req_uri)
             result.append(ad)
 
-        result = helpers.paginate(result, req_uri, offset)
+        result = helpers.paginate(result, req_uri, limit)
 
         return result
 

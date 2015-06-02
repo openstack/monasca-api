@@ -21,6 +21,7 @@ from monasca.common.messaging.message_formats import metrics_transform_factory
 from monasca.common import resource_api
 from monasca.openstack.common import log
 from monasca.v2.reference import helpers
+from monasca.v2.reference import resource
 
 
 LOG = log.getLogger(__name__)
@@ -56,11 +57,7 @@ class Metrics(monasca_api_v2.V2API):
                                                  ex.message)
 
     def _validate_metrics(self, metrics):
-        """Validates the metrics
 
-        :param metrics: A metric object or array of metrics objects.
-        :raises falcon.HTTPBadRequest
-        """
         try:
             if isinstance(metrics, list):
                 for metric in metrics:
@@ -84,11 +81,6 @@ class Metrics(monasca_api_v2.V2API):
                 assert len(metric['dimensions'][d]) <= 255
 
     def _send_metrics(self, metrics):
-        """Send the metrics using the message queue.
-
-        :param metrics: A metric object or array of metrics objects.
-        :raises: falcon.HTTPServiceUnavailable
-        """
 
         try:
             self._message_queue.send_message_batch(metrics)
@@ -97,72 +89,51 @@ class Metrics(monasca_api_v2.V2API):
             raise falcon.HTTPServiceUnavailable('Service unavailable',
                                                 ex.message, 60)
 
-    def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset):
-        """Query the metric repo for the metrics, format them and return them.
+    @resource.resource_try_catch_block
+    def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset,
+                      limit):
 
-        :param tenant_id:
-        :param name:
-        :param dimensions:
-        :raises falcon.HTTPServiceUnavailable
-        """
+        result = self._metrics_repo.list_metrics(tenant_id,
+                                                 self._region,
+                                                 name,
+                                                 dimensions, offset, limit)
 
-        try:
-            result = self._metrics_repo.list_metrics(tenant_id,
+        return helpers.paginate(result, req_uri, limit)
+
+    @resource.resource_try_catch_block
+    def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
+                          end_timestamp, req_uri, offset,
+                          limit, merge_metrics_flag):
+
+        result = self._metrics_repo.measurement_list(tenant_id,
                                                      self._region,
                                                      name,
-                                                     dimensions, offset)
+                                                     dimensions,
+                                                     start_timestamp,
+                                                     end_timestamp,
+                                                     offset,
+                                                     limit,
+                                                     merge_metrics_flag)
 
-            return helpers.paginate(result, req_uri, offset)
+        return helpers.paginate_measurement(result, req_uri, limit)
 
-        except Exception as ex:
-            LOG.exception(ex)
-            raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message, 60)
-
-    def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
-                          end_timestamp, req_uri, offset):
-        try:
-            result = self._metrics_repo.measurement_list(tenant_id,
-                                                         self._region,
-                                                         name,
-                                                         dimensions,
-                                                         start_timestamp,
-                                                         end_timestamp,
-                                                         offset)
-
-            if offset is not None:
-
-                paginated_result = []
-                for measurement in result:
-                    paginated_result.append(
-                        helpers.paginate_measurement(measurement,
-                                                     req_uri, offset))
-
-                result = {u'links': [{u'rel': u'self',
-                                      u'href': req_uri.decode('utf8')}],
-                          u'elements': paginated_result}
-
-            return result
-
-        except Exception as ex:
-            LOG.exception(ex)
-            raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message, 60)
-
+    @resource.resource_try_catch_block
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
-                           end_timestamp, statistics, period):
-        try:
-            return self._metrics_repo.metrics_statistics(tenant_id,
-                                                         self._region,
-                                                         name,
-                                                         dimensions,
-                                                         start_timestamp,
-                                                         end_timestamp,
-                                                         statistics, period)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message, 60)
+                           end_timestamp, statistics, period, req_uri,
+                           offset, limit, merge_metrics_flag):
+
+        result = self._metrics_repo.metrics_statistics(tenant_id,
+                                                       self._region,
+                                                       name,
+                                                       dimensions,
+                                                       start_timestamp,
+                                                       end_timestamp,
+                                                       statistics, period,
+                                                       offset,
+                                                       limit,
+                                                       merge_metrics_flag)
+
+        return helpers.paginate_statistics(result, req_uri, limit)
 
     @resource_api.Restify('/v2.0/metrics/', method='post')
     def do_post_metrics(self, req, res):
@@ -187,10 +158,10 @@ class Metrics(monasca_api_v2.V2API):
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
         result = self._list_metrics(tenant_id, name, dimensions,
-                                    req.uri, offset)
+                                    req.uri, offset, limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
@@ -198,17 +169,24 @@ class Metrics(monasca_api_v2.V2API):
     def do_get_measurements(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        name = helpers.get_query_name(req)
+        name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
+        merge_metrics_flag = helpers.get_query_param(req, 'merge_metrics',
+                                                     False,
+                                                     False)
+        merge_metrics_flag = (
+            self._get_boolean_merge_metrics_flag(merge_metrics_flag))
+
         result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp,
-                                        req.uri, offset)
+                                        req.uri, offset,
+                                        limit, merge_metrics_flag)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -217,7 +195,7 @@ class Metrics(monasca_api_v2.V2API):
     def do_get_statistics(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        name = helpers.get_query_name(req)
+        name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
@@ -225,8 +203,26 @@ class Metrics(monasca_api_v2.V2API):
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         statistics = helpers.get_query_statistics(req)
         period = helpers.get_query_period(req)
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
+        merge_metrics_flag = helpers.get_query_param(req, 'merge_metrics',
+                                                     False,
+                                                     False)
+
+        merge_metrics_flag = (
+            self._get_boolean_merge_metrics_flag(merge_metrics_flag))
+
         result = self._metric_statistics(tenant_id, name, dimensions,
                                          start_timestamp, end_timestamp,
-                                         statistics, period)
+                                         statistics, period, req.uri,
+                                         offset, limit, merge_metrics_flag)
+
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
+
+    def _get_boolean_merge_metrics_flag(self, merge_metrics_flag_str):
+
+        if merge_metrics_flag_str is not False:
+            return helpers.str_2_bool(merge_metrics_flag_str)
+        else:
+            return False

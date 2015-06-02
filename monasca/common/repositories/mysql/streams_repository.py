@@ -16,7 +16,6 @@ import uuid
 import MySQLdb
 from oslo_utils import timeutils
 
-from monasca.common.repositories import constants
 from monasca.common.repositories import exceptions
 from monasca.common.repositories.mysql import mysql_repository
 from monasca.common.repositories import streams_repository as sdr
@@ -85,15 +84,14 @@ class StreamsRepository(mysql_repository.MySQLRepository,
             where_clause += " and sd.name = %s "
             parms.append(name.encode('utf8'))
 
-        if offset is not None:
-            order_by_clause = " order by sd.id, sd.created_at "
+        order_by_clause = " order by sd.id, sd.created_at "
+
+        if offset:
             where_clause += " and sd.id > %s "
             parms.append(offset.encode('utf8'))
-            limit_clause = " limit %s "
-            parms.append(constants.PAGE_LIMIT)
-        else:
-            order_by_clause = " order by sd.created_at "
-            limit_clause = ""
+
+        limit_clause = " limit %s "
+        parms.append(limit + 1)
 
         query = select_clause + where_clause + order_by_clause + limit_clause
 

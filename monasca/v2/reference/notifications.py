@@ -99,14 +99,15 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
         return helpers.add_links_to_resource(response, uri)
 
     @resource.resource_try_catch_block
-    def _list_notifications(self, tenant_id, uri, offset):
+    def _list_notifications(self, tenant_id, uri, offset, limit):
 
-        rows = self._notifications_repo.list_notifications(tenant_id, offset)
+        rows = self._notifications_repo.list_notifications(tenant_id, offset,
+                                                           limit)
 
         result = [self._build_notification_result(row,
                                                   uri) for row in rows]
 
-        return helpers.paginate(result, uri, offset)
+        return helpers.paginate(result, uri, limit)
 
     @resource.resource_try_catch_block
     def _list_notification(self, tenant_id, notification_id, uri):
@@ -151,9 +152,9 @@ class Notifications(monasca_notifications_api_v2.NotificationsV2API):
     def do_get_notification_methods(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
-        offset = helpers.normalize_offset(helpers.get_query_param(req,
-                                                                  'offset'))
-        result = self._list_notifications(tenant_id, req.uri, offset)
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
+        result = self._list_notifications(tenant_id, req.uri, offset, limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
