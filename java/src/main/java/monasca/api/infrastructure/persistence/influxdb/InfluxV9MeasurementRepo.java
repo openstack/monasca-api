@@ -90,8 +90,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
     String q;
     if (Boolean.TRUE.equals(mergeMetricsFlag)) {
 
-      // Had to use * to handle value meta. If we select valueMeta and it does not exist, then error.
-      q = String.format("select * %1$s "
+      // The time column is automatically included in the results before all other columns.
+      q = String.format("select value, value_meta %1$s "
                         + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s",
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
@@ -109,9 +109,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
         throw new MultipleMetricsException(name, dimensions);
 
       }
-
-      // Had to use * to handle value meta. If we select valueMeta and it does not exist, then error.
-      q = String.format("select * %1$s "
+      // The time column is automatically included in the results before all other columns.
+      q = String.format("select value, value_meta %1$s "
                         + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s slimit 1",
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
@@ -159,16 +158,13 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
     Map<String, String> valueMeta = new HashMap<>();
 
-    if (values.length >= 3 && values[2] != null && !values[2].isEmpty()) {
-
       try {
         valueMeta =
             this.objectMapper.readValue(values[2], VALUE_META_TYPE);
       } catch (IOException e) {
         logger.error("Failed to parse value metadata: {}", values[2], e);
-      }
 
-    }
+      }
 
     return valueMeta;
   }
