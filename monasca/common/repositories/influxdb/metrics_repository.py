@@ -159,7 +159,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             result = self.influxdb_client.query(query)
 
-            json_metric_list = self._build_serie_name_list(result)
+            json_metric_list = self._build_serie_metric_list(result)
 
             return json_metric_list
 
@@ -167,7 +167,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _build_serie_name_list(self, series_names):
+    def _build_serie_metric_list(self, series_names):
 
         json_metric_list = []
 
@@ -196,6 +196,28 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                     id += 1
 
                     json_metric_list.append(metric)
+
+        return json_metric_list
+
+    def _build_serie_name_list(self, series_names):
+
+        json_metric_list = []
+
+        if not series_names:
+            return json_metric_list
+
+        if 'series' in series_names.raw['results'][0]:
+
+            id = 0
+
+            for series in series_names.raw['results'][0]['series']:
+
+                id += 1
+
+                name = {u'id': str(id),
+                        u'name': series[u'name']}
+
+                json_metric_list.append(name)
 
         return json_metric_list
 
@@ -257,6 +279,28 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                     json_measurement_list.append(measurement)
 
             return json_measurement_list
+
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
+
+    def list_metric_names(self, tenant_id, region, dimensions, offset, limit):
+
+        try:
+
+            query = self._build_show_series_query(dimensions, None, tenant_id,
+                                                  region)
+
+            query += " limit {}".format(limit + 1)
+
+            if offset:
+                query += ' offset {}'.format(int(offset) + 1)
+
+            result = self.influxdb_client.query(query)
+
+            json_name_list = self._build_serie_name_list(result)
+
+            return json_name_list
 
         except Exception as ex:
             LOG.exception(ex)

@@ -101,6 +101,17 @@ class Metrics(monasca_api_v2.V2API):
         return helpers.paginate(result, req_uri, limit)
 
     @resource.resource_try_catch_block
+    def _list_metric_names(self, tenant_id, dimensions, req_uri, offset,
+                           limit):
+
+        result = self._metrics_repo.list_metric_names(tenant_id,
+                                                      self._region,
+                                                      dimensions,
+                                                      offset, limit)
+
+        return helpers.paginate(result, req_uri, limit)
+
+    @resource.resource_try_catch_block
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp, req_uri, offset,
                           limit, merge_metrics_flag):
@@ -188,6 +199,19 @@ class Metrics(monasca_api_v2.V2API):
                                         req.uri, offset,
                                         limit, merge_metrics_flag)
 
+        res.body = helpers.dumpit_utf8(result)
+        res.status = falcon.HTTP_200
+
+    @resource_api.Restify('/v2.0/metrics/names', method='get')
+    def do_get_metric_names(self, req, res):
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        dimensions = helpers.get_query_dimensions(req)
+        helpers.validate_query_dimensions(dimensions)
+        offset = helpers.get_query_param(req, 'offset')
+        limit = helpers.get_limit(req)
+        result = self._list_metric_names(tenant_id, dimensions,
+                                         req.uri, offset, limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
