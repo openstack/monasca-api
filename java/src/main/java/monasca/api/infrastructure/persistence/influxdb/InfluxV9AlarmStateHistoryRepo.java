@@ -15,6 +15,15 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 import com.google.inject.Inject;
 
+import monasca.api.ApiConfig;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
+import monasca.api.infrastructure.persistence.PersistUtils;
+import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
+import monasca.common.model.alarm.AlarmState;
+import monasca.common.model.alarm.AlarmTransitionSubAlarm;
+import monasca.common.model.metric.MetricDefinition;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -27,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -36,15 +44,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
-
-import monasca.api.ApiConfig;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
-import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
-import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
-import monasca.common.model.alarm.AlarmState;
-import monasca.common.model.alarm.AlarmTransitionSubAlarm;
-import monasca.common.model.metric.MetricDefinition;
-
 
 public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
@@ -57,18 +56,13 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
   private final String region;
   private final InfluxV9RepoReader influxV9RepoReader;
   private final InfluxV9Utils influxV9Utils;
+  private final PersistUtils persistUtils;
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   static {
     objectMapper
         .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
   }
-
-  private final SimpleDateFormat simpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-
-  private final SimpleDateFormat oldSimpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 
   private static final TypeReference<List<MetricDefinition>> METRICS_TYPE =
       new TypeReference<List<MetricDefinition>>() {};
@@ -81,7 +75,8 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                                        MySQLUtils mySQLUtils,
                                        ApiConfig config,
                                        InfluxV9RepoReader influxV9RepoReader,
-                                       InfluxV9Utils influxV9Utils) {
+                                       InfluxV9Utils influxV9Utils,
+                                       PersistUtils persistUtils) {
 
     this.mysql = mysql;
     this.mySQLUtils = mySQLUtils;
@@ -89,6 +84,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
     this.region = config.region;
     this.influxV9RepoReader = influxV9RepoReader;
     this.influxV9Utils = influxV9Utils;
+    this.persistUtils = persistUtils;
 
   }
 
@@ -168,7 +164,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
           Date date;
           try {
-            date = parseTimestamp(values[0]);
+            date = this.persistUtils.parseTimestamp(values[0]);
           } catch (ParseException e) {
             logger.error("Failed to parse time", e);
             continue;
@@ -196,7 +192,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
           List<AlarmTransitionSubAlarm> subAlarmList;
           try {
-              subAlarmList = this.objectMapper.readValue(values[7], SUB_ALARMS_TYPE);
+            subAlarmList = this.objectMapper.readValue(values[7], SUB_ALARMS_TYPE);
           } catch (IOException e) {
             logger.error("Failed to parse sub-alarms", e);
             continue;
@@ -209,21 +205,6 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
       }
 
     }
-      return alarmStateHistoryList;
+    return alarmStateHistoryList;
   }
-
-  private Date parseTimestamp(String timestampString) throws ParseException {
-
-    try {
-
-      return this.simpleDateFormat.parse(timestampString);
-    }
-
-    catch (ParseException pe) {
-      // This extra part is here just to handle dates in the old format of only
-      // having seconds. This should be removed in a month or so
-      return this.oldSimpleDateFormat.parse(timestampString);
-    }
-  }
-
 }

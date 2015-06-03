@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
+import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmTransitionSubAlarm;
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -79,27 +79,19 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   private static final TypeReference<List<AlarmTransitionSubAlarm>> SUB_ALARMS_TYPE =
       new TypeReference<List<AlarmTransitionSubAlarm>>() {};
 
-
-  private final SimpleDateFormat simpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSX");
-
-  private final SimpleDateFormat simpleDateFormatOneMilli =
-      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SX");
-
-  private final SimpleDateFormat oldSimpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX");
-
-
   private final DBI vertica;
   private final MySQLUtils mySQLUtils;
+  private final PersistUtils persistUtils;
 
   @Inject
   public AlarmStateHistoryVerticaRepoImpl(
       @Named("vertica") DBI vertica,
-      MySQLUtils mySQLUtils) {
+      MySQLUtils mySQLUtils,
+      PersistUtils persistUtils) {
 
     this.vertica = vertica;
     this.mySQLUtils = mySQLUtils;
+    this.persistUtils = persistUtils;
   }
 
   @Override
@@ -262,7 +254,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     try {
 
-      date = parseTimestamp(row.get("timestamp").toString() + "Z");
+      date = this.persistUtils.parseTimestamp(row.get("timestamp").toString() + "Z");
 
     } catch (ParseException e) {
 
@@ -312,27 +304,4 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
     return alarmStateHistory;
   }
 
-  private Date parseTimestamp(String timestampString) throws ParseException {
-
-    try {
-
-      // Handles 2 and 3 digit millis.
-      return this.simpleDateFormat.parse(timestampString);
-
-    } catch (ParseException pe0) {
-
-      try {
-
-        // Handles 1 digit millis.
-        return this.simpleDateFormatOneMilli.parse(timestampString);
-
-      } catch (ParseException pe1) {
-
-        // This extra part is here just to handle dates in the old format of only
-        // having seconds. This should be removed in a month or so
-
-        return this.oldSimpleDateFormat.parse(timestampString);
-      }
-    }
-  }
 }
