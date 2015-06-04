@@ -233,8 +233,7 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
-                                                     req_uri),
-                                              rel=None)
+                                                     req_uri))
 
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
@@ -291,8 +290,7 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
-                                                     req_uri),
-                                              rel=None)
+                                                     req_uri))
 
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,

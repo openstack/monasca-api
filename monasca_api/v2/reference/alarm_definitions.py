@@ -293,14 +293,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             undetermined_actions_list = get_comma_separated_str_as_list(
                 alarm_definition_row['undetermined_actions'])
 
-            ad = {u'id': alarm_definition_row['id'].decode('utf8'),
-                  u'name': alarm_definition_row['name'].decode("utf8"),
-                  u'description': alarm_definition_row['description'].decode(
-                      'utf8') if alarm_definition_row['description'] else u'',
-                  u'expression': alarm_definition_row['expression'].decode(
-                      'utf8'), u'match_by': match_by,
-                  u'severity': alarm_definition_row['severity'].decode(
-                      'utf8').upper(),
+            ad = {u'id': alarm_definition_row['id'],
+                  u'name': alarm_definition_row['name'],
+                  u'description': alarm_definition_row['description'] if (
+                      alarm_definition_row['description']) else u'',
+                  u'expression': alarm_definition_row['expression'],
+                  u'match_by': match_by,
+                  u'severity': alarm_definition_row['severity'].upper(),
                   u'actions_enabled':
                       alarm_definition_row['actions_enabled'] == 1,
                   u'alarm_actions': alarm_actions_list,

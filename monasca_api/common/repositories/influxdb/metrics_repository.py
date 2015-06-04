@@ -265,13 +265,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                     measurements_list = []
                     for point in serie['values']:
 
-                        value_meta = {}
-
-                        try:
-                            value_meta = json.loads(point[2])
-                        except Exception as ex:
-                            pass
-
+                        value_meta = json.loads(point[2]) if point[2] else None
                         measurements_list.append([point[0],
                                                   point[1],
                                                   value_meta])
@@ -453,6 +447,15 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                    u'reason_data': point[6],
                                    u'sub_alarms': json.loads(point[7]),
                                    u'tenant_id': point[8]}
+
+                    # java api formats these during json serialization
+                    if alarm_point[u'sub_alarms']:
+                        for sub_alarm in alarm_point[u'sub_alarms']:
+                            sub_expr = sub_alarm['sub_alarm_expression']
+                            metric_def = sub_expr['metric_definition']
+                            sub_expr['metric_name'] = metric_def['name']
+                            sub_expr['dimensions'] = metric_def['dimensions']
+                            del sub_expr['metric_definition']
 
                     json_alarm_history_list.append(alarm_point)
 
