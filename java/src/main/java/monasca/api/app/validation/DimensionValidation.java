@@ -136,6 +136,9 @@ public final class DimensionValidation {
       if (!VALID_DIMENSION_NAME.matcher(name).matches())
         throw Exceptions.unprocessableEntity(
             "Dimension name %s may not contain: %s", name, INVALID_CHAR_STRING);
+      if (!VALID_DIMENSION_NAME.matcher(value).matches())
+        throw Exceptions.unprocessableEntity(
+            "Dimension value %s may not contain: %s", value, INVALID_CHAR_STRING);
     }
   }
 
