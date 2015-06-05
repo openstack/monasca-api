@@ -15,6 +15,10 @@ package monasca.api.infrastructure.persistence;
 
 import com.google.inject.Inject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import monasca.api.ApiConfig;
 
 public class PersistUtils {
@@ -22,6 +26,18 @@ public class PersistUtils {
   private final int maxQueryLimit;
 
   private final int DEFAULT_MAX_QUERY_LIMIT = 10000;
+
+  private final SimpleDateFormat simpleDateFormatSpace =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSX");
+
+  private final SimpleDateFormat simpleDateFormatSpaceOneDigitMilli =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SX");
+
+  private final SimpleDateFormat simpleDateFormatT =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+  private final SimpleDateFormat simpleDateFormatTOneDigitMilli =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SX");
 
   @Inject
   public PersistUtils(ApiConfig config) {
@@ -73,6 +89,39 @@ public class PersistUtils {
       return this.maxQueryLimit;
     }
 
+  }
+
+  public Date parseTimestamp(String timestampString) throws ParseException {
+
+    try {
+
+      // Handles 2 and 3 digit millis. '2016-01-01 01:01:01.12Z' or '2016-01-01 01:01:01.123Z'
+      return this.simpleDateFormatSpace.parse(timestampString);
+
+    } catch (ParseException pe0) {
+
+      try {
+
+        // Handles 1 digit millis. '2016-01-01 01:01:01.1Z'
+        return this.simpleDateFormatSpaceOneDigitMilli.parse(timestampString);
+
+      } catch (ParseException pe1) {
+
+        try {
+
+          // Handles 2 and 3 digit millis with 'T'. Comes from the Python Persister.
+          //  '2016-01-01T01:01:01.12Z' or '2016-01-01T01:01:01.123Z'
+          return this.simpleDateFormatT.parse(timestampString);
+
+        } catch (ParseException pe2) {
+
+          // Handles 1 digit millis with 'T'. Comes from the Python Persister.
+          // '2016-01-01T01:01:01.1Z'
+          return this.simpleDateFormatTOneDigitMilli.parse(timestampString);
+
+        }
+      }
+    }
   }
 
 }
