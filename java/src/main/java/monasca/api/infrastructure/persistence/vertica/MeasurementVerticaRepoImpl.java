@@ -64,6 +64,8 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       + "order by mes.time_stamp ASC "
       + "limit :limit";
 
+  private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defDims";
+
   private final DBI db;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -112,7 +114,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
       String sql =
           String.format(FIND_BY_METRIC_DEF_SQL,
-                        MetricQueries.buildJoinClauseFor(dimensions),
+                        MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
                         sb);
 
       Query<Map<String, Object>> query =

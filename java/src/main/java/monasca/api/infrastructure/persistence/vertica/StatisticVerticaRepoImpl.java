@@ -57,6 +57,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       + "%s "
       + "order by defdims.id ASC";
 
+  private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defdims";
+
   private final DBI db;
 
   @Inject
@@ -208,7 +210,9 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     String sql =
         String
-            .format(FIND_BY_METRIC_DEF_SQL, MetricQueries.buildJoinClauseFor(dimensions), sb);
+            .format(FIND_BY_METRIC_DEF_SQL,
+                    MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
+                    sb);
 
     Query<Map<String, Object>> query =
         h.createQuery(sql)

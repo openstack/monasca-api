@@ -26,7 +26,7 @@ import monasca.common.persistence.SqlQueries;
 final class MetricQueries {
   private MetricQueries() {}
 
-  static String buildJoinClauseFor(Map<String, String> dimensions) {
+  static String buildJoinClauseFor(Map<String, String> dimensions, String tableToJoinName) {
 
     StringBuilder sb = null;
 
@@ -47,7 +47,7 @@ final class MetricQueries {
             .append(i)
             .append(".value = " + ":dvalue")
             .append(i)
-            .append(" and defdims.dimension_set_id = dim")
+            .append(" and " + tableToJoinName + ".dimension_set_id = dim")
             .append(i)
             .append(".dimension_set_id");
       }
@@ -56,6 +56,7 @@ final class MetricQueries {
     return sb == null ? "" : sb.toString();
 
   }
+
 
   static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
 
