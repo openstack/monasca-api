@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import itertools
 import sys
 
 import pyparsing
@@ -23,10 +22,15 @@ class SubExpr(object):
 
     def __init__(self, tokens):
 
-        self._sub_expr = tokens
-        self._func = tokens.func
+        if not tokens.func:
+            if tokens.relational_op.lower() in ['gte', 'gt', '>=', '>']:
+                self._func = "max"
+            else:
+                self._func = "min"
+        else:
+            self._func = tokens.func
         self._metric_name = tokens.metric_name
-        self._dimensions = tokens.dimensions.dimensions_list
+        self._dimensions = tokens.dimensions_list
         self._operator = tokens.relational_op
         self._threshold = tokens.threshold
         self._period = tokens.period
@@ -34,36 +38,31 @@ class SubExpr(object):
         self._id = None
 
     @property
-    def sub_expr_str(self):
-        """Get the entire sub expression as a string with no spaces."""
-        return "".join(list(itertools.chain(*self._sub_expr)))
-
-    @property
     def fmtd_sub_expr_str(self):
         """Get the entire sub expressions as a string with spaces."""
-        result = "{}({}".format(self._func.encode('utf8'),
-                                self._metric_name.encode('utf8'))
+        result = u"{}({}".format(self.normalized_func,
+                                 self._metric_name)
 
-        if self._dimensions:
-            result += "{{{}}}".format(self._dimensions.encode('utf8'))
+        if self._dimensions is not None:
+            result += "{" + self.dimensions_str + "}"
 
         if self._period:
-            result += ", {}".format(self._period.encode('utf8'))
+            result += ", {}".format(self._period)
 
         result += ")"
 
-        result += " {} {}".format(self._operator.encode('utf8'),
-                                  self._threshold.encode('utf8'))
+        result += " {} {}".format(self._operator,
+                                  self._threshold)
 
         if self._periods:
-            result += " times {}".format(self._periods.encode('utf8'))
+            result += " times {}".format(self._periods)
 
-        return result.decode('utf8')
+        return result
 
     @property
     def dimensions_str(self):
         """Get all the dimensions as a single comma delimited string."""
-        return self._dimensions
+        return u",".join(self._dimensions)
 
     @property
     def operands_list(self):
@@ -93,13 +92,13 @@ class SubExpr(object):
     @property
     def dimensions(self):
         """Get the dimensions."""
-        return self._dimensions
+        return u",".join(self._dimensions)
 
     @property
     def dimensions_as_list(self):
         """Get the dimensions as a list."""
         if self._dimensions:
-            return self._dimensions.split(",")
+            return self._dimensions
         else:
             return []
 
@@ -173,12 +172,12 @@ class OrSubExpr(BinaryOp):
     pass
 
 
-COMMA = pyparsing.Literal(",")
-LPAREN = pyparsing.Literal("(")
-RPAREN = pyparsing.Literal(")")
+COMMA = pyparsing.Suppress(pyparsing.Literal(","))
+LPAREN = pyparsing.Suppress(pyparsing.Literal("("))
+RPAREN = pyparsing.Suppress(pyparsing.Literal(")"))
 EQUAL = pyparsing.Literal("=")
-LBRACE = pyparsing.Literal("{")
-RBRACE = pyparsing.Literal("}")
+LBRACE = pyparsing.Suppress(pyparsing.Literal("{"))
+RBRACE = pyparsing.Suppress(pyparsing.Literal("}"))
 
 # Initialize non-ascii unicode code points in the Basic Multilingual Plane.
 unicode_printables = u''.join(
@@ -193,8 +192,11 @@ metric_name = (
 dimension_name = pyparsing.Word(valid_identifier_chars, min=1, max=255)
 dimension_value = pyparsing.Word(valid_identifier_chars, min=1, max=255)
 
+MINUS = pyparsing.Literal('-')
 integer_number = pyparsing.Word(pyparsing.nums)
-decimal_number = pyparsing.Word(pyparsing.nums + ".")
+decimal_number = (pyparsing.Optional(MINUS) + integer_number +
+                  pyparsing.Optional("." + integer_number))
+decimal_number.setParseAction(lambda tokens: "".join(tokens))
 
 max = pyparsing.CaselessLiteral("max")
 min = pyparsing.CaselessLiteral("min")
@@ -223,24 +225,26 @@ logical_op = (AND | OR)("logical_op")
 
 times = pyparsing.CaselessLiteral("times")
 
-dimension = pyparsing.Group(dimension_name + EQUAL + dimension_value)
+dimension = dimension_name + EQUAL + dimension_value
+dimension.setParseAction(lambda tokens: "".join(tokens))
 
-# Cannot have any whitespace after the comma delimiter.
-dimension_list = pyparsing.Group(pyparsing.Optional(
-    LBRACE + pyparsing.delimitedList(dimension, delim=',', combine=True)(
-        "dimensions_list") + RBRACE))
+dimension_list = pyparsing.Group((LBRACE + pyparsing.Optional(
+    pyparsing.delimitedList(dimension)) +
+    RBRACE))("dimensions_list")
 
-metric = metric_name + dimension_list("dimensions")
+metric = metric_name + pyparsing.Optional(dimension_list)
 period = integer_number("period")
 threshold = decimal_number("threshold")
 periods = integer_number("periods")
 
+function_and_metric = (func + LPAREN + metric + pyparsing.Optional(
+    COMMA + period) + RPAREN)
+
 expression = pyparsing.Forward()
 
-sub_expression = (func + LPAREN + metric + pyparsing.Optional(
-    COMMA + period) + RPAREN + relational_op + threshold + pyparsing.Optional(
-    times + periods) | LPAREN + expression + RPAREN)
-
+sub_expression = ((function_and_metric | metric) + relational_op + threshold +
+                  pyparsing.Optional(times + periods) |
+                  LPAREN + expression + RPAREN)
 sub_expression.setParseAction(SubExpr)
 
 expression = (
@@ -258,7 +262,7 @@ class AlarmExprParser(object):
         # Remove all spaces before parsing. Simple, quick fix for whitespace
         # issue with dimension list not allowing whitespace after comma.
         parse_result = (expression + pyparsing.stringEnd).parseString(
-            self._expr.replace(' ', ''))
+            self._expr)
         sub_expr_list = parse_result[0].operands_list
         return sub_expr_list
 
@@ -266,31 +270,42 @@ class AlarmExprParser(object):
 def main():
     """Used for development and testing."""
 
-    expr0 = (
+    expr_list = [
         "max(-_.千幸福的笑脸{घोड़ा=馬,  "
         "dn2=dv2,千幸福的笑脸घ=千幸福的笑脸घ}) gte 100 "
         "times 3 && "
-        "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >9 9and "
-        "count(fizzle) lt 0 or count(baz) > 1)".decode('utf8'))
+        "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >99 and "
+        "count(fizzle) lt 0or count(baz) > 1)".decode('utf8'),
 
-    expr1 = ("max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
-             " or max(biz)>100)".decode('utf8'))
+        "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
+        " or max(biz)>100)".decode('utf8'),
 
-    expr2 = "max(foo)>=100"
+        "max(foo)>=100",
 
-    for expr in (expr0, expr1, expr2):
-        print ('orig expr: {}'.format(expr.encode('utf8')))
-        alarm_expr_parser = AlarmExprParser(expr)
-        sub_expr = alarm_expr_parser.sub_expr_list
-        for sub_expression in sub_expr:
-            print ('sub expr: {}'.format(
-                sub_expression.sub_expr_str.encode('utf8')))
-            print ('fmtd sub expr: {}'.format(
-                sub_expression.fmtd_sub_expr_str.encode('utf8')))
-            print ('sub_expr dimensions: {}'.format(
-                sub_expression.dimensions_str.encode('utf8')))
-            print ()
-        print ()
+        "test_metric{this=that, that =  this} < 1",
+
+        "max  (  3test_metric5  {  this  =  that  })  lt  5 times    3",
+
+        "3test_metric5 lt 3",
+
+        "ntp.offset > 1 or ntp.offset < -5",
+    ]
+
+    for expr in expr_list:
+        print('orig expr: {}'.format(expr.encode('utf8')))
+        sub_exprs = []
+        try:
+            alarm_expr_parser = AlarmExprParser(expr)
+            sub_exprs = alarm_expr_parser.sub_expr_list
+        except Exception as ex:
+            print("Parse failed: {}".format(ex))
+        for sub_expr in sub_exprs:
+            print('sub expr: {}'.format(
+                sub_expr.fmtd_sub_expr_str.encode('utf8')))
+            print('sub_expr dimensions: {}'.format(
+                sub_expr.dimensions_str.encode('utf8')))
+            print()
+        print()
 
 
 if __name__ == "__main__":
