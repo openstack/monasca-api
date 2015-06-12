@@ -637,7 +637,7 @@ If no limit is specified in the request URL, then a server-wide configurable lim
 
 
 ## Offset
-Offsets can be either integer offsets, string offsets, or timestamp offsets. The use of either integer, string, or timestamp is determined by the resource being queried.
+Offsets can be either integer offsets, string offsets (including hexadecimal numbers), or timestamp offsets. The use of either integer, string, or timestamp is determined by the resource being queried.
 
 For example, an integer offset would look like this:
 
@@ -653,6 +653,14 @@ A string offset would look like this:
 offset=c60ec47e-5038-4bf1-9f95-4046c6e9a759
 
 ```
+
+A hexadecimal string offset would look like this:
+
+```
+
+offset=01ce0acc66131296c8a17294f39aee44ea8963ec
+
+``` 
 
 A timestamp offset would look like this:
 
@@ -963,7 +971,7 @@ None.
 #### Query Parameters
 * name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
-* offset (integer, optional)
+* offset (integer (InfluxDB) or hexadecimal string (Vertica), optional)
 * limit (integer, optional)
 
 #### Request Body
