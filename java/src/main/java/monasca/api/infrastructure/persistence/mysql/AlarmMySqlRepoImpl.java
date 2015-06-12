@@ -51,7 +51,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   private final DBI db;
   private final PersistUtils persistUtils;
 
-  private static final String ALARM_SQL =
+  private static final String FIND_ALARM_BY_ID_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
       + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
       + "a.updated_at as updated_timestamp, a.created_at as created_timestamp,"
@@ -60,9 +60,23 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       + "inner join alarm_metric as am on am.alarm_id = a.id "
       + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
       + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
-      + "left join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
+      + "left outer join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
       + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
       + "where ad.tenant_id = :tenantId and ad.deleted_at is null %s order by a.id %s";
+
+  private static final String FIND_ALARMS_SQL =
+      "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
+      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp,"
+      + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
+      + "inner join %s as alarm_id_list on alarm_id_list.id = a.id "
+      + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
+      + "inner join alarm_metric as am on am.alarm_id = a.id "
+      + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
+      + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
+      + "left outer join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
+      + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
+      + "order by a.id ASC";
 
   @Inject
   public AlarmMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
@@ -71,9 +85,11 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   }
 
   private void buildJoinClauseFor(Map<String, String> dimensions, StringBuilder sbJoin) {
+
     if (dimensions == null) {
       return;
     }
+
     for (int i = 0; i < dimensions.size(); i++) {
       final String indexStr = String.valueOf(i);
       sbJoin.append(" inner join metric_dimension md").append(indexStr).append(" on md")
@@ -102,69 +118,103 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
                           String lifecycleState, String link, DateTime stateUpdatedStart, String offset,
                           int limit, boolean enforceLimit) {
 
+    StringBuilder
+        sbWhere =
+        new StringBuilder("(select a.id "
+                          + "from alarm as a, alarm_definition as ad "
+                          + "where ad.id = a.alarm_definition_id "
+                          + "  and ad.deleted_at is null "
+                          + "  and ad.tenant_id = :tenantId ");
+
+    if (alarmDefId != null) {
+      sbWhere.append(" and ad.id = :alarmDefId ");
+    }
+
+    if (metricName != null) {
+
+      sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
+                     + "inner join alarm_metric as am on am.alarm_id = a.id "
+                     + "inner join metric_definition_dimensions as mdd "
+                     + "  on mdd.id = am.metric_definition_dimensions_id "
+                     + "inner join (select distinct id from metric_definition "
+                     + "            where name = :metricName) as md "
+                     + "  on md.id = mdd.metric_definition_id ");
+
+      buildJoinClauseFor(metricDimensions, sbWhere);
+
+      sbWhere.append(")");
+
+    } else if (metricDimensions != null) {
+
+      sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
+                     + "inner join alarm_metric as am on am.alarm_id = a.id "
+                     + "inner join metric_definition_dimensions as mdd "
+                     + "  on mdd.id = am.metric_definition_dimensions_id ");
+
+      buildJoinClauseFor(metricDimensions, sbWhere);
+
+      sbWhere.append(")");
+
+    }
+
+    if (state != null) {
+      sbWhere.append(" and a.state = :state");
+    }
+
+    if (lifecycleState != null) {
+      sbWhere.append(" and a.lifecycle_state = :lifecycleState");
+    }
+
+    if (link != null) {
+      sbWhere.append(" and a.link = :link");
+    }
+
+    if (stateUpdatedStart != null) {
+      sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
+    }
+
+    if (offset != null) {
+      sbWhere.append(" and a.id > :offset");
+    }
+
+    sbWhere.append(" order by a.id ASC ");
+
+    if (enforceLimit && limit > 0) {
+      sbWhere.append(" limit :limit");
+    }
+
+    sbWhere.append(")");
+
+    String sql = String.format(FIND_ALARMS_SQL, sbWhere);
+
     try (Handle h = db.open()) {
 
-      StringBuilder sbWhere = new StringBuilder();
-
-      if (alarmDefId != null) {
-        sbWhere.append("and ad.id = :alarmDefId ");
-      }
-      if (metricName != null) {
-        sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
-                       + "inner join alarm_metric as am on am.alarm_id = a.id "
-                       + "inner join metric_definition_dimensions as mdd "
-                       + "  on mdd.id = am.metric_definition_dimensions_id "
-                       + "inner join (select distinct id from metric_definition "
-                       + "            where name = :metricName) as md "
-                       + "on md.id = mdd.metric_definition_id ");
-
-        buildJoinClauseFor(metricDimensions, sbWhere);
-
-        sbWhere.append(")");
-
-      }
-      if (state != null) {
-        sbWhere.append(" and a.state = :state");
-      }
-      if (lifecycleState != null) {
-        sbWhere.append(" and a.lifecycle_state = :lifecycleState");
-      }
-      if (link != null) {
-        sbWhere.append(" and a.link = :link");
-      }
-      if (stateUpdatedStart != null) {
-        sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
-      }
-      if (offset != null) {
-        sbWhere.append(" and a.id > :offset");
-      }
-
-      String limitPart = "";
-      if (enforceLimit && limit > 0) {
-        limitPart = " limit :limit";
-      }
-
-      String sql = String.format(ALARM_SQL, sbWhere, limitPart);
       final Query<Map<String, Object>> q = h.createQuery(sql).bind("tenantId", tenantId);
 
       if (alarmDefId != null) {
         q.bind("alarmDefId", alarmDefId);
       }
+
       if (metricName != null) {
         q.bind("metricName", metricName);
       }
+
       if (state != null) {
         q.bind("state", state.name());
       }
+
       if (lifecycleState != null) {
         q.bind("lifecycleState", lifecycleState);
       }
+
       if (link != null) {
         q.bind("link", link);
       }
+
       if (stateUpdatedStart != null) {
         q.bind("stateUpdatedStart", stateUpdatedStart.toString().replace('Z', ' '));
       }
+
       if (offset != null) {
         q.bind("offset", offset);
       }
@@ -175,10 +225,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       DimensionQueries.bindDimensionsToQuery(q, metricDimensions);
 
-      final long start = System.currentTimeMillis();
       final List<Map<String, Object>> rows = q.list();
-      logger.debug("Query took {} milliseconds", System.currentTimeMillis() - start);
+
       final List<Alarm> alarms = createAlarms(tenantId, rows);
+
       return alarms;
     }
   }
@@ -191,10 +241,13 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   }
 
   private Alarm findAlarm(String tenantId, String alarmId, Handle h) {
-    final String sql = String.format(ALARM_SQL, " and a.id = :id", "");
 
-    final List<Map<String, Object>> rows =
-        h.createQuery(sql).bind("id", alarmId).bind("tenantId", tenantId).list();
+    final String sql = String.format(FIND_ALARM_BY_ID_SQL, " and a.id = :id", "");
+
+    final List<Map<String, Object>> rows = h.createQuery(sql).bind("id", alarmId)
+            .bind("tenantId", tenantId)
+            .list();
+
     if (rows.isEmpty()) {
       throw new EntityNotFoundException("No alarm exists for %s", alarmId);
     }
