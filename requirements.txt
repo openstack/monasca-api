@@ -3,6 +3,7 @@ gunicorn>=19.1.0
 keystonemiddleware
 oslo.config>=1.2.1
 oslo.middleware
+oslo.log
 oslo.serialization
 oslo.utils
 pastedeploy>=1.3.3

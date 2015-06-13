@@ -14,13 +14,13 @@
 
 import datetime
 
+from oslo_log import log
+from oslo_utils import uuidutils
+
 from monasca_api.common.repositories import alarm_definitions_repository as adr
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.common.repositories.mysql import mysql_repository
-from monasca_api.openstack.common import log
-from monasca_api.openstack.common import uuidutils
-
 
 LOG = log.getLogger(__name__)
 

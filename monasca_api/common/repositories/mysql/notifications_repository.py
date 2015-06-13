@@ -14,19 +14,18 @@
 
 import datetime
 
+from oslo_log import log
+from oslo_utils import uuidutils
+
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.mysql import mysql_repository
 from monasca_api.common.repositories import notifications_repository as nr
-from monasca_api.openstack.common import log
-from monasca_api.openstack.common import uuidutils
-
 
 LOG = log.getLogger(__name__)
 
 
 class NotificationsRepository(mysql_repository.MySQLRepository,
                               nr.NotificationsRepository):
-
     def __init__(self):
 
         super(NotificationsRepository, self).__init__()
@@ -37,7 +36,6 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
         with cnxn:
-
             query = """
                 select *
                 from notification_method
@@ -103,7 +101,6 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
         with cnxn:
-
             query = """
                 select *
                 from notification_method
@@ -147,7 +144,6 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
         with cnxn:
-
             now = datetime.datetime.utcnow()
 
             query = """

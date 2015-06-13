@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from monasca_api.openstack.common import log
+from oslo_log import log
 
 LOG = log.getLogger(__name__)
 
@@ -20,7 +20,7 @@ LOG = log.getLogger(__name__)
 class VersionsAPI(object):
     def __init__(self):
         super(VersionsAPI, self).__init__()
-        LOG.info('Initializing Versions!')
+        LOG.info('Initializing VersionsAPI!')
 
     def on_get(self, req, res, id):
         res.status = '501 Not Implemented'

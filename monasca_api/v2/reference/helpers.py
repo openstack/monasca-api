@@ -18,10 +18,10 @@ import urllib
 import urlparse
 
 import falcon
+from oslo_log import log
 import simplejson
 
 from monasca_api.common.repositories import constants
-from monasca_api.openstack.common import log
 from monasca_api.v2.common.schemas import dimensions_schema
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
 from monasca_api.v2.common.schemas import metric_name_schema
@@ -116,7 +116,6 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
 
 
 def get_query_param(req, param_name, required=False, default_val=None):
-
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if param_name in params:
@@ -270,7 +269,6 @@ def validate_query_dimensions(dimensions):
 
 
 def paginate(resource, uri, limit):
-
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -314,7 +312,6 @@ def paginate(resource, uri, limit):
 
 
 def paginate_measurement(measurement, uri, limit):
-
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -364,7 +361,6 @@ def paginate_measurement(measurement, uri, limit):
 
 
 def _get_old_query_params(parsed_uri):
-
     old_query_params = []
 
     if parsed_uri.query:
@@ -381,7 +377,6 @@ def _get_old_query_params(parsed_uri):
 
 
 def _get_old_query_params_except_offset(new_query_params, parsed_uri):
-
     if parsed_uri.query:
 
         for query_param in parsed_uri.query.split('&'):
@@ -395,7 +390,6 @@ def _get_old_query_params_except_offset(new_query_params, parsed_uri):
 
 
 def paginate_statistics(statistic, uri, limit):
-
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -446,7 +440,6 @@ def paginate_statistics(statistic, uri, limit):
 
 
 def build_base_uri(parsed_uri):
-
     return parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
 
 
@@ -522,7 +515,6 @@ def raise_not_found_exception(resource_name, resource_id, tenant_id):
 
 
 def dumpit_utf8(thingy):
-
     return json.dumps(thingy, ensure_ascii=False).encode('utf8')
 
 
@@ -531,7 +523,6 @@ def str_2_bool(s):
 
 
 def get_limit(req):
-
     limit = get_query_param(req, 'limit')
 
     if limit:

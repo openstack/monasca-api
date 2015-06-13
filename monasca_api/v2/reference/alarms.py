@@ -15,12 +15,12 @@
 import re
 
 import falcon
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 import simport
 
 from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
-from monasca_api.openstack.common import log
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
 from monasca_api.v2.reference.alarming import Alarming
 from monasca_api.v2.reference import helpers

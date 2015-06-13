@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log
+
 from monasca_api.common.repositories import metrics_repository
-from monasca_api.openstack.common import log
 
 LOG = log.getLogger(__name__)
 
 
 class MetricsRepository(metrics_repository.MetricsRepository):
-
     def __init__(self):
         return
 

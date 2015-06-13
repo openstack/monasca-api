@@ -17,11 +17,11 @@ import time
 from kafka import client
 from kafka import common
 from kafka import producer
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 
 from monasca_api.common.messaging import exceptions
 from monasca_api.common.messaging import publisher
-from monasca_api.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

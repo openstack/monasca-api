@@ -13,21 +13,19 @@
 #    under the License.
 
 import falcon
+from oslo_log import log
+from oslo_middleware import request_id
+from oslo_serialization import jsonutils
 
 from monasca_api.middleware import context
-from monasca_api.openstack.common import log
-
-from oslo.middleware import request_id
-from oslo.serialization import jsonutils
-
 
 LOG = log.getLogger(__name__)
 
 
 def filter_factory(global_conf, **local_conf):
-
     def validator_filter(app):
         return KeystoneContextFilter(app, local_conf)
+
     return validator_filter
 
 

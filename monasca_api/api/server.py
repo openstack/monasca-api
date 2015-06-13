@@ -17,11 +17,10 @@ import os
 from wsgiref import simple_server
 
 import falcon
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 import paste.deploy
 import simport
-
-from monasca_api.openstack.common import log
 
 dispatcher_opts = [cfg.StrOpt('versions', default=None,
                               help='Versions'),
@@ -50,12 +49,12 @@ LOG = log.getLogger(__name__)
 
 
 def launch(conf, config_file="/etc/monasca/api-config.conf"):
+    log.register_options(cfg.CONF)
+    log.set_defaults()
     cfg.CONF(args=[],
              project='monasca_api',
              default_config_files=[config_file])
-    log_levels = (cfg.CONF.default_log_levels)
-    cfg.set_defaults(log.log_opts, default_log_levels=log_levels)
-    log.setup('monasca_api')
+    log.setup(cfg.CONF, 'monasca_api')
 
     app = falcon.API()
 
