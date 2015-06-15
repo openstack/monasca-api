@@ -218,7 +218,12 @@ def get_query_statistics(req):
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'statistics' in params:
-            statistics = params['statistics'].split(',')
+            statistics = []
+            # falcon may return this as a list or as a string
+            if isinstance(params['statistics'], list):
+                statistics.extend(params['statistics'])
+            else:
+                statistics.append(params['statistics'])
             statistics = [statistic.lower() for statistic in statistics]
             if not all(statistic in ['avg', 'min', 'max', 'count', 'sum'] for
                        statistic in statistics):

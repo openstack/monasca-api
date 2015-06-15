@@ -351,7 +351,10 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                 result.raw['results'][0]['series'][0][
                                     'columns']])
 
-                    stats_list = [stats for stats in serie['values']]
+                    stats_list = []
+                    for stats in serie['values']:
+                        stats[1] = stats[1] or 0
+                        stats_list.append(stats)
 
                     statistic = {u'name': serie['name'],
                                  u'id': stats_list[-1][0],
