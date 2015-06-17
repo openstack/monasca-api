@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from monasca_api.openstack.common import log
+from oslo_log import log
 
 LOG = log.getLogger(__name__)
 

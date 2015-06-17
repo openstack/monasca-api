@@ -13,17 +13,16 @@
 # under the License.
 
 import falcon
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 import simport
 
 from monasca_api.api import notifications_api_v2
-from monasca_api.openstack.common import log
 from monasca_api.v2.common.schemas import (
     notifications_request_body_schema as schemas_notifications)
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
-
 
 LOG = log.getLogger(__name__)
 

@@ -13,15 +13,14 @@
 # under the License.
 
 import falcon
+from oslo_log import log
 
 from monasca_api.common.repositories import exceptions
-from monasca_api.openstack.common import log
 
 LOG = log.getLogger(__name__)
 
 
 def resource_try_catch_block(fun):
-
     def try_it(*args, **kwargs):
 
         try:

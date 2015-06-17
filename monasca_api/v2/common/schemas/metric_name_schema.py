@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log
 import voluptuous
 
-from monasca_api.openstack.common import log
 from monasca_api.v2.common.schemas import exceptions
 
 LOG = log.getLogger(__name__)

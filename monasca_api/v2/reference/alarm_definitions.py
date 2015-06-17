@@ -15,21 +15,20 @@
 import re
 
 import falcon
+from oslo_config import cfg
+from oslo_log import log
 import pyparsing
 import simport
 
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions
 import monasca_api.expression_parser.alarm_expr_parser
-from monasca_api.openstack.common import log
 from monasca_api.v2.common.schemas import (
     alarm_definition_request_body_schema as schema_alarms)
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
 from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
-
-from oslo.config import cfg
 
 LOG = log.getLogger(__name__)
 

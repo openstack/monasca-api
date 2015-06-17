@@ -12,10 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log
+
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.mysql import mysql_repository
-from monasca_api.openstack.common import log
 
 
 LOG = log.getLogger(__name__)

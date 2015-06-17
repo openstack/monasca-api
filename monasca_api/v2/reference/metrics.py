@@ -13,7 +13,8 @@
 # under the License.
 
 import falcon
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 import simport
 
 from monasca_api.api import metrics_api_v2
@@ -21,7 +22,6 @@ from monasca_api.common.messaging import (
     exceptions as message_queue_exceptions)
 from monasca_api.common.messaging.message_formats import (
     metrics as metrics_message)
-from monasca_api.openstack.common import log
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
 

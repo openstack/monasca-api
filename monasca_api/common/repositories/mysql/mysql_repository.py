@@ -13,17 +13,15 @@
 # under the License.
 
 import MySQLdb as mdb
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 
 from monasca_api.common.repositories import exceptions
-from monasca_api.openstack.common import log
-
 
 LOG = log.getLogger(__name__)
 
 
 class MySQLRepository(object):
-
     def __init__(self):
 
         try:
@@ -55,13 +53,11 @@ class MySQLRepository(object):
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
         with cnxn:
-
             cursor.execute(query, parms)
             return cursor.fetchall()
 
 
 def mysql_try_catch_block(fun):
-
     def try_it(*args, **kwargs):
 
         try:

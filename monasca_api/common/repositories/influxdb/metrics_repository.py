@@ -12,21 +12,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import json
 
 from influxdb import client
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
-from monasca_api.openstack.common import log
-
 
 LOG = log.getLogger(__name__)
 
 
 class MetricsRepository(metrics_repository.MetricsRepository):
-
     MULTIPLE_METRICS_MESSAGE = ("Found multiple metrics matching metric name"
                                 + " and dimensions. Please refine your search"
                                 + " criteria using a unique"
@@ -211,7 +210,6 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             id = 0
 
             for series in series_names.raw['results'][0]['series']:
-
                 id += 1
 
                 name = {u'id': str(id),
@@ -264,7 +262,6 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
                     measurements_list = []
                     for point in serie['values']:
-
                         value_meta = json.loads(point[2]) if point[2] else None
                         measurements_list.append([point[0],
                                                   point[1],
@@ -346,7 +343,6 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             for serie in result.raw['results'][0]['series']:
 
                 if 'values' in serie:
-
                     columns = ([column.replace('mean', 'avg') for column in
                                 result.raw['results'][0]['series'][0][
                                     'columns']])

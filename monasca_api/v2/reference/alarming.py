@@ -13,15 +13,14 @@
 # under the License.
 
 import falcon
+from oslo_config import cfg
+from oslo_log import log
 import simport
 
 from monasca_api.common.messaging import (
     exceptions as message_queue_exceptions)
 import monasca_api.expression_parser.alarm_expr_parser
-from monasca_api.openstack.common import log
 from monasca_api.v2.reference import helpers
-
-from oslo.config import cfg
 
 LOG = log.getLogger(__name__)
 

@@ -11,12 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import json
 
 import falcon
+from oslo_log import log
 
 from monasca_api.api import versions_api
-from monasca_api.openstack.common import log
 
 LOG = log.getLogger(__name__)
 VERSIONS = {
@@ -33,7 +34,6 @@ VERSIONS = {
 
 
 class Versions(versions_api.VersionsAPI):
-
     def __init__(self):
         super(Versions, self).__init__()
 
