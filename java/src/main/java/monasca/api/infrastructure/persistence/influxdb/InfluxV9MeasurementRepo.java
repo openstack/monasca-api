@@ -156,16 +156,20 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
   private Map<String, String> getValueMeta(String[] values) {
 
-    Map<String, String> valueMeta = new HashMap<>();
+    Map<String, String> valueMetaMap = new HashMap<>();
+
+    String valueMetaStr = values[2];
+
+    if (valueMetaStr != null && !valueMetaStr.isEmpty()) {
 
       try {
-        valueMeta =
-            this.objectMapper.readValue(values[2], VALUE_META_TYPE);
+        valueMetaMap = this.objectMapper.readValue(valueMetaStr, VALUE_META_TYPE);
       } catch (IOException e) {
         logger.error("Failed to parse value metadata: {}", values[2], e);
 
       }
+    }
 
-    return valueMeta;
+    return valueMetaMap;
   }
 }
