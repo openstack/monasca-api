@@ -30,4 +30,4 @@ def transform(metrics, tenant_id, region):
         return transformed_metrics
     else:
         transformed_metric['metric'] = metrics
-        return transformed_metric
+        return [json.dumps(transformed_metric)]
