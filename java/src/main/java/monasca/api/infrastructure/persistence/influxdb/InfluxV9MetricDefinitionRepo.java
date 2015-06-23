@@ -182,10 +182,15 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     Map<String, String> dims = new HashMap<>();
 
     for (int i = 0; i < cols.length; ++i) {
-      if (!cols[i].equals("_region")
-          && !cols[i].equals("_tenant_id")
-          && !cols[i].equals("_id")) {
+
+      // Dimension names that start with underscore are reserved. I.e., _key, _region, _tenant_id.
+      // Influxdb inserts _key.
+      // Monasca Persister inserts _region and _tenant_id.
+
+      if (!cols[i].startsWith("_")) {
+
         if (!vals[i].equalsIgnoreCase("null")) {
+
           dims.put(cols[i], vals[i]);
         }
       }
