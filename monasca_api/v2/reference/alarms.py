@@ -22,14 +22,15 @@ import simport
 from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
-from monasca_api.v2.reference.alarming import Alarming
+from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
 
 LOG = log.getLogger(__name__)
 
 
-class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
+class Alarms(alarms_api_v2.AlarmsV2API,
+             alarming.Alarming):
     def __init__(self):
         try:
             super(Alarms, self).__init__()
@@ -325,7 +326,8 @@ class Alarms(alarms_api_v2.AlarmsV2API, Alarming):
         return helpers.paginate(result, req_uri, limit)
 
 
-class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API, Alarming):
+class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
+                         alarming.Alarming):
     def __init__(self):
         try:
             super(AlarmsStateHistory, self).__init__()
