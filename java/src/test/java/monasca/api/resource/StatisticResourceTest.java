@@ -28,6 +28,7 @@ import java.util.Map;
 import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
+import monasca.api.ApiConfig;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 
@@ -36,6 +37,7 @@ import com.sun.jersey.api.client.ClientResponse;
 @Test
 public class StatisticResourceTest extends AbstractMonApiResourceTest {
   private StatisticRepo statisticRepo;
+  private ApiConfig apiConfig;
   long timestamp;
 
   @Override
@@ -43,7 +45,8 @@ public class StatisticResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
 
     statisticRepo = mock(StatisticRepo.class);
-    addResources(new StatisticResource(statisticRepo, new PersistUtils()));
+    apiConfig = mock(ApiConfig.class);
+    addResources(new StatisticResource(apiConfig, statisticRepo, new PersistUtils()));
   }
 
   @SuppressWarnings("unchecked")

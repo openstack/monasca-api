@@ -51,6 +51,8 @@ public class MiddlewareConfiguration {
   @JsonProperty
   public String delegateAuthorizedRole;
   @JsonProperty
+  public String adminRole;
+  @JsonProperty
   public String timeToCacheToken = "600";
   @JsonProperty
   public String adminAuthMethod;

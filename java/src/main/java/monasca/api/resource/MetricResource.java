@@ -1,17 +1,19 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package monasca.api.resource;
+
+import static monasca.api.app.validation.Validation.DEFAULT_ADMIN_ROLE;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -55,6 +57,7 @@ public class MetricResource {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
   private final String monitoring_delegate_role;
+  private final String admin_role;
   private final MetricService service;
   private final MetricDefinitionRepo metricRepo;
   private final PersistUtils persistUtils;
@@ -62,11 +65,13 @@ public class MetricResource {
   @Inject
   public MetricResource(ApiConfig config, MetricService service, MetricDefinitionRepo metricRepo,
                         PersistUtils persistUtils) {
-    if (config.middleware == null || config.middleware.delegateAuthorizedRole == null) {
-      this.monitoring_delegate_role = "monitoring-delegate";
-    } else {
-      this.monitoring_delegate_role = config.middleware.delegateAuthorizedRole;
-    }
+
+    this.monitoring_delegate_role = (config.middleware == null || config.middleware.delegateAuthorizedRole == null)
+                                    ? "monitoring-delegate" : config.middleware.delegateAuthorizedRole;
+
+    this.admin_role = (config.middleware == null || config.middleware.adminRole == null)
+                      ? DEFAULT_ADMIN_ROLE : config.middleware.adminRole;
+
     this.service = service;
     this.metricRepo = metricRepo;
     this.persistUtils = persistUtils;
@@ -93,7 +98,7 @@ public class MetricResource {
                 .forbidden("Project %s cannot POST metrics for the hpcs service", tenantId);
           }
         }
-        if (!Strings.isNullOrEmpty(crossTenantId) && !crossTenantId.equals(tenantId)) {
+        if (Validation.isCrossProjectRequest(crossTenantId, tenantId)) {
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
         }
       }
@@ -109,19 +114,22 @@ public class MetricResource {
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
   public Object getMetrics(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+                           @HeaderParam("X-Roles") String roles,
                            @QueryParam("name") String name,
                            @QueryParam("dimensions") String dimensionsStr,
                            @QueryParam("offset") String offset,
-                           @QueryParam("limit") String limit)
-      throws Exception {
+                           @QueryParam("limit") String limit,
+                           @QueryParam("tenant_id") String crossTenantId) throws Exception
+  {
       Map<String, String>
         dimensions =
           Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
               .parseAndValidateDimensions(dimensionsStr);
       MetricNameValidation.validate(name, false);
 
+      String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
     return Links.paginate(this.persistUtils.getLimit(limit),
-                          metricRepo.find(tenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
+                          metricRepo.find(queryTenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
   }
 
   @GET
@@ -130,15 +138,25 @@ public class MetricResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Object getMetricNames(@Context UriInfo uriInfo,
                                @HeaderParam("X-Tenant-Id") String tenantId,
+                               @HeaderParam("X-Roles") String roles,
                                @QueryParam("dimensions") String dimensionsStr,
                                @QueryParam("offset") String offset,
-                               @QueryParam("limit") String limit) throws Exception {
+                               @QueryParam("limit") String limit,
+                               @QueryParam("tenant_id") String crossTenantId) throws Exception
+  {
     Map<String, String>
         dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
+    String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
+
     return Links.paginate(this.persistUtils.getLimit(limit),
-                          metricRepo.findNames(tenantId, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
+                          metricRepo.findNames(queryTenantId,
+                                               dimensions,
+                                               offset,
+                                               this.persistUtils.getLimit(limit)),
+                          uriInfo);
   }
+
 }

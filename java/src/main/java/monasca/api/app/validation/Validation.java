@@ -48,6 +48,8 @@ public final class Validation {
 
   private Validation() {}
 
+  public static final String DEFAULT_ADMIN_ROLE = "monasca-admin";
+
   /**
    * @throws JsonMappingException if the {@code value} is not valid for the {@code type}
    */
@@ -185,5 +187,37 @@ public final class Validation {
         throw Exceptions.unprocessableEntity("Link '%s' must be 512 characters or less", link);
       }
     }
+  }
+
+  /**
+   * Convenience method for checking cross project access
+   */
+  public static String getQueryProject(String roles,
+                                       String crossTenantId,
+                                       String tenantId,
+                                       String admin_role) throws Exception
+  {
+    String queryTenantId = tenantId;
+
+    boolean isAdmin = !Strings.isNullOrEmpty(roles) &&
+                      COMMA_SPLITTER.splitToList(roles).contains(admin_role);
+
+    if (isCrossProjectRequest(crossTenantId, tenantId)) {
+      if (isAdmin) {
+        queryTenantId = crossTenantId;
+      } else {
+        throw Exceptions.forbidden("Only users with %s role can GET cross tenant metrics",
+                                   admin_role);
+      }
+    }
+
+    return queryTenantId;
+  }
+
+  /**
+   * Convenience method for determining if request is across projects.
+   */
+  public static boolean isCrossProjectRequest(String crossTenantId, String tenantId) {
+    return !Strings.isNullOrEmpty(crossTenantId) && !crossTenantId.equals(tenantId);
   }
 }

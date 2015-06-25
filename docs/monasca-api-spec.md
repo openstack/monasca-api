@@ -470,28 +470,28 @@ An alarm expression is a boolean equation which if it evaluates to true with the
 At the highest level, you have an expression, which is made up of one or more subexpressions, joined by boolean operators. Parenthesis can be used around groups of subexpressions to indicated higher precedence. In a BNF style format where items enclosed in [] are optional, '*' means zero or more times, and '|' means or.
 
 ````
-<expression> 
-	::= <subexpression> [(and | or) <subexpression>]*
+<expression>
+    ::= <subexpression> [(and | or) <subexpression>]*
 ````
 
 More formally, taking boolean operator precedence into account, where 'and' has higher precedence than 'or', results in the following.
 
 ````
 <expression>
-    ::= <and_expression> <or_logical_operator> <expression> 
-    | <and_expression>
+  ::= <and_expression> <or_logical_operator> <expression>
+  | <and_expression>
 
 <and_expression>
-	::= <sub_expression> <and_logical_operator> <and_expression> 
-	| <sub_expression>
-	
+  ::= <sub_expression> <and_logical_operator> <and_expression>
+  | <sub_expression>
+
 ````
 Each subexpression is made up of several parts with a couple of options:
 
 ````
-<sub_expression> 
-    ::= <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods] 
-	| '(' expression ')'     
+<sub_expression>
+    ::= <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods]
+    | '(' expression ')'
 
 ````
 Period must be an integer multiple of 60.  The default period is 60 seconds.
@@ -508,17 +508,17 @@ A metric can be a metric name only or a metric name followed by a list of dimens
 
 ````
 <metric>
-	::=  metric_name
-	| metric_name '{' <dimension_list> '}'
-	
+  ::=  metric_name
+  | metric_name '{' <dimension_list> '}'
+
 ````
 
 Any number of dimensions can follow the metric name.
 
 ````
 <dimension_list>
-	::= <dimension>
-	| <dimension> ',' <dimension_list>
+  ::= <dimension>
+  | <dimension> ',' <dimension_list>
 
 ````
 
@@ -526,8 +526,8 @@ A dimension is simply a key-value pair.
 
 ````
 <dimension>
-	::= dimension_name '=' dimension_value
-	
+  ::= dimension_name '=' dimension_value
+
 ````
 
 The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`), `gte` (also `>=`).
@@ -535,15 +535,15 @@ The relational_operators are: `lt` (also `<`), `gt` (also `>`), `lte` (also `<=`
 
 ````
 <relational_operator>
-	::= 'lt' | '<' | 'gt' | '>' | 'lte' | '<=' | 'gte' | '>='
-	
+  ::= 'lt' | '<' | 'gt' | '>' | 'lte' | '<=' | 'gte' | '>='
+
 ````
 The list of available statistical functions include the following.
 
 ```
 <function>
-	::= 'min' | 'max' | 'sum' | 'count' | 'avg' 
-	
+  ::= 'min' | 'max' | 'sum' | 'count' | 'avg'
+
 ```
 
 where 'avg' is the arithmetic average. Note, threshold values are always in the same units as the metric that they are being compared to.
@@ -836,7 +836,7 @@ Returns a JSON version object with details about the specified version.
 ___
 
 # Metrics
-The metrics resource allows metrics to be created and queried. The `X-Auth-Token` is used to derive the tenant that submits metrics. Metrics are stored and scoped to the tenant that submits them, or if the `tenant_id` query parameter is specified and the tenant has the `monitoring-delegate` role, the metrics are stored using the specified tenant ID.
+The metrics resource allows metrics to be created and queried. The `X-Auth-Token` is used to derive the tenant that submits metrics. Metrics are stored and scoped to the tenant that submits them, or if the `tenant_id` query parameter is specified and the tenant has the `monitoring-delegate` role, the metrics are stored using the specified tenant ID.  Note that several of the GET methods also support the tenant_id query parameter, but the `monasca-admin` role is required to get cross-tenant metrics, statistics, etc..
 
 ## Create Metric
 Create metrics.
@@ -851,7 +851,7 @@ Create metrics.
 None.
 
 #### Query Parameters
-* tenant_id (string, optional, restricted) - Tenant ID to create metrics on behalf of. This parameter can be used to submit metrics from one tenant, to another. Normally, this parameter is used when the Agent is being run as an operational monitoring tenant, such as monitoring OpenStack infrastructure, and needs to submit metrics for an OpenStack resource, such as a VM, but those metrics need to be accessible to the tenant that owns the resource. Usage of this query parameter requires the `monitoring-delegate` role. 
+* tenant_id (string, optional, restricted) - Tenant ID to create metrics on behalf of. This parameter can be used to submit metrics from one tenant, to another. Normally, this parameter is used when the Agent is being run as an operational monitoring tenant, such as monitoring OpenStack infrastructure, and needs to submit metrics for an OpenStack resource, such as a VM, but those metrics need to be accessible to the tenant that owns the resource. Usage of this query parameter is restricted to users with the `monitoring-delegate` role.
 
 #### Request Body
 Consists of a single metric object or an array of metric objects. A metric has the following properties:
@@ -969,6 +969,7 @@ Get metrics
 None.
 
 #### Query Parameters
+* tenant_id (string, optional, restricted) - Tenant ID to from which to get metrics. This parameter can be used to get metrics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * offset (integer (InfluxDB) or hexadecimal string (Vertica), optional)
@@ -1049,6 +1050,7 @@ If users do not wish to see measurements for a single metric, but would prefer t
 None.
 
 #### Query Parameters
+* tenant_id (string, optional, restricted) - Tenant ID from which to get measurements from. This parameter can be used to get metrics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * name (string(255), required) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * start_time (string, required) - The start time in ISO 8601 combined date and time format in UTC.
@@ -1150,6 +1152,7 @@ Get names for metrics.
 None.
 
 #### Query Parameters
+* tenant_id (string, optional, restricted) - Tenant ID from which to get metric names. This parameter can be used to get metric names from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * offset (integer, optional)
 * limit (integer, optional)
@@ -1220,6 +1223,7 @@ Get statistics for metrics.
 None.
 
 #### Query Parameters
+* tenant_id (string, optional, restricted) - Tenant ID from which to get statistics. This parameter can be used to get statistics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * name (string(255), required) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
 * statistics (string, required) - A comma separate array of statistics to evaluate. Valid statistics are avg, min, max, sum and count.
