@@ -83,18 +83,6 @@ public final class Validation {
   /**
    * @throws WebApplicationException if the {@code value} is null or empty.
    */
-  public static Map<String, String> parseAndValidateNameAndDimensions(String name,
-                                                                      String dimensionsStr,
-                                                                      boolean nameRequiredFlag) {
-    Map<String, String> dimensions = parseAndValidateDimensions(dimensionsStr);
-
-    MetricNameValidation.validate(name, nameRequiredFlag);
-    return dimensions;
-  }
-
-  /**
-   * @throws WebApplicationException if the {@code value} is null or empty.
-   */
   public static Map<String, String> parseAndValidateDimensions(String dimensionsStr) {
     Validation.validateNotNullOrEmpty(dimensionsStr, "dimensions");
 

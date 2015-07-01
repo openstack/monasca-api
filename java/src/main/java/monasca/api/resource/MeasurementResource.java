@@ -31,6 +31,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
@@ -65,14 +66,14 @@ public class MeasurementResource {
       @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
 
     // Validate query parameters
-    Validation.validateNotNullOrEmpty(name, "name");
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
     Validation.validateTimes(startTime, endTime);
     Map<String, String>
         dimensions =
-        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(name, dimensionsStr, true);
+          Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
+              .parseAndValidateDimensions(dimensionsStr);
+    MetricNameValidation.validate(name, true);
     Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
 
     return Links.paginateMeasurements(this.persistUtils.getLimit(limit),

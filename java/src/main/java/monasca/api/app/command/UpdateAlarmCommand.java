@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import monasca.common.model.alarm.AlarmState;
 
 public class UpdateAlarmCommand {
+
   @NotNull
   public AlarmState state;
   public String lifecycleState;
