@@ -34,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
@@ -83,8 +84,9 @@ public class StatisticResource {
     List<String> statistics =
         Validation.parseValidateAndNormalizeStatistics(COMMA_SPLITTER.split(statisticsStr));
     Map<String, String> dimensions =
-        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation.parseAndValidateNameAndDimensions(
-            name, dimensionsStr, true);
+        Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
+            .parseAndValidateDimensions(dimensionsStr);
+    MetricNameValidation.validate(name, true);
     Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
 
     return Links.paginateStatistics(this.persistUtils.getLimit(limit),

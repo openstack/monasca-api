@@ -41,6 +41,7 @@ import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.AlarmService;
 import monasca.api.app.command.UpdateAlarmCommand;
+import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepo;
@@ -156,7 +157,8 @@ public class AlarmResource {
 
     Map<String, String> metricDimensions =
         Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
-            .parseAndValidateNameAndDimensions(metricName, metricDimensionsStr, false);
+            .parseAndValidateDimensions(metricDimensionsStr);
+    MetricNameValidation.validate(metricName, false);
     DateTime stateUpdatedStart =
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);

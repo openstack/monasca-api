@@ -55,9 +55,9 @@ public class MetricNameValidation {
 
     if (metricName.length() > CreateMetricCommand.MAX_NAME_LENGTH)
       throw Exceptions.unprocessableEntity("Metric name %s must be %d characters or less",
-          metricName, CreateMetricCommand.MAX_NAME_LENGTH);
+        metricName, CreateMetricCommand.MAX_NAME_LENGTH);
     if (!VALID_METRIC_NAME.matcher(metricName).matches())
       throw Exceptions.unprocessableEntity("Metric name %s may not contain: > < = { } ( ) ' \" \\ , ; &",
-          metricName);
+        metricName);
   }
 }
