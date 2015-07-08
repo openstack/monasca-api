@@ -22,6 +22,7 @@ from monasca_api.common.messaging import (
     exceptions as message_queue_exceptions)
 from monasca_api.common.messaging.message_formats import (
     metrics as metrics_message)
+from monasca_api.v2.common import validation
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
 
@@ -80,16 +81,13 @@ class Metrics(metrics_api_v2.MetricsV2API):
             raise falcon.HTTPBadRequest('Bad request', ex.message)
 
     def _validate_single_metric(self, metric):
-        assert isinstance(metric['name'], (str, unicode))
-        assert len(metric['name']) <= 64
-        assert isinstance(metric['timestamp'], (int, float))
-        assert isinstance(metric['value'], (int, long, float, complex))
+        validation.metric_name(metric['name'])
+        assert isinstance(metric['timestamp'], (int, float)), "Timestamp must be a number"
+        assert isinstance(metric['value'], (int, long, float, complex)), "Value must be a number"
         if "dimensions" in metric:
-            for d in metric['dimensions']:
-                assert isinstance(d, (str, unicode))
-                assert len(d) <= 255
-                assert isinstance(metric['dimensions'][d], (str, unicode))
-                assert len(metric['dimensions'][d]) <= 255
+            for dimension_key in metric['dimensions']:
+                validation.dimension_key(dimension_key)
+                validation.dimension_value(metric['dimensions'][dimension_key])
 
     def _send_metrics(self, metrics):
 

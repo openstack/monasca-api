@@ -1,0 +1,86 @@
+# Copyright 2015 Hewlett-Packard
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import monasca_api.v2.common.validation as validation
+
+import unittest
+
+invalid_chars = "<>={}(),'\"\\;&"
+
+
+class TestMetricNameValidation(unittest.TestCase):
+    def test_valid_name(self):
+        metric_name = "this.is_a.valid-name"
+        validation.metric_name(metric_name)
+        self.assertTrue(True)
+
+    def test_nonstring_name(self):
+        metric_name = 123456789
+        self.assertRaises(AssertionError, validation.metric_name, metric_name)
+
+    def test_long_name(self):
+        metric_name = ("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
+        self.assertRaises(AssertionError, validation.metric_name, metric_name)
+
+    def test_invalid_chars(self):
+        for c in invalid_chars:
+            metric_name = "this{}that".format(c)
+            self.assertRaises(AssertionError, validation.metric_name, metric_name)
+
+
+class TestDimensionValidation(unittest.TestCase):
+    def test_valid_key(self):
+        dim_key = "this.is_a.valid-key"
+        validation.dimension_key(dim_key)
+        self.assertTrue(True)
+
+    def test_nonstring_key(self):
+        dim_key = 123456
+        self.assertRaises(AssertionError, validation.dimension_key, dim_key)
+
+    def test_long_key(self):
+        dim_key = ("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                   "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                   "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                   "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
+        self.assertRaises(AssertionError, validation.dimension_key, dim_key)
+
+    def test_invalid_chars_key(self):
+        for c in invalid_chars:
+            dim_key = "this{}that".format(c)
+            self.assertRaises(AssertionError, validation.dimension_key, dim_key)
+
+    def test_valid_value(self):
+        dim_value = "this.is_a.valid-value"
+        validation.dimension_value(dim_value)
+        self.assertTrue(True)
+
+    def test_nonstring_value(self):
+        dim_value = None
+        self.assertRaises(AssertionError, validation.dimension_value, dim_value)
+
+    def test_long_value(self):
+        dim_value = ("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                     "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                     "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+                     "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
+        self.assertRaises(AssertionError, validation.dimension_value, dim_value)
+
+    def test_invalid_chars_value(self):
+        for c in invalid_chars:
+            dim_value = "this{}that".format(c)
+            self.assertRaises(AssertionError, validation.dimension_value, dim_value)
