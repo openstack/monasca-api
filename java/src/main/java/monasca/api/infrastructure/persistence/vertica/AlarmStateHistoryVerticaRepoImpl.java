@@ -105,7 +105,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      offsetPart = (" and time_stamp < :offset");
+      offsetPart = (" and time_stamp > :offset");
 
     }
 
@@ -191,7 +191,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      sb.append(" and time_stamp < :offset");
+      sb.append(" and time_stamp > :offset");
 
     }
 
