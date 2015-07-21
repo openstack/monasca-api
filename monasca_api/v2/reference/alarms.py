@@ -57,12 +57,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         if 'state' not in alarm or not alarm['state']:
             raise falcon.HTTPBadRequest('Bad request',
                                         "Field 'state' is required")
-
-        # Assume these fields are null if not provided
-        if 'lifecycle_state' not in alarm:
-            alarm['lifecycle_state'] = None
-        if 'link' not in alarm:
-            alarm['link'] = None
+        if 'lifecycle_state' not in alarm or not alarm['lifecycle_state']:
+            raise falcon.HTTPBadRequest('Bad Request',
+                                        "Field 'lifecycle_state' is required")
+        if 'link' not in alarm or not alarm['link']:
+            raise falcon.HTTPBadRequest('Bad Request',
+                                        "Field 'link' is required")
 
         self._alarm_update(tenant_id, alarm_id, alarm['state'],
                            alarm['lifecycle_state'], alarm['link'])
