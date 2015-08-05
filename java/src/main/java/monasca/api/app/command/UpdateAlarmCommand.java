@@ -13,7 +13,6 @@
  */
 package monasca.api.app.command;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import monasca.common.model.alarm.AlarmState;
@@ -22,12 +21,14 @@ public class UpdateAlarmCommand {
 
   @NotNull
   public AlarmState state;
+  @NotNull
   public String lifecycleState;
+  @NotNull
   public String link;
 
   public UpdateAlarmCommand() {}
 
-  public UpdateAlarmCommand(AlarmState state, @Nullable String lifecycleState, @Nullable String link) {
+  public UpdateAlarmCommand(AlarmState state, String lifecycleState, String link) {
     this.state = state;
     this.lifecycleState = lifecycleState;
     this.link = link;
