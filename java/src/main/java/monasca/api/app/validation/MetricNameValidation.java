@@ -25,7 +25,7 @@ import com.sun.jersey.spi.container.WebApplication;
  * Utilities for validating metric names.
  */
 public class MetricNameValidation {
-  private static final Pattern VALID_METRIC_NAME = Pattern.compile("[^><={}(), '\"\\\\;&]+$");
+  private static final Pattern VALID_METRIC_NAME = Pattern.compile("[^><={}(), \"\\\\;&]+$");
 
   private MetricNameValidation() {}
 
