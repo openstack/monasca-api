@@ -37,11 +37,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -83,6 +85,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   private final MySQLUtils mySQLUtils;
   private final PersistUtils persistUtils;
 
+  private final SimpleDateFormat simpleDateFormat;
+
   @Inject
   public AlarmStateHistoryVerticaRepoImpl(
       @Named("vertica") DBI vertica,
@@ -92,6 +96,10 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
     this.vertica = vertica;
     this.mySQLUtils = mySQLUtils;
     this.persistUtils = persistUtils;
+
+    simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT-0"));
+
   }
 
   @Override
@@ -125,7 +133,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       if (offset != null && !offset.isEmpty()) {
 
-        verticaQuery.bind("offset", new Timestamp(Long.valueOf(offset)));
+        // Timestamp will not work in this query for some unknown reason.
+        verticaQuery.bind("offset", simpleDateFormat.format(new Date(Long.valueOf(offset))));
 
       }
 
@@ -212,7 +221,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
         logger.debug("binding startime: {}", startTime);
 
-        verticaQuery.bind("startTime", new Timestamp(startTime.getMillis()));
+        // Timestamp will not work in this query for some unknown reason.
+        verticaQuery.bind("startTime", simpleDateFormat.format(new Date(startTime.getMillis())));
 
       }
 
@@ -220,7 +230,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
         logger.debug("binding endtime: {}", endTime);
 
-        verticaQuery.bind("endTime", new Timestamp(endTime.getMillis()));
+        // Timestamp will not work in this query for some unknown reason.
+        verticaQuery.bind("endTime", simpleDateFormat.format(new Date(endTime.getMillis())));
 
       }
 
@@ -228,7 +239,10 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
         logger.debug("binding offset: {}", offset);
 
-        verticaQuery.bind("offset", new Timestamp(Long.valueOf(offset)));
+        // Timestamp will not work in this query for some unknown reason.
+        String timeStamp = simpleDateFormat.format(new Date(Long.valueOf(offset)));
+
+        verticaQuery.bind("offset", timeStamp);
 
       }
 
