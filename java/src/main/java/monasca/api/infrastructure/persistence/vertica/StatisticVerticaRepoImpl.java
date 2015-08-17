@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -116,11 +116,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
               .bind("limit", limit + 1);
 
       if (offset != null && !offset.isEmpty()) {
-
         logger.debug("binding offset: {}", offset);
-
         query.bind("offset", new Timestamp(DateTime.parse(offset).getMillis()));
-
       }
 
       List<Map<String, Object>> rows = query.list();
@@ -300,10 +297,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     sb.append("SELECT " + createColumnsStr(statistics));
 
     if (period >= 1) {
-      sb.append("MIN(time_stamp) as time_interval ");
-      sb.append("FROM (Select FLOOR((EXTRACT('epoch' from time_stamp) - ");
-      sb.append(createOffsetStr(defDimIdSet, period, startTime, endTime, offset));
-      sb.append(" AS time_slice, time_stamp, value ");
+      sb.append("Time_slice(time_stamp, " + period);
+      sb.append(", 'SECOND', 'END') AS time_interval");
     }
 
     sb.append(" FROM MonMetrics.Measurements ");
@@ -312,7 +307,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     sb.append(createWhereClause(startTime, endTime, offset));
 
     if (period >= 1) {
-      sb.append(") as TimeSlices group by time_slice order by time_slice");
+      sb.append("group by Time_slice(time_stamp, " + period);
+      sb.append(", 'SECOND', 'END') order by time_interval");
     }
 
     sb.append(" limit :limit");
@@ -339,26 +335,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     }
 
     sb.append(") ");
-
-    return sb.toString();
-  }
-
-  private String createOffsetStr(
-      Set<byte[]> defDimIdSet,
-      int period,
-      DateTime startTime,
-      DateTime endTime,
-      String offset) {
-
-    StringBuilder sb = new StringBuilder();
-
-    sb.append("(select mod((select extract('epoch' from time_stamp) from MonMetrics.Measurements ");
-    String inClause = createInClause(defDimIdSet);
-    sb.append("WHERE to_hex(definition_dimensions_id) " + inClause);
-    sb.append(createWhereClause(startTime, endTime, offset));
-    sb.append("order by time_stamp limit 1");
-    sb.append("),");
-    sb.append(period + ")))/" + period + ")");
 
     return sb.toString();
   }
