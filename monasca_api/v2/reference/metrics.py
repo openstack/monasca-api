@@ -83,7 +83,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
     def _validate_single_metric(self, metric):
         validation.metric_name(metric['name'])
         assert isinstance(metric['timestamp'], (int, float)), "Timestamp must be a number"
-        assert isinstance(metric['value'], (int, long, float, complex)), "Value must be a number"
+        assert isinstance(metric['value'], (int, long, float)), "Value must be a number"
         if "dimensions" in metric:
             for dimension_key in metric['dimensions']:
                 validation.dimension_key(dimension_key)
