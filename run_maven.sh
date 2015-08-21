@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 # Download maven 3 if the system maven isn't maven 3
 VERSION=`mvn -v | grep "Apache Maven 3"`
 if [ -z "${VERSION}" ]; then
@@ -42,7 +43,9 @@ RC=$?
 
 # Copy the jars where the publisher will find them
 if [ $RUN_BUILD = "true" ]; then
-   ln -sf java/target target
+   if [ ! -L target ]; then
+      ln -sf java/target target
+   fi
 fi
 
 rm -fr apache-maven-3.2.1*
