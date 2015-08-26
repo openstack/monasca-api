@@ -262,7 +262,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
                     measurements_list = []
                     for point in serie['values']:
-                        value_meta = json.loads(point[2]) if point[2] else None
+                        value_meta = json.loads(point[2]) if point[2] else {}
                         measurements_list.append([point[0],
                                                   point[1],
                                                   value_meta])
