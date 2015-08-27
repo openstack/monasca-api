@@ -15,6 +15,9 @@ package monasca.api.infrastructure.persistence;
 
 import com.google.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,7 +26,9 @@ import monasca.api.ApiConfig;
 
 public class PersistUtils {
 
-  private final int maxQueryLimit;
+  private static final Logger logger = LoggerFactory.getLogger(PersistUtils.class);
+
+  private int maxQueryLimit;
 
   private final int DEFAULT_MAX_QUERY_LIMIT = 10000;
 
@@ -41,21 +46,32 @@ public class PersistUtils {
 
   @Inject
   public PersistUtils(ApiConfig config) {
-    this.maxQueryLimit = config.maxQueryLimit;
+
+    setMaxQueryLimit(config.maxQueryLimit);
+
   }
 
-  public PersistUtils(int maxQueryLimit) {
+  private void setMaxQueryLimit(int maxQueryLimit) {
 
-    // maxQueryLimit could be 0 if binding for Google Guice is not setup.
+    // maxQueryLimit could be 0 if maxQueryLimit is not specified in the config file.
     if (maxQueryLimit <= 0) {
+
+      logger.warn(String.format("Found invalid maxQueryLimit: [%1d]. maxQueryLimit must be a positive integer.", maxQueryLimit));
+      logger.warn(String.format("Setting maxQueryLimit to default: [%1d]", DEFAULT_MAX_QUERY_LIMIT));
+      logger.warn("Please check your config file for a valid maxQueryLimit property");
 
       this.maxQueryLimit = DEFAULT_MAX_QUERY_LIMIT;
 
     } else {
 
       this.maxQueryLimit = maxQueryLimit;
-
     }
+  }
+
+  public PersistUtils(int maxQueryLimit) {
+
+    setMaxQueryLimit(maxQueryLimit);
+
   }
 
   public PersistUtils() {
@@ -73,11 +89,13 @@ public class PersistUtils {
     try {
       limitInt = Integer.parseInt(limit);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException(String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
+      throw new IllegalArgumentException(
+          String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
     }
 
     if (limitInt <= 0) {
-      throw new IllegalArgumentException(String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
+      throw new IllegalArgumentException(
+          String.format("Found invalid Limit: '%1$s'. Limit must be a positive integer.", limit));
     }
 
     if (limitInt <= this.maxQueryLimit) {
@@ -88,7 +106,6 @@ public class PersistUtils {
 
       return this.maxQueryLimit;
     }
-
   }
 
   public Date parseTimestamp(String timestampString) throws ParseException {
@@ -123,5 +140,4 @@ public class PersistUtils {
       }
     }
   }
-
 }

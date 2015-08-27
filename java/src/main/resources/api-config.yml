@@ -10,8 +10,9 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
-# Maximum rows (Mysql) or points (Influxdb) to return when listing elements. Only set with Influxdb V9.
-#maxQueryLimit: 10000
+# Maximum rows (Mysql and Vertica) or points (Influxdb) to return when listing elements.
+# If not set or set to any value less than or equal to 0, then defaults to 10,000.
+maxQueryLimit: 10000
 
 kafka:
   brokerUris:
