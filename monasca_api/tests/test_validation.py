@@ -12,7 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import falcon
 import monasca_api.v2.common.validation as validation
+import monasca_api.v2.reference.helpers as helpers
+
+import mock
 
 import unittest
 
@@ -84,3 +88,48 @@ class TestDimensionValidation(unittest.TestCase):
         for c in invalid_chars:
             dim_value = "this{}that".format(c)
             self.assertRaises(AssertionError, validation.dimension_value, dim_value)
+
+
+class TestRoleValidation(unittest.TestCase):
+
+    def test_role_valid(self):
+        req_roles = 'role0,rOlE1'
+        authorized_roles = ['RolE1', 'Role2']
+
+        req = mock.Mock()
+        req.get_header.return_value = req_roles
+
+        helpers.validate_authorization(req, authorized_roles)
+
+    def test_role_invalid(self):
+        req_roles = 'role2 ,role3'
+        authorized_roles = ['role0', 'role1', 'role2']
+
+        req = mock.Mock()
+        req.get_header.return_value = req_roles
+
+        self.assertRaises(
+            falcon.HTTPUnauthorized,
+            helpers.validate_authorization, req, authorized_roles)
+
+    def test_empty_role_header(self):
+        req_roles = ''
+        authorized_roles = ['Role1', 'Role2']
+
+        req = mock.Mock()
+        req.get_header.return_value = req_roles
+
+        self.assertRaises(
+            falcon.HTTPUnauthorized,
+            helpers.validate_authorization, req, authorized_roles)
+
+    def test_no_role_header(self):
+        req_roles = None
+        authorized_roles = ['Role1', 'Role2']
+
+        req = mock.Mock()
+        req.get_header.return_value = req_roles
+
+        self.assertRaises(
+            falcon.HTTPUnauthorized,
+            helpers.validate_authorization, req, authorized_roles)
