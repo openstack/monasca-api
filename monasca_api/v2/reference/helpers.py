@@ -1,4 +1,5 @@
 # Copyright 2014 Hewlett-Packard
+# Copyright 2015 Cray Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -163,8 +164,15 @@ def get_query_dimensions(req):
         params = falcon.uri.parse_query_string(req.query_string)
         dimensions = {}
         if 'dimensions' in params:
-            dimensions_str = params['dimensions']
-            dimensions_str_array = dimensions_str.split(',')
+            dimensions_param = params['dimensions']
+
+            if isinstance(dimensions_param, basestring):
+                dimensions_str_array = [dimensions_param, ]
+            else:
+                dimensions_str_array = [
+                    s for sublist in dimensions_param
+                    for s in sublist.split(",")]
+
             for dimension in dimensions_str_array:
                 dimension_name_value = dimension.split(':')
                 if len(dimension_name_value) == 2:
