@@ -181,13 +181,11 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
                 for tag_values in series[u'values']:
 
-                    dimensions = {}
-                    i = 0
-                    for name in series[u'columns']:
-                        if name not in [u'_id', u'_tenant_id', u'_region']:
-                            if tag_values[i]:
-                                dimensions[name] = tag_values[i]
-                        i += 1
+                    dimensions = {
+                        name: value
+                        for name, value in zip(series[u'columns'], tag_values)
+                        if value and not name.startswith(u'_')
+                    }
 
                     metric = {u'id': str(id),
                               u'name': series[u'name'],
