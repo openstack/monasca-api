@@ -31,19 +31,17 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
     def test_measurement_list(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
-            "results": [{
-                "series": [
-                    {
-                        "name": "dummy.series",
-                        "values": [
-                            [1, 2, None],
-                            [2, 2.5, ''],
-                            [3, 4.0, '{}'],
-                            [4, 4, '{"key": "value"}']
-                        ]
-                    }
-                ]
-            }]
+            "series": [
+                {
+                    "name": "dummy.series",
+                    "values": [
+                        [1, 2, None],
+                        [2, 2.5, ''],
+                        [3, 4.0, '{}'],
+                        [4, 4, '{"key": "value"}']
+                    ]
+                }
+            ]
         }
 
         repo = influxdb_repo.MetricsRepository()
@@ -75,24 +73,22 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
     def test_list_metrics(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
-            u'results': [{
-                u'series': [{
-                    u'values': [[
-                        u'disk.space_used_perc,_region=region,_tenant_id='
-                        u'0b5e7d8c43f74430add94fba09ffd66e,device=rootfs,'
-                        'hostname=host0,hosttype=native,mount_point=/',
-                        u'region',
-                        u'0b5e7d8c43f74430add94fba09ffd66e',
-                        u'rootfs',
-                        u'host0',
-                        u'native',
-                        u'',
-                        u'/'
-                    ]],
-                    u'name': u'disk.space_used_perc',
-                    u'columns': [u'_key', u'_region', u'_tenant_id', u'device',
-                                 u'hostname', u'hosttype', u'extra', u'mount_point']
-                }]
+            u'series': [{
+                u'values': [[
+                    u'disk.space_used_perc,_region=region,_tenant_id='
+                    u'0b5e7d8c43f74430add94fba09ffd66e,device=rootfs,'
+                    'hostname=host0,hosttype=native,mount_point=/',
+                    u'region',
+                    u'0b5e7d8c43f74430add94fba09ffd66e',
+                    u'rootfs',
+                    u'host0',
+                    u'native',
+                    u'',
+                    u'/'
+                ]],
+                u'name': u'disk.space_used_perc',
+                u'columns': [u'_key', u'_region', u'_tenant_id', u'device',
+                             u'hostname', u'hosttype', u'extra', u'mount_point']
             }]
         }
 
