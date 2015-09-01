@@ -1,4 +1,4 @@
-# Copyright 2015 Cray Ltd.
+# Copyright 2015 Cray
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -28,7 +28,7 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
         super(TestRepoMetricsInfluxDB, self).setUp()
 
     @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
-    def test_summat(self, influxdb_client_mock):
+    def test_measurement_list(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
             "results": [{
@@ -70,3 +70,53 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             [[1, 2, {}], [2, 2.5, {}], [3, 4.0, {}], [4, 4, {"key": "value"}]],
             measurements
         )
+
+    @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
+    def test_list_metrics(self, influxdb_client_mock):
+        mock_client = influxdb_client_mock.return_value
+        mock_client.query.return_value.raw = {
+            u'results': [{
+                u'series': [{
+                    u'values': [[
+                        u'disk.space_used_perc,_region=region,_tenant_id='
+                        u'0b5e7d8c43f74430add94fba09ffd66e,device=rootfs,'
+                        'hostname=host0,hosttype=native,mount_point=/',
+                        u'region',
+                        u'0b5e7d8c43f74430add94fba09ffd66e',
+                        u'rootfs',
+                        u'host0',
+                        u'native',
+                        u'',
+                        u'/'
+                    ]],
+                    u'name': u'disk.space_used_perc',
+                    u'columns': [u'_key', u'_region', u'_tenant_id', u'device',
+                                 u'hostname', u'hosttype', u'extra', u'mount_point']
+                }]
+            }]
+        }
+
+        repo = influxdb_repo.MetricsRepository()
+
+        result = repo.list_metrics(
+            "0b5e7d8c43f74430add94fba09ffd66e",
+            "region",
+            name="disk.space_user_perc",
+            dimensions={
+                "hostname": "host0",
+                "hosttype": "native",
+                "mount_point": "/",
+                "device": "rootfs"},
+            offset=None,
+            limit=1)
+
+        self.assertEqual(result, [{
+            u'id': '0',
+            u'name': u'disk.space_used_perc',
+            u'dimensions': {
+                u'device': u'rootfs',
+                u'hostname': u'host0',
+                u'mount_point': u'/',
+                u'hosttype': u'native'
+            },
+        }])
