@@ -69,11 +69,16 @@
             <artifactId>monasca-common-util</artifactId>
             <version>${mon.common.version}</version>
         </dependency>
-	<dependency>
-	    <groupId>commons-validator</groupId>
-	    <artifactId>commons-validator</artifactId>
-	    <version>1.4.0</version>
-	</dependency>
+        <dependency>
+            <groupId>monasca-common</groupId>
+            <artifactId>monasca-common-hibernate</artifactId>
+            <version>${mon.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.4.0</version>
+        </dependency>
         <dependency>
             <groupId>monasca-common</groupId>
             <artifactId>monasca-common-kafka</artifactId>
@@ -154,7 +159,17 @@
             <artifactId>influxdb-java</artifactId>
             <version>1.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.1-901.jdbc4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP-java6</artifactId>
+            <version>2.3.9</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -271,7 +286,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.17</version>
                 <configuration>
-                    <groups>performance,functional,integration,database,slow</groups>
+                    <groups>performance,functional,integration,database,slow,orm</groups>
                     <skipTests>${skipITs}</skipTests>
                     <parallel>methods</parallel>
                     <threadCount>4</threadCount>

@@ -15,11 +15,10 @@ package monasca.api.infrastructure.persistence.influxdb;
 
 import com.google.inject.Inject;
 
-import monasca.api.ApiConfig;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
-import monasca.api.infrastructure.persistence.mysql.MySQLUtils;
+import monasca.api.infrastructure.persistence.Utils;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmTransitionSubAlarm;
 import monasca.common.model.metric.MetricDefinition;
@@ -30,7 +29,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,17 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.inject.Named;
 
 public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
 
   private static final Logger logger = LoggerFactory
       .getLogger(InfluxV9AlarmStateHistoryRepo.class);
 
-  private final DBI mysql;
-  private final MySQLUtils mySQLUtils;
-  private final ApiConfig config;
-  private final String region;
+  private final Utils utils;
   private final InfluxV9RepoReader influxV9RepoReader;
   private final InfluxV9Utils influxV9Utils;
   private final PersistUtils persistUtils;
@@ -71,17 +65,12 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
       new TypeReference<List<AlarmTransitionSubAlarm>>() {};
 
   @Inject
-  public InfluxV9AlarmStateHistoryRepo(@Named("mysql") DBI mysql,
-                                       MySQLUtils mySQLUtils,
-                                       ApiConfig config,
+  public InfluxV9AlarmStateHistoryRepo(Utils utils,
                                        InfluxV9RepoReader influxV9RepoReader,
                                        InfluxV9Utils influxV9Utils,
                                        PersistUtils persistUtils) {
 
-    this.mysql = mysql;
-    this.mySQLUtils = mySQLUtils;
-    this.config = config;
-    this.region = config.region;
+    this.utils = utils;
     this.influxV9RepoReader = influxV9RepoReader;
     this.influxV9Utils = influxV9Utils;
     this.persistUtils = persistUtils;
@@ -120,7 +109,7 @@ public class InfluxV9AlarmStateHistoryRepo implements AlarmStateHistoryRepo {
                                       DateTime startTime, @Nullable DateTime endTime,
                                       @Nullable String offset, int limit) throws Exception {
 
-    List<String> alarmIdList = this.mySQLUtils.findAlarmIds(tenantId, dimensions);
+    List<String> alarmIdList = this.utils.findAlarmIds(tenantId, dimensions);
 
     if (alarmIdList == null || alarmIdList.isEmpty()) {
       return new ArrayList<>();

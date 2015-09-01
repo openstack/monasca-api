@@ -28,8 +28,10 @@ import java.util.Map;
 import javax.inject.Named;
 
 import monasca.api.infrastructure.persistence.DimensionQueries;
+import monasca.api.infrastructure.persistence.Utils;
 
-public class MySQLUtils {
+public class MySQLUtils
+    extends Utils {
 
   private static final Logger logger =
       LoggerFactory.getLogger(MySQLUtils.class);
@@ -38,9 +40,7 @@ public class MySQLUtils {
 
   @Inject
   public MySQLUtils(@Named("mysql") DBI mysql) {
-
     this.mysql = mysql;
-
   }
 
   public List<String> findAlarmIds(String tenantId,
@@ -48,17 +48,17 @@ public class MySQLUtils {
 
     final String FIND_ALARM_IDS_SQL =
         "select distinct a.id "
-        + "from alarm as a "
-        + "join alarm_definition as ad on a.alarm_definition_id = ad.id "
-        + "%s "
-        + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL "
-        + "order by ad.created_at";
+            + "from alarm as a "
+            + "join alarm_definition as ad on a.alarm_definition_id = ad.id "
+            + "%s "
+            + "where ad.tenant_id = :tenantId and ad.deleted_at is NULL "
+            + "order by ad.created_at";
 
     List<String> alarmIdList;
 
     try (Handle h = this.mysql.open()) {
 
-      final String sql = String.format(FIND_ALARM_IDS_SQL, buildJoinClauseFor(dimensions));
+      final String sql = String.format(FIND_ALARM_IDS_SQL, this.buildJoinClauseFor(dimensions));
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
@@ -70,40 +70,6 @@ public class MySQLUtils {
     }
 
     return alarmIdList;
-  }
-
-  private String buildJoinClauseFor(Map<String, String> dimensions) {
-
-    if ((dimensions == null) || dimensions.isEmpty()) {
-      return "";
-    }
-
-    final StringBuilder sb = new StringBuilder(
-        "join alarm_metric as am on a.id=am.alarm_id "
-        + "join metric_definition_dimensions as mdd on am.metric_definition_dimensions_id=mdd.id ");
-
-    for (int i = 0; i < dimensions.size(); i++) {
-
-      final String tableAlias = "md" + i;
-
-      sb.append(" inner join metric_dimension ")
-          .append(tableAlias)
-          .append(" on ")
-          .append(tableAlias)
-          .append(".name = :dname")
-          .append(i)
-          .append(" and ")
-          .append(tableAlias)
-          .append(".value = :dvalue")
-          .append(i)
-          .append(" and mdd.metric_dimension_set_id = ")
-          .append(tableAlias)
-          .append(".dimension_set_id");
-    }
-
-    logger.debug("mysql dimension join clause: {}", sb.toString());
-
-    return sb.toString();
   }
 
 }

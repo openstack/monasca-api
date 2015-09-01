@@ -14,6 +14,7 @@
 package monasca.api.domain.model.alarm;
 
 import org.joda.time.DateTime;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
@@ -175,7 +176,8 @@ public class Alarm extends AbstractEntity implements Linked {
     if (metrics == null) {
       if (other.metrics != null)
         return false;
-    } else if (!metrics.equals(other.metrics))
+    } else if (!CollectionUtils.isEqualCollection(metrics, other.metrics))
+      // order agnostic collection equality check
       return false;
     if (state != other.state)
       return false;

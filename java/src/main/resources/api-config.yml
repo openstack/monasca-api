@@ -122,3 +122,16 @@ logging:
       facility: local0
       threshold: ALL
       logFormat: # TODO
+
+hibernate:
+  supportEnabled: true
+  providerClass: com.zaxxer.hikari.hibernate.HikariConnectionProvider
+  dataSourceClassName: org.postgresql.ds.PGPoolingDataSource
+  serverName: localhost
+  portNumber: 5432
+  databaseName: mon
+  user: mon
+  password: mon
+  initialConnections: 25
+  maxConnections: 100
+  autoConfig: validate
