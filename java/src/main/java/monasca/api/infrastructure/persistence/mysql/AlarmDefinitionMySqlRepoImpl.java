@@ -40,6 +40,7 @@ import monasca.common.model.alarm.AlarmOperator;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
+import monasca.common.util.Conversions;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
@@ -258,8 +259,10 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         String metricName = (String) row.get("metric_name");
         AlarmOperator operator = AlarmOperator.fromJson((String) row.get("operator"));
         Double threshold = (Double) row.get("threshold");
-        Integer period = (Integer) row.get("period");
-        Integer periods = (Integer) row.get("periods");
+        // MySQL connector returns an Integer, Drizzle returns a Long for period and periods.
+        // Need to convert the results appropriately based on type.
+        Integer period = Conversions.variantToInteger(row.get("period"));
+        Integer periods = Conversions.variantToInteger(row.get("periods"));
         Map<String, String> dimensions =
             DimensionQueries.dimensionsFor((String) row.get("dimensions"));
         subExpressions.put(id, new AlarmSubExpression(function, new MetricDefinition(metricName,
@@ -406,7 +409,6 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
       Iterable<String> split = COMMA_SPLITTER.split(commaDelimitedString);
       return Lists.newArrayList(split);
     }
-
   }
 }
 
