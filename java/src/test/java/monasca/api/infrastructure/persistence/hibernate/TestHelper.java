@@ -20,7 +20,6 @@ import java.util.Random;
 import org.joda.time.DateTime;
 
 class TestHelper {
-  public static final TestHelper INSTANCE = new TestHelper();
   private static final int SLEEP_TIME_RANDOM_BYTE_ARRAY = 30;
 
   private TestHelper() {

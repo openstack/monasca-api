@@ -31,6 +31,7 @@ import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -50,16 +51,21 @@ public class AlarmHibernateUtilsTest {
   private static final int BINARY_KEY_LENGTH = 20;
   private AlarmHibernateUtils repo;
   private SessionFactory sessionFactory;
+  private Transaction tx;
 
   @BeforeMethod
   protected void beforeMethod() {
     this.sessionFactory = HibernateUtil.getSessionFactory();
     this.prepareData(this.sessionFactory);
     this.repo = new AlarmHibernateUtils(sessionFactory);
+
+    this.tx = this.sessionFactory.openSession().beginTransaction();
   }
 
   @AfterMethod
-  protected void afterNethod() {
+  protected void afterMethod() throws Exception {
+    this.tx.rollback();
+
     this.sessionFactory.close();
     this.sessionFactory = null;
   }

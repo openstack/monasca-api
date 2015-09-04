@@ -100,7 +100,7 @@ public class AlarmDefinitionSqlRepoImpl
       session = sessionFactory.openSession();
       tx = session.beginTransaction();
 
-      final DateTime now = DateTime.now();
+      final DateTime now = this.getUTCNow();
       final AlarmDefinitionDb alarmDefinition = new AlarmDefinitionDb(
           id,
           tenantId,
@@ -167,7 +167,7 @@ public class AlarmDefinitionSqlRepoImpl
           .setString("id", alarmDefId)
           .uniqueResult();
 
-      result.setDeletedAt(DateTime.now());
+      result.setDeletedAt(this.getUTCNow());
       session.update(result);
 
       // Cascade soft delete to alarms
@@ -529,7 +529,7 @@ public class AlarmDefinitionSqlRepoImpl
         final AlarmSubExpression sa = entry.getValue();
         final String subAlarmDefinitionId = entry.getKey();
 
-        SubAlarmDefinitionDb subAlarmDefinitionDb = (SubAlarmDefinitionDb) session.get(SubAlarmDefinitionDb.class, subAlarmDefinitionId);
+        SubAlarmDefinitionDb subAlarmDefinitionDb = session.get(SubAlarmDefinitionDb.class, subAlarmDefinitionId);
         subAlarmDefinitionDb.setOperator(sa.getOperator().name());
         subAlarmDefinitionDb.setThreshold(sa.getThreshold());
         subAlarmDefinitionDb.setUpdatedAt(new DateTime());
@@ -702,7 +702,7 @@ public class AlarmDefinitionSqlRepoImpl
         MetricDefinition metricDef = subExpr.getMetricDefinition();
 
         // Persist sub-alarm
-        final DateTime now = DateTime.now();
+        final DateTime now = this.getUTCNow();
         SubAlarmDefinitionDb subAlarmDefinitionDb = new SubAlarmDefinitionDb(
             subAlarmId,
             alarmDefinition,

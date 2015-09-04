@@ -21,6 +21,7 @@
         <computedName>${project.artifactId}-${computedVersion}</computedName>
         <mon.common.version>1.1.0-SNAPSHOT</mon.common.version>
         <dropwizard.version>0.7.0</dropwizard.version>
+        <hikaricp.version>2.3.9</hikaricp.version>
 
         <skipITs>false</skipITs>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -167,7 +168,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP-java6</artifactId>
-            <version>2.3.9</version>
+            <version>${hikaricp.version}</version>
             <scope>compile</scope>
         </dependency>
 
