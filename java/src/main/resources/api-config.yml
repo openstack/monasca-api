@@ -124,7 +124,7 @@ logging:
       logFormat: # TODO
 
 hibernate:
-  supportEnabled: true
+  supportEnabled: false
   providerClass: com.zaxxer.hikari.hibernate.HikariConnectionProvider
   dataSourceClassName: org.postgresql.ds.PGPoolingDataSource
   serverName: localhost
