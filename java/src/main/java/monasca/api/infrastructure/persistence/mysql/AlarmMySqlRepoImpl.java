@@ -212,7 +212,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       }
 
       if (stateUpdatedStart != null) {
-        q.bind("stateUpdatedStart", stateUpdatedStart.toString().replace('Z', ' '));
+        q.bind("stateUpdatedStart", stateUpdatedStart.toString());
       }
 
       if (offset != null) {
@@ -227,9 +227,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       final List<Map<String, Object>> rows = q.list();
 
-      final List<Alarm> alarms = createAlarms(tenantId, rows);
+      return createAlarms(tenantId, rows);
 
-      return alarms;
     }
   }
 
@@ -256,7 +255,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   }
 
   private List<Alarm> createAlarms(String tenantId, List<Map<String, Object>> rows) {
-    Alarm alarm = null;
+    Alarm alarm;
     String previousAlarmId = null;
     final List<Alarm> alarms = new LinkedList<>();
     List<MetricDefinition> alarmedMetrics = null;
@@ -362,7 +361,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       final List<SubAlarm> result = h
           .createQuery("select * from sub_alarm where alarm_id = :alarmId")
           .bind("alarmId", alarmId)
-          .map(new BeanMapper<SubAlarm>(SubAlarm.class)).list();
+          .map(new BeanMapper<>(SubAlarm.class)).list();
       final Map<String, AlarmSubExpression> subAlarms = new HashMap<>(result.size());
 
       for (SubAlarm row : result) {
