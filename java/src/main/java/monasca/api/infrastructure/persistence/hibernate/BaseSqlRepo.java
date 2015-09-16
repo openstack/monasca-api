@@ -37,7 +37,7 @@ abstract class BaseSqlRepo {
   /**
    * Rollbacks passed {@code tx} transaction if such is not null.
    * Assumption is being made that {@code tx} being null means transaction
-   * has been successfully comitted.
+   * has been successfully committed.
    *
    * @param tx {@link Transaction} object
    */

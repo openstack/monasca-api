@@ -91,7 +91,7 @@ class KeystoneContextFilter(object):
 
         env['monasca.context'] = ctx
 
-        LOG.debug("Keystone Context succesfully created.")
+        LOG.debug("Keystone Context successfully created.")
 
         return self._app(env, start_response)
 
