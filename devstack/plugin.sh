@@ -15,7 +15,7 @@
 # disable_service monasca-notification
 #
 # Several variables set in the localrc section adjust common behaviors
-# of Ceilometer (see within for additional settings):
+# of Monasca (see within for additional settings):
 #
 # EXAMPLE VARS HERE
 
