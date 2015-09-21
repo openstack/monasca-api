@@ -17,36 +17,67 @@
 
 # Turn on all the Monasca services by default
 
-# Databases
-# mySQL already enabled in devstack
-enable_service influxdb
+#
+# Monasca top level service that enables all other services
+#
+enable_service monasca
 
-# Storm
-enable_service storm
+#
+# Monasca infrastructure services
+#
 
-# Core Monasca services
+# Monasca databases
+# MySQL is already enabled in devstack
+enable_service monasca-influxdb
+
+# Apache Storm
+enable_service monasca-storm
+
+# monasca-zookeeper depends on openjdk-7
+enable_service monasca-zookeeper
+
+# monasca-kafka depends on monasca-zookeeper
+enable_service monasca-kafka
+
+#
+# Monasca core services
+#
+
+# monasca-api depends on monasca-influxdb, MySQL, monasca-kafka
 enable_service monasca-api
+
+# monasca-persister depends on monasca-influxdb, monasca-kafka
 enable_service monasca-persister
+
+# monasca-notification depends on MySQL, monasca-kafka
 enable_service monasca-notification
+
+# monasca-thresh depends on MySQL, monasca-kafka, monasca-storm
 enable_service monasca-thresh
+
+# monasca-agent depends on monasca-api
 enable_service monasca-agent
 
-OS_USERNAME=monasca
-OS_PASSWORD=password
-OS_PROJECT_NAME=monasca
-OS_AUTH_URL=
+# monasca-cli depends on monasca-api
+enable_service monasca-cli
 
-INFLUXDB_API_USER=mon_api
-INFLUXDB_API_PASSWORD=password
 
-INFLUXDB_PERSISTER_USER=mon_persister
-INFLUXDB_PERSISTER_PASSWORD=password
+OS_USERNAME=${OS_USERNAME:-monasca}
+OS_PASSWORD=${OS_PASSWORD:-password}
+OS_PROJECT_NAME=${OS_PROJECT_NAME:-monasca}
+OS_AUTH_URL=${OS_AUTH_URL:-todo}
 
-MYSQL_API_USER=monapi
-MYSQL_API_PASSWORD=password
+INFLUXDB_API_USER=${INFLUXDB_API_USER:-mon_api}
+INFLUXDB_API_PASSWORD=${INFLUXDB_API_PASSWORD:-password}
 
-MYSQL_NOTIFICATION_USER=notification
-MYSQL_NOTIFICATION_PASSWORD=password
+INFLUXDB_PERSISTER_USER=${INFLUXDB_PERSISTER_USER:-mon_persister}
+INFLUXDB_PERSISTER_PASSWORD=${INFLUXDB_PERSISTER_PASSWORD:-password}
 
-MYSQL_THRESH_USER=thresh
-MYSQL_THRESH_PASSWORD=password
+MYSQL_API_USER=${MYSQL_API_USER:-monapi}
+MYSQL_API_PASSWORD=${MYSQL_API_PASSWORD:-password}
+
+MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER:-notification}
+MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD:-password}
+
+MYSQL_THRESH_USER=${MYSQL_THRESH_USER:-thresh}
+MYSQL_THRESH_PASSWORD=${MYSQL_THRESH_PASSWORD:-password}
