@@ -44,7 +44,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
             elements = response_body['elements']
             if len(elements) >= MIN_HISTORY:
                 break
-            time.sleep(1)
+            time.sleep(5)
 
     # @test.attr(type="gate")
     # def test_list_alarms_state_history(self):
