@@ -49,6 +49,8 @@ function install_monasca {
 
     install_zookeeper
 
+    install_kafka
+
 }
 
 function post_config_monasca {
@@ -64,6 +66,8 @@ function unstack_monasca {
 }
 
 function clean_monasca {
+
+    clean_kafka
 
     clean_zookeeper
 
@@ -114,6 +118,86 @@ function clean_openjdk-7 {
     sudo apt-get -y purge openjdk-7-jre-headless
 
     sudo apt-get -y autoremove
+
+}
+
+function install_kafka {
+
+    install_openjdk-7
+
+    sudo curl http://apache.mirrors.tds.net/kafka/0.8.1.1/kafka_2.9.2-0.8.1.1.tgz -o /root/kafka_2.9.2-0.8.1.1.tgz
+
+    sudo groupadd --system kafka
+
+    sudo useradd --system -g kafka kafka
+
+    sudo tar -xzf /root/kafka_2.9.2-0.8.1.1.tgz -C /opt
+
+    sudo ln -s /opt/kafka_2.9.2-0.8.1.1 /opt/kafka
+
+    sudo cp -f /opt/stack/monasca/devstack/files/kafka/kafka-server-start.sh /opt/kafka_2.9.2-0.8.1.1/bin/kafka-server-start.sh
+
+    sudo cp -f /opt/stack/monasca/devstack/files/kafka/kafka.conf /etc/init/kafka.conf
+
+    sudo chown root:root /etc/init/kafka.conf
+
+    sudo chmod 644 /etc/init/kafka.conf
+
+    sudo mkdir -p /var/kafka
+
+    sudo chown kafka:kafka /var/kafka
+
+    sudo chmod 755 /var/kafka
+
+    sudo rm -rf /var/kafka/lost+found
+
+    sudo mkdir -p /var/log/kafka
+
+    sudo chown kafka:kafka /var/log/kafka
+
+    sudo chmod 755 /var/log/kafka
+
+    sudo ln -s /opt/kafka/config /etc/kafka
+
+    sudo cp -f /opt/stack/monasca/devstack/files/kafka/log4j.properties /etc/kafka/log4j.properties
+
+    sudo chown kafka:kafka /etc/kafka/log4j.properties
+
+    sudo chmod 644 /etc/kafka/log4j.properties
+
+    sudo cp -f /opt/stack/monasca/devstack/files/kafka/server.properties /etc/kafka/server.properties
+
+    sudo chown kafka:kafka /etc/kafka/server.properties
+
+    sudo chmod 644 /etc/kafka/server.properties
+
+    sudo start kafka
+
+}
+
+function clean_kafka {
+
+    sudo stop kafka
+
+    sudo rm -rf /var/kafka
+
+    sudo rm -rf /var/log/kafka
+
+    sudo rm -rf /etc/kafka
+
+    sudo rm -f /opt/kafka
+
+    sudo rm -rf /etc/init/kafka.conf
+
+    sudo userdel kafka
+
+    sudo groupdel kafka
+
+    sudo rm -rf /opt/kafka_2.9.2-0.8.1.1
+
+    sudo rm -rf /root/kafka_2.9.2-0.8.1.1.tgz
+
+    clean_openjdk-7
 
 }
 
