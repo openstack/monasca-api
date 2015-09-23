@@ -1,0 +1,2 @@
+# Logging
+STDERR="/var/log/influxdb/influxd.log"
