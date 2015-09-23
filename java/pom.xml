@@ -5,7 +5,7 @@
 
     <groupId>monasca-api</groupId>
     <artifactId>monasca-api</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <url>http://github.com/stackforge/monasca-api</url>
     <packaging>jar</packaging>
 
@@ -18,14 +18,14 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
         <computedVersion>${project.version}-${timestamp}-${gitRevision}</computedVersion>
-        <computedName>${project.artifactId}-${computedVersion}</computedName>
-        <mon.common.version>1.1.0-SNAPSHOT</mon.common.version>
+        <computedName>${project.artifactId}_${computedVersion}</computedName>
+        <mon.common.version>1.1.0</mon.common.version>
         <dropwizard.version>0.7.0</dropwizard.version>
 
         <skipITs>false</skipITs>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <shadedJarName>${project.artifactId}-${project.version}-shaded
+        <shadedJarName>${project.artifactId}_${project.version}-shaded
         </shadedJarName>
     </properties>
 
@@ -357,7 +357,7 @@
                             <packageName>monasca.api</packageName>
                         </manifest>
                         <manifestEntries>
-                            <Implementation-Version>${project.artifactId}-${computedVersion}</Implementation-Version>
+                            <Implementation-Version>${project.artifactId}_${computedVersion}</Implementation-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>
