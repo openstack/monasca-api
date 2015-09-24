@@ -1,6 +1,6 @@
 *.py[co]
 *~
-doc/build/*
+docs/build/*
 dist
 build
 cover
