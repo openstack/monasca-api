@@ -53,6 +53,12 @@ function install_monasca {
 
     install_influxdb
 
+    install_cli_creds
+
+    install_schema
+
+
+
 }
 
 function post_config_monasca {
@@ -76,11 +82,15 @@ function clean_monasca {
 
     unstack_monasca
 
+    clean_schema
+
+    clean_cli_creds
+
+    clean_influxdb
+
     clean_kafka
 
     clean_zookeeper
-
-    clean_influxdb
 
 }
 
@@ -220,6 +230,11 @@ function install_influxdb {
     sudo cp -f /opt/stack/monasca/devstack/files/influxdb/influxdb /etc/default/influxdb
 
     sudo /etc/init.d/influxdb start
+
+    echo "sleep for 5 seconds to let influxdb elect a leader"
+
+    sleep 5s
+
 }
 
 function clean_influxdb {
@@ -235,18 +250,100 @@ function clean_influxdb {
     sudo rm -f  /opt/monasca_download_dir/influxdb_0.9.1_amd64.deb
 
     sudo rm -rf /opt/monasca_download_dir
+
+    sudo rm -f /etc/init.d/influxdb
+}
+
+function install_cli_creds {
+
+    sudo cp -f /opt/stack/monasca/devstack/files/env.sh /etc/profile.d/monasca_cli.sh
+
+    sudo chown root:root /etc/profile.d/monasca_cli.sh
+
+    sudo chmod 0644 /etc/profile.d/monasca_cli.sh
+
+}
+
+function clean_cli_creds {
+
+    sudo rm -f /etc/profile.d/monasca_cli.sh
+
+}
+
+function install_schema {
+
+    sudo mkdir -p /opt/monasca/sqls
+
+    sudo chmod 0755 /opt/monasca/sqls
+
+    sudo cp -f /opt/stack/monasca/devstack/files/schema/influxdb_setup.py /opt/influxdb/influxdb_setup.py
+
+    sudo chmod 0750 /opt/influxdb/influxdb_setup.py
+
+    sudo chown root:root /opt/influxdb/influxdb_setup.py
+
+    sudo /opt/influxdb/influxdb_setup.py
+
+    sudo cp -f /opt/stack/monasca/devstack/files/schema/mon_mysql.sql /opt/monasca/sqls/mon.sql
+
+    sudo chmod 0644 /opt/monasca/sqls/mon.sql
+
+    sudo chown root:root /opt/monasca/sqls/mon.sql
+
+    sudo mysql -uroot -ppassword < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
+
+    sudo cp -f /opt/stack/monasca/devstack/files/schema/winchester.sql /opt/monasca/sqls/winchester.sql
+
+    sudo chmod 0644 /opt/monasca/sqls/winchester.sql
+
+    sudo chown root:root /opt/monasca/sqls/winchester.sql
+
+    sudo mysql -uroot -ppassword < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
+
+    sudo mkdir -p /opt/kafka/logs
+
+    sudo chown kafka:kafka /opt/kafka/logs
+
+    sudo chmod 0766 /opt/kafka/logs
+
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 64 --topic metrics
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic events
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic raw-events
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic transformed-events
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic stream-definitions
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic transform-definitions
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic alarm-state-transitions
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic alarm-notifications
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic stream-notifications
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic retry-notifications
+}
+
+function clean_schema {
+
+    sudo echo "drop database winchester;" | mysql -uroot -ppassword
+
+    sudo echo "drop database mon;" | mysql -uroot -ppassword
+
+    sudo rm -f /opt/monasca/sqls/winchester.sql
+
+    sudo rm -f /opt/monasca/sqls/mon.sql
+
+    sudo rm -f /opt/influxdb/influxdb_setup.py
+
+    sudo rm -rf /opt/monasca/sqls
+
 }
 
 # Allows this script to be called directly outside of
 # the devstack infrastructure code. Uncomment to use.
-if [[ $(type -t) != 'function' ]]; then
-
-    function is_service_enabled {
-
-        return 0;
-
-     }
-fi
+#if [[ $(type -t) != 'function' ]]; then
+#
+#    function is_service_enabled {
+#
+#        return 0;
+#
+#     }
+#fi
 
 # check for service enabled
 if is_service_enabled monasca; then
