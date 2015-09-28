@@ -47,6 +47,8 @@ function pre_install_monasca {
 
 function install_monasca {
 
+    install_openjdk_7_jdk
+
     install_zookeeper
 
     install_kafka
@@ -57,7 +59,13 @@ function install_monasca {
 
     install_schema
 
+    install_maven
 
+    install_git
+
+    install_monasca_common
+
+    install_monasca_api
 
 }
 
@@ -71,6 +79,8 @@ function extra_monasca {
 
 function unstack_monasca {
 
+    sudo stop monasca-api
+
     sudo stop kafka
 
     sudo stop zookeeper
@@ -82,6 +92,12 @@ function clean_monasca {
 
     unstack_monasca
 
+    clean_monasca_api
+
+    clean_monasca_common
+
+    clean_maven
+
     clean_schema
 
     clean_cli_creds
@@ -92,11 +108,12 @@ function clean_monasca {
 
     clean_zookeeper
 
+    clean_openjdk_7_jdk
+
+
 }
 
 function install_zookeeper {
-
-    install_openjdk-7
 
     sudo apt-get -y install zookeeperd
 
@@ -118,30 +135,19 @@ function install_zookeeper {
 
 function clean_zookeeper {
 
-    clean_openjdk-7
-
     sudo apt-get -y purge zookeeperd
+
+    sudo apt-get -y purge zookeeper
 
     sudo rm -rf /etc/zookeeper
 
     sudo rm -rf  /var/log/zookeeper
-}
 
-function install_openjdk-7 {
-
-    sudo apt-get -y install openjdk-7-jre-headless
-
-}
-
-function clean_openjdk-7 {
-
-    sudo apt-get -y purge openjdk-7-jre-headless
+    sudo rm -rf /var/lib/zookeeper
 
 }
 
 function install_kafka {
-
-    install_openjdk-7
 
     sudo curl http://apache.mirrors.tds.net/kafka/0.8.1.1/kafka_2.9.2-0.8.1.1.tgz -o /root/kafka_2.9.2-0.8.1.1.tgz
 
@@ -212,8 +218,6 @@ function clean_kafka {
     sudo rm -rf /opt/kafka_2.9.2-0.8.1.1
 
     sudo rm -rf /root/kafka_2.9.2-0.8.1.1.tgz
-
-    clean_openjdk-7
 
 }
 
@@ -332,6 +336,109 @@ function clean_schema {
 
     sudo rm -rf /opt/monasca/sqls
 
+}
+
+function install_openjdk_7_jdk {
+
+    sudo apt-get -y install openjdk-7-jdk
+
+}
+
+function clean_openjdk_7_jdk {
+
+    sudo apt-get -y purge openjdk-7-jdk
+
+    sudo apt-get -y autoremove
+
+}
+
+function install_maven {
+
+    sudo apt-get -y install maven
+
+}
+
+function clean_maven {
+
+    sudo apt-get -y purge maven
+}
+
+function install_git {
+
+    sudo apt-get -y install git
+
+}
+
+function install_monasca_common {
+
+    sudo git clone https://github.com/stackforge/monasca-common.git /opt/stack/monasca-common
+
+    (cd /opt/stack/monasca-common ; sudo mvn clean install -DskipTests)
+
+}
+
+function clean_monasca_common {
+
+    (cd /opt/stack/monasca-common ; sudo mvn clean)
+
+}
+
+function install_monasca_api {
+
+    sudo mkdir -p /opt/monasca
+
+    (cd /opt/stack/monasca/java ; sudo mvn clean package -DskipTests)
+
+    sudo cp -f /opt/stack/monasca/java/target/monasca-api-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-api.jar
+
+    sudo groupadd --system monasca
+
+    sudo useradd --system -g monasca mon-api
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-api/monasca-api.conf /etc/init/monasca-api.conf
+
+    sudo mkdir -p /var/log/monasca
+
+    sudo chown root:monasca /var/log/monasca
+
+    sudo chmod 0755 /var/log/monasca
+
+    sudo mkdir -p /var/log/monasca/api
+
+    sudo chown root:monasca /var/log/monasca/api
+
+    sudo chmod 0755 /var/log/monasca/api
+
+    sudo mkdir -p /etc/monasca
+
+    sudo chown root:monasca /etc/monasca
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-api/api-config.yml /etc/monasca/api-config.yml
+
+    sudo start monasca-api
+
+}
+
+function clean_monasca_api {
+
+    (cd /opt/stack/monasca ; sudo mvn clean)
+
+    sudo rm /etc/monasca/api-config.yml
+
+    sudo rm -rf /var/log/monasca/api
+
+    sudo rm /etc/init/monasca-api.conf
+
+    sudo rm /opt/monasca/monasca-api.jar
+}
+
+function install_monasca_persister {
+:
+
+}
+
+function clean_monasca_persister {
+:
 }
 
 # Allows this script to be called directly outside of
