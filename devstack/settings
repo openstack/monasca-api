@@ -15,7 +15,18 @@
 # limitations under the License.
 #
 
-# Turn on all the Monasca services by default
+The following two variables allow switching between java and python for the implementations
+of the Monasca API and the Monasca Persister.
+
+MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
+#MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+
+MONASCA_PERSISTER_IMPLEMENTAION_LANG=${MONASCA_PERSISTER_IMPLEMENTAION_LANG:-java}
+#MONASCA_PERSISTER_IMPLEMENTAION_LANG=${MONASCA_PERSISTER_IMPLEMENTAION_LANG:-python}
+
+# Turn on all the Monasca services by default. Currently enabling specific services
+# has no effect. All services are enabled by default. There is currently no mechanism
+implemented to turn off specific Monasca services.
 
 #
 # Monasca top level service that enables all other services

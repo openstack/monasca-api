@@ -1,0 +1,135 @@
+#
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: monasca-persister
+
+alarmHistoryConfiguration:
+  batchSize: 100
+  numThreads: 1
+  maxBatchTime: 15
+# See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+  topic: alarm-state-transitions
+  groupId: 1_alarm-state-transitions
+  consumerId: "mini-mon"
+  clientId : 1
+
+metricConfiguration:
+  batchSize: 100
+  numThreads: 1
+  maxBatchTime: 15
+# See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+  topic: metrics
+  groupId: 1_metrics
+  consumerId: "mini-mon"
+  clientId : 1
+
+#Kafka settings.
+kafkaConfig:
+# See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+  zookeeperConnect: "127.0.0.1:2181"
+  socketTimeoutMs: 30000
+  socketReceiveBufferBytes : 65536
+  fetchMessageMaxBytes: 1048576
+  queuedMaxMessageChunks: 10
+  rebalanceMaxRetries: 4
+  fetchMinBytes:  1
+  fetchWaitMaxMs:  100
+  rebalanceBackoffMs: 2000
+  refreshLeaderBackoffMs: 200
+  autoOffsetReset: largest
+  consumerTimeoutMs:  1000
+  zookeeperSessionTimeoutMs : 60000
+  zookeeperConnectionTimeoutMs : 60000
+  zookeeperSyncTimeMs: 2000
+
+verticaMetricRepoConfig:
+  maxCacheSize: 2000000
+
+databaseConfiguration:
+# vertica | influxdb
+  databaseType: influxdb
+
+# Uncomment if databaseType is influxdb
+influxDbConfiguration:
+  # Retention policy may be left blank to indicate default policy.
+  retentionPolicy:
+  maxHttpConnections: 100
+  gzip: true
+  name: "mon"
+  url: "http://127.0.0.1:8086"
+  user: "mon_persister"
+  password: "password"
+
+
+# Uncomment if databaseType is vertica
+dataSourceFactory:
+  driverClass: com.vertica.jdbc.Driver
+  url: "jdbc:vertica://localhost:5433/mon"
+  user: "mon_persister"
+  password: "password"
+  properties:
+      ssl: false
+  # the maximum amount of time to wait on an empty pool before throwing an exception
+  maxWaitForConnection: 1s
+  # the SQL query to run when validating a connection's liveness
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  # the minimum number of connections to keep open
+  minSize: 8
+  # the maximum number of connections to keep open
+  maxSize: 41
+  # whether or not idle connections should be validated
+  checkConnectionWhileIdle: false
+  # the maximum lifetime of an idle connection
+  maxConnectionAge: 1 minute
+
+metrics:
+  frequency: 1 second
+
+
+# Logging settings.
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO,
+  # DEBUG, TRACE, or ALL.
+  level: WARN
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+      com.example.app: DEBUG
+    # com.hpcloud: debug
+    # com.hpcloud.mon.persister.repository: DEBUG
+
+  appenders:
+
+    - type: file
+      threshold: INFO
+      archive: true
+      currentLogFilename: "/var/log/monasca/persister/monasca-persister.log"
+      archivedLogFilenamePattern: "/var/log/monasca/persister/monasca-persister.log-%d.log.gz"
+      archivedFileCount: 5
+      # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
+      timeZone: UTC
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8090
+  adminConnectors:
+    - type: http
+      port: 8091

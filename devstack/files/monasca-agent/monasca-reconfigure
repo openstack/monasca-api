@@ -1,0 +1,13 @@
+#!/bin/sh
+'/opt/monasca/bin/monasca-setup' \
+    -u 'monasca-agent' \
+    -p 'password' \
+     -s 'monitoring'  \
+    --keystone_url 'http://127.0.0.1:35357/v3' \
+    --project_name 'mini-mon' \
+     --monasca_url 'http://127.0.0.1:8070/v2.0'  \
+     \
+     --check_frequency '15'  \
+     \
+     --log_level 'WARN'  \
+    --overwrite
