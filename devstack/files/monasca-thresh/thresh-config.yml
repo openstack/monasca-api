@@ -1,0 +1,128 @@
+#
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+metricSpoutThreads: 2
+metricSpoutTasks: 2
+
+statsdConfig:
+  host: "127.0.0.1"
+  port: 8125
+  prefix: monasca.storm.
+  dimensions: !!map
+    service : monitoring
+    component : storm
+
+
+metricSpoutConfig:
+  kafkaConsumerConfiguration:
+  # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+    topic: "metrics"
+    numThreads: 1
+    groupId: "thresh-metric"
+    zookeeperConnect: "127.0.0.1:2181"
+    consumerId: 1
+    socketTimeoutMs: 30000
+    socketReceiveBufferBytes : 65536
+    fetchMessageMaxBytes: 1048576
+    autoCommitEnable: true
+    autoCommitIntervalMs: 60000
+    queuedMaxMessageChunks: 10
+    rebalanceMaxRetries: 4
+    fetchMinBytes:  1
+    fetchWaitMaxMs:  100
+    rebalanceBackoffMs: 2000
+    refreshLeaderBackoffMs: 200
+    autoOffsetReset: largest
+    consumerTimeoutMs:  -1
+    clientId : 1
+    zookeeperSessionTimeoutMs : 60000
+    zookeeperConnectionTimeoutMs : 60000
+    zookeeperSyncTimeMs: 2000
+
+
+eventSpoutConfig:
+  kafkaConsumerConfiguration:
+  # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+    topic: "events"
+    numThreads: 1
+    groupId: "thresh-event"
+    zookeeperConnect: "127.0.0.1:2181"
+    consumerId: 1
+    socketTimeoutMs: 30000
+    socketReceiveBufferBytes : 65536
+    fetchMessageMaxBytes: 1048576
+    autoCommitEnable: true
+    autoCommitIntervalMs: 60000
+    queuedMaxMessageChunks: 10
+    rebalanceMaxRetries: 4
+    fetchMinBytes:  1
+    fetchWaitMaxMs:  100
+    rebalanceBackoffMs: 2000
+    refreshLeaderBackoffMs: 200
+    autoOffsetReset: largest
+    consumerTimeoutMs:  -1
+    clientId : 1
+    zookeeperSessionTimeoutMs : 60000
+    zookeeperConnectionTimeoutMs : 60000
+    zookeeperSyncTimeMs: 2000
+
+
+kafkaProducerConfig:
+  # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
+  topic: "alarm-state-transitions"
+  metadataBrokerList: "127.0.0.1:9092"
+  serializerClass: kafka.serializer.StringEncoder
+  partitionerClass:
+  requestRequiredAcks: 1
+  requestTimeoutMs: 10000
+  producerType: sync
+  keySerializerClass:
+  compressionCodec: none
+  compressedTopics:
+  messageSendMaxRetries: 3
+  retryBackoffMs: 100
+  topicMetadataRefreshIntervalMs: 600000
+  queueBufferingMaxMs: 5000
+  queueBufferingMaxMessages: 10000
+  queueEnqueueTimeoutMs: -1
+  batchNumMessages: 200
+  sendBufferBytes: 102400
+  clientId : Threshold_Engine
+
+
+sporadicMetricNamespaces:
+  - foo
+
+database:
+  driverClass: com.mysql.jdbc.Driver
+  url: "jdbc:mysql://127.0.0.1/mon?useSSL=true"
+  user: "thresh"
+  password: "password"
+  properties:
+      ssl: false
+  # the maximum amount of time to wait on an empty pool before throwing an exception
+  maxWaitForConnection: 1s
+
+  # the SQL query to run when validating a connection's liveness
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+
+  # the minimum number of connections to keep open
+  minSize: 8
+
+  # the maximum number of connections to keep open
+
+
+  maxSize: 41

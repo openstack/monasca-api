@@ -100,7 +100,7 @@ middleware:
   adminPassword: ""
   adminProjectId:
   adminProjectName:
-  adminToken: "ADMIN"
+  adminToken: "password"
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576
 
