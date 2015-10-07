@@ -16,7 +16,8 @@
 #
 
 # The following two variables allow switching between java and python for the implementations
-# of the Monasca API and the Monasca Persister.
+# of the Monasca API and the Monasca Persister. These variables can be set here
+# or in the DevStack local.conf file.
 
 MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
 #MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
@@ -71,24 +72,3 @@ enable_service monasca-agent
 
 # monasca-cli depends on monasca-api
 enable_service monasca-cli
-
-
-OS_USERNAME=${OS_USERNAME:-monasca}
-OS_PASSWORD=${OS_PASSWORD:-password}
-OS_PROJECT_NAME=${OS_PROJECT_NAME:-monasca}
-OS_AUTH_URL=${OS_AUTH_URL:-todo}
-
-INFLUXDB_API_USER=${INFLUXDB_API_USER:-mon_api}
-INFLUXDB_API_PASSWORD=${INFLUXDB_API_PASSWORD:-password}
-
-INFLUXDB_PERSISTER_USER=${INFLUXDB_PERSISTER_USER:-mon_persister}
-INFLUXDB_PERSISTER_PASSWORD=${INFLUXDB_PERSISTER_PASSWORD:-password}
-
-MYSQL_API_USER=${MYSQL_API_USER:-monapi}
-MYSQL_API_PASSWORD=${MYSQL_API_PASSWORD:-password}
-
-MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER:-notification}
-MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD:-password}
-
-MYSQL_THRESH_USER=${MYSQL_THRESH_USER:-thresh}
-MYSQL_THRESH_PASSWORD=${MYSQL_THRESH_PASSWORD:-password}

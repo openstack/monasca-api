@@ -49,6 +49,8 @@ function pre_install_monasca {
 
 function install_monasca {
 
+    install_monasca_virtual_env
+
     install_openjdk_7_jdk
 
     install_zookeeper
@@ -67,9 +69,37 @@ function install_monasca {
 
     install_monasca_common
 
-    install_monasca_api
+    if [[ "${MONASCA_API_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
-    install_monasca_persister
+        install_monasca_api_java
+
+    elif [[ "${MONASCA_API_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
+
+        install_monasca_api_python
+
+    else
+
+        echo "Found invalid value for variable MONASCA_API_IMPLEMENTATION_LANG: $MONASCA_API_IMPLEMENTATION_LANG"
+        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either 'java' or 'python'"
+
+    fi
+
+    if [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'java' ]]; then
+
+        install_monasca_persister_java
+
+    elif [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'python' ]]; then
+
+        install_monasca_persister_python
+
+    else
+
+        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTAION_LANG: $MONASCA_PERSISTER_IMPLEMENTAION_LANG"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTAION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_PERSISTER_IMPLEMENTAION_LANG to either 'java' or 'python'"
+
+    fi
 
     install_monasca_notification
 
@@ -91,6 +121,10 @@ function extra_monasca {
 
     install_monasca_default_alarms
 
+    echo "Sleep to allow alarms to make it thru the system"
+
+    sleep 40s
+    
     install_monasca_smoke_test
 }
 
@@ -138,9 +172,37 @@ function clean_monasca {
 
     clean_monasca_notification
 
-    clean_monasca_persister
+    if [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'java' ]]; then
 
-    clean_monasca_api
+        clean_monasca_persister_java
+
+    elif [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'python' ]]; then
+
+        clean_monasca_persister_python
+
+    else
+
+        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTAION_LANG: $MONASCA_PERSISTER_IMPLEMENTAION_LANG"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTAION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_PERSISTER_IMPLEMENTAION_LANG to either 'java' or 'python'"
+
+    fi
+
+    if [[ "${MONASCA_API_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
+
+        clean_monasca_api_java
+
+    elif [[ "${MONASCA_API_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
+
+        clean_monasca_api_python
+
+    else
+
+        echo "Found invalid value for variable MONASCA_API_IMPLEMENTATION_LANG: $MONASCA_API_IMPLEMENTATION_LANG"
+        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either 'java' or 'python'"
+
+    fi
 
     clean_monasca_common
 
@@ -160,12 +222,31 @@ function clean_monasca {
 
     clean_openjdk_7_jdk
 
-    sudo userdel monasca
-
-    sudo rm -rf /opt/monasca
+    clean_monasca_virtual_env
 
     #Restore errexit
     set -o errexit
+}
+
+function install_monasca_virtual_env {
+
+    echo_summary "Install Monasca Virtual Environment"
+
+    sudo groupadd --system monasca || true
+
+    sudo mkdir -p /opt/monasca || true
+
+    (cd /opt/monasca ; sudo virtualenv .)
+}
+
+function clean_monasca_virtual_env {
+
+    echo_summary "Clean Monasca Virtual Environment"
+
+    sudo rm -rf /opt/monasca
+
+    sudo groupdel monasca
+
 }
 
 function install_zookeeper {
@@ -180,7 +261,7 @@ function install_zookeeper {
 
     sudo cp /opt/stack/monasca/devstack/files/zookeeper/environment /etc/zookeeper/conf/environment
 
-    sudo mkdir -p /var/log/zookeeper
+    sudo mkdir -p /var/log/zookeeper || true
 
     sudo chmod 755 /var/log/zookeeper
 
@@ -228,7 +309,7 @@ function install_kafka {
 
     sudo chmod 644 /etc/init/kafka.conf
 
-    sudo mkdir -p /var/kafka
+    sudo mkdir -p /var/kafka || true
 
     sudo chown kafka:kafka /var/kafka
 
@@ -236,7 +317,7 @@ function install_kafka {
 
     sudo rm -rf /var/kafka/lost+found
 
-    sudo mkdir -p /var/log/kafka
+    sudo mkdir -p /var/log/kafka || true
 
     sudo chown kafka:kafka /var/log/kafka
 
@@ -288,7 +369,7 @@ function install_influxdb {
 
     echo_summary "Install Monasca Influxdb"
 
-    sudo mkdir -p /opt/monasca_download_dir
+    sudo mkdir -p /opt/monasca_download_dir || true
 
     sudo curl http://s3.amazonaws.com/influxdb/influxdb_0.9.1_amd64.deb -o /opt/monasca_download_dir/influxdb_0.9.1_amd64.deb
 
@@ -315,6 +396,26 @@ function clean_influxdb {
     sudo rm -f /etc/opt/influxdb/influxdb.conf
 
     sudo dpkg --purge influxdb
+
+    sudo rm -rf /opt/influxdb
+
+    sudo rm -rf /var/log/influxdb
+
+    sudo rm -rf /tmp/influxdb
+
+    sudo rm -rf /var/opt/influxdb
+
+    sudo rm -rf /etc/init.d/influxdb
+
+    sudo rm -rf /opt/staging/influxdb/influxdb-package
+
+    sudo rm -rf /etc/opt/influxdb/influxdb.conf
+
+    sudo rm -rf /etc/opt/influxdb
+
+    sudo rm -rf /tmp/bootstrap*
+
+    sudo rm -rf /run/influxdb
 
     sudo rm -rf /opt/influxdb
 
@@ -349,7 +450,7 @@ function install_schema {
 
     echo_summary "Install Monasca Schema"
 
-    sudo mkdir -p /opt/monasca/sqls
+    sudo mkdir -p /opt/monasca/sqls || true
 
     sudo chmod 0755 /opt/monasca/sqls
 
@@ -377,7 +478,7 @@ function install_schema {
 
     sudo mysql -uroot -ppassword < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
 
-    sudo mkdir -p /opt/kafka/logs
+    sudo mkdir -p /opt/kafka/logs || true
 
     sudo chown kafka:kafka /opt/kafka/logs
 
@@ -393,6 +494,7 @@ function install_schema {
     /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic alarm-notifications
     /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic stream-notifications
     /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic retry-notifications
+
 }
 
 function clean_schema {
@@ -476,17 +578,13 @@ function clean_monasca_common {
 
 }
 
-function install_monasca_api {
+function install_monasca_api_java {
 
-    echo_summary "Install Monasca monasca_api"
-
-    sudo mkdir -p /opt/monasca
+    echo_summary "Install Monasca monasca_api_java"
 
     (cd /opt/stack/monasca/java ; sudo mvn clean package -DskipTests)
 
     sudo cp -f /opt/stack/monasca/java/target/monasca-api-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-api.jar
-
-    sudo groupadd --system monasca || true
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -496,19 +594,19 @@ function install_monasca_api {
 
     sudo chmod 0744 /etc/init/monasca-api.conf
 
-    sudo mkdir -p /var/log/monasca
+    sudo mkdir -p /var/log/monasca || true
 
     sudo chown root:monasca /var/log/monasca
 
     sudo chmod 0755 /var/log/monasca
 
-    sudo mkdir -p /var/log/monasca/api
+    sudo mkdir -p /var/log/monasca/api || true
 
     sudo chown root:monasca /var/log/monasca/api
 
     sudo chmod 0755 /var/log/monasca/api
 
-    sudo mkdir -p /etc/monasca
+    sudo mkdir -p /etc/monasca || true
 
     sudo chown root:monasca /etc/monasca
 
@@ -524,9 +622,68 @@ function install_monasca_api {
 
 }
 
-function clean_monasca_api {
+function install_monasca_api_python {
 
-    echo_summary "Clean Monasca monasca_api"
+    echo_summary "Install Monasca monasca_api_python"
+
+    sudo apt-get -y install python-dev
+
+    (cd /opt/monasca; sudo -H ./bin/pip install gunicorn)
+
+    (cd /opt/stack/monasca ; sudo python setup.py sdist)
+
+    MONASCA_API_SRC_DIST=$(ls -td /opt/stack/monasca/dist/monasca-api-*.tar.gz)
+
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_API_SRC_DIST)
+
+    sudo useradd --system -g monasca mon-api || true
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-api/python/monasca-api.conf /etc/init/monasca-api.conf
+
+    sudo chown root:root /etc/init/monasca-api.conf
+
+    sudo chmod 0744 /etc/init/monasca-api.conf
+
+    sudo mkdir -p /var/log/monasca || true
+
+    sudo chown root:monasca /var/log/monasca
+
+    sudo chmod 0755 /var/log/monasca
+
+    sudo mkdir -p /var/log/monasca/api || true
+
+    sudo chown root:monasca /var/log/monasca/api
+
+    sudo chmod 0775 /var/log/monasca/api
+
+    sudo mkdir -p /etc/monasca || true
+
+    sudo chown root:monasca /etc/monasca
+
+    sudo chmod 0775 /etc/monasca
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-api/python/api-config.conf /etc/monasca/api-config.conf
+
+    sudo chown mon-api:root /etc/monasca/api-config.conf
+
+    sudo chmod 0660 /etc/monasca/api-config.conf
+
+    sudo ln -s /etc/monasca/api-config.conf /etc/api-config.conf
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-api/python/api-config.ini /etc/monasca/api-config.ini
+
+    sudo chown mon-api:root /etc/monasca/api-config.ini
+
+    sudo chmod 0660 /etc/monasca/api-config.ini
+
+    sudo ln -s /etc/monasca/api-config.ini /etc/api-config.ini
+
+    sudo start monasca-api || sudo restart monasca-api
+}
+
+function clean_monasca_api_java {
+
+    echo_summary "Clean Monasca monasca_api_java"
 
     (cd /opt/stack/monasca ; sudo mvn clean)
 
@@ -538,14 +695,36 @@ function clean_monasca_api {
 
     sudo rm /opt/monasca/monasca-api.jar
 
+    sudo rm /var/log/upstart/monasca-api.log*
+
     sudo userdel mon-api
 }
 
-function install_monasca_persister {
+function clean_monasca_api_python {
 
-    echo_summary "Install Monasca monasca_persister"
+    echo_summary "Clean Monasca monasca_api_python"
 
-    sudo mkdir -p /opt/monasca
+    sudo rm /etc/init/monasca-api.conf
+
+    sudo rm /etc/api-config.conf
+
+    sudo rm /etc/monasca/api-config.conf
+
+    sudo rm /etc/api-config.ini
+
+    sudo rm /etc/monasca/api-config.ini
+
+    sudo rm -rf /var/log/monasca/api
+
+    sudo rm /var/log/upstart/monasca-api.log*
+
+    sudo userdel mon-api
+
+}
+
+function install_monasca_persister_java {
+
+    echo_summary "Install Monasca monasca_persister_java"
 
     if [[ ! -d /opt/stack/monasca-persister ]]; then
 
@@ -557,23 +736,21 @@ function install_monasca_persister {
 
     sudo cp -f /opt/stack/monasca-persister/java/target/monasca-persister-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-persister.jar
 
-    sudo groupadd --system monasca || true
-
     sudo useradd --system -g monasca mon-persister || true
 
-    sudo mkdir -p /var/log/monasca
+    sudo mkdir -p /var/log/monasca || true
 
     sudo chown root:monasca /var/log/monasca
 
     sudo chmod 0755 /var/log/monasca
 
-    sudo mkdir -p /var/log/monasca/persister
+    sudo mkdir -p /var/log/monasca/persister || true
 
     sudo chown root:monasca /var/log/monasca/persister
 
     sudo chmod 0755 /var/log/monasca/persister
 
-    sudo mkdir -p /etc/monasca
+    sudo mkdir -p /etc/monasca || true
 
     sudo chown root:monasca /etc/monasca
 
@@ -593,9 +770,69 @@ function install_monasca_persister {
 
 }
 
-function clean_monasca_persister {
+function install_monasca_persister_python {
 
-    echo_summary "Clean Monasca monasca_persister"
+    echo_summary "Install Monasca monasca_persister_python"
+
+    if [[ ! -d /opt/stack/monasca-persister ]]; then
+
+        sudo git clone https://github.com/stackforge/monasca-persister /opt/stack/monasca-persister
+
+    fi
+
+    (cd /opt/stack/monasca-persister ; sudo python setup.py sdist)
+
+    MONASCA_PERSISTER_SRC_DIST=$(ls -td /opt/stack/monasca-persister/dist/monasca-persister-*.tar.gz | head -1)
+
+    sudo mkdir -p /opt/monasca-persister || true
+
+    (cd /opt/monasca-persister ; sudo virtualenv .)
+
+    (cd /opt/monasca-persister ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_PERSISTER_SRC_DIST)
+
+    sudo useradd --system -g monasca mon-persister || true
+
+    sudo mkdir -p /var/log/monasca || true
+
+    sudo chown root:monasca /var/log/monasca
+
+    sudo chmod 0755 /var/log/monasca
+
+    sudo mkdir -p /var/log/monasca/persister || true
+
+    sudo chown root:monasca /var/log/monasca/persister
+
+    sudo chmod 0775 /var/log/monasca/persister
+
+    sudo mkdir -p /etc/monasca || true
+
+    sudo chown root:monasca /etc/monasca
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-persister/python/persister.conf /etc/monasca/persister.conf
+
+    sudo chown mon-persister:monasca /etc/monasca/persister.conf
+
+    sudo chmod 0640 /etc/monasca/persister.conf
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-persister/python/monasca-persister.conf /etc/init/monasca-persister.conf
+
+    sudo chown root:root /etc/init/monasca-persister.conf
+
+    sudo chmod 0744 /etc/init/monasca-persister.conf
+
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-persister/persister-config.yml /etc/monasca/persister-config.yml
+
+    sudo chown mon-persister:monasca /etc/monasca/persister-config.yml
+
+    sudo chmod 0660 /etc/monasca/persister-config.yml
+
+    sudo start monasca-persister || sudo restart monasca-persister
+
+}
+
+function clean_monasca_persister_java {
+
+    echo_summary "Clean Monasca monasca_persister_java"
 
     (cd /opt/stack/monasca-persister ; sudo mvn clean)
 
@@ -606,6 +843,27 @@ function clean_monasca_persister {
     sudo rm -rf /var/log/monasca/persister
 
     sudo rm /opt/monasca/monasca-persister.jar
+
+    sudo rm /var/log/upstart/monasca-persister.log*
+
+    sudo userdel mon-persister
+}
+
+function clean_monasca_persister_python {
+
+    echo_summary "Clean Monasca monasca_persister_python"
+
+    sudo rm /etc/init/monasca-persister.conf
+
+    sudo rm /etc/monasca/persister.conf
+
+    sudo rm /etc/monasca/persister-config.yml
+
+    sudo rm -rf /var/log/monasca/persister
+
+    sudo rm /var/log/upstart/monasca-persister.log*
+
+    sudo rm -rf /opt/monasca-persister
 
     sudo userdel mon-persister
 }
@@ -619,8 +877,6 @@ function install_monasca_notification {
     sudo apt-get -y install python-mysqldb
     sudo apt-get -y install libmysqlclient-dev
 
-    (cd /opt/monasca ; sudo virtualenv .)
-
     if [[ ! -d /opt/stack/monasca-notification ]]; then
 
         sudo git clone https://github.com/stackforge/monasca-notification /opt/stack/monasca-notification
@@ -629,19 +885,19 @@ function install_monasca_notification {
 
     (cd /opt/stack/monasca-notification ; sudo python setup.py sdist)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport /opt/stack/monasca-notification/dist/monasca-notification-1.2.8.dev4.tar.gz)
+    MONASCA_NOTIFICATION_SRC_DIST=$(ls -td /opt/stack/monasca-notification/dist/monasca-notification-*.tar.gz | head -1)
 
-    sudo groupadd --system monasca || true
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport  $MONASCA_NOTIFICATION_SRC_DIST)
 
     sudo useradd --system -g monasca mon-notification || true
 
-    sudo mkdir -p /var/log/monasca/notification
+    sudo mkdir -p /var/log/monasca/notification || true
 
     sudo chown root:monasca /var/log/monasca/notification
 
     sudo chmod 0775 /var/log/monasca/notification
 
-    sudo mkdir -p /etc/monasca
+    sudo mkdir -p /etc/monasca || true
 
     sudo chown root:monasca /etc/monasca
 
@@ -683,6 +939,8 @@ function clean_monasca_notification {
 
     sudo rm -rf /opt/monasca/monasca-notification
 
+    sudo rm /var/log/upstart/monasca-notification.log*
+
     sudo apt-get -y purge libmysqlclient-dev
     sudo apt-get -y purge python-mysqldb
     sudo apt-get -y purge build-essential
@@ -702,7 +960,7 @@ function install_storm {
 
     sudo useradd --system -g storm storm || true
 
-    sudo mkdir -p /opt/storm
+    sudo mkdir -p /opt/storm || true
 
     sudo chown storm:storm /opt/storm
 
@@ -712,13 +970,13 @@ function install_storm {
 
     sudo ln -s /opt/storm/apache-storm-0.9.5 /opt/storm/current
 
-    sudo mkdir /var/storm
+    sudo mkdir /var/storm || true
 
     sudo chown storm:storm /var/storm
 
     sudo chmod 0775 /var/storm
 
-    sudo mkdir /var/log/storm
+    sudo mkdir /var/log/storm || true
 
     sudo chown storm:storm /var/log/storm
 
@@ -800,11 +1058,9 @@ function install_monasca_thresh {
 
     sudo cp -f /opt/stack/monasca-thresh/thresh/target/monasca-thresh-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-thresh.jar
 
-    sudo groupadd --system monasca || true
-
     sudo useradd --system -g monasca mon-thresh
 
-    sudo mkdir -p /etc/monasca
+    sudo mkdir -p /etc/monasca || true
 
     sudo chown root:monasca /etc/monasca
 
@@ -847,8 +1103,6 @@ function install_keystone {
 
     echo_summary "Install Monasca Keystone Client"
 
-    sudo mkdir -p /opt/monasca
-
     sudo apt-get -y install python-dev
 
      if [[ ! -d /opt/stack/python-keystoneclient ]]; then
@@ -859,7 +1113,9 @@ function install_keystone {
 
     (cd /opt/stack/python-keystoneclient ; sudo python setup.py sdist)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport /opt/stack/python-keystoneclient/dist/python-keystoneclient-1.7.2.dev14.tar.gz)
+    MONASCA_KEYSTONE_SRC_DIST=$(ls -td /opt/stack/python-keystoneclient/dist/python-keystoneclient-*.tar.gz | head -1)
+
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_KEYSTONE_SRC_DIST)
 
     sudo cp -f /opt/stack/monasca/devstack/files/keystone/create_monasca_service.py /usr/local/bin/create_monasca_service.py
 
@@ -897,21 +1153,23 @@ function install_monasca_agent {
 
     (cd /opt/stack/monasca-agent ; sudo python setup.py sdist)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport /opt/stack/monasca-agent/dist/monasca-agent-1.1.17.dev5.tar.gz)
+    MONASCA_AGENT_SRC_DIST=$(ls -td /opt/stack/monasca-agent/dist/monasca-agent-*.tar.gz | head -1)
 
-    sudo mkdir -p /etc/monasca/agent/conf.d
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_AGENT_SRC_DIST)
+
+    sudo mkdir -p /etc/monasca/agent/conf.d || true
 
     sudo chown root:root /etc/monasca/agent/conf.d
 
     sudo chmod 0755 /etc/monasca/agent/conf.d
 
-    sudo mkdir -p /usr/lib/monasca/agent/custom_checks.d
+    sudo mkdir -p /usr/lib/monasca/agent/custom_checks.d || true
 
     sudo chown root:root /usr/lib/monasca/agent/custom_checks.d
 
     sudo chmod 0755 /usr/lib/monasca/agent/custom_checks.d
 
-    sudo mkdir -p /usr/lib/monasca/agent/custom_detect.d
+    sudo mkdir -p /usr/lib/monasca/agent/custom_detect.d || true
 
     sudo chown root:root /usr/lib/monasca/agent/custom_detect.d
 
@@ -957,9 +1215,8 @@ function clean_monasca_agent {
     sudo apt-get -y purge python-yaml
     sudo apt-get -y purge python-dev
 
-
-
 }
+
 function install_monasca_smoke_test {
 
     echo_summary "Install Monasca Smoke Test"
@@ -980,7 +1237,7 @@ function install_monasca_smoke_test {
 
     sudo /opt/monasca/bin/python /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke2.py || true
 
-    OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c 'sudo /opt/monasca/bin/python /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke.py' || true
+    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c 'sudo /opt/monasca/bin/python /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke.py' || true)
 
 }
 

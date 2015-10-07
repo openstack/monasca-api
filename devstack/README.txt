@@ -18,7 +18,11 @@
 The Monasca DevStack plugin currently only works on Ubuntu 14.04 (Trusty).
 More Linux Distributions will be supported as soon as is possible.
 
-Add the following to the DevStack local.conf
+Running the Monasca DevStack plugin requires a machine with 10GB of RAM.
+
+Add the following to the DevStack local.conf file.
+
+# BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
 [[local|localrc]]
 ADMIN_PASSWORD=password
@@ -31,4 +35,26 @@ LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
 LOG_COLOR=False
 
+# The following two variables allow switching between Java and Python for the implementations
+# of the Monasca API and the Monasca Persister. If these variables are not set, then the
+# default is to install the Java implementations of both the Monasca API and the Monasca Persister.
+
+# Uncomment one of the following two lines to choose Java or Python for the Monasca API.
+MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
+#MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+
+# Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
+MONASCA_PERSISTER_IMPLEMENTAION_LANG=${MONASCA_PERSISTER_IMPLEMENTAION_LANG:-java}
+#MONASCA_PERSISTER_IMPLEMENTAION_LANG=${MONASCA_PERSISTER_IMPLEMENTAION_LANG:-python}
+
+# This line will enable all of Monasca.
 enable_plugin monasca git://git.openstack.org/stackforge/monasca-api
+
+# END DEVSTACK LOCAL.CONF CONTENTS
+
+
+Known Issues:
+
+1. The smoke tests do not run successfully with the Python implementations.
+2. The Python Monasca API has various bugs.
+3. The RabbitMQ Check Plugin is not configured correctly.
