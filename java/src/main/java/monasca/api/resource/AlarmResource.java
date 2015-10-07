@@ -45,6 +45,7 @@ import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepo;
+import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
@@ -103,9 +104,13 @@ public class AlarmResource {
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit)
       throws Exception {
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          stateHistoryRepo.findById(tenantId, alarmId, offset,
-                                                    this.persistUtils.getLimit(limit)), uriInfo);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<AlarmStateHistory> resource = stateHistoryRepo.findById(tenantId,
+        alarmId,
+        offset,
+        paging_limit
+    );
+    return Links.paginate(paging_limit, resource, uriInfo);
   }
 
   @GET
@@ -135,9 +140,15 @@ public class AlarmResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          stateHistoryRepo.find(tenantId, dimensions, startTime,
-                                                endTime, offset, this.persistUtils.getLimit(limit)), uriInfo);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<AlarmStateHistory> resources = stateHistoryRepo.find(tenantId,
+        dimensions,
+        startTime,
+        endTime,
+        offset,
+        paging_limit
+    );
+    return Links.paginate(paging_limit, resources, uriInfo);
   }
 
   @GET
@@ -163,13 +174,18 @@ public class AlarmResource {
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);
 
+    final int paging_limit = this.persistUtils.getLimit(limit);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
                                          lifecycleState, link, stateUpdatedStart,
-                                         offset, this.persistUtils.getLimit(limit), true);
+                                         offset, paging_limit, true);
     for (final Alarm alarm : alarms) {
-      Links.hydrate(alarm.getAlarmDefinition(), uriInfo, AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
+      Links.hydrate(
+          alarm.getAlarmDefinition(),
+          uriInfo,
+          AlarmDefinitionResource.ALARM_DEFINITIONS_PATH
+      );
     }
-    return Links.paginate(this.persistUtils.getLimit(limit), Links.hydrate(alarms, uriInfo), uriInfo);
+    return Links.paginate(paging_limit, Links.hydrate(alarms, uriInfo), uriInfo);
   }
 
   @PATCH

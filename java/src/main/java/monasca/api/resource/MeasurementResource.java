@@ -21,6 +21,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -37,6 +38,7 @@ import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.ApiConfig;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.measurement.MeasurementRepo;
+import monasca.api.domain.model.measurement.Measurements;
 import monasca.api.infrastructure.persistence.PersistUtils;
 
 /**
@@ -86,11 +88,17 @@ public class MeasurementResource {
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 
-    return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
-                                      repo.find(queryTenantId, name, dimensions, startTime, endTime,
-                                                offset, this.persistUtils.getLimit(limit),
-                                                mergeMetricsFlagBool),
-                                      uriInfo);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<Measurements> resources = repo.find(queryTenantId,
+        name,
+        dimensions,
+        startTime,
+        endTime,
+        offset,
+        paging_limit,
+        mergeMetricsFlagBool
+    );
+    return Links.paginateMeasurements(paging_limit, resources, uriInfo);
   }
 
 }

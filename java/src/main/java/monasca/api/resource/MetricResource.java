@@ -43,10 +43,12 @@ import monasca.api.app.command.CreateMetricCommand;
 import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
+import monasca.api.domain.model.metric.MetricName;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.Services;
 import monasca.common.model.metric.Metric;
+import monasca.common.model.metric.MetricDefinition;
 
 /**
  * Metric resource implementation.
@@ -127,9 +129,18 @@ public class MetricResource {
               .parseAndValidateDimensions(dimensionsStr);
       MetricNameValidation.validate(name, false);
 
-      String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          metricRepo.find(queryTenantId, name, dimensions, offset, this.persistUtils.getLimit(limit)), uriInfo);
+    final String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId,
+        admin_role);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<MetricDefinition> resources = metricRepo.find(
+        queryTenantId,
+        name,
+        dimensions,
+        offset,
+        paging_limit
+    );
+
+    return Links.paginate(paging_limit, resources, uriInfo);
   }
 
   @GET
@@ -151,12 +162,14 @@ public class MetricResource {
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          metricRepo.findNames(queryTenantId,
-                                               dimensions,
-                                               offset,
-                                               this.persistUtils.getLimit(limit)),
-                          uriInfo);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<MetricName> resources = metricRepo.findNames(
+        queryTenantId,
+        dimensions,
+        offset,
+        paging_limit
+    );
+    return Links.paginate(paging_limit, resources, uriInfo);
   }
 
 }

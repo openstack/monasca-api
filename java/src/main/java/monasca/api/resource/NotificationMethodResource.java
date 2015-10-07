@@ -17,6 +17,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -76,9 +77,10 @@ public class NotificationMethodResource {
                      @QueryParam("offset") String offset,
                      @QueryParam("limit") String limit) throws UnsupportedEncodingException {
 
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          Links.hydrate(repo.find(tenantId, offset,
-                                                  this.persistUtils.getLimit(limit)), uriInfo),
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<NotificationMethod> resources = repo.find(tenantId, offset, paging_limit);
+    return Links.paginate(paging_limit,
+                          Links.hydrate(resources, uriInfo),
                           uriInfo);
 
   }
