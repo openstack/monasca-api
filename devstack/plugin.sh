@@ -85,19 +85,19 @@ function install_monasca {
 
     fi
 
-    if [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'java' ]]; then
+    if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
         install_monasca_persister_java
 
-    elif [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'python' ]]; then
+    elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
 
         install_monasca_persister_python
 
     else
 
-        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTAION_LANG: $MONASCA_PERSISTER_IMPLEMENTAION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTAION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_PERSISTER_IMPLEMENTAION_LANG to either 'java' or 'python'"
+        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either 'java' or 'python'"
 
     fi
 
@@ -172,19 +172,19 @@ function clean_monasca {
 
     clean_monasca_notification
 
-    if [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'java' ]]; then
+    if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
         clean_monasca_persister_java
 
-    elif [[ "${MONASCA_PERSISTER_IMPLEMENTAION_LANG,,}" == 'python' ]]; then
+    elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
 
         clean_monasca_persister_python
 
     else
 
-        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTAION_LANG: $MONASCA_PERSISTER_IMPLEMENTAION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTAION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_PERSISTER_IMPLEMENTAION_LANG to either 'java' or 'python'"
+        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are 'java' and 'python'"
+        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either 'java' or 'python'"
 
     fi
 
