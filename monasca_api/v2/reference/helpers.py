@@ -401,7 +401,7 @@ def _get_old_query_params(parsed_uri):
     if parsed_uri.query:
 
         for query_param in parsed_uri.query.split('&'):
-            query_param_name, query_param_val = query_param.split('=')
+            query_param_name, query_param_val = query_param.split('=', 1)
 
             old_query_params.append(urllib.quote(
                 query_param_name.encode('utf8'), safe='')
@@ -415,7 +415,7 @@ def _get_old_query_params_except_offset(new_query_params, parsed_uri):
     if parsed_uri.query:
 
         for query_param in parsed_uri.query.split('&'):
-            query_param_name, query_param_val = query_param.split('=')
+            query_param_name, query_param_val = query_param.split('=', 1)
             if query_param_name.lower() != 'offset':
                 new_query_params.append(urllib.quote(
                     query_param_name.encode(
