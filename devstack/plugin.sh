@@ -1227,18 +1227,19 @@ function install_monasca_smoke_test {
 
     sudo tar -xzf /opt/monasca/monasca-ci.tar.gz -C /opt/monasca
 
-    sudo sed -i s/192\.168\.10\.4/127\.0\.0\.1/g /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/utils.py
-    sudo sed -i s/192\.168\.10\.5/127\.0\.0\.1/g /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/utils.py
-    sudo sed -i "s/'hostname', '-f'/'hostname'/g" /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke_configs.py
+    HPCLOUD_MON_MONASCA_CI_DIR=$(ls -td /opt/monasca/hpcloud-mon-monasca-ci-* | head -1)
+
+    sudo sed -i s/192\.168\.10\.4/127\.0\.0\.1/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
+    sudo sed -i s/192\.168\.10\.5/127\.0\.0\.1/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
+    sudo sed -i "s/'hostname', '-f'/'hostname'/g" ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke_configs.py
 
     (cd /opt/monasca ; sudo -H ./bin/pip install influxdb)
 
-    sudo cp -f /opt/stack/monasca/devstack/files/monasca-smoke-test/smoke2_configs.py /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke2_configs.py
+    sudo cp -f /opt/stack/monasca/devstack/files/monasca-smoke-test/smoke2_configs.py ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2_configs.py
 
-    sudo /opt/monasca/bin/python /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke2.py || true
+    sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py || true
 
-    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c 'sudo /opt/monasca/bin/python /opt/monasca/hpcloud-mon-monasca-ci-7a45d29/tests/smoke/smoke.py' || true)
-
+    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py")
 }
 
 function clean_monasca_smoke_test {
