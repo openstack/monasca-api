@@ -217,12 +217,6 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             where_clause += " and ad.id > %s"
             parms.append(offset.encode('utf8'))
 
-        if limit:
-            limit_clause = " limit %s "
-            parms.append(limit + 1)
-        else:
-            limit_clause = ""
-
         if 'alarm_definition_id' in query_parms:
             parms.append(query_parms['alarm_definition_id'])
             where_clause += " and ad.id = %s "
@@ -288,6 +282,12 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             sub_select_clause += ")"
             parms += sub_select_parms
             where_clause += sub_select_clause
+
+        if limit:
+            limit_clause = " limit %s "
+            parms.append(limit + 1)
+        else:
+            limit_clause = ""
 
         query = select_clause + where_clause + order_by_clause + limit_clause
 
