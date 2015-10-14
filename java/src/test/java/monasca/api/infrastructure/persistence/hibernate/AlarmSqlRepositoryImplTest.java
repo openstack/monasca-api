@@ -387,8 +387,8 @@ public class AlarmSqlRepositoryImplTest {
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, 0, false));
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
-        compoundAlarm);
+    //checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
+    //    compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, 1, false),
         alarm1, alarm2, alarm3, compoundAlarm);
