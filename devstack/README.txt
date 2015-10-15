@@ -53,6 +53,11 @@ enable_plugin monasca git://git.openstack.org/stackforge/monasca-api
 # END DEVSTACK LOCAL.CONF CONTENTS
 
 
+Using Vagrant:
+
+Vagrant can be used to deploy a VM with Devstack and Monasca running in it
+using the Vagrantfile. After installing Vagrant, just "vagrant up".
+
 Known Issues:
 
 1. The smoke tests do not run successfully with the Python implementations.
