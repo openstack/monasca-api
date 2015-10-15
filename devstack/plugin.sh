@@ -115,7 +115,7 @@ function post_config_monasca {
 
 function extra_monasca {
 
-    install_keystone
+    install_monasca_keystone_client
 
     install_monasca_agent
 
@@ -164,7 +164,7 @@ function clean_monasca {
 
     clean_monasca_agent
 
-    clean_keystone
+    clean_monasca_keystone_client
 
     clean_monasca_thresh
 
@@ -1099,7 +1099,7 @@ function clean_monasca_thresh {
 
 }
 
-function install_keystone {
+function install_monasca_keystone_client {
 
     echo_summary "Install Monasca Keystone Client"
 
@@ -1125,7 +1125,7 @@ function install_keystone {
 
 }
 
-function clean_keystone {
+function clean_monasca_keystone_client {
 
     echo_summary "Clean Monasca Keystone Client"
 
