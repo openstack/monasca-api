@@ -53,9 +53,9 @@ class Notifications(notifications_api_v2.NotificationsV2API):
     @resource.resource_try_catch_block
     def _create_notification(self, tenant_id, notification, uri):
 
-        name = notification['name'].decode('utf8')
-        notification_type = notification['type'].upper().decode('utf8')
-        address = notification['address'].decode('utf8')
+        name = notification['name']
+        notification_type = notification['type'].upper()
+        address = notification['address']
         notification_id = self._notifications_repo.create_notification(
             tenant_id,
             name,
@@ -71,9 +71,9 @@ class Notifications(notifications_api_v2.NotificationsV2API):
     @resource.resource_try_catch_block
     def _update_notification(self, id, tenant_id, notification, uri):
 
-        name = notification['name'].decode('utf8')
-        notification_type = notification['type'].upper().decode('utf8')
-        address = notification['address'].decode('utf8')
+        name = notification['name']
+        notification_type = notification['type'].upper()
+        address = notification['address']
         self._notifications_repo.update_notification(id, tenant_id, name,
                                                      notification_type,
                                                      address)
