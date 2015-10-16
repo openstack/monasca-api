@@ -67,15 +67,16 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   private static final String FIND_ALARMS_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
       + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
-      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp,"
-      + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
+      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
+      + "md.name as metric_name, group_concat(mdim.name, '=', mdim.value order by mdim.name) as metric_dimensions "
+      + "from alarm as a "
       + "inner join %s as alarm_id_list on alarm_id_list.id = a.id "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
       + "inner join alarm_metric as am on am.alarm_id = a.id "
       + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
       + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
-      + "left outer join (select dimension_set_id, name, value, group_concat(name, '=', value) as dimensions "
-      + "from metric_dimension group by dimension_set_id) as mdg on mdg.dimension_set_id = mdd.metric_dimension_set_id "
+      + "left outer join metric_dimension as mdim on mdim.dimension_set_id = mdd.metric_dimension_set_id "
+      + "group by a.id, md.name, mdim.dimension_set_id"
       + "order by a.id ASC";
 
   @Inject
