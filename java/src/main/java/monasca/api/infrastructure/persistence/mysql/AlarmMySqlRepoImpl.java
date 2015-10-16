@@ -54,7 +54,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   private static final String FIND_ALARM_BY_ID_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
       + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
-      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp,"
+      + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
       + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
       + "inner join alarm_metric as am on am.alarm_id = a.id "
@@ -76,7 +76,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
       + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
       + "left outer join metric_dimension as mdim on mdim.dimension_set_id = mdd.metric_dimension_set_id "
-      + "group by a.id, md.name, mdim.dimension_set_id"
+      + "group by a.id, md.name, mdim.dimension_set_id "
       + "order by a.id ASC";
 
   @Inject
