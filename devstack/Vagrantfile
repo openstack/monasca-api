@@ -58,7 +58,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
-    vb.memory = "10240"
+    vb.memory = "12800"
     vb.cpus = 4
   #  vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
@@ -81,6 +81,8 @@ Vagrant.configure(2) do |config|
     sudo apt-get -y upgrade
     sudo apt-get -y install git
     git clone https://git.openstack.org/openstack-dev/devstack
+    sudo pip install numpy
+    sudo pip install python-monascaclient
     cd devstack
     git checkout stable/liberty
     echo '[[local|localrc]]
@@ -107,7 +109,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-j
 #MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
 # This line will enable all of Monasca.
-enable_plugin monasca git://git.openstack.org/openstack/monasca-api
+enable_plugin monasca https://git.openstack.org/openstack/monasca-api
 ' > local.conf
     ./stack.sh
   SHELL
