@@ -1,25 +1,36 @@
 # Introduction
 The Monasca Tempest Tests use the [OpenStack Tempest Plugin Interface](http://docs.openstack.org/developer/tempest/plugin.html). This README describes how to configure and run them using a variety of methods.
-Currently monasca-vagrant is used to run tests. This document will be updated when switch the environment to DevStack.
+Currently the monasca-vagrant environment is needed to run the tests. Instructions on setting up a monasca-vagrant environment can be found here: https://github.com/openstack/monasca-vagrant. This document will be updated when 
+the environment is switched to the DevStack environment.
 
 # Configuring to run the Monasca Tempest Tests
 1. Clone the OpenStack Tempest repo, and cd to it.
+
    ```
    git clone https://github.com/openstack/tempest.git
    cd tempest
    ```
 2. Create a virtualenv for running the Tempest tests and activate it. For example in the Tempest root dir
+
     ```
     virtualenv .venv
     source .venv/bin/activate
     ``` 
 3. Install the Tempest requirements in the virtualenv.
+
     ```
     pip install -r requirements.txt -r test-requirements.txt
     pip install nose
     ```
-4. Create ```etc/tempest.conf``` and ```etc/logging.conf``` in the Tempest root dir. I believe the file ```etc/tempest.conf.sample``` can be copied to ```etc/tempest.conf```. Similarly for ```logging.conf```. Add the following sections to ```tempest.conf``` for testing using the monasca-vagrant environment.
+4. Create ```etc/tempest.conf``` in the Tempest root dir by running the following command:
+
     ```
+    oslo-config-generator --config-file  etc/config-generator.tempest.conf  --output-file etc/tempest.conf
+    ```
+
+    Add the following sections to ```tempest.conf``` for testing using the monasca-vagrant environment.
+
+   ```
     [identity]
 
     username = mini-mon
@@ -42,13 +53,25 @@ Currently monasca-vagrant is used to run tests. This document will be updated wh
 
     allow_tenant_isolation = true
     tempest_roles = monasca-user
+
     ```
-5. Clone the monasca-api repo.
-6. Install the monasca-api in your venv, which will also register
-the Monasca Tempest Plugin as, monasca_tests.
+
+    Edit the the variable values in the identity section to match your particular monasca-vagrant environment.
+
+5. Create ```etc/logging.conf``` in the Tempest root dir by making a copying ```logging.conf.sample```.
+
+6. Clone the monasca-api repo in a directory somewhere outside of the Tempest root dir.
+
+7. Install the monasca-api in your venv, which will also register
+   the Monasca Tempest Plugin as, monasca_tests.
+
+   cd into the monasa-api root directory. Making sure that the tempest virtual env is still active,
+   run the following command.
+
     ```    
     python setup.py install
     ```
+
 See the [OpenStack Tempest Plugin Interface](http://docs.openstack.org/developer/tempest/plugin.html), for more details on Tempest Plugins and the plugin registration process.
 
 # Running the Monasca Tempest Tests
@@ -58,12 +81,18 @@ The Monasca Tempest Tests can be run using a variety of methods including:
 3. [PyCharm]([Os-testr](https://www.jetbrains.com/pycharm/)
 
 ## Run the tests from the CLI using testr
+
 [Testr](https://wiki.openstack.org/wiki/Testr) is a test runner that can be used to run the Tempest tests.
+
 1. In the Tempest root dir, create a list of the Monasca Tempest Tests in a file.
+
     ```
     testr list-tests monasca_tempest_tests > monasca_tempest_tests
+
     ```
+
 2. Run the tests using testr
+
     ```
     testr run --load-list=monasca_tempest_tests
     ```
@@ -71,10 +100,13 @@ You can also use testr to create a list of specific tests for your needs.
 
 ## Run the tests from the CLI using os-testr (no file necessary)
 [Os-testr](http://docs.openstack.org/developer/os-testr/) is a test wrapper that can be used to run the Monasca Tempest tests.
-In the Tempest root dir:
+
+1. In the Tempest root dir:
+
     ```
     ostestr --regex monasca_tempest_tests
-    ```
+    ````
+
 ## Running/Debugging the Monasca Tempest Tests in PyCharm
 Assuming that you have already created a PyCharm project for the ```monasca-api``` do the following:
 1. In PyCharm, Edit Configurations and add a new Python tests configuration by selecting Python tests->Nosetests.
