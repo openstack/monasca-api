@@ -17,8 +17,8 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git@github.com:stackforge/monasca-api</connection>
-    <developerConnection>scm:git:git@github.com:stackforge/monasca-api</developerConnection>
+    <connection>scm:git:git@github.com:openstack/monasca-api</connection>
+    <developerConnection>scm:git:git@github.com:openstack/monasca-api</developerConnection>
   </scm>
 
   <build>

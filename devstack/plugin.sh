@@ -23,7 +23,7 @@
 # looks like
 #
 # [[local|localrc]]
-# enable_plugin monasca git://git.openstack.org/stackforge/monasca-api
+# enable_plugin monasca git://git.openstack.org/openstack/monasca-api
 #
 # By default all Monasca services are started (see
 # devstack/settings). To disable a specific service use the
@@ -562,7 +562,7 @@ function install_monasca_common {
 
     if [[ ! -d /opt/stack/monasca-common ]]; then
 
-        sudo git clone https://github.com/stackforge/monasca-common.git /opt/stack/monasca-common
+        sudo git clone https://git.openstack.org/openstack/monasca-common.git /opt/stack/monasca-common
 
     fi
 
@@ -728,7 +728,7 @@ function install_monasca_persister_java {
 
     if [[ ! -d /opt/stack/monasca-persister ]]; then
 
-        sudo git clone https://github.com/stackforge/monasca-persister /opt/stack/monasca-persister
+        sudo git clone https://git.openstack.org/openstack/monasca-persister /opt/stack/monasca-persister
 
     fi
 
@@ -776,7 +776,7 @@ function install_monasca_persister_python {
 
     if [[ ! -d /opt/stack/monasca-persister ]]; then
 
-        sudo git clone https://github.com/stackforge/monasca-persister /opt/stack/monasca-persister
+        sudo git clone https://git.openstack.org/openstack/monasca-persister /opt/stack/monasca-persister
 
     fi
 
@@ -879,7 +879,7 @@ function install_monasca_notification {
 
     if [[ ! -d /opt/stack/monasca-notification ]]; then
 
-        sudo git clone https://github.com/stackforge/monasca-notification /opt/stack/monasca-notification
+        sudo git clone https://git.openstack.org/openstack/monasca-notification /opt/stack/monasca-notification
 
     fi
 
@@ -1050,7 +1050,7 @@ function install_monasca_thresh {
 
     if [[ ! -d /opt/stack/monasca-thresh ]]; then
 
-      sudo git clone https://github.com/stackforge/monasca-thresh.git /opt/stack/monasca-thresh
+      sudo git clone https://git.openstack.org/openstack/monasca-thresh.git /opt/stack/monasca-thresh
 
     fi
 
@@ -1107,7 +1107,7 @@ function install_monasca_keystone_client {
 
      if [[ ! -d /opt/stack/python-keystoneclient ]]; then
 
-        sudo git clone https://github.com/openstack/python-keystoneclient /opt/stack/python-keystoneclient
+        sudo git clone https://git.openstack.org/openstack/python-keystoneclient /opt/stack/python-keystoneclient
 
     fi
 
@@ -1147,7 +1147,7 @@ function install_monasca_agent {
 
     if [[ ! -d /opt/stack/monasca-agent ]]; then
 
-        sudo git clone https://github.com/stackforge/monasca-agent /opt/stack/monasca-agent
+        sudo git clone https://git.openstack.org/openstack/monasca-agent /opt/stack/monasca-agent
 
     fi
 

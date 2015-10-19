@@ -5,7 +5,7 @@ Currently monasca-vagrant is used to run tests. This document will be updated wh
 # Configuring to run the Monasca Tempest Tests
 1. Clone the OpenStack Tempest repo, and cd to it.
    ```
-   git clone https://github.com/openstack/tempest.git
+   git clone https://git.openstack.org/openstack/tempest.git
    cd tempest
    ```
 2. Create a virtualenv for running the Tempest tests and activate it. For example in the Tempest root dir

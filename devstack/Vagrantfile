@@ -80,7 +80,7 @@ Vagrant.configure(2) do |config|
     sudo apt-get update
     sudo apt-get -y upgrade
     sudo apt-get -y install git
-    git clone https://github.com/openstack-dev/devstack
+    git clone https://git.openstack.org/openstack-dev/devstack
     cd devstack
     git checkout stable/liberty
     echo '[[local|localrc]]
@@ -107,7 +107,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-j
 #MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
 # This line will enable all of Monasca.
-enable_plugin monasca git://git.openstack.org/stackforge/monasca-api
+enable_plugin monasca git://git.openstack.org/openstack/monasca-api
 ' > local.conf
     ./stack.sh
   SHELL
