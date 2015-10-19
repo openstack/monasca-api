@@ -80,8 +80,8 @@ function install_monasca {
     else
 
         echo "Found invalid value for variable MONASCA_API_IMPLEMENTATION_LANG: $MONASCA_API_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either 'java' or 'python'"
+        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are \"java\" and \"python\""
+        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either \"java'' or \"python\""
 
     fi
 
@@ -96,8 +96,8 @@ function install_monasca {
     else
 
         echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either 'java' or 'python'"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
+        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
     fi
 
@@ -183,8 +183,8 @@ function clean_monasca {
     else
 
         echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either 'java' or 'python'"
+        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
+        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
     fi
 
@@ -199,8 +199,8 @@ function clean_monasca {
     else
 
         echo "Found invalid value for variable MONASCA_API_IMPLEMENTATION_LANG: $MONASCA_API_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are 'java' and 'python'"
-        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either 'java' or 'python'"
+        echo "Valid values for MONASCA_API_IMPLEMENTATION_LANG are \"java\" and \"python\""
+        die "Please set MONASCA_API_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
     fi
 
@@ -1288,7 +1288,7 @@ function clean_monasca_horizon_ui {
 
     sudo rm -f /opt/stack/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
-    sudo rm -f /opt/stack/horizon
+    sudo rm -f /opt/stack/horizon/monitoring
 
     sudo rm -rf /opt/monasca-horizon-ui
 
@@ -1340,7 +1340,6 @@ if is_service_enabled monasca; then
 
     if [[ "$1" == "unstack" ]]; then
         # Shut down Monasca services
-        # no-op
         echo_summary "Unstacking Monasca"
         unstack_monasca
     fi
@@ -1348,7 +1347,6 @@ if is_service_enabled monasca; then
     if [[ "$1" == "clean" ]]; then
         # Remove state and transient data
         # Remember clean.sh first calls unstack.sh
-        # no-op
         echo_summary "Cleaning Monasca"
         clean_monasca
     fi
