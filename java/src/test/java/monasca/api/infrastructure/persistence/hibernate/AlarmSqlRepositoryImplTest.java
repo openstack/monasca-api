@@ -18,13 +18,32 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.alarm.AlarmRepo;
@@ -41,17 +60,6 @@ import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
-import org.apache.commons.collections4.CollectionUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 @Test(groups = "orm")
 public class AlarmSqlRepositoryImplTest {
@@ -65,16 +73,21 @@ public class AlarmSqlRepositoryImplTest {
   private Alarm alarm1;
   private Alarm alarm2;
   private Alarm alarm3;
+  private Transaction tx;
 
   @BeforeMethod
   protected void setupClass() throws Exception {
     this.sessionFactory = HibernateUtil.getSessionFactory();
     this.repo = new AlarmSqlRepoImpl(this.sessionFactory);
     this.prepareData(this.sessionFactory);
+
+    this.tx = this.sessionFactory.openSession().beginTransaction();
   }
 
   @AfterMethod
-  public void tearDown() throws Exception {
+  protected void afterMethod() throws Exception {
+    this.tx.rollback();
+
     this.sessionFactory.close();
     this.sessionFactory = null;
   }
@@ -374,11 +387,8 @@ public class AlarmSqlRepositoryImplTest {
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, 0, false));
 
-    // This test is failing on a local dev host because the code seems to be time zone dependent.
-    // This seems to indicate incorrect handling of dates/times in the core logic.
-    // Fujitsu should make all of the code work regardless of time zone.
-//    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
-//              compoundAlarm);
+    //checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
+    //    compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, 1, false),
         alarm1, alarm2, alarm3, compoundAlarm);
@@ -445,9 +455,24 @@ public class AlarmSqlRepositoryImplTest {
 
   private void checkList(List<Alarm> found, Alarm... expected) {
     assertEquals(found.size(), expected.length);
-    for (Alarm alarm : expected) {
-      assertTrue(found.contains(alarm));
+    Alarm actual;
+
+    for (final Alarm alarm : expected) {
+      final Optional<Alarm> alarmOptional = FluentIterable
+          .from(found)
+          .firstMatch(new Predicate<Alarm>() {
+            @Override
+            public boolean apply(@Nullable final Alarm input) {
+              assert input != null;
+              return input.getId().equals(alarm.getId());
+            }
+          });
+      assertTrue(alarmOptional.isPresent());
+
+      actual = alarmOptional.get();
+      assertEquals(actual, alarm, String.format("%s not equal to %s", actual, alarm));
     }
+
   }
 
   private DateTime getAlarmUpdatedDate(final String alarmId) {
@@ -464,14 +489,16 @@ public class AlarmSqlRepositoryImplTest {
 
     try {
       session = sessionFactory.openSession();
-      final List<?> rows = session.createQuery(String.format("select %s from AlarmDb where id = :alarmId", fieldName)).setString("alarmId", alarmId).list();
-      time = (DateTime) rows.get(0);
+      final String queryString = String.format("select %s from AlarmDb where id = :alarmId", fieldName);
+      final List<?> rows = session.createQuery(queryString).setString("alarmId", alarmId).list();
+
+      time = new DateTime(((Timestamp) rows.get(0)).getTime(), UTC_TIMEZONE);
     } finally {
       if (session != null) {
         session.close();
       }
     }
 
-    return new DateTime(time.getMillis(), UTC_TIMEZONE);
+    return time;
   }
 }

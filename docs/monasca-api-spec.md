@@ -1036,7 +1036,7 @@ Operations for accessing measurements of metrics.
 ## List measurements
 Get measurements for metrics.
 
-Metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to futher qualify the metric with a name and additional dimensions.
+Metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
 
 If users do not wish to see measurements for a single metric, but would prefer to have measurements from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all meaurements for all metrics that satisfy the query parameters will be merged into a single list of measurements.
 
@@ -1206,7 +1206,7 @@ ___
 # Statistics
 Operations for calculating statistics of metrics.
 
-Metrics must be fully qualified with name and dimensions so that only statistics are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to futher qualify the metric with a name and additional dimensions.
+Metrics must be fully qualified with name and dimensions so that only statistics are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
 
 If users do not wish to see statistics for a single metric, but would prefer to have statistics from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all statistics for all metrics that satisfy the query parameters will be merged into a single list of statistics.
 

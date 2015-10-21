@@ -16,6 +16,7 @@ package monasca.api.app.command;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -39,7 +40,8 @@ public class CreateMetricCommand {
   public String name;
   public Map<String, String> dimensions;
   public long timestamp;
-  public double value;
+  @NotNull
+  public Double value;
   public Map<String, String> valueMeta;
 
   public CreateMetricCommand() {}
@@ -93,7 +95,7 @@ public class CreateMetricCommand {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
     long temp;
-    temp = Double.doubleToLongBits(value);
+    temp = (value == null) ? 0 : Double.doubleToLongBits(value);
     result = prime * result + (int) (temp ^ (temp >>> 32));
     return result;
   }

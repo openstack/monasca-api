@@ -17,6 +17,8 @@ package monasca.api.infrastructure.persistence.hibernate;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -37,7 +39,7 @@ abstract class BaseSqlRepo {
   /**
    * Rollbacks passed {@code tx} transaction if such is not null.
    * Assumption is being made that {@code tx} being null means transaction
-   * has been successfully comitted.
+   * has been successfully committed.
    *
    * @param tx {@link Transaction} object
    */
@@ -49,6 +51,18 @@ abstract class BaseSqlRepo {
         LOG.error(ORM_LOG_MARKER, "Couldn’t roll back transaction", rbe);
       }
     }
+  }
+
+  /**
+   * Returns <b>UTC</b> based {@link DateTime#now()}
+   *
+   * @return current date/time in UTC
+   *
+   * @see DateTimeZone#UTC
+   * @see DateTime#now()
+   */
+  protected DateTime getUTCNow() {
+    return DateTime.now(DateTimeZone.UTC);
   }
 
 }

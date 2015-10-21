@@ -83,10 +83,11 @@ class HibernateUtil {
   private static Properties getHikariMySqlProperties() {
     Properties properties = new Properties();
     properties.put("hibernate.connection.provider_class", "com.zaxxer.hikari.hibernate.HikariConnectionProvider");
-    properties.put("hibernate.hbm2ddl.auto", "validate");
+    properties.put("hibernate.hbm2ddl.auto", "create-drop");
     properties.put("show_sql", true);
     properties.put("hibernate.hikari.dataSourceClassName", "com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
-    properties.put("hibernate.hikari.dataSource.url", "jdbc:mysql://localhost:3306/mon");
+    properties.put("hibernate.hikari.dataSource.url",
+        "jdbc:mysql://localhost:3306/mon?useLegacyDatetimeCode=false&serverTimezone=UTC");
     properties.put("hibernate.hikari.dataSource.user", "root");
     properties.put("hibernate.hikari.dataSource.password", "");
     return properties;

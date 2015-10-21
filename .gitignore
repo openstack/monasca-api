@@ -1,6 +1,6 @@
 *.py[co]
 *~
-doc/build/*
+docs/build/*
 dist
 build
 cover
@@ -31,3 +31,4 @@ log/
 *config*.yml
 db/config.yml
 virtenv/*
+.vagrant

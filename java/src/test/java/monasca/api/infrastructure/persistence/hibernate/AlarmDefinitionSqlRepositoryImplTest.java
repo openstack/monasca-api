@@ -42,6 +42,7 @@ import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.testng.annotations.AfterMethod;
@@ -56,6 +57,7 @@ public class AlarmDefinitionSqlRepositoryImplTest {
   private AlarmDefinition alarmDef_123;
   private AlarmDefinition alarmDef_234;
   private List<String> alarmActions;
+  private Transaction tx;
 
   @BeforeMethod
   protected void beforeMethod() throws Exception {
@@ -67,10 +69,14 @@ public class AlarmDefinitionSqlRepositoryImplTest {
     alarmActions.add("77778687");
 
     this.prepareData(this.sessionFactory);
+
+    this.tx = this.sessionFactory.openSession().beginTransaction();
   }
 
   @AfterMethod
-  protected void afterMethod() {
+  protected void afterMethod() throws Exception {
+    this.tx.rollback();
+
     this.sessionFactory.close();
     this.sessionFactory = null;
   }

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -98,10 +99,14 @@ public class AlarmDefinitionResource {
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
-    return Links.paginate(this.persistUtils.getLimit(limit),
-                          Links.hydrate(repo.find(tenantId, name, dimensions, offset,
-                                                  this.persistUtils.getLimit(limit)), uriInfo),
-                          uriInfo);
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final List<AlarmDefinition> resources = repo.find(tenantId,
+        name,
+        dimensions,
+        offset,
+        paging_limit
+    );
+    return Links.paginate(paging_limit, Links.hydrate(resources, uriInfo), uriInfo);
   }
 
   @GET

@@ -32,6 +32,7 @@ import monasca.common.hibernate.db.NotificationMethodDb;
 import monasca.common.model.alarm.AlarmNotificationMethodType;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -41,6 +42,7 @@ import org.testng.annotations.Test;
 public class NotificationMethodSqlRepositoryImplTest {
   NotificationMethodRepo repo = null;
   private SessionFactory sessionFactory;
+  private Transaction tx;
 
   @BeforeMethod
   protected void beforeMethod() throws Exception {
@@ -48,10 +50,14 @@ public class NotificationMethodSqlRepositoryImplTest {
     this.repo = new NotificationMethodSqlRepoImpl(sessionFactory);
 
     this.prepareData(this.sessionFactory);
+
+    this.tx = this.sessionFactory.openSession().beginTransaction();
   }
 
   @AfterMethod
-  protected void afterMethod() {
+  protected void afterMethod() throws Exception {
+    this.tx.rollback();
+
     this.sessionFactory.close();
     this.sessionFactory = null;
   }

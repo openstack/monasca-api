@@ -13,7 +13,6 @@
  */
 package monasca.api.infrastructure.persistence.hibernate;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,8 +33,6 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +46,7 @@ import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
+import monasca.common.util.Conversions;
 
 /**
  * Alarmed metric repository implementation.
@@ -58,7 +56,6 @@ public class AlarmSqlRepoImpl
     implements AlarmRepo {
 
   private static final Logger logger = LoggerFactory.getLogger(AlarmSqlRepoImpl.class);
-  private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat.dateOptionalTimeParser().withZoneUTC();
 
   private static final String FIND_ALARM_BY_ID_SQL =
       "select distinct ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
@@ -148,14 +145,14 @@ public class AlarmSqlRepoImpl
   }
 
   @Override
-  public List<Alarm> find(String tenantId, String alarmDefId, String metricName, Map<String, String> metricDimensions, AlarmState state,
-                          String lifecycleState, String link, DateTime stateUpdatedStart, String offset, int limit, boolean enforceLimit) {
+  public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
+                          Map<String, String> metricDimensions, AlarmState state,
+                          String lifecycleState, String link, DateTime stateUpdatedStart,
+                          String offset, int limit, boolean enforceLimit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering");
 
-    List<Alarm> alarms;
-    alarms =
-        findInternal(tenantId, alarmDefId, metricName, metricDimensions, state, lifecycleState, link, stateUpdatedStart, offset, (3 * limit / 2),
-            enforceLimit);
+    List<Alarm> alarms = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
+        lifecycleState, link, stateUpdatedStart, offset, (3 * limit / 2), enforceLimit);
 
     if (limit == 0 || !enforceLimit)
       return alarms;
@@ -169,9 +166,8 @@ public class AlarmSqlRepoImpl
         List<Alarm> alarms2;
         int diff = limit - alarms.size();
         String offset2 = alarms.get(alarms.size() - 1).getId();
-        alarms2 =
-            findInternal(tenantId, alarmDefId, metricName, metricDimensions, state, lifecycleState, link, stateUpdatedStart, offset2, (2 * diff),
-                enforceLimit);
+        alarms2 = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
+            lifecycleState, link, stateUpdatedStart, offset2, (2 * diff), enforceLimit);
         if (alarms2.size() == 0)
           break;
         for (int i = 0; i < alarms2.size() && i < diff; i++)
@@ -182,8 +178,10 @@ public class AlarmSqlRepoImpl
     return alarms;
   }
 
-  private List<Alarm> findInternal(String tenantId, String alarmDefId, String metricName, Map<String, String> metricDimensions, AlarmState state,
-      String lifecycleState, String link, DateTime stateUpdatedStart, String offset, int limit, boolean enforceLimit) {
+  private List<Alarm> findInternal(String tenantId, String alarmDefId, String metricName,
+                                   Map<String, String> metricDimensions, AlarmState state,
+                                   String lifecycleState, String link, DateTime stateUpdatedStart,
+                                   String offset, int limit, boolean enforceLimit) {
     Session session = null;
 
     List<Alarm> alarms = new LinkedList<>();
@@ -267,7 +265,7 @@ public class AlarmSqlRepoImpl
       }
 
       if (stateUpdatedStart != null) {
-        query.setDate("stateUpdatedStart", stateUpdatedStart.toDate());
+        query.setDate("stateUpdatedStart", stateUpdatedStart.toDateTime(DateTimeZone.UTC).toDate());
       }
 
       if (enforceLimit && limit > 0) {
@@ -290,7 +288,6 @@ public class AlarmSqlRepoImpl
 
   private List<Alarm> createAlarms(List<Object[]> alarmList) {
     List<Alarm> alarms = Lists.newLinkedList();
-    Alarm alarm = null;
 
     String previousAlarmId = null;
     BinaryId previousDimensionSetId = null;
@@ -298,58 +295,19 @@ public class AlarmSqlRepoImpl
     Map<String, String> dimensionMap = new HashMap<>();
 
     for (Object[] alarmRow : alarmList) {
-      String alarm_definition_id = (String) alarmRow[0];
-      AlarmSeverity severity = null;
-      AlarmState alarmState = null;
-      DateTime updated_timestamp = null;
-      DateTime created_timestamp = null;
-      BinaryId dimension_set_id = null;
-      DateTime state_updated_timestamp = null;
-
-      if (alarmRow[1] instanceof String) {
-        severity = AlarmSeverity.valueOf((String) alarmRow[1]);
-      } else {
-        severity = (AlarmSeverity) alarmRow[1];
-      }
+      String alarmDefinitionId = (String) alarmRow[0];
+      AlarmSeverity severity = Conversions.variantToEnum(alarmRow[1], AlarmSeverity.class);
+      AlarmState alarmState = Conversions.variantToEnum(alarmRow[4], AlarmState.class);
+      DateTime updatedTimestamp = Conversions.variantToDateTime(alarmRow[5]);
+      DateTime createdTimestamp = Conversions.variantToDateTime(alarmRow[6]);
+      BinaryId dimensionSetId = this.convertBinaryId(alarmRow[13]);
+      DateTime stateUpdatedTimestamp = Conversions.variantToDateTime(alarmRow[12]);
 
       String alarm_definition_name = (String) alarmRow[2];
       String id = (String) alarmRow[3];
 
-      if (alarmRow[4] instanceof String) {
-        alarmState = AlarmState.valueOf((String) alarmRow[4]);
-      } else {
-        alarmState = (AlarmState) alarmRow[4];
-      }
-
-      if (alarmRow[5] instanceof Timestamp) {
-        Timestamp ts = (Timestamp) alarmRow[5];
-        updated_timestamp = ISO_8601_FORMATTER.parseDateTime(ts.toString().replace(" ", "T"));
-      } else {
-        updated_timestamp = new DateTime(((DateTime) alarmRow[5]).getMillis(), DateTimeZone.forID("UTC"));
-      }
-
-      if (alarmRow[6] instanceof Timestamp) {
-        Timestamp ts = (Timestamp) alarmRow[6];
-        created_timestamp = ISO_8601_FORMATTER.parseDateTime(ts.toString().replace(" ", "T"));
-      } else {
-        created_timestamp = new DateTime(((DateTime) alarmRow[6]).getMillis(), DateTimeZone.forID("UTC"));
-      }
-
       String lifecycle_state = (String) alarmRow[10];
       String link = (String) alarmRow[11];
-
-      if (alarmRow[13] instanceof BinaryId) {
-        dimension_set_id = (BinaryId) alarmRow[13];
-      } else {
-        dimension_set_id = new BinaryId((byte[]) alarmRow[13]);
-      }
-
-      if (alarmRow[12] instanceof Timestamp) {
-        Timestamp ts = (Timestamp) alarmRow[12];
-        state_updated_timestamp = ISO_8601_FORMATTER.parseDateTime(ts.toString().replace(" ", "T"));
-      } else {
-        state_updated_timestamp = new DateTime(((DateTime) alarmRow[12]).getMillis(), DateTimeZone.forID("UTC"));
-      }
 
       String metric_name = (String) alarmRow[7];
       String dimension_name = (String) alarmRow[8];
@@ -360,25 +318,35 @@ public class AlarmSqlRepoImpl
         dimensionMap = Maps.newHashMap();
         alarmedMetrics.add(new MetricDefinition(metric_name, dimensionMap));
 
-        alarm =
-            new Alarm(id, alarm_definition_id, alarm_definition_name, severity.name(), alarmedMetrics, alarmState, lifecycle_state, link,
-                state_updated_timestamp, updated_timestamp, created_timestamp);
-        alarms.add(alarm);
+        alarms.add(new Alarm(id, alarmDefinitionId, alarm_definition_name, severity.name(),
+            alarmedMetrics, alarmState, lifecycle_state, link,
+            stateUpdatedTimestamp, updatedTimestamp, createdTimestamp
+        ));
 
-        previousDimensionSetId = dimension_set_id;
+        previousDimensionSetId = dimensionSetId;
       }
 
-      if (!dimension_set_id.equals(previousDimensionSetId)) {
+      if (!dimensionSetId.equals(previousDimensionSetId)) {
         dimensionMap = Maps.newHashMap();
         alarmedMetrics.add(new MetricDefinition(metric_name, dimensionMap));
       }
 
       dimensionMap.put(dimension_name, dimension_value);
 
-      previousDimensionSetId = dimension_set_id;
+      previousDimensionSetId = dimensionSetId;
       previousAlarmId = id;
     }
     return alarms;
+  }
+
+  private BinaryId convertBinaryId(final Object o) {
+    final BinaryId dimensionSetId;
+    if (o instanceof BinaryId) {
+      dimensionSetId = (BinaryId) o;
+    } else {
+      dimensionSetId = new BinaryId((byte[]) o);
+    }
+    return dimensionSetId;
   }
 
   private void bindDimensionsToQuery(
@@ -456,11 +424,11 @@ public class AlarmSqlRepoImpl
           .uniqueResult();
 
       if (!originalAlarm.getState().equals(state)) {
-        result.setStateUpdatedAt(DateTime.now());
+        result.setStateUpdatedAt(this.getUTCNow());
         result.setState(state);
       }
 
-      result.setUpdatedAt(DateTime.now());
+      result.setUpdatedAt(this.getUTCNow());
       result.setLink(link);
       result.setLifecycleState(lifecycleState);
       session.update(result);

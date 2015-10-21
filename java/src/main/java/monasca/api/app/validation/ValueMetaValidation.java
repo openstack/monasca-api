@@ -16,6 +16,9 @@ package monasca.api.app.validation;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import monasca.api.resource.exception.Exceptions;
 
 import java.util.Collections;
@@ -33,6 +36,8 @@ public final class ValueMetaValidation {
   private static final int VALUE_META_NAME_MAX_LENGTH = 255;
   private static final Map<String, String> EMPTY_VALUE_META = Collections
       .unmodifiableMap(new HashMap<String, String>());
+
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   private ValueMetaValidation() {}
 
@@ -60,7 +65,7 @@ public final class ValueMetaValidation {
    */
   public static void validate(Map<String, String> valueMetas) {
     if (valueMetas.size() > VALUE_META_MAX_NUMBER) {
-      throw Exceptions.unprocessableEntity("Maximum number of valueMeta key/value parirs is %d",
+      throw Exceptions.unprocessableEntity("Maximum number of valueMeta key/value pairs is %d",
           VALUE_META_MAX_NUMBER);
     }
 
@@ -85,10 +90,21 @@ public final class ValueMetaValidation {
         throw Exceptions.unprocessableEntity("valueMeta name %s must be %d characters or less",
             name, VALUE_META_NAME_MAX_LENGTH);
       }
-      if (value.length() > VALUE_META_VALUE_MAX_LENGTH) {
-        throw Exceptions.unprocessableEntity("valueMeta value %s must be %d characters or less",
-            value, VALUE_META_VALUE_MAX_LENGTH);
-      }
+    }
+    verifyValueMetaStringLength(valueMetas);
+  }
+
+  private static void verifyValueMetaStringLength(Map<String, String> valueMetas) {
+
+    try {
+      String valueMetaString = objectMapper.writeValueAsString(valueMetas);
+
+      if (valueMetaString.length() > VALUE_META_VALUE_MAX_LENGTH) {
+        throw Exceptions.unprocessableEntity("valueMeta name value combinations %s must be %d characters or less",
+          valueMetaString, VALUE_META_VALUE_MAX_LENGTH);
+       }
+    } catch (JsonProcessingException e) {
+      throw Exceptions.unprocessableEntity("Failed to serialize valueMeta combinations %s", valueMetas);
     }
   }
 }

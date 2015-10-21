@@ -1,0 +1,151 @@
+#
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# The region for which all metrics passing through this server will be persisted
+region: "useast"
+
+maxQueryLimit: 10000
+
+# Whether this server is running on a secure port
+accessedViaHttps: false
+
+# Topic for publishing metrics to
+metricsTopic: metrics
+
+# Topic for publishing domain events to
+eventsTopic: events
+
+kafka:
+  brokerUris:
+    - "127.0.0.1:9092"
+  zookeeperUris:
+    - "127.0.0.1:2181"
+  healthCheckTopic: healthcheck
+
+mysql:
+  driverClass: com.mysql.jdbc.Driver
+  url: "jdbc:mysql://127.0.0.1:3306/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
+  user: "monapi"
+  password: "password"
+  maxWaitForConnection: 1s
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  minSize: 8
+  maxSize: 32
+  checkConnectionWhileIdle: false
+  checkConnectionOnBorrow: true
+
+databaseConfiguration:
+  databaseType: "influxdb"
+
+# Uncomment if databaseType is influxDB
+influxDB:
+  # Retention policy may be left blank to indicate default policy.
+  retentionPolicy:
+  maxHttpConnections: 100
+  gzip: true
+  name: "mon"
+  url: "http://127.0.0.1:8086"
+  user: "mon_api"
+  password: "password"
+
+
+# Uncomment if databaseType is vertica
+# As of 7/10 there is a bug in the monasca-api that requires this section even if databaseType is set to influxdb
+vertica:
+  driverClass: com.vertica.jdbc.Driver
+  url: "jdbc:vertica://localhost:5433/mon"
+  user: "mon_api"
+  password: "password"
+  maxWaitForConnection: 1s
+  validationQuery: "/* MyService Health Check */ SELECT 1"
+  minSize: 4
+  maxSize: 32
+  checkConnectionWhileIdle: true
+
+middleware:
+  enabled: true
+  serverVIP: "127.0.0.1"
+  serverPort: 5000
+  useHttps: False
+  truststore: "None"
+  truststorePassword: "None"
+  connTimeout: 500
+  connSSLClientAuth: False
+  keystore: "None"
+  keystorePassword: "None"
+  connPoolMaxActive: 3
+  connPoolMaxIdle: 3
+  connPoolEvictPeriod: 600000
+  connPoolMinIdleTime: 600000
+  connRetryTimes: 2
+  connRetryInterval: 50
+  defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user, admin]
+  agentAuthorizedRoles: [monasca-agent]
+  adminAuthMethod: token
+  adminUser: "admin"
+  adminPassword: ""
+  adminProjectId:
+  adminProjectName:
+  adminToken: "password"
+  timeToCacheToken: 600
+  maxTokenCacheSize: 1048576
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8070
+      maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
+  adminConnectors:
+    - type: http
+      port: 8081
+  requestLog:
+   timeZone: UTC
+   appenders:
+    - type: file
+      currentLogFilename: "/var/log/monasca/api/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/monasca/api/request-%d.log.gz"
+      archivedFileCount: 5
+
+# Logging settings.
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: WARN
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.example.app: DEBUG
+
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: # TODO
+
+    - type: file
+      currentLogFilename: "/var/log/monasca/api/monasca-api.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/monasca/api/monasca-api-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: # TODO

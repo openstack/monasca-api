@@ -367,8 +367,8 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
             offset = helpers.get_query_param(req, 'offset')
             limit = helpers.get_limit(req)
 
-            result = self._alarm_history(tenant_id, [id], req.uri, offset,
-                                         limit)
+            result = self._alarm_history(tenant_id, [alarm_id], req.uri,
+                                         offset, limit)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200

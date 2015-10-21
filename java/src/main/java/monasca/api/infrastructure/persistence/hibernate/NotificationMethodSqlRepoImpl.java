@@ -65,7 +65,7 @@ public class NotificationMethodSqlRepoImpl
       }
 
       final String id = UUID.randomUUID().toString();
-      final DateTime now = DateTime.now();
+      final DateTime now = this.getUTCNow();
       final NotificationMethodDb db = new NotificationMethodDb(
           id,
           tenantId,
@@ -172,7 +172,7 @@ public class NotificationMethodSqlRepoImpl
       tx = session.beginTransaction();
 
       NotificationMethodDb db;
-      if ((db = (NotificationMethodDb) session.get(NotificationMethodDb.class, notificationMethodId)) == null) {
+      if ((db = session.get(NotificationMethodDb.class, notificationMethodId)) == null) {
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
       }

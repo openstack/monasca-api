@@ -53,7 +53,14 @@ public class ValueMetaValidationTest {
   public void maxOk() {
     final Map<String, String> valueMeta = new HashMap<String, String>();
     for (int i = 0; i < 16; i++) {
-      valueMeta.put(makeString(i, 255), makeString(i, 2048));
+      //
+      // All 16 name/value pairs (converted to json) must fit in 2048
+      // chars.  Test that we can fit 1/16th of 2048 in each pair (128 chars):
+      //
+      // {"name":"value"}, ...
+      // ^^    ^^^     ^^^     <-- extra chars (8 per pair)
+      //
+      valueMeta.put(makeString(i, 10), makeString(i, (128 - (10+8))));
     }
     ValueMetaValidation.validate(valueMeta);
   }

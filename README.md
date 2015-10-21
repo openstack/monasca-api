@@ -6,7 +6,7 @@ The full API Specification can be found in [docs/monasca-api-spec.md](docs/monas
 
 ## Java Build
 
-Requires monasca-common from https://github.com/stackforge/monasca-common. Download and do mvn install. Then:
+Requires monasca-common from https://github.com/openstack/monasca-common. Download and do mvn install. Then:
 
 ```
 cd java

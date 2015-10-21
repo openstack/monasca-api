@@ -1,0 +1,74 @@
+#
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# The following two variables allow switching between java and python for the implementations
+# of the Monasca API and the Monasca Persister. These variables can be set here
+# or in the DevStack local.conf file.
+
+MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
+#MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+
+MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
+#MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+
+# Turn on all the Monasca services by default. Currently enabling specific services
+# has no effect. All services are enabled by default. There is currently no mechanism
+# implemented to turn off specific Monasca services.
+
+#
+# Monasca top level service that enables all other services
+#
+enable_service monasca
+
+#
+# Monasca infrastructure services
+#
+
+# Monasca databases
+# MySQL is already enabled in devstack
+enable_service monasca-influxdb
+
+# Apache Storm
+enable_service monasca-storm
+
+# monasca-zookeeper depends on openjdk-7
+enable_service monasca-zookeeper
+
+# monasca-kafka depends on monasca-zookeeper
+enable_service monasca-kafka
+
+#
+# Monasca core services
+#
+
+# monasca-api depends on monasca-influxdb, MySQL, monasca-kafka
+enable_service monasca-api
+
+# monasca-persister depends on monasca-influxdb, monasca-kafka
+enable_service monasca-persister
+
+# monasca-notification depends on MySQL, monasca-kafka
+enable_service monasca-notification
+
+# monasca-thresh depends on MySQL, monasca-kafka, monasca-storm
+enable_service monasca-thresh
+
+# monasca-agent depends on monasca-api
+enable_service monasca-agent
+
+# monasca-cli depends on monasca-api
+enable_service monasca-cli
