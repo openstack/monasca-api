@@ -23,7 +23,7 @@
 # looks like
 #
 # [[local|localrc]]
-# enable_plugin monasca git://git.openstack.org/openstack/monasca-api
+# enable_plugin monasca https://git.openstack.org/openstack/monasca-api
 #
 # By default all Monasca services are started (see
 # devstack/settings). To disable a specific service use the
