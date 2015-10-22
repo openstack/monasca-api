@@ -6,7 +6,7 @@
     <groupId>monasca-api</groupId>
     <artifactId>monasca-api</artifactId>
     <version>1.1.0-SNAPSHOT</version>
-    <url>http://github.com/stackforge/monasca-api</url>
+    <url>http://github.com/openstack/monasca-api</url>
     <packaging>jar</packaging>
 
     <prerequisites>
@@ -31,8 +31,8 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:stackforge/monasca-api</connection>
-        <developerConnection>scm:git:git@github.com:stackforge/monasca-api</developerConnection>
+        <connection>scm:git:git@git.openstack.org:openstack/monasca-api</connection>
+        <developerConnection>scm:git:git.openstack.org:openstack/monasca-api</developerConnection>
     </scm>
 
     <profiles>
