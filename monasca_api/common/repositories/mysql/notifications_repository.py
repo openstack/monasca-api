@@ -138,6 +138,24 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
             raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
+    def find_notification_by_name(self, tenant_id, name):
+        cnxn, cursor = self._get_cnxn_cursor_tuple()
+        parms = [tenant_id, name]
+
+        with cnxn:
+            query = """
+                select *
+                from notification_method
+                where tenant_id = %s and name = %s
+                """
+            rows = self._execute_query(query, parms)
+
+            if rows:
+                return rows[0]
+            else:
+                return None
+
+    @mysql_repository.mysql_try_catch_block
     def update_notification(
             self, id, tenant_id, name, type, address):
 

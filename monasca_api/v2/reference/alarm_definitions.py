@@ -211,6 +211,26 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         self._alarm_definition_delete(tenant_id, alarm_definition_id)
         res.status = falcon.HTTP_204
 
+    def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
+        definitions = self._alarm_definitions_repo.get_alarm_definitions(tenant_id=tenant_id,
+                                                                         name=name,
+                                                                         dimensions=None,
+                                                                         offset=None,
+                                                                         limit=0)
+        if definitions:
+            if not expected_id:
+                LOG.warn("Found existing definition for {} with tenant_id {}".format(name, tenant_id))
+                raise exceptions.AlreadyExistsException("An alarm definition with the name {} already exists"
+                                                        .format(name))
+
+            found_definition_id = definitions[0]['id']
+            if found_definition_id != expected_id:
+                LOG.warn("Found existing alarm definition for {} with tenant_id {} with unexpected id {}"
+                         .format(name, tenant_id, found_definition_id))
+                raise exceptions.AlreadyExistsException(
+                    "An alarm definition with the name {} already exists with id {}"
+                    .format(name, found_definition_id))
+
     @resource.resource_try_catch_block
     def _alarm_definition_show(self, tenant_id, id):
 
@@ -328,7 +348,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def _alarm_definition_update_or_patch(self, tenant_id,
-                                          id,
+                                          definition_id,
                                           name,
                                           expression,
                                           actions_enabled,
@@ -355,10 +375,12 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         else:
             sub_expr_list = None
 
+        self._validate_name_not_conflicting(tenant_id, name, expected_id=definition_id)
+
         alarm_def_row, sub_alarm_def_dicts = (
             self._alarm_definitions_repo.update_or_patch_alarm_definition(
                 tenant_id,
-                id,
+                definition_id,
                 name,
                 expression,
                 sub_expr_list,
@@ -389,7 +411,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         alarm_def_event_dict = (
             {u'tenantId': tenant_id,
-             u'alarmDefinitionId': id,
+             u'alarmDefinitionId': definition_id,
              u'alarmName': name,
              u'alarmDescription': description,
              u'alarmExpression': expression,
@@ -455,6 +477,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             msg = "parser failed on expression '{}' at column {}".format(
                 expression.encode('utf8'), str(ex.column).encode('utf8'))
             raise falcon.HTTPBadRequest(title, msg)
+
+        self._validate_name_not_conflicting(tenant_id, name)
 
         alarm_definition_id = (
             self._alarm_definitions_repo.
