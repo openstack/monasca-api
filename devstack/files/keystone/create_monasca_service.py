@@ -131,7 +131,7 @@ def main():
 
   url = 'http://127.0.0.1:35357/v2.0'
 
-  token = 'password'
+  token = '111222333444'
 
   cacert = None
 

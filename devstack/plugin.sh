@@ -43,16 +43,20 @@ set -o xtrace
 ERREXIT=$(set +o | grep errexit)
 set -o errexit
 
+# Set default implementations to python
+export MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+
 # Determine if we are running in devstack-gate or devstack.
-if [[ $BASE ]]; then
+if [[ $DEST ]]; then
 
     # We are running in devstack-gate.
-    export MONASCA_BASE="${BASE}/new"
+    export MONASCA_BASE=${MONASCA_BASE:-"${DEST}"}
 
 else
 
     # We are running in devstack.
-    export MONASCA_BASE="/opt/stack"
+    export MONASCA_BASE=${MONASCA_BASE:-"/opt/stack"}
 
 fi
 
@@ -491,7 +495,7 @@ function install_schema {
 
     sudo chown root:root /opt/monasca/sqls/mon.sql
 
-    sudo mysql -uroot -ppassword < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -uroot -psecretmysql < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/winchester.sql /opt/monasca/sqls/winchester.sql
 
@@ -499,7 +503,7 @@ function install_schema {
 
     sudo chown root:root /opt/monasca/sqls/winchester.sql
 
-    sudo mysql -uroot -ppassword < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -uroot -psecretmysql < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo mkdir -p /opt/kafka/logs || true
 
@@ -912,6 +916,8 @@ function install_monasca_notification {
 
     (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport  $MONASCA_NOTIFICATION_SRC_DIST)
 
+    (cd /opt/monasca ; sudo -H ./bin/pip install mysql-python)
+
     sudo useradd --system -g monasca mon-notification || true
 
     sudo mkdir -p /var/log/monasca/notification || true
@@ -1262,7 +1268,7 @@ function install_monasca_smoke_test {
 
     sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py || true
 
-    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py")
+    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=admin OS_PASSWORD=secretadmin OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py" || true)
 }
 
 function clean_monasca_smoke_test {

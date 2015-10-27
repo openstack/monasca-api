@@ -36,11 +36,12 @@ To run Monasca in DevStack, do the following three steps.
     # BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
     [[local|localrc]]
-    ADMIN_PASSWORD=password
-    DATABASE_PASSWORD=$ADMIN_PASSWORD
-    RABBIT_PASSWORD=$ADMIN_PASSWORD
-    SERVICE_PASSWORD=$ADMIN_PASSWORD
-    SERVICE_TOKEN=$ADMIN_PASSWORD
+    MYSQL_PASSWORD=secretmysql
+    DATABASE_PASSWORD=secretdatabase
+    RABBIT_PASSWORD=secretrabbit
+    ADMIN_PASSWORD=secretadmin
+    SERVICE_PASSWORD=secretservice
+    SERVICE_TOKEN=111222333444
 
     LOGFILE=$DEST/logs/stack.sh.log
     LOGDIR=$DEST/logs
@@ -48,7 +49,7 @@ To run Monasca in DevStack, do the following three steps.
 
     # The following two variables allow switching between Java and Python for the implementations
     # of the Monasca API and the Monasca Persister. If these variables are not set, then the
-    # default is to install the Java implementations of both the Monasca API and the Monasca Persister.
+    # default is to install the Python implementations of both the Monasca API and the Monasca Persister.
 
     # Uncomment one of the following two lines to choose Java or Python for the Monasca API.
     MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
