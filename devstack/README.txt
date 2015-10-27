@@ -48,7 +48,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-j
 #MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
 # This line will enable all of Monasca.
-enable_plugin monasca git://git.openstack.org/openstack/monasca-api
+enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
 
 # END DEVSTACK LOCAL.CONF CONTENTS
 
