@@ -1,7 +1,6 @@
 # Introduction
 The Monasca Tempest Tests use the [OpenStack Tempest Plugin Interface](http://docs.openstack.org/developer/tempest/plugin.html). This README describes how to configure and run them using a variety of methods.
-Currently the monasca-vagrant environment is needed to run the tests. Instructions on setting up a monasca-vagrant environment can be found here: https://github.com/openstack/monasca-vagrant. This document will be updated when 
-the environment is switched to the DevStack environment.
+Currently the monasca-vagrant environment is needed to run the tests. Instructions on setting up a monasca-vagrant environment can be found here: https://github.com/openstack/monasca-vagrant. This document will be updated when the environment is switched to the DevStack environment.
 
 # Configuring to run the Monasca Tempest Tests
 1. Clone the OpenStack Tempest repo, and cd to it.
@@ -15,7 +14,7 @@ the environment is switched to the DevStack environment.
     ```
     virtualenv .venv
     source .venv/bin/activate
-    ``` 
+    ```
 3. Install the Tempest requirements in the virtualenv.
 
     ```
@@ -68,7 +67,7 @@ the environment is switched to the DevStack environment.
    cd into the monasa-api root directory. Making sure that the tempest virtual env is still active,
    run the following command.
 
-    ```    
+    ```
     python setup.py install
     ```
 
@@ -104,8 +103,9 @@ You can also use testr to create a list of specific tests for your needs.
 1. In the Tempest root dir:
 
     ```
-    ostestr --regex monasca_tempest_tests
-    ````
+    ostestr --serial --regex monasca_tempest_tests
+    ```
+    ```--serial``` option is necessary here. Monasca tempest tests can't be run in parallel (default option in ostestr) because some tests depend on the same data and will randomly fail.
 
 ## Running/Debugging the Monasca Tempest Tests in PyCharm
 Assuming that you have already created a PyCharm project for the ```monasca-api``` do the following:
