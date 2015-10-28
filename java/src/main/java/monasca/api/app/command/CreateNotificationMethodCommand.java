@@ -70,7 +70,7 @@ public class CreateNotificationMethodCommand {
       case EMAIL : {
         try {
           new InternetAddress(address, true).validate();
-        catch (AddressException e) {	
+        } catch (AddressException e) {	
           throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
         }
       }; break;
