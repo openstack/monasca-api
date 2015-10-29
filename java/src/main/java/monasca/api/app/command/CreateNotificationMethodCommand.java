@@ -69,7 +69,7 @@ public class CreateNotificationMethodCommand {
     switch (type) {
       case EMAIL : {
         try {
-          final InternetAddresse addr = new InternetAddress(address, true);
+          final InternetAddress addr = new InternetAddress(address, true);
 	  if(!address.equals(addr.getAddress())) {
 	    throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);  
 	  }
