@@ -142,9 +142,9 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
 
-        old_state = self._alarms_repo.update_alarm(tenant_id, alarm_id,
-                                                   new_state,
-                                                   lifecycle_state, link)
+        old_state, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
+                                                            new_state,
+                                                            lifecycle_state, link)
 
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
@@ -168,7 +168,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 self._send_alarm_transitioned_event(tenant_id, alarm_id,
                                                     alarm_definition_row,
                                                     alarm_metric_rows,
-                                                    old_state, new_state)
+                                                    old_state, new_state,
+                                                    time_ms)
 
     @resource.resource_try_catch_block
     def _alarm_patch(self, tenant_id, alarm_id, new_state, lifecycle_state,
@@ -177,9 +178,9 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
 
-        old_state = self._alarms_repo.update_alarm(tenant_id, alarm_id,
-                                                   new_state,
-                                                   lifecycle_state, link)
+        old_state, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
+                                                            new_state,
+                                                            lifecycle_state, link)
 
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
@@ -203,7 +204,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 self._send_alarm_transitioned_event(tenant_id, alarm_id,
                                                     alarm_definition_row,
                                                     alarm_metric_rows,
-                                                    old_state, new_state)
+                                                    old_state, new_state,
+                                                    time_ms)
 
     @resource.resource_try_catch_block
     def _alarm_delete(self, tenant_id, id):
