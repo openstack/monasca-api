@@ -15,7 +15,8 @@ package monasca.api.app.command;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.apache.commons.validator.routines.EmailValidator;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.AddressException;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -67,8 +68,14 @@ public class CreateNotificationMethodCommand {
   public void validate() {
     switch (type) {
       case EMAIL : {
-        if (!EmailValidator.getInstance(true).isValid(address))
+        try {
+          final InternetAddress addr = new InternetAddress(address, true);
+	  if(!address.equals(addr.getAddress())) {
+	    throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);  
+	  }
+        } catch (AddressException e) {	
           throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+        }
       }; break;
       case WEBHOOK : {
         String[] schemes = {"http","https"};
