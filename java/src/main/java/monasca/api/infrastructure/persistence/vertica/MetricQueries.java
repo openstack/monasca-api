@@ -26,37 +26,32 @@ import monasca.common.persistence.SqlQueries;
 final class MetricQueries {
   private MetricQueries() {}
 
-  static String buildJoinClauseFor(Map<String, String> dimensions, String tableToJoinName) {
+  static String buildDimensionAndClause(Map<String, String> dimensions, String tableToJoinName) {
 
     StringBuilder sb = null;
 
-    if (dimensions != null) {
+    if (dimensions != null && dimensions.size() > 0) {
 
+      int numDims = dimensions.size();
       sb = new StringBuilder();
+      sb.append(" and " + tableToJoinName + ".dimension_set_id in ")
+        .append("(select dimension_set_id from MonMetrics.Dimensions where ");
 
-      for (int i = 0; i < dimensions.size(); i++) {
-
-        sb
-            .append(" inner join MonMetrics.Dimensions dim")
-            .append(i)
-            .append(" on dim")
-            .append(i)
-            .append(".name = :dname")
-            .append(i)
-            .append(" and dim")
-            .append(i)
-            .append(".value = " + ":dvalue")
-            .append(i)
-            .append(" and " + tableToJoinName + ".dimension_set_id = dim")
-            .append(i)
-            .append(".dimension_set_id");
+      for (int i = 0; i < numDims; i++) {
+        sb.append("name = :dname")
+          .append(i)
+          .append(" and value = :dvalue")
+          .append(i);
+        if (i != (numDims - 1)) {
+           sb.append(" or ");
+        }
       }
+      sb.append(" group by dimension_set_id ")
+        .append(" having count(*) = " + numDims +") ");
     }
 
     return sb == null ? "" : sb.toString();
-
   }
-
 
   static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
 

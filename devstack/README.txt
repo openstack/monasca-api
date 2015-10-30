@@ -20,37 +20,50 @@ More Linux Distributions will be supported as soon as is possible.
 
 Running the Monasca DevStack plugin requires a machine with 10GB of RAM.
 
-Add the following to the DevStack local.conf file.
+Directions for installing an running Devstack can be found here:
 
-# BEGIN DEVSTACK LOCAL.CONF CONTENTS
+    http://docs.openstack.org/developer/devstack/
 
-[[local|localrc]]
-ADMIN_PASSWORD=password
-DATABASE_PASSWORD=$ADMIN_PASSWORD
-RABBIT_PASSWORD=$ADMIN_PASSWORD
-SERVICE_PASSWORD=$ADMIN_PASSWORD
-SERVICE_TOKEN=$ADMIN_PASSWORD
+To run Monasca in DevStack, do the following three steps.
 
-LOGFILE=$DEST/logs/stack.sh.log
-LOGDIR=$DEST/logs
-LOG_COLOR=False
+1. Clone the DevStack repo.
 
-# The following two variables allow switching between Java and Python for the implementations
-# of the Monasca API and the Monasca Persister. If these variables are not set, then the
-# default is to install the Java implementations of both the Monasca API and the Monasca Persister.
+    git clone https://git.openstack.org/openstack-dev/devstack
 
-# Uncomment one of the following two lines to choose Java or Python for the Monasca API.
-MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
-#MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+2. Add the following to the DevStack local.conf file in the root of the devstack directory. You may
+   need to create the local.conf if it does not already exist.
 
-# Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
-MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
-#MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+    # BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
-# This line will enable all of Monasca.
-enable_plugin monasca git://git.openstack.org/openstack/monasca-api
+    [[local|localrc]]
+    ADMIN_PASSWORD=password
+    DATABASE_PASSWORD=$ADMIN_PASSWORD
+    RABBIT_PASSWORD=$ADMIN_PASSWORD
+    SERVICE_PASSWORD=$ADMIN_PASSWORD
+    SERVICE_TOKEN=$ADMIN_PASSWORD
 
-# END DEVSTACK LOCAL.CONF CONTENTS
+    LOGFILE=$DEST/logs/stack.sh.log
+    LOGDIR=$DEST/logs
+    LOG_COLOR=False
+
+    # The following two variables allow switching between Java and Python for the implementations
+    # of the Monasca API and the Monasca Persister. If these variables are not set, then the
+    # default is to install the Java implementations of both the Monasca API and the Monasca Persister.
+
+    # Uncomment one of the following two lines to choose Java or Python for the Monasca API.
+    MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
+    #MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+
+    # Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
+    MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
+    #MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+
+    # This line will enable all of Monasca.
+    enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
+
+    # END DEVSTACK LOCAL.CONF CONTENTS
+
+3.   Run './stack.sh' from the root of the devstack directory.
 
 
 Using Vagrant:
@@ -60,6 +73,6 @@ using the Vagrantfile. After installing Vagrant, just "vagrant up".
 
 Known Issues:
 
-1. The smoke tests do not run successfully with the Python implementations.
+1. The smoke tests do not run to completion successfully with the Python implementations.
 2. The Python Monasca API has various bugs.
 3. The RabbitMQ Check Plugin is not configured correctly.

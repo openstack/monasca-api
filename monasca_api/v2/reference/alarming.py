@@ -44,8 +44,10 @@ class Alarming(object):
     def _send_alarm_transitioned_event(self, tenant_id, alarm_id,
                                        alarm_definition_row,
                                        alarm_metric_rows,
-                                       old_state, new_state):
+                                       old_state, new_state,
+                                       time_ms):
 
+        sub_alarms = []
         metrics = []
         alarm_transitioned_event_msg = {u'alarm-transitioned': {
             u'tenantId': tenant_id,
@@ -58,8 +60,12 @@ class Alarming(object):
             u'severity': alarm_definition_row['severity'],
             u'oldState': old_state,
             u'newState': new_state,
+            u'timestamp': time_ms,
+            u'subAlarms': sub_alarms,
             u'metrics': metrics}
         }
+
+        # TODO(msbielinski): need to populate subalarms
 
         for alarm_metric_row in alarm_metric_rows:
             metric = self._build_metric(alarm_metric_row)

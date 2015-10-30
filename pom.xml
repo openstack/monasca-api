@@ -5,7 +5,7 @@
   <groupId>monasca</groupId>
   <artifactId>monasca-api-base</artifactId>
   <version>1.1.0-SNAPSHOT</version>
-  <url>http://github.com/stackforge/monasca-api</url>
+  <url>http://github.com/openstack/monasca-api</url>
   <packaging>pom</packaging>
 
   <properties>

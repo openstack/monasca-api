@@ -12,7 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime
 from oslo_log import log
+from time import time
 
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
@@ -113,6 +115,8 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
     def update_alarm(self, tenant_id, id, state, lifecycle_state, link):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
+        time_ms = int(round(time() * 1000.0))
+        now = datetime.utcfromtimestamp(time_ms / 1000.0)
 
         with cnxn:
 
@@ -130,12 +134,13 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
             prev_alarm = cursor.fetchone()
 
-            parms = [lifecycle_state, link]
-            set_str = "lifecycle_state = %s, link = %s, updated_at = NOW()"
+            parms = [lifecycle_state, link, now]
+            set_str = "lifecycle_state = %s, link = %s, updated_at = %s"
 
             if state != prev_alarm['state']:
                 parms.append(state)
-                set_str += ",state = %s, state_updated_at = NOW()"
+                parms.append(now)
+                set_str += ",state = %s, state_updated_at = %s"
 
             parms.extend([tenant_id, id])
 
@@ -155,7 +160,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
             cursor.execute(update_query, parms)
 
-            return prev_alarm['state']
+            return prev_alarm['state'], time_ms
 
     @mysql_repository.mysql_try_catch_block
     def delete_alarm(self, tenant_id, id):

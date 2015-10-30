@@ -6,6 +6,21 @@
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 Vagrant.configure(2) do |config|
+
+  # Handle local proxy settings
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    if ENV["http_proxy"]
+      config.proxy.http = ENV["http_proxy"]
+    end
+    if ENV["https_proxy"]
+      config.proxy.https = ENV["https_proxy"]
+    end
+    if ENV["no_proxy"]
+      config.proxy.no_proxy = ENV["no_proxy"]
+    end
+
+  end
+
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
@@ -41,6 +56,8 @@ Vagrant.configure(2) do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
+  config.vm.synced_folder "~/", "/vagrant_home"
+
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
@@ -58,7 +75,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
-    vb.memory = "10240"
+    vb.memory = "12800"
     vb.cpus = 4
   #  vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
@@ -80,7 +97,37 @@ Vagrant.configure(2) do |config|
     sudo apt-get update
     sudo apt-get -y upgrade
     sudo apt-get -y install git
+
+    if [ $http_proxy ]; then
+        git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
+        sudo git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
+
+        protocol=`echo $http_proxy | awk -F: '{print $1}'`
+        host=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $1}'`
+        port=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $2}'`
+
+        echo "<settings>
+                <proxies>
+                    <proxy>
+                        <id>$host</id>
+                        <active>true</active>
+                        <protocol>$protocol</protocol>
+                        <host>$host</host>
+                        <port>$port</port>
+                    </proxy>
+                </proxies>
+               </settings>" > ./maven_proxy_settings.xml
+
+        mkdir ~/.m2
+        cp ./maven_proxy_settings.xml ~/.m2/settings.xml
+
+        sudo mkdir /root/.m2
+        sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
+    fi
+
     git clone https://git.openstack.org/openstack-dev/devstack
+    sudo pip install numpy
+    sudo pip install python-monascaclient
     cd devstack
     git checkout stable/liberty
     echo '[[local|localrc]]
@@ -107,7 +154,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-j
 #MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
 # This line will enable all of Monasca.
-enable_plugin monasca git://git.openstack.org/openstack/monasca-api
+enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
 ' > local.conf
     ./stack.sh
   SHELL
