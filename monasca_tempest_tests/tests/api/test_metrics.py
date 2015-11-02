@@ -421,3 +421,42 @@ class TestMetrics(base.BaseMonascaTest):
             self.assertEqual(str(element['dimensions'][test_key]), test_value)
         if test_name is not None:
             self.assertEqual(str(element['name']), test_name)
+
+    @test.attr(type='gate')
+    def test_list_metrics_with_time_args(self):
+        name = data_utils.rand_name('name')
+        key = data_utils.rand_name('key')
+        value_org = data_utils.rand_name('value')
+
+        now = int(round(time.time() * 1000))
+        #
+        # Built start and end time args before and after the measurement.
+        #
+        start_iso = helpers.timestamp_to_iso(now - 1000)
+        end_timestamp = int(round(now + 1000))
+        end_iso = helpers.timestamp_to_iso(end_timestamp)
+
+        metric = helpers.create_metric(name=name,
+                                       dimensions={key: value_org},
+                                       timestamp=now)
+
+        self.monasca_client.create_metrics(metric)
+        for timer in xrange(constants.MAX_RETRIES):
+            query_parms = '?name=' + name + '&start_time=' + start_iso + '&end_time=' + end_iso
+            resp, response_body = self.monasca_client.list_metrics(query_parms)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            if elements:
+                dimensions = elements[0]
+                dimension = dimensions['dimensions']
+                value = dimension[unicode(key)]
+                self.assertEqual(value_org, str(value))
+                break
+            else:
+                time.sleep(constants.RETRY_WAIT_SECS)
+                if timer == constants.MAX_RETRIES - 1:
+                    skip_msg = "Skipped test_list_metrics_with_time_args: " \
+                               "timeout on waiting for metrics: at least one " \
+                               "metric is needed. Current number of metrics " \
+                               "= 0"
+                    raise self.skipException(skip_msg)

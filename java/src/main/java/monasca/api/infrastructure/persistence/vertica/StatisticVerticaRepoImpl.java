@@ -308,7 +308,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     }
 
     sb.append(" FROM MonMetrics.Measurements ");
-    String inClause = createInClause(defDimIdSet);
+    String inClause = MetricQueries.createDefDimIdInClause(defDimIdSet);
     sb.append("WHERE to_hex(definition_dimensions_id) " + inClause);
     sb.append(createWhereClause(startTime, endTime, offset));
 
@@ -318,29 +318,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     }
 
     sb.append(" limit :limit");
-
-    return sb.toString();
-  }
-
-  private String createInClause(Set<byte[]> defDimIdSet) {
-
-    StringBuilder sb = new StringBuilder("IN ");
-
-    sb.append("(");
-
-    boolean first = true;
-    for (byte[] defDimId : defDimIdSet) {
-
-      if (first) {
-        first = false;
-      } else {
-        sb.append(",");
-      }
-
-      sb.append("'" + Hex.encodeHexString(defDimId) + "'");
-    }
-
-    sb.append(") ");
 
     return sb.toString();
   }

@@ -17,6 +17,7 @@ import com.google.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import monasca.api.ApiConfig;
+import monasca.api.domain.model.measurement.Measurements;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
 import monasca.common.model.metric.MetricDefinition;
@@ -70,7 +72,12 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     Series series = this.objectMapper.readValue(r, Series.class);
 
-    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series, 0);
+    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series,
+                                                                       tenantId,
+                                                                       name,
+                                                                       null,
+                                                                       null,
+                                                                       0);
 
     logger.debug("Found {} metric definitions matching query", metricDefinitionList.size());
 
@@ -81,6 +88,8 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
   @Override
   public List<MetricDefinition> find(String tenantId, String name,
                                      Map<String, String> dimensions,
+                                     DateTime startTime,
+                                     DateTime endTime,
                                      String offset, int limit) throws Exception {
 
     int startIndex = this.influxV9Utils.startIndex(offset);
@@ -100,7 +109,12 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
     Series series = this.objectMapper.readValue(r, Series.class);
 
-    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series, startIndex);
+    List<MetricDefinition> metricDefinitionList = metricDefinitionList(series,
+                                                                       tenantId,
+                                                                       name,
+                                                                       startTime,
+                                                                       endTime,
+                                                                       startIndex);
 
     logger.debug("Found {} metric definitions matching query", metricDefinitionList.size());
 
@@ -134,7 +148,13 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     return metricNameList;
   }
 
-  private List<MetricDefinition> metricDefinitionList(Series series, int startIndex) {
+  private List<MetricDefinition> metricDefinitionList(Series series,
+                                                      String tenantId,
+                                                      String name,
+                                                      DateTime startTime,
+                                                      DateTime endTime,
+                                                      int startIndex)
+  {
 
     List<MetricDefinition> metricDefinitionList = new ArrayList<>();
 
@@ -147,9 +167,14 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
         for (String[] values : serie.getValues()) {
 
           MetricDefinition m = new MetricDefinition(serie.getName(), dims(values, serie.getColumns()));
-          m.setId(String.valueOf(index++));
-          metricDefinitionList.add(m);
-
+          //
+          // If start/end time are specified, ensure we've got measurements
+          // for this definition before we add to the return list
+          //
+          if (hasMeasurements(m, tenantId, startTime, endTime)) {
+            m.setId(String.valueOf(index++));
+            metricDefinitionList.add(m);
+          }
         }
       }
     }
@@ -198,5 +223,66 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     return dims;
   }
 
-}
+  private boolean hasMeasurements(MetricDefinition m,
+                                  String tenantId,
+                                  DateTime startTime,
+                                  DateTime endTime)
+  {
+    boolean hasMeasurements = true;
 
+    //
+    // Only make the additional query if startTime has been
+    // specified.
+    //
+    if (startTime == null) {
+      return hasMeasurements;
+    }
+
+    try {
+
+      String q = buildMeasurementsQuery(tenantId,
+                                        m.name,
+                                        m.dimensions,
+                                        startTime,
+                                        endTime);
+
+      String r = this.influxV9RepoReader.read(q);
+      Series series = this.objectMapper.readValue(r, Series.class);
+      hasMeasurements = !series.isEmpty();
+
+    } catch (Exception e) {
+      //
+      // If something goes wrong with the measurements query
+      // checking if there are current measurements, default to
+      // existing behavior and return the definition.
+      //
+      logger.error("Failed to query for measuremnts for: {}", m.name, e);
+      hasMeasurements = true;
+    }
+
+    return hasMeasurements;
+  }
+
+  private String buildMeasurementsQuery(String tenantId,
+                                       String name,
+                                       Map<String, String> dimensions,
+                                       DateTime startTime,
+                                       DateTime endTime) throws Exception
+  {
+
+    String q = String.format("select value, value_meta %1$s "
+                        + "where %2$s %3$s %4$s %5$s %6$s %7$s slimit 1",
+                        this.influxV9Utils.namePart(name, true),
+                        this.influxV9Utils.privateTenantIdPart(tenantId),
+                        this.influxV9Utils.privateRegionPart(this.region),
+                        this.influxV9Utils.startTimePart(startTime),
+                        this.influxV9Utils.dimPart(dimensions),
+                        this.influxV9Utils.endTimePart(endTime),
+                        this.influxV9Utils.groupByPart());
+
+    logger.debug("Measurements query: {}", q);
+
+    return q;
+  }
+
+}

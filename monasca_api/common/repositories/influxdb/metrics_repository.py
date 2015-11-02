@@ -56,10 +56,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _build_show_series_query(self, dimensions, name, tenant_id, region):
+    def _build_show_series_query(self, dimensions, name, tenant_id, region,
+                                 start_timestamp=None, end_timestamp=None):
 
         where_clause = self._build_where_clause(dimensions, name, tenant_id,
-                                                region)
+                                                region, start_timestamp,
+                                                end_timestamp)
 
         query = 'show series ' + where_clause
 
@@ -152,12 +154,11 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         return from_clause
 
     def list_metrics(self, tenant_id, region, name, dimensions, offset,
-                     limit):
+                     limit, start_timestamp=None, end_timestamp=None):
 
         try:
 
-            query = self._build_show_series_query(dimensions, name, tenant_id,
-                                                  region)
+            query = self._build_show_series_query(dimensions, name, tenant_id, region)
 
             query += " limit {}".format(limit + 1)
 
@@ -166,7 +167,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             result = self.influxdb_client.query(query)
 
-            json_metric_list = self._build_serie_metric_list(result, offset)
+            json_metric_list = self._build_serie_metric_list(result,
+                                                             tenant_id,
+                                                             region,
+                                                             start_timestamp,
+                                                             end_timestamp,
+                                                             offset)
 
             return json_metric_list
 
@@ -181,7 +187,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _build_serie_metric_list(self, series_names, offset):
+    def _build_serie_metric_list(self, series_names, tenant_id, region,
+                                 start_timestamp, end_timestamp,
+                                 offset):
 
         json_metric_list = []
 
@@ -204,12 +212,19 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                         if value and not name.startswith(u'_')
                     }
 
-                    metric = {u'id': str(metric_id),
-                              u'name': series[u'name'],
-                              u'dimensions': dimensions}
-                    metric_id += 1
+                    if self._has_measurements(tenant_id,
+                                              region,
+                                              series[u'name'],
+                                              dimensions,
+                                              start_timestamp,
+                                              end_timestamp):
 
-                    json_metric_list.append(metric)
+                        metric = {u'id': str(metric_id),
+                                  u'name': series[u'name'],
+                                  u'dimensions': dimensions}
+                        metric_id += 1
+
+                        json_metric_list.append(metric)
 
         return json_metric_list
 
@@ -432,6 +447,37 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             offset_clause = " limit {}".format(str(limit + 1))
 
         return offset_clause
+
+    def _has_measurements(self, tenant_id, region, name, dimensions,
+                          start_timestamp, end_timestamp):
+
+        has_measurements = True
+
+        #
+        # No need for the additional query if we don't have a start timestamp.
+        #
+        if not start_timestamp:
+            return True
+
+        #
+        # We set limit to 1 for the measurement_list call, as we are only
+        # interested in knowing if there is at least one measurement, and
+        # not ask too much of influxdb.
+        #
+        measurements = self.measurement_list(tenant_id,
+                                             region,
+                                             name,
+                                             dimensions,
+                                             start_timestamp,
+                                             end_timestamp,
+                                             0,
+                                             1,
+                                             False)
+
+        if len(measurements) == 0:
+            has_measurements = False
+
+        return has_measurements
 
     def alarm_history(self, tenant_id, alarm_id_list,
                       offset, limit, start_timestamp=None,
