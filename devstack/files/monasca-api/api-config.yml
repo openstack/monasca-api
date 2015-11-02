@@ -97,10 +97,10 @@ middleware:
   agentAuthorizedRoles: [monasca-agent]
   adminAuthMethod: token
   adminUser: "admin"
-  adminPassword: ""
+  adminPassword: "secretadmin"
   adminProjectId:
   adminProjectName:
-  adminToken: "password"
+  adminToken: "111222333444"
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576
 
