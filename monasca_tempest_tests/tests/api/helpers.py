@@ -81,40 +81,18 @@ def create_alarm_definition(name=None,
 
 
 def create_alarms_for_test_alarms(self, num):
-    # create an alarm definition
-    expression = "avg(name-1) > 0"
-    name = data_utils.rand_name('name-1')
-    alarm_definition = create_alarm_definition(
-        name=name, expression=expression)
-    self.monasca_client.create_alarm_definitions(
-        alarm_definition)
-
-    if num > 1:
-        # create more alarm definitions
-        expression = "min(name-1) > 0"
+    for num in xrange(num):
+        # create an alarm definition
+        expression = "avg(name-1) > 0"
         name = data_utils.rand_name('name-1')
-        alarm_definition = create_alarm_definition(
-            name=name, expression=expression)
-        self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-
-        expression = "max(name-1) > 0"
-        name = data_utils.rand_name('name-1')
-        alarm_definition = create_alarm_definition(
-            name=name, expression=expression)
-        self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-
-        name = data_utils.rand_name('alarm_definition')
-        expression = "min(cpu.system_perc) > 0"
         alarm_definition = create_alarm_definition(
             name=name, expression=expression)
         self.monasca_client.create_alarm_definitions(
             alarm_definition)
 
     # create some metrics
-    for i in range(0, 180):
-        metric = create_metric()
+    for i in xrange(180):
+        metric = create_metric(name='name-1')
         self.monasca_client.create_metrics(metric)
         time.sleep(1)
         resp, response_body = self.monasca_client.list_alarms()
@@ -136,7 +114,7 @@ def delete_alarm_definitions(self):
 def create_alarm_definitions_with_num(cls, expression):
     cls.rule = {'expression': 'mem_total_mb > 0'}
     alarm_def_id = []
-    for i in range(0, NUM_ALARM_DEFINITIONS):
+    for i in xrange(NUM_ALARM_DEFINITIONS):
         alarm_definition = create_alarm_definition(
             name='alarm-definition-' + str(i),
             description=data_utils.rand_name('description'),
@@ -156,3 +134,64 @@ def create_alarm_definition_for_test_alarm_definition():
         description="description",
         expression=expression)
     return alarm_definition
+
+
+def create_metrics_for_test_alarms_match_by(cls, num, sub_expressions, list):
+    # list=True when match_by is a set
+    # sub_expressions=True when expression of the alarm has multiple
+    # sub expressions
+    # create some metrics
+    for i in xrange(180):
+        if list:
+            metric1 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
+                            'device': '/dev/sda1'})
+            metric2 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'devstack',
+                            'device': '/dev/sda1'})
+            metric3 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
+                            'device': 'tmpfs'})
+            metric4 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'devstack',
+                            'device': 'tmpfs'})
+            cls.monasca_client.create_metrics(metric1)
+            cls.monasca_client.create_metrics(metric2)
+            cls.monasca_client.create_metrics(metric3)
+            cls.monasca_client.create_metrics(metric4)
+            time.sleep(1)
+            resp, response_body = cls.monasca_client.list_alarms()
+            elements = response_body['elements']
+            if len(elements) >= num:
+                break
+        else:
+            metric1 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'mini-mon'})
+            metric2 = create_metric(
+                name='cpu.idle_perc',
+                dimensions={'service': 'monitoring', 'hostname': 'devstack'})
+            cls.monasca_client.create_metrics(metric1)
+            cls.monasca_client.create_metrics(metric2)
+            if sub_expressions:
+                metric3 = create_metric(
+                    name='cpu.user_perc',
+                    dimensions={'service': 'monitoring',
+                                'hostname': 'mini-mon'})
+                metric4 = create_metric(
+                    name='cpu.user_perc',
+                    dimensions={'service': 'monitoring',
+                                'hostname': 'devstack'})
+                cls.monasca_client.create_metrics(metric3)
+                cls.monasca_client.create_metrics(metric4)
+            else:
+                pass
+            time.sleep(1)
+            resp, response_body = cls.monasca_client.list_alarms()
+            elements = response_body['elements']
+            if len(elements) >= num:
+                break
