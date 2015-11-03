@@ -53,7 +53,7 @@ class TestVersions(testing.TestBase):
         self.assertEqual(version['id'], u'v2.0')
         self.assertEqual(version['status'], u'CURRENT')
         date_object = datetime.datetime.strptime(version['updated'],
-                                                 "%Y-%m-%dT%H:%M:%SZ")
+                                                 "%Y-%m-%dT%H:%M:%S.%fZ")
         self.assertTrue(isinstance(date_object, datetime.datetime))
         links = response['links']
         self.assertTrue(isinstance(links, list))

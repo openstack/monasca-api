@@ -23,6 +23,7 @@ from oslo_log import log
 import simplejson
 
 from monasca_api.common.repositories import constants
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import dimensions_schema
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
 from monasca_api.v2.common.schemas import metric_name_schema
@@ -130,7 +131,7 @@ def get_query_param(req, param_name, required=False, default_val=None):
                 return default_val
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_name(req, name_required=False):
@@ -150,7 +151,7 @@ def get_query_name(req, name_required=False):
                 return ''
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_dimensions(req):
@@ -183,7 +184,7 @@ def get_query_dimensions(req):
         return dimensions
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_starttime_timestamp(req, required=True):
@@ -198,7 +199,7 @@ def get_query_starttime_timestamp(req, required=True):
                 return None
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_endtime_timestamp(req, required=True):
@@ -213,7 +214,7 @@ def get_query_endtime_timestamp(req, required=True):
                 return None
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def _convert_time_string(date_time_string):
@@ -241,7 +242,7 @@ def get_query_statistics(req):
             raise Exception("Missing statistics")
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_period(req):
@@ -253,7 +254,7 @@ def get_query_period(req):
             return None
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def validate_query_name(name):
@@ -266,7 +267,7 @@ def validate_query_name(name):
         metric_name_schema.validate(name)
     except schemas_exceptions.ValidationException as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def validate_query_dimensions(dimensions):
@@ -279,7 +280,7 @@ def validate_query_dimensions(dimensions):
         dimensions_schema.validate(dimensions)
     except schemas_exceptions.ValidationException as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def paginate(resource, uri, limit):
@@ -507,9 +508,7 @@ def read_http_resource(req):
         return json_msg
     except ValueError as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest(
-            'Bad request',
-            'Request body is not valid JSON')
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', 'Request body is not valid JSON')
 
 
 def raise_not_found_exception(resource_name, resource_id, tenant_id):
