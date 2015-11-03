@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 # Copyright 2014 Hewlett-Packard
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -234,7 +235,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                                  dimensions, None, 2)
 
                 if len(metrics_list) > 1:
-                    raise (exceptions.RepositoryException(
+                    raise (exceptions.MultipleMetricsException(
                         MetricsRepository.MULTIPLE_METRICS_MESSAGE))
 
             query = self._build_select_measurement_query(dimensions, name,
@@ -341,7 +342,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                                  dimensions, None, 2)
 
                 if len(metrics_list) > 1:
-                    raise (exceptions.RepositoryException(
+                    raise (exception.MultipleMetricsException(
                         MetricsRepository.MULTIPLE_METRICS_MESSAGE))
 
             query = self._build_statistics_query(dimensions, name, tenant_id,
