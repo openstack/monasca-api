@@ -37,19 +37,33 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
     @staticmethod
     def cleanup_resources(method, list_of_ids):
         # for resource_id in list_of_ids:
-        #     try:
-        #         method(resource_id)
-        #     except exceptions.NotFound:
-        #         pass
+        #   try:
+        #        method(resource_id)
+        #    except exceptions.NotFound:
+        #       pass
         pass
 
     @classmethod
     def resource_cleanup(cls):
         super(BaseMonascaTest, cls).resource_cleanup()
-        # resp, response_body = cls.monasca_client.list_alarm_definitions()
-        # elements = response_body['elements']
-        # for definition in elements:
-        #     id = definition['id']
-        #     resp, response_body = cls.monasca_client. \
-        #         delete_alarm_definition(id)
+#        resp, response_body = cls.monasca_client.list_alarm_definitions()
+#        elements = response_body['elements']
+#        if elements:
+#            for element in elements:
+#                id = element['id']
+#                cls.monasca_client.delete_alarm_definition(id)
+
+#        resp, response_body = cls.monasca_client.list_notification_methods()
+#        elements = response_body['elements']
+#        if elements:
+#            for element in elements:
+#                id = element['id']
+#               cls.monasca_client.delete_notification_method(id)
+
+#        resp, response_body = cls.monasca_client.list_alarms()
+#        elements = response_body['elements']
+#        if elements:
+#            for element in elements:
+#                id = element['id']
+#                cls.monasca_client.delete_alarm(id)
         pass
