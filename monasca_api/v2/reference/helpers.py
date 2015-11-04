@@ -546,10 +546,8 @@ def get_limit(req):
             else:
                 return limit
         else:
-            raise falcon.HTTPBadRequest("Invalid limit",
-                                        "Limit "
-                                        "parameter must "
-                                        "be "
-                                        "an integer")
+            raise HTTPUnprocessableEntityError("Invalid limit",
+                                               "Limit parameter must "
+                                               "be a positive integer")
     else:
         return constants.PAGE_LIMIT

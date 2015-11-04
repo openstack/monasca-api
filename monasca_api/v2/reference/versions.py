@@ -18,6 +18,7 @@ import falcon
 from oslo_log import log
 
 from monasca_api.api import versions_api
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
 LOG = log.getLogger(__name__)
 VERSIONS = {
@@ -59,5 +60,5 @@ class Versions(versions_api.VersionsAPI):
                 res.body = json.dumps(VERSIONS[version_id])
                 res.status = falcon.HTTP_200
             else:
-                res.body = 'Invalid Version ID'
-                res.status = falcon.HTTP_400
+                raise HTTPUnprocessableEntityError('Invalid version',
+                                                   'No versions found matching ' + version_id)
