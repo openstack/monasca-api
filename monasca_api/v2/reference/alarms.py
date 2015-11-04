@@ -21,6 +21,7 @@ import simport
 
 from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
 from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
@@ -55,14 +56,14 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         # Validator makes state optional, so check it here
         if 'state' not in alarm or not alarm['state']:
-            raise falcon.HTTPBadRequest('Bad request',
-                                        "Field 'state' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'state' is required")
         if 'lifecycle_state' not in alarm or not alarm['lifecycle_state']:
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        "Field 'lifecycle_state' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'lifecycle_state' is required")
         if 'link' not in alarm or not alarm['link']:
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        "Field 'link' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'link' is required")
 
         self._alarm_update(tenant_id, alarm_id, alarm['state'],
                            alarm['lifecycle_state'], alarm['link'])

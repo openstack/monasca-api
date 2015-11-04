@@ -65,4 +65,4 @@ class TestVersions(testing.TestBase):
 
     def test_invalid_version_id(self):
         self.simulate_request('/versions/v1.0')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, '422 Unprocessable Entity')
