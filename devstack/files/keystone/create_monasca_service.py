@@ -157,6 +157,12 @@ def main():
   if not add_user_roles(key, users):
     return 1
 
+  # Add monasca-user role to the demo user so that demo user runs with Tempest tests.
+  demo_user = [{'username': 'demo', 'project': 'demo', 'password': 'secretadmin', 'role': 'monasca-user'}]
+
+  if not add_user_roles(key, demo_user):
+    return 1
+
   if not add_service_endpoint(key, 'monasca', 'Monasca monitoring service', 'monitoring', 'http://127.0.0.1:8070/v2.0', 'RegionOne'):
     return 1
 
