@@ -272,3 +272,42 @@ class TestMeasurements(base.BaseMonascaTest):
             start_time) + '&end_time=' + str(end_time)
         self.assertRaises(exceptions.Conflict,
                           self.monasca_client.list_measurements, query_parms)
+
+    @test.attr(type="gate")
+    def test_list_measurements_with_duplicate_query_param_merges_positive(
+            self):
+        end_timestamp = int(time.time())
+        end_time = timeutils.iso8601_from_timestamp(end_timestamp)
+        start_time = timeutils.iso8601_from_timestamp(
+            self._start_timestamp3 / 1000)
+        queries = []
+        queries.append('?name={}&merge_metrics=true&start_time={}&end_time={'
+                       '}&merge_metrics=true'.
+                       format(self._name, start_time, end_time))
+        queries.append('?name={}&merge_metrics=true&start_time={}&end_time={'
+                       '}&merge_metrics=false'.
+                       format(self._name, start_time, end_time))
+        responses = map(self.monasca_client.list_measurements, queries)
+        for i in xrange(2):
+            resp = responses[i][0]
+            self.assertEqual(200, resp.status)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_measurements_with_duplicate_query_param_merges_negative(
+            self):
+        end_timestamp = int(time.time())
+        end_time = timeutils.iso8601_from_timestamp(end_timestamp)
+        start_time = timeutils.iso8601_from_timestamp(
+            self._start_timestamp3 / 1000)
+        queries = []
+        queries.append('?name={}&merge_metrics=false&start_time={}&end_time={'
+                       '}&merge_metrics=true'.
+                       format(self._name, start_time, end_time))
+        queries.append('?name={}&merge_metrics=false&start_time={}&end_time={'
+                       '}&merge_metrics=false'.
+                       format(self._name, start_time, end_time))
+        for i in xrange(2):
+            self.assertRaises(exceptions.Conflict,
+                              self.monasca_client.list_measurements,
+                              queries[i])
