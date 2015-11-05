@@ -34,6 +34,9 @@ def list_item_length(v):
     if not isinstance(v, list):
         raise Invalid('Not a list: {}'.format(type(v)))
     for i in v:
+        if not isinstance(i, (str, unicode)):
+            raise Invalid('list item <{}> -> {} not one of (str, unicode)'
+                          .format(i, type(i)))
         if len(i) > MAX_ITEM_LENGTH:
             raise Invalid('length {} > {}'.format(len(i), MAX_ITEM_LENGTH))
 
