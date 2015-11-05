@@ -452,7 +452,7 @@ If desired, an Alarm Definition can be created that exactly matches a set of met
 
 Alarms have a state that is set by the Threshold Engine based on the incoming metrics.
 
-* UNDETERMINED - No metrics for at least one of the subexpressions has been received in (period + 2) times periods (see below for definition of period and periods
+* UNDETERMINED - No metrics for at least one of the subexpressions has been received in any period for a least 2 * periods (see below for definition of period and periods
 * OK - Metrics have been received and the Alarm Definition Expression evaluates to false for the given metrics
 * ALARM - Metrics have been received and the Alarm Definition Expression evaluates to true for the given metrics
 
