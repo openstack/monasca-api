@@ -51,7 +51,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_name(self):
         notification = helpers.create_notification(name=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -59,7 +59,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_type(self):
         notification = helpers.create_notification(type=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -67,7 +67,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_address(self):
         notification = helpers.create_notification(address=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -76,7 +76,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     def test_create_notification_method_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_NOTIFICATION_METHOD_NAME_LENGTH + 1)
         notification = helpers.create_notification(name=long_name)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -86,7 +86,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         long_address = "x" * (
             constants.MAX_NOTIFICATION_METHOD_ADDRESS_LENGTH + 1)
         notification = helpers.create_notification(address=long_address)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -300,7 +300,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         new_name_long = "x" * (constants.MAX_NOTIFICATION_METHOD_NAME_LENGTH
                                + 1)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.update_notification_method, id,
                           name=new_name_long, type=response_body['type'],
                           address=response_body['address'])
