@@ -24,6 +24,7 @@ from tempest import test
 from tempest_lib import exceptions
 
 NUM_MEASUREMENTS = 100
+WAIT_TIME = 30
 
 
 class TestMeasurements(base.BaseMonascaTest):
@@ -106,7 +107,7 @@ class TestMeasurements(base.BaseMonascaTest):
                        format(cls._name2, start_time, end_time))
 
         for i in xrange(3):
-            while True:
+            for timer in xrange(WAIT_TIME):
                 responses = map(cls.monasca_client.list_measurements, queries)
                 resp = responses[i][0]
                 response_body = responses[i][1]
@@ -137,16 +138,20 @@ class TestMeasurements(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_measurements(
             query_parms)
         self.assertEqual(200, resp.status)
-
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
-        element = elements[0]
-        self.assertTrue(set(['id', 'name', 'dimensions', 'columns',
-                             'measurements']) == set(element))
-        self.assertTrue(type(element['name']) is unicode)
-        self.assertTrue(type(element['dimensions']) is dict)
-        self.assertTrue(type(element['columns']) is list)
-        self.assertTrue(type(element['measurements']) is list)
+        if elements:
+            element = elements[0]
+            self.assertTrue(set(['id', 'name', 'dimensions', 'columns',
+                                 'measurements']) == set(element))
+            self.assertTrue(type(element['name']) is unicode)
+            self.assertTrue(type(element['dimensions']) is dict)
+            self.assertTrue(type(element['columns']) is list)
+            self.assertTrue(type(element['measurements']) is list)
+        else:
+            error_msg = "Failed test_list_measurements: at least one " \
+                        "element is needed. Number of element = 0."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
@@ -173,9 +178,22 @@ class TestMeasurements(base.BaseMonascaTest):
                       '&dimensions=' + self._key1 + ':' + self._value1
         resp, response_body = self.monasca_client.list_measurements(
             query_parms)
-        value_new = response_body['elements'][0]['measurements'][0][1]
-        self.assertEqual(200, resp.status)
-        self.assertEqual(123, value_new)
+        elements = response_body['elements']
+        if elements:
+            measurements = elements[0]['measurements']
+            if measurements:
+                value_new = measurements[0][1]
+                self.assertEqual(200, resp.status)
+                self.assertEqual(123, value_new)
+            else:
+                error_msg = "Failed test_list_measurements_with_dimensions:" \
+                            " one specific measurement is needed. Number of " \
+                            "measurements = 0"
+                self.fail(error_msg)
+        else:
+            error_msg = "Failed test_list_measurements_with_dimensions: at " \
+                        "least one element is needed. Number of elements = 0"
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_measurements_with_endtime(self):
@@ -186,8 +204,21 @@ class TestMeasurements(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_measurements(
             query_parms)
         self.assertEqual(200, resp.status)
-        len_measurements = len(response_body['elements'][0]['measurements'])
-        self.assertEqual(len_measurements, NUM_MEASUREMENTS)
+        elements = response_body['elements']
+        if elements:
+            measurements = elements[0]['measurements']
+            if measurements:
+                len_measurements = len(measurements)
+                self.assertEqual(len_measurements, NUM_MEASUREMENTS)
+            else:
+                error_msg = "Failed test_list_measurements_with_endtime: not " \
+                            "enough measurements to test. Number of " \
+                            "measurements = 0"
+                self.fail(error_msg)
+        else:
+            error_msg = "Failed test_list_measurements: at least one " \
+                        "element is needed. Number of element = 0."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_measurements_with_offset_limit(self):
@@ -203,9 +234,22 @@ class TestMeasurements(base.BaseMonascaTest):
                       '&end_time=' + end_time
         resp, body = self.monasca_client.list_measurements(query_parms)
         self.assertEqual(200, resp.status)
-        elements = body['elements'][0]['measurements']
-        first_element = elements[0]
-        last_element = elements[3]
+        elements = body['elements']
+        if elements:
+            measurements = elements[0]['measurements']
+            if measurements:
+                first_measurement = measurements[0]
+                last_measurement = measurements[3]
+            else:
+                error_msg = "Failed " \
+                            "test_list_measurements_with_offset_limit: not " \
+                            "enough measurements to test. Number of " \
+                            "measurements = 0"
+                self.fail(error_msg)
+        else:
+            error_msg = "Failed test_list_measurements: at least one " \
+                        "element is needed. Number of element = 0."
+            self.fail(error_msg)
 
         query_parms = '?name=' + str(self._name2) + \
                       '&merge_metrics=true&start_time=' + str(start_time) + \
@@ -214,32 +258,39 @@ class TestMeasurements(base.BaseMonascaTest):
             query_parms)
         self.assertEqual(200, resp.status)
 
-        elements = response_body['elements'][0]['measurements']
-        self.assertEqual(4, len(elements))
-
-        self.assertEqual(first_element, elements[0])
-
+        elements = response_body['elements']
+        element = elements[0]
+        measurements = element['measurements']
+        self.assertEqual(4, len(measurements))
+        self.assertEqual(first_measurement, measurements[0])
+        timeout = time.time() + 60 * 1   # 1 minute timeout
         for limit in xrange(1, 5):
-            next_element = elements[limit - 1]
+            next_measurement = measurements[limit - 1]
             while True:
-                query_parms = '?name=' + str(self._name2) + \
-                              '&merge_metrics=true&start_time=' + \
-                              str(start_time) + '&end_time=' + end_time + \
-                              '&offset=' + str(next_element[0]) + '&limit=' + \
-                              str(limit)
-                resp, response_body = self.monasca_client.\
-                    list_measurements(query_parms)
-                self.assertEqual(200, resp.status)
-                new_elements = response_body['elements'][0]['measurements']
-
-                if len(new_elements) > limit - 1:
-                    self.assertEqual(limit, len(new_elements))
-                    next_element = new_elements[limit - 1]
-                elif 0 < len(new_elements) <= limit - 1:
-                    self.assertEqual(last_element, new_elements[0])
-                    break
+                if time.time() >= timeout:
+                    msg = "Failed test_list_measurements_with_offset_limit: " \
+                          "one minute timeout on offset limit test loop."
+                    raise exceptions.TimeoutException(msg)
                 else:
-                    self.assertEqual(last_element, next_element)
+                    query_parms = '?name=' + str(self._name2) + \
+                                  '&merge_metrics=true&start_time=' + \
+                                  str(start_time) + '&end_time=' + end_time + \
+                                  '&offset=' + str(next_measurement[0]) + \
+                                  '&limit=' + str(limit)
+                    resp, response_body = self.monasca_client.\
+                        list_measurements(query_parms)
+                    self.assertEqual(200, resp.status)
+                    element = response_body['elements'][0]
+                    new_measurement = element['measurements']
+
+                    if len(new_measurement) > limit - 1:
+                        self.assertEqual(limit, len(new_measurement))
+                        next_measurement = new_measurement[limit - 1]
+                    elif 0 < len(new_measurement) <= limit - 1:
+                        self.assertEqual(last_measurement, new_measurement[0])
+                        break
+                    else:
+                        self.assertEqual(last_measurement, next_measurement)
                     break
 
     @test.attr(type="gate")

@@ -30,6 +30,9 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         super(TestAlarmsStateHistory, cls).resource_setup()
 
         start_timestamp = int(time.time() * 1000)
+        beginning_timestamp = int(time.time()) - 60
+        cls._beginning_time = timeutils.iso8601_from_timestamp(
+            beginning_timestamp)
         end_timestamp = int(time.time() * 1000) + 1000
 
         # create an alarm definition
@@ -76,12 +79,11 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         # Test response body
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
-
         number_of_alarms = len(elements)
         if number_of_alarms < 1:
-            skip_msg = "Skipped test_list_alarms_state_history: need " \
-                       "at least one alarms state history to test."
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_state_history: need " \
+                        "at least one alarms state history to test."
+            self.fail(error_msg)
         else:
             element = elements[0]
             self.assertTrue(set(['id', 'alarm_id', 'metrics', 'old_state',
@@ -92,14 +94,9 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_dimensions(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
-        number_of_alarms = len(response_body['elements'])
-        if number_of_alarms < 1:
-            skip_msg = "Skipped test_list_alarms_state_history_with_" \
-                       "dimensions: need at least one alarms state history " \
-                       "to test."
-            raise self.skipException(skip_msg)
-        else:
-            element = response_body['elements'][0]
+        elements = response_body['elements']
+        if elements:
+            element = elements[0]
             dimension = element['metrics'][0]['dimensions']
             dimension_items = dimension.items()
             dimension_item = dimension_items[0]
@@ -109,24 +106,29 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
             query_parms = '?dimensions=' + str(dimension_item_0) + ':' + str(
                 dimension_item_1)
-            resp, response_body = self.monasca_client.list_alarms_state_history(
-                query_parms)
+            resp, response_body = self.monasca_client.\
+                list_alarms_state_history(query_parms)
             name_new = response_body['elements'][0]['metrics'][0]['name']
             self.assertEqual(200, resp.status)
             self.assertEqual(name, name_new)
+        else:
+            error_msg = "Failed test_list_alarms_state_history_with_" \
+                        "dimensions: need at least one alarms state history " \
+                        "to test."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_start_time(self):
         current_timestamp = int(time.time())
         current_time = timeutils.iso8601_from_timestamp(current_timestamp)
         end_time = timeutils.iso8601_from_timestamp(current_timestamp + 120)
-        query_parms = '?start_time=' + str(current_time) + '&end_time=' + str(end_time)
+        query_parms = '?start_time=' + str(current_time) + '&end_time=' + \
+                      str(end_time)
         resp, response_body = self.monasca_client.list_alarms_state_history(
             query_parms)
         elements = response_body['elements']
         self.assertEqual(0, len(elements))
         return
-        # TODO(Kaiyan): check monasca-api code and also try new InfluxDB
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         timestamp = elements[1]['timestamp']
@@ -138,15 +140,12 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_end_time(self):
-        end_timestamp = self._start_timestamp
-        end_time = timeutils.iso8601_from_timestamp(end_timestamp / 1000)
-        query_parms = '?end_time=' + str(end_time)
+        query_parms = '?end_time=' + str(self._beginning_time)
         resp, response_body = self.monasca_client.list_alarms_state_history(
             query_parms)
         elements = response_body['elements']
         self.assertEqual(0, len(elements))
         return
-        # TODO(Kaiyan): check monasca-api code and also try new InfluxDB
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         timestamp = elements[2]['timestamp']
@@ -161,11 +160,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         number_of_alarms = len(elements)
-        if number_of_alarms < 3:
-            skip_msg = "Skipped test_list_alarms_state_history_with_offset_" \
-                       "limit: need three alarms state history to test."
-            raise self.skipException(skip_msg)
-        else:
+        if number_of_alarms >= 3:
             first_element = elements[0]
             last_element = elements[2]
             first_element_id = first_element['id']
@@ -183,6 +178,13 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
                 self.assertEqual(limit, len(elements))
                 id_new = element_new['id']
                 self.assertEqual(id_new, first_element_id)
+        else:
+                error_msg = ("Failed "
+                             "test_list_alarms_state_history_with_offset "
+                             "limit: need three alarms state history to "
+                             "test. Current number of alarms = {}").\
+                    format(number_of_alarms)
+                self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarm_state_history(self):
@@ -190,12 +192,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
-        number_of_alarms = len(elements)
-        if number_of_alarms < 1:
-            skip_msg = "Skipped test_list_alarm_state_history: not the " \
-                       "correct number of alarms state history to test"
-            raise self.skipException(skip_msg)
-        else:
+        if elements:
             element = elements[0]
             alarm_id = element['alarm_id']
             resp, response_body = self.monasca_client.list_alarm_state_history(
@@ -217,6 +214,10 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
                                  'old_state', 'reason', 'reason_data',
                                  'sub_alarms', 'timestamp']) ==
                             set(definition))
+        else:
+            error_msg = "Failed test_list_alarm_state_history: at least one " \
+                        "alarm state history is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarm_state_history_with_offset_limit(self):
@@ -224,13 +225,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
-        number_of_alarms = len(elements)
-        if number_of_alarms < 1:
-            skip_msg = "Skipped test_list_alarm_state_history_with_offset" \
-                       "_limit: need at least one alarms state history to " \
-                       "test."
-            raise self.skipException(skip_msg)
-        else:
+        if elements:
             element = elements[0]
             alarm_id = element['alarm_id']
             query_parms = '?limit=1'
@@ -248,3 +243,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             self.assertEqual(1, len(elements_new))
             self.assertEqual(element, elements_new[0])
+        else:
+            error_msg = "Failed test_list_alarm_state_history_with_offset" \
+                        "_limit: at least one alarms state history is needed."
+            self.fail(error_msg)

@@ -15,6 +15,8 @@
 # TODO(RMH): Validate whether a 200 or 201 should be returned and resolve.
 # TODO(RMH): Documentation says 200, but a 201 is being returned.
 
+import time
+
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
@@ -164,25 +166,31 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(4, len(elements))
         self.assertEqual(first_element, elements[0])
 
+        timeout = time.time() + 60 * 1   # 1 minute timeout
         for limit in xrange(1, 5):
             next_element = elements[limit - 1]
             while True:
-                query_parms = '?offset=' + str(next_element['id']) + \
-                              '&limit=' + str(limit)
-                resp, response_body = self.monasca_client.\
-                    list_notification_methods(query_parms)
-                self.assertEqual(200, resp.status)
-                new_elements = response_body['elements']
-
-                if len(new_elements) > limit - 1:
-                    self.assertEqual(limit, len(new_elements))
-                    next_element = new_elements[limit - 1]
-                elif 0 < len(new_elements) <= limit - 1:
-                    self.assertEqual(last_element, new_elements[0])
-                    break
+                if time.time() < timeout:
+                    query_parms = '?offset=' + str(next_element['id']) + \
+                                  '&limit=' + str(limit)
+                    resp, response_body = self.monasca_client.\
+                        list_notification_methods(query_parms)
+                    self.assertEqual(200, resp.status)
+                    new_elements = response_body['elements']
+                    if len(new_elements) > limit - 1:
+                        self.assertEqual(limit, len(new_elements))
+                        next_element = new_elements[limit - 1]
+                    elif 0 < len(new_elements) <= limit - 1:
+                        self.assertEqual(last_element, new_elements[0])
+                        break
+                    else:
+                        self.assertEqual(last_element, next_element)
+                        break
                 else:
-                    self.assertEqual(last_element, next_element)
-                    break
+                    msg = "Failed " \
+                          "test_list_notification_methods_with_offset_limit:" \
+                          " one minute timeout on offset limit test loop."
+                    raise exceptions.TimeoutException(msg)
 
         resp, response_body = self.monasca_client.\
             delete_notification_method(id1)
