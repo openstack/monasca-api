@@ -148,7 +148,9 @@ function extra_monasca {
 
     install_monasca_default_alarms
 
-    install_monasca_horizon_ui
+    if is_service_enabled horizon; then
+        install_monasca_horizon_ui
+    fi
 
     install_monasca_smoke_test
 }
@@ -1150,7 +1152,7 @@ function install_monasca_keystone_client {
 
     sudo chmod 0700 /usr/local/bin/create_monasca_service.py
 
-    sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py
+    sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST}
 
 }
 
