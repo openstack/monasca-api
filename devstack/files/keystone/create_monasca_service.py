@@ -125,7 +125,7 @@ def add_monasca_service():
   return True
 
 
-def main():
+def main(argv):
   """ Get token if needed and then call methods to add tenants, users and roles """
   users = [{'username': 'mini-mon', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-user'}, {'username': 'monasca-agent', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-agent'}]
 
@@ -163,11 +163,14 @@ def main():
   if not add_user_roles(key, demo_user):
     return 1
 
-  if not add_service_endpoint(key, 'monasca', 'Monasca monitoring service', 'monitoring', 'http://127.0.0.1:8070/v2.0', 'RegionOne'):
+  service_host = argv[0]
+  monasca_url = 'http://' + service_host + ':8070/v2.0'
+
+  if not add_service_endpoint(key, 'monasca', 'Monasca monitoring service', 'monitoring', monasca_url, 'RegionOne'):
     return 1
 
   return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
