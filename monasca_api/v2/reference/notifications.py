@@ -19,7 +19,6 @@ import simport
 
 from monasca_api.api import notifications_api_v2
 from monasca_api.common.repositories import exceptions
-from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import (
     notifications_request_body_schema as schemas_notifications)
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
@@ -50,7 +49,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             schemas_notifications.validate(notification)
         except schemas_exceptions.ValidationException as ex:
             LOG.debug(ex)
-            raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+            raise falcon.HTTPBadRequest('Bad Request', ex.message)
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
         notification = self._notifications_repo.find_notification_by_name(tenant_id, name)
