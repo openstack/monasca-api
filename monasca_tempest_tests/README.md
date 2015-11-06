@@ -108,7 +108,9 @@ You can also use testr to create a list of specific tests for your needs.
     ```--serial``` option is necessary here. Monasca tempest tests can't be run in parallel (default option in ostestr) because some tests depend on the same data and will randomly fail.
 
 ## Running/Debugging the Monasca Tempest Tests in PyCharm
+
 Assuming that you have already created a PyCharm project for the ```monasca-api``` do the following:
+
 1. In PyCharm, Edit Configurations and add a new Python tests configuration by selecting Python tests->Nosetests.
 2. Name the test. For example TestVersions.
 3. Set the path to the script with the tests to run. For example, ~/repos/monasca-api/monasca_tempest_tests/api/test_versions.py
