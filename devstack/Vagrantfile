@@ -7,6 +7,10 @@
 # you're doing.
 Vagrant.configure(2) do |config|
 
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+  end
+
   # Handle local proxy settings
   if Vagrant.has_plugin?("vagrant-proxyconf")
     if ENV["http_proxy"]
@@ -16,113 +20,54 @@ Vagrant.configure(2) do |config|
       config.proxy.https = ENV["https_proxy"]
     end
     if ENV["no_proxy"]
-      config.proxy.no_proxy = ENV["no_proxy"] + ',192.168.10.6,10.0.2.15'
+      config.proxy.no_proxy = ENV["no_proxy"] + ', 192.168.10.6, 10.0.2.15'
     end
 
   end
 
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
-
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
-
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
-
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
-
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.network "private_network", ip: "192.168.10.6"
   config.vm.hostname = "devstack"
-
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
-
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
-
+  config.vm.box = "ubuntu/trusty64"
+  # config.vm.box_check_update = false
+  config.vm.network :private_network, ip: "192.168.10.6"
   config.vm.synced_folder "~/", "/vagrant_home"
-
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
 
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
     vb.memory = "12800"
     vb.cpus = 4
-  #  vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
+    # vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
-
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   sudo apt-get update
-  #   sudo apt-get install -y apache2
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     sudo apt-get update
     sudo apt-get -y upgrade
     sudo apt-get -y install git
 
     if [ $http_proxy ]; then
-        git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
-        sudo git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
+      git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
+      sudo git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
 
-        protocol=`echo $http_proxy | awk -F: '{print $1}'`
-        host=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $1}'`
-        port=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $2}'`
+      protocol=`echo $http_proxy | awk -F: '{print $1}'`
+      host=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $1}'`
+      port=`echo $http_proxy | awk -F/ '{print $3}' | awk -F: '{print $2}'`
 
-        echo "<settings>
-                <proxies>
-                    <proxy>
-                        <id>$host</id>
-                        <active>true</active>
-                        <protocol>$protocol</protocol>
-                        <host>$host</host>
-                        <port>$port</port>
-                    </proxy>
-                </proxies>
-               </settings>" > ./maven_proxy_settings.xml
+      echo "<settings>
+              <proxies>
+                  <proxy>
+                      <id>$host</id>
+                      <active>true</active>
+                      <protocol>$protocol</protocol>
+                      <host>$host</host>
+                      <port>$port</port>
+                  </proxy>
+              </proxies>
+             </settings>" > ./maven_proxy_settings.xml
 
-        mkdir ~/.m2
-        cp ./maven_proxy_settings.xml ~/.m2/settings.xml
+      mkdir ~/.m2
+      cp ./maven_proxy_settings.xml ~/.m2/settings.xml
 
-        sudo mkdir /root/.m2
-        sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
+      sudo mkdir /root/.m2
+      sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
     fi
 
     git clone https://git.openstack.org/openstack-dev/devstack
@@ -132,6 +77,7 @@ Vagrant.configure(2) do |config|
     git checkout stable/liberty
     echo '[[local|localrc]]
 
+SERVICE_HOST=192.168.10.6
 MYSQL_PASSWORD=secretmysql
 DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
@@ -142,6 +88,9 @@ SERVICE_TOKEN=111222333444
 LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
 LOG_COLOR=False
+
+disable_all_services
+enable_service rabbit mysql key tempest
 
 # The following two variables allow switching between Java and Python for the implementations
 # of the Monasca API and the Monasca Persister. If these variables are not set, then the
@@ -160,4 +109,5 @@ enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
 ' > local.conf
     ./stack.sh
   SHELL
+
 end
