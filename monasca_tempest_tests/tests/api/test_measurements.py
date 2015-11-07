@@ -68,13 +68,13 @@ class TestMeasurements(base.BaseMonascaTest):
             helpers.create_metric(name=name2, timestamp=start_timestamp2 + 0,
                                   dimensions={'key1': 'value-1',
                                               'key2': 'value-1'}),
-            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 1,
+            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 10,
                                   dimensions={'key1': 'value-2',
                                               'key2': 'value-2'}),
-            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 2,
+            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 20,
                                   dimensions={'key1': 'value-3',
                                               'key2': 'value-3'}),
-            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 3,
+            helpers.create_metric(name=name2, timestamp=start_timestamp2 + 30,
                                   dimensions={'key1': 'value-4',
                                               'key2': 'value-4'})
         ]
@@ -264,7 +264,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertEqual(4, len(measurements))
         self.assertEqual(first_measurement, measurements[0])
         timeout = time.time() + 60 * 1   # 1 minute timeout
-        for limit in xrange(1, 5):
+        for limit in xrange(1, 4):
             next_measurement = measurements[limit - 1]
             while True:
                 if time.time() >= timeout:
