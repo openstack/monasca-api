@@ -656,6 +656,8 @@ function install_monasca_api_python {
     echo_summary "Install Monasca monasca_api_python"
 
     sudo apt-get -y install python-dev
+    sudo apt-get -y install python-mysqldb
+    sudo apt-get -y install libmysqlclient-dev
 
     (cd /opt/monasca; sudo -H ./bin/pip install gunicorn)
 
