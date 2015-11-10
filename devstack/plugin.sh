@@ -267,7 +267,7 @@ function install_monasca_virtual_env {
 
     (cd /opt/monasca ; sudo virtualenv .)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport)
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport simport)
 }
 
 function clean_monasca_virtual_env {
@@ -649,6 +649,12 @@ function install_monasca_api_java {
 
     sudo chmod 0640 /etc/monasca/api-config.yml
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/bindHost: 127\.0\.0\.1/bindHost: ${SERVICE_HOST}/g" /etc/monasca/api-config.yml
+
+    fi
+
     sudo start monasca-api || sudo restart monasca-api
 
 }
@@ -793,6 +799,12 @@ function install_monasca_persister_java {
 
     sudo chmod 0640 /etc/monasca/persister-config.yml
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/bindHost: 127\.0\.0\.1/bindHost: ${SERVICE_HOST}/g" /etc/monasca/persister-config.yml
+
+    fi
+
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-persister/monasca-persister.conf /etc/init/monasca-persister.conf
 
     sudo chown root:root /etc/init/monasca-persister.conf
@@ -920,7 +932,7 @@ function install_monasca_notification {
 
     MONASCA_NOTIFICATION_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-notification/dist/monasca-notification-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_NOTIFICATION_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install  --allow-unverified simport $MONASCA_NOTIFICATION_SRC_DIST)
 
     (cd /opt/monasca ; sudo -H ./bin/pip install mysql-python)
 
