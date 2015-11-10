@@ -266,6 +266,8 @@ function install_monasca_virtual_env {
     sudo mkdir -p /opt/monasca || true
 
     (cd /opt/monasca ; sudo virtualenv .)
+
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport)
 }
 
 function clean_monasca_virtual_env {
@@ -665,7 +667,7 @@ function install_monasca_api_python {
 
     MONASCA_API_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-api/dist/monasca-api-*.tar.gz)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_API_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_API_SRC_DIST)
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -819,7 +821,7 @@ function install_monasca_persister_python {
 
     (cd /opt/monasca-persister ; sudo virtualenv .)
 
-    (cd /opt/monasca-persister ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_PERSISTER_SRC_DIST)
+    (cd /opt/monasca-persister ; sudo -H ./bin/pip install $MONASCA_PERSISTER_SRC_DIST)
 
     sudo useradd --system -g monasca mon-persister || true
 
@@ -918,7 +920,7 @@ function install_monasca_notification {
 
     MONASCA_NOTIFICATION_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-notification/dist/monasca-notification-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport  $MONASCA_NOTIFICATION_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_NOTIFICATION_SRC_DIST)
 
     (cd /opt/monasca ; sudo -H ./bin/pip install mysql-python)
 
@@ -1148,7 +1150,7 @@ function install_monasca_keystone_client {
 
     MONASCA_KEYSTONE_SRC_DIST=$(ls -td "${MONASCA_BASE}"/python-keystoneclient/dist/python-keystoneclient-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_KEYSTONE_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_KEYSTONE_SRC_DIST)
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/keystone/create_monasca_service.py /usr/local/bin/create_monasca_service.py
 
@@ -1188,7 +1190,7 @@ function install_monasca_agent {
 
     MONASCA_AGENT_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-agent/dist/monasca-agent-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_AGENT_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
 
@@ -1303,7 +1305,7 @@ function install_monasca_horizon_ui {
 
     (cd /opt/monasca-horizon-ui ; sudo virtualenv .)
 
-    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport monasca-ui)
+    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
 
     sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
