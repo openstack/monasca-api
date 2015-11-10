@@ -77,7 +77,7 @@ See the [OpenStack Tempest Plugin Interface](http://docs.openstack.org/developer
 The Monasca Tempest Tests can be run using a variety of methods including:
 1. [Testr](https://wiki.openstack.org/wiki/Testr)
 2. [Os-testr](http://docs.openstack.org/developer/os-testr/)
-3. [PyCharm]([Os-testr](https://www.jetbrains.com/pycharm/)
+3. [PyCharm](https://www.jetbrains.com/pycharm/)
 
 ## Run the tests from the CLI using testr
 
