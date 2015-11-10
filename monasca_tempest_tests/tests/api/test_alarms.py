@@ -60,9 +60,9 @@ class TestAlarms(base.BaseMonascaTest):
                                  metric['dimensions'])
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms: not the correct number of " \
-                       "alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms: at least one alarm is " \
+                        "needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_alarm_definition_id(self):
@@ -75,13 +75,13 @@ class TestAlarms(base.BaseMonascaTest):
             query_parms = '?alarm_definition_id=' + str(alarm_definition_id)
             resp, response_body = self.monasca_client.list_alarms(query_parms)
             self.assertEqual(200, resp.status)
-            element_1 = response_body['elements'][0]
-            self.assertEqual(element_1, element)
+            first_element = response_body['elements'][0]
+            self.assertEqual(first_element, element)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_alarm_definition_id: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_alarm_definition_id: " \
+                        "at least one alarm is needed."
+            self.self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_metric_name(self):
@@ -94,13 +94,13 @@ class TestAlarms(base.BaseMonascaTest):
             query_parms = '?metric_name=' + str(metric_name)
             resp, response_body = self.monasca_client.list_alarms(query_parms)
             self.assertEqual(200, resp.status)
-            element_1 = response_body['elements'][0]
-            self.assertEqual(element_1, element)
+            first_element = response_body['elements'][0]
+            self.assertEqual(first_element, element)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_metric_name: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_metric_name: at least " \
+                        "one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_metric_dimensions(self):
@@ -114,9 +114,9 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_metric_dimensions: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_metric_dimensions: at " \
+                        "least one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_state(self):
@@ -126,9 +126,11 @@ class TestAlarms(base.BaseMonascaTest):
         number_of_alarms = len(elements)
         if number_of_alarms < 3:
             helpers.delete_alarm_definitions(self)
-            skip_msg = "Skipped test_list_alarms_by_state: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = ("Failed test_list_alarms_by_state: not the correct"
+                         " number of alarms to test. 3 alarms are "
+                         "needed. Current number of alarms = {}").\
+                format(number_of_alarms)
+            self.fail(error_msg)
         else:
             len0 = len(elements)
             query_parms = '?state=UNDETERMINED'
@@ -157,9 +159,9 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_lifecycle_state: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_lifecycle_state: at " \
+                        "least one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_link(self):
@@ -172,9 +174,9 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_link: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_link: at least one " \
+                        "alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_state_updated_start_time(self):
@@ -190,14 +192,14 @@ class TestAlarms(base.BaseMonascaTest):
                           str(state_updated_start_time)
             resp, response_body = self.monasca_client.list_alarms(query_parms)
             self.assertEqual(200, resp.status)
-            element_1 = response_body['elements'][0]
-            self.assertEqual(element, element_1)
+            first_element = response_body['elements'][0]
+            self.assertEqual(element, first_element)
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped " \
-                       "test_list_alarms_by_state_updated_start_time: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed " \
+                        "test_list_alarms_by_state_updated_start_time: at " \
+                        "least one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_by_offset_limit(self):
@@ -207,9 +209,10 @@ class TestAlarms(base.BaseMonascaTest):
         number_of_alarms = len(elements)
         if number_of_alarms < 2:
             helpers.delete_alarm_definitions(self)
-            skip_msg = "Skipped test_list_alarms_by_offset_limit: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = ("Failed test_list_alarms_by_offset_limit: 2 alarms "
+                         "are needed. Current number of alarms = {}").\
+                format(number_of_alarms)
+            self.fail(error_msg)
         else:
             first_element = elements[0]
             next_element = elements[1]
@@ -251,9 +254,8 @@ class TestAlarms(base.BaseMonascaTest):
                                  metric['dimensions'])
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_get_alarm: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_get_alarm: at least one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
@@ -297,9 +299,9 @@ class TestAlarms(base.BaseMonascaTest):
                 'link'])
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_list_alarms_by_offset_limit: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_list_alarms_by_offset_limit: at least " \
+                        "one alarm is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_patch_alarm(self):
@@ -328,9 +330,9 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(updated_state, response_body['state'])
             helpers.delete_alarm_definitions(self)
         else:
-            skip_msg = "Skipped test_patch_alarm: " \
-                       "not the correct number of alarms to test"
-            raise self.skipException(skip_msg)
+            error_msg = "Failed test_patch_alarm: at least one alarm is " \
+                        "needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
@@ -379,6 +381,7 @@ class TestAlarms(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_create_alarms_with_sub_expressions_and_match_by(self):
+        helpers.delete_alarm_definitions(self)
         # Create an alarm definition with sub-expressions and match_by
         name = data_utils.rand_name('alarm_definition_1')
         expression = "avg(cpu.idle_perc{service=monitoring}) < 10 or " \
@@ -408,6 +411,7 @@ class TestAlarms(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_create_alarms_with_match_by_list(self):
+        helpers.delete_alarm_definitions(self)
         # Create an alarm definition with match_by as a list
         name = data_utils.rand_name('alarm_definition_1')
         expression = "avg(cpu.idle_perc{service=monitoring}) < 10"

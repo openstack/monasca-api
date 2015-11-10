@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
@@ -386,25 +388,31 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertEqual(first_element, elements[0])
         self.assertEqual(last_element, elements[1])
 
+        timeout = time.time() + 60 * 1   # 1 minute timeout
         for limit in xrange(1, 3):
             next_element = elements[limit - 1]
             while True:
-                query_parms = '?offset=' + str(next_element['id']) + \
-                              '&limit=' + str(limit)
-                resp, response_body = self.monasca_client.\
-                    list_alarm_definitions(query_parms)
-                self.assertEqual(200, resp.status)
-                new_elements = response_body['elements']
-
-                if len(new_elements) > limit - 1:
-                    self.assertEqual(limit, len(new_elements))
-                    next_element = new_elements[limit - 1]
-                elif 0 < len(new_elements) <= limit - 1:
-                    self.assertEqual(last_element, new_elements[0])
-                    break
+                if time.time() < timeout:
+                    query_parms = '?offset=' + str(next_element['id']) + \
+                                  '&limit=' + str(limit)
+                    resp, response_body = self.monasca_client.\
+                        list_alarm_definitions(query_parms)
+                    self.assertEqual(200, resp.status)
+                    new_elements = response_body['elements']
+                    if len(new_elements) > limit - 1:
+                        self.assertEqual(limit, len(new_elements))
+                        next_element = new_elements[limit - 1]
+                    elif 0 < len(new_elements) <= limit - 1:
+                        self.assertEqual(last_element, new_elements[0])
+                        break
+                    else:
+                        self.assertEqual(last_element, next_element)
+                        break
                 else:
-                    self.assertEqual(last_element, next_element)
-                    break
+                    msg = "Failed " \
+                          "test_list_alarm_definitions_with_offset_limit: " \
+                          "one minute timeout"
+                    raise exceptions.TimeoutException(msg)
 
         helpers.delete_alarm_definitions(self)
 
@@ -666,13 +674,14 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
         # Delete alarm definitions
         resp, response_body = self.monasca_client.list_alarm_definitions()
-        elements = response_body['elements']
-        if elements:
-            for element in elements:
-                current_id = element['id']
-                resp, body = self.monasca_client.delete_alarm_definition(
-                    current_id)
-                self.assertEqual(204, resp.status)
-                self.assertRaises(exceptions.NotFound,
-                                  self.monasca_client.get_alarm_definition,
-                                  alarm_def_id)
+        if 'elements' in response_body:
+            elements = response_body['elements']
+            if elements:
+                for element in elements:
+                    current_id = element['id']
+                    resp, body = self.monasca_client.delete_alarm_definition(
+                        current_id)
+                    self.assertEqual(204, resp.status)
+                    self.assertRaises(exceptions.NotFound,
+                                      self.monasca_client.get_alarm_definition,
+                                      alarm_def_id)
