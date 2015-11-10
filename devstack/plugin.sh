@@ -709,6 +709,12 @@ function install_monasca_api_python {
 
     sudo chmod 0660 /etc/monasca/api-config.ini
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/host = 127\.0\.0\.1/host = ${SERVICE_HOST}/g"  /etc/monasca/api-config.ini
+
+    fi
+
     sudo ln -s /etc/monasca/api-config.ini /etc/api-config.ini
 
     sudo start monasca-api || sudo restart monasca-api
@@ -1156,7 +1162,16 @@ function install_monasca_keystone_client {
 
     sudo chmod 0700 /usr/local/bin/create_monasca_service.py
 
-    sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST}
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST}
+
+    else
+
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py "127.0.0.1"
+
+    fi
 
 }
 
@@ -1217,6 +1232,11 @@ function install_monasca_agent {
     sudo chown root:root /usr/local/bin/monasca-reconfigure
 
     sudo chmod 0750 /usr/local/bin/monasca-reconfigure
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/--monasca_url 'http:\/\/127\.0\.0\.1:8070\/v2\.0'/--monasca_url 'http:\/\/${SERVICE_HOST}:8070\/v2\.0'/" /usr/local/bin/monasca-reconfigure
+    fi
 
     sudo /usr/local/bin/monasca-reconfigure
 
