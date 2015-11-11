@@ -1304,7 +1304,15 @@ function install_monasca_smoke_test {
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-smoke-test/smoke2_configs.py ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2_configs.py
 
-    sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py || true
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi ${SERVICE_HOST} || true
+
+    else
+
+        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi "127.0.0.1" || true
+
+    fi
 
     (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=admin OS_PASSWORD=secretadmin OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py" || true)
 }
