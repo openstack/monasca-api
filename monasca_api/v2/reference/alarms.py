@@ -277,9 +277,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                   offset, limit)
 
         result = []
-
         if not alarm_rows:
-            return result
+            return helpers.paginate(result, req_uri, limit)
 
         # Forward declaration
         alarm = {}
