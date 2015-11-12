@@ -111,11 +111,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         res.status = falcon.HTTP_204
 
     def on_get(self, req, res, alarm_id=None):
-        if alarm_id is None:
-            helpers.validate_authorization(req, self._default_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
 
+        if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
+
+            # ensure metric_dimensions is a list
+            if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
+                query_parms['metric_dimensions'] = query_parms['metric_dimensions'].split(',')
 
             offset = helpers.get_query_param(req, 'offset')
 
@@ -128,9 +132,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
             res.status = falcon.HTTP_200
 
         else:
-            helpers.validate_authorization(req, self._default_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
-
             result = self._alarm_show(req.uri, tenant_id, alarm_id)
 
             res.body = helpers.dumpit_utf8(result)

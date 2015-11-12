@@ -219,7 +219,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         where_clause = " where ad.tenant_id = %s "
 
         if offset:
-            where_clause += " and ad.id > %s"
+            where_clause += " and a.id > %s"
             parms.append(offset.encode('utf8'))
 
         if 'alarm_definition_id' in query_parms:
@@ -271,8 +271,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                 """
             sub_select_parms = []
             i = 0
-            for metric_dimension in query_parms['metric_dimensions'].split(
-                    ','):
+            for metric_dimension in query_parms['metric_dimensions']:
                 parsed_dimension = metric_dimension.split(':')
                 sub_select_clause += """
                     inner join (select distinct dimension_set_id
