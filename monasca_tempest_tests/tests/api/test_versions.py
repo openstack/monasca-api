@@ -48,4 +48,3 @@ class TestVersions(base.BaseMonascaTest):
                         set(link))
         self.assertEqual(link['rel'], u'self')
         self.assertTrue(link['href'].endswith('/v2.0'))
-        return

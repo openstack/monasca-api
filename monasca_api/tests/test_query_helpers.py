@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import falcon
 import monasca_api.v2.reference.helpers as helpers
 
 from mock import Mock
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
 import unittest
 
@@ -82,11 +82,11 @@ class TestGetQueryDimension(unittest.TestCase):
         req.query_string = ("foo=bar&dimensions=no_value")
 
         self.assertRaises(
-            falcon.HTTPBadRequest, helpers.get_query_dimensions, req)
+            HTTPUnprocessableEntityError, helpers.get_query_dimensions, req)
 
     def test_malformed_dimension_extra_colons(self):
         req = Mock()
         req.query_string = ("foo=bar&dimensions=Dimension:Value1:Value2")
 
         self.assertRaises(
-            falcon.HTTPBadRequest, helpers.get_query_dimensions, req)
+            HTTPUnprocessableEntityError, helpers.get_query_dimensions, req)

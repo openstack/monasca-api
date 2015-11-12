@@ -22,6 +22,10 @@ class TestMetricsNames(base.BaseMonascaTest):
     def resource_setup(cls):
         super(TestMetricsNames, cls).resource_setup()
 
+    @classmethod
+    def resource_cleanup(cls):
+        super(TestMetricsNames, cls).resource_cleanup()
+
     @test.attr(type='gate')
     def test_list_metrics_names(self):
         resp, response_body = self.monasca_client.list_metrics_names()

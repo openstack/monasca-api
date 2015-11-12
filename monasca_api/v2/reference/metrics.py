@@ -22,6 +22,7 @@ from monasca_api.common.messaging import (
     exceptions as message_queue_exceptions)
 from monasca_api.common.messaging.message_formats import (
     metrics as metrics_message)
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common import validation
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
@@ -78,7 +79,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
                 self._validate_single_metric(metrics)
         except Exception as ex:
             LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad request', ex.message)
+            raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
     def _validate_single_metric(self, metric):
         validation.metric_name(metric['name'])

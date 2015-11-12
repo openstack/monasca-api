@@ -21,6 +21,7 @@ import simport
 
 from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
 from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
@@ -55,14 +56,14 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         # Validator makes state optional, so check it here
         if 'state' not in alarm or not alarm['state']:
-            raise falcon.HTTPBadRequest('Bad request',
-                                        "Field 'state' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'state' is required")
         if 'lifecycle_state' not in alarm or not alarm['lifecycle_state']:
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        "Field 'lifecycle_state' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'lifecycle_state' is required")
         if 'link' not in alarm or not alarm['link']:
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        "Field 'link' is required")
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               "Field 'link' is required")
 
         self._alarm_update(tenant_id, alarm_id, alarm['state'],
                            alarm['lifecycle_state'], alarm['link'])
@@ -110,11 +111,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         res.status = falcon.HTTP_204
 
     def on_get(self, req, res, alarm_id=None):
-        if alarm_id is None:
-            helpers.validate_authorization(req, self._default_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
 
+        if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
+
+            # ensure metric_dimensions is a list
+            if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
+                query_parms['metric_dimensions'] = query_parms['metric_dimensions'].split(',')
 
             offset = helpers.get_query_param(req, 'offset')
 
@@ -127,9 +132,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
             res.status = falcon.HTTP_200
 
         else:
-            helpers.validate_authorization(req, self._default_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
-
             result = self._alarm_show(req.uri, tenant_id, alarm_id)
 
             res.body = helpers.dumpit_utf8(result)

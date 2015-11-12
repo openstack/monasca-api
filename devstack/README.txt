@@ -36,11 +36,12 @@ To run Monasca in DevStack, do the following three steps.
     # BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
     [[local|localrc]]
-    ADMIN_PASSWORD=password
-    DATABASE_PASSWORD=$ADMIN_PASSWORD
-    RABBIT_PASSWORD=$ADMIN_PASSWORD
-    SERVICE_PASSWORD=$ADMIN_PASSWORD
-    SERVICE_TOKEN=$ADMIN_PASSWORD
+    MYSQL_PASSWORD=secretmysql
+    DATABASE_PASSWORD=secretdatabase
+    RABBIT_PASSWORD=secretrabbit
+    ADMIN_PASSWORD=secretadmin
+    SERVICE_PASSWORD=secretservice
+    SERVICE_TOKEN=111222333444
 
     LOGFILE=$DEST/logs/stack.sh.log
     LOGDIR=$DEST/logs
@@ -48,7 +49,7 @@ To run Monasca in DevStack, do the following three steps.
 
     # The following two variables allow switching between Java and Python for the implementations
     # of the Monasca API and the Monasca Persister. If these variables are not set, then the
-    # default is to install the Java implementations of both the Monasca API and the Monasca Persister.
+    # default is to install the Python implementations of both the Monasca API and the Monasca Persister.
 
     # Uncomment one of the following two lines to choose Java or Python for the Monasca API.
     MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
@@ -66,13 +67,20 @@ To run Monasca in DevStack, do the following three steps.
 3.   Run './stack.sh' from the root of the devstack directory.
 
 
+﻿If you want to run Monasca with the bare mininum of OpenStack components
+you can add the following two lines to the local.conf file.
+
+  ﻿disable_all_services
+  enable_service rabbit mysql key tempest
+
+
 Using Vagrant:
 
 Vagrant can be used to deploy a VM with Devstack and Monasca running in it
 using the Vagrantfile. After installing Vagrant, just "vagrant up".
 
+
 Known Issues:
 
-1. The smoke tests do not run to completion successfully with the Python implementations.
-2. The Python Monasca API has various bugs.
-3. The RabbitMQ Check Plugin is not configured correctly.
+1. The Python Monasca API has various bugs.
+2. The RabbitMQ Check Plugin is not configured correctly.

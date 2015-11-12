@@ -1,4 +1,3 @@
-# Copyright 2014 Hewlett-Packard
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,22 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-class RepositoryException(Exception):
-    pass
+from falcon.http_error import HTTPError
 
 
-class DoesNotExistException(RepositoryException):
-    pass
-
-
-class AlreadyExistsException(RepositoryException):
-    pass
-
-
-class InvalidUpdateException(RepositoryException):
-    pass
-
-
-class MultipleMetricsException(RepositoryException):
-    pass
+class HTTPUnprocessableEntityError(HTTPError):
+    def __init__(self, title, description, **kwargs):
+        HTTPError.__init__(self, '422 Unprocessable Entity', title, description, **kwargs)

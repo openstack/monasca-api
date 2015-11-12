@@ -30,6 +30,9 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         super(TestAlarmsStateHistory, cls).resource_setup()
 
         start_timestamp = int(time.time() * 1000)
+        beginning_timestamp = int(time.time()) - 60
+        cls._beginning_time = timeutils.iso8601_from_timestamp(
+            beginning_timestamp)
         end_timestamp = int(time.time() * 1000) + 1000
 
         # create an alarm definition
@@ -38,8 +41,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         alarm_definition = helpers.create_alarm_definition(
             name=name,
             expression=expression)
-        resp, response_body = cls.monasca_client.create_alarm_definitions(
-            alarm_definition)
+        cls.monasca_client.create_alarm_definitions(alarm_definition)
 
         # create another alarm definition
         name1 = data_utils.rand_name('alarm_definition1')
@@ -47,8 +49,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         alarm_definition1 = helpers.create_alarm_definition(
             name=name1,
             expression=expression1)
-        resp, response_body1 = cls.monasca_client.create_alarm_definitions(
-            alarm_definition1)
+        cls.monasca_client.create_alarm_definitions(alarm_definition1)
 
         # create another alarm definition
         name2 = data_utils.rand_name('alarm_definition2')
@@ -56,24 +57,20 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         alarm_definition2 = helpers.create_alarm_definition(
             name=name2,
             expression=expression1)
-        resp, response_body2 = cls.monasca_client.create_alarm_definitions(
-            alarm_definition2)
+        cls.monasca_client.create_alarm_definitions(alarm_definition2)
 
         # create some metrics
-        for i in xrange(180):
+        for i in xrange(300):
             metric = helpers.create_metric()
-            resp, body = cls.monasca_client.create_metrics(metric)
+            cls.monasca_client.create_metrics(metric)
             cls._start_timestamp = start_timestamp + i
             cls._end_timestamp = end_timestamp + i
             time.sleep(1)
             resp, response_body = cls.monasca_client.\
                 list_alarms_state_history()
             elements = response_body['elements']
-            if len(elements) > 4:
+            if len(elements) >= 3:
                 break
-
-        if len(elements) < 3:
-            cls.assertEqual(1, False)
 
     @test.attr(type="gate")
     def test_list_alarms_state_history(self):
@@ -82,40 +79,56 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         # Test response body
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
-        element = elements[0]
-        self.assertTrue(set(['id', 'alarm_id', 'metrics', 'old_state',
-                             'new_state', 'reason', 'reason_data', 'timestamp',
-                             'sub_alarms']) == set(element))
+        number_of_alarms = len(elements)
+        if number_of_alarms < 1:
+            error_msg = "Failed test_list_alarms_state_history: need " \
+                        "at least one alarms state history to test."
+            self.fail(error_msg)
+        else:
+            element = elements[0]
+            self.assertTrue(set(['id', 'alarm_id', 'metrics', 'old_state',
+                                 'new_state', 'reason', 'reason_data',
+                                 'timestamp', 'sub_alarms'])
+                            == set(element))
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_dimensions(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
-        element = response_body['elements'][0]
-        dimension = element['metrics'][0]['dimensions']
-        dimension_items = dimension.items()
-        dimension_item = dimension_items[0]
-        dimension_item_0 = dimension_item[0]
-        dimension_item_1 = dimension_item[1]
-        name = element['metrics'][0]['name']
+        elements = response_body['elements']
+        if elements:
+            element = elements[0]
+            dimension = element['metrics'][0]['dimensions']
+            dimension_items = dimension.items()
+            dimension_item = dimension_items[0]
+            dimension_item_0 = dimension_item[0]
+            dimension_item_1 = dimension_item[1]
+            name = element['metrics'][0]['name']
 
-        query_parms = '?dimensions=' + str(dimension_item_0) + ':' + str(
-            dimension_item_1)
-        resp, response_body = self.monasca_client.list_alarms_state_history(
-            query_parms)
-        name_new = response_body['elements'][0]['metrics'][0]['name']
-        self.assertEqual(200, resp.status)
-        self.assertEqual(name, name_new)
+            query_parms = '?dimensions=' + str(dimension_item_0) + ':' + str(
+                dimension_item_1)
+            resp, response_body = self.monasca_client.\
+                list_alarms_state_history(query_parms)
+            name_new = response_body['elements'][0]['metrics'][0]['name']
+            self.assertEqual(200, resp.status)
+            self.assertEqual(name, name_new)
+        else:
+            error_msg = "Failed test_list_alarms_state_history_with_" \
+                        "dimensions: need at least one alarms state history " \
+                        "to test."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_start_time(self):
-        current_time = int(time.time())
-        current_time = timeutils.iso8601_from_timestamp(current_time)
-        query_parms = '?start_time=' + str(current_time)
+        current_timestamp = int(time.time())
+        current_time = timeutils.iso8601_from_timestamp(current_timestamp)
+        end_time = timeutils.iso8601_from_timestamp(current_timestamp + 120)
+        query_parms = '?start_time=' + str(current_time) + '&end_time=' + \
+                      str(end_time)
         resp, response_body = self.monasca_client.list_alarms_state_history(
             query_parms)
         elements = response_body['elements']
         self.assertEqual(0, len(elements))
-
+        return
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         timestamp = elements[1]['timestamp']
@@ -127,6 +140,12 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_end_time(self):
+        query_parms = '?end_time=' + str(self._beginning_time)
+        resp, response_body = self.monasca_client.list_alarms_state_history(
+            query_parms)
+        elements = response_body['elements']
+        self.assertEqual(0, len(elements))
+        return
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         timestamp = elements[2]['timestamp']
@@ -140,23 +159,32 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
     def test_list_alarms_state_history_with_offset_limit(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
-        first_element = elements[0]
-        last_element = elements[2]
-        first_element_id = first_element['id']
-        last_element_id = last_element['id']
+        number_of_alarms = len(elements)
+        if number_of_alarms >= 3:
+            first_element = elements[0]
+            last_element = elements[2]
+            first_element_id = first_element['id']
+            last_element_id = last_element['id']
 
-        for limit in xrange(1, 4):
-            query_parms = '?limit=' + str(limit) + '&offset=' + str(
-                last_element_id)
-            resp, response_body = self.monasca_client.\
-                list_alarms_state_history(query_parms)
-            elements = response_body['elements']
-            element_new = elements[0]
-            self.assertEqual(200, resp.status)
-            self.assertEqual(element_new, first_element)
-            self.assertEqual(limit, len(elements))
-            id_new = element_new['id']
-            self.assertEqual(id_new, first_element_id)
+            for limit in xrange(1, 3):
+                query_parms = '?limit=' + str(limit) + \
+                              '&offset=' + str(last_element_id)
+                resp, response_body = self.monasca_client.\
+                    list_alarms_state_history(query_parms)
+                elements = response_body['elements']
+                element_new = elements[0]
+                self.assertEqual(200, resp.status)
+                self.assertEqual(element_new, first_element)
+                self.assertEqual(limit, len(elements))
+                id_new = element_new['id']
+                self.assertEqual(id_new, first_element_id)
+        else:
+                error_msg = ("Failed "
+                             "test_list_alarms_state_history_with_offset "
+                             "limit: need three alarms state history to "
+                             "test. Current number of alarms = {}").\
+                    format(number_of_alarms)
+                self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarm_state_history(self):
@@ -164,27 +192,32 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
-        element = elements[0]
-        alarm_id = element['alarm_id']
-        resp, response_body = self.monasca_client.list_alarm_state_history(
-            alarm_id)
-        self.assertEqual(200, resp.status)
+        if elements:
+            element = elements[0]
+            alarm_id = element['alarm_id']
+            resp, response_body = self.monasca_client.list_alarm_state_history(
+                alarm_id)
+            self.assertEqual(200, resp.status)
 
-        # Test Response Body
-        self.assertTrue(set(['links', 'elements']) ==
-                        set(response_body))
-        elements = response_body['elements']
-        links = response_body['links']
-        self.assertTrue(isinstance(links, list))
-        link = links[0]
-        self.assertTrue(set(['rel', 'href']) ==
-                        set(link))
-        self.assertEqual(link['rel'], u'self')
-        definition = elements[0]
-        self.assertTrue(set(['id', 'alarm_id', 'metrics', 'new_state',
-                             'old_state', 'reason', 'reason_data',
-                             'sub_alarms', 'timestamp']) ==
-                        set(definition))
+            # Test Response Body
+            self.assertTrue(set(['links', 'elements']) ==
+                            set(response_body))
+            elements = response_body['elements']
+            links = response_body['links']
+            self.assertTrue(isinstance(links, list))
+            link = links[0]
+            self.assertTrue(set(['rel', 'href']) ==
+                            set(link))
+            self.assertEqual(link['rel'], u'self')
+            definition = elements[0]
+            self.assertTrue(set(['id', 'alarm_id', 'metrics', 'new_state',
+                                 'old_state', 'reason', 'reason_data',
+                                 'sub_alarms', 'timestamp']) ==
+                            set(definition))
+        else:
+            error_msg = "Failed test_list_alarm_state_history: at least one " \
+                        "alarm state history is needed."
+            self.fail(error_msg)
 
     @test.attr(type="gate")
     def test_list_alarm_state_history_with_offset_limit(self):
@@ -192,21 +225,25 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
-        element = elements[0]
+        if elements:
+            element = elements[0]
+            alarm_id = element['alarm_id']
+            query_parms = '?limit=1'
+            resp, response_body = self.monasca_client.\
+                list_alarm_state_history(alarm_id, query_parms)
+            elements = response_body['elements']
+            self.assertEqual(200, resp.status)
+            self.assertEqual(1, len(elements))
 
-        alarm_id = element['alarm_id']
-        query_parms = '?limit=1'
-        resp, response_body = self.monasca_client.list_alarm_state_history(
-            alarm_id, query_parms)
-        elements = response_body['elements']
-        self.assertEqual(200, resp.status)
-        self.assertEqual(1, len(elements))
-
-        id = element['id']
-        query_parms = '?limit=1&offset=' + str(id)
-        resp, response_body = self.monasca_client.list_alarm_state_history(
-            alarm_id, query_parms)
-        elements_new = response_body['elements']
-        self.assertEqual(200, resp.status)
-        self.assertEqual(1, len(elements_new))
-        self.assertEqual(element, elements_new[0])
+            id = element['id']
+            query_parms = '?limit=1&offset=' + str(id)
+            resp, response_body = self.monasca_client.\
+                list_alarm_state_history(alarm_id, query_parms)
+            elements_new = response_body['elements']
+            self.assertEqual(200, resp.status)
+            self.assertEqual(1, len(elements_new))
+            self.assertEqual(element, elements_new[0])
+        else:
+            error_msg = "Failed test_list_alarm_state_history_with_offset" \
+                        "_limit: at least one alarms state history is needed."
+            self.fail(error_msg)

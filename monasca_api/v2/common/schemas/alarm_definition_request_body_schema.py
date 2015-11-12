@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014, 2015 Hewlett-Packard
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,35 +13,47 @@
 # under the License.
 
 from oslo_log import log
-import voluptuous
+from voluptuous import All
+from voluptuous import Any
+from voluptuous import Invalid
+from voluptuous import Length
+from voluptuous import Optional
+from voluptuous import Required
+from voluptuous import Schema
+from voluptuous import Upper
 
 from monasca_api.v2.common.schemas import exceptions
 
 
 LOG = log.getLogger(__name__)
 
-alarm_definition_schema = {
-    voluptuous.Required('name'): voluptuous.All(voluptuous.Any(str, unicode),
-                                                voluptuous.Length(max=250)),
-    voluptuous.Required('expression'): voluptuous.All(
-        voluptuous.Any(str, unicode), voluptuous.Length(max=4096)),
-    voluptuous.Optional('description'): voluptuous.All(
-        voluptuous.Any(str, unicode), voluptuous.Length(max=250)),
-    voluptuous.Optional('severity'): voluptuous.All(
-        voluptuous.Any('low', 'medium', 'high', 'critical', 'LOW', "MEDIUM",
-                       'HIGH', 'CRITICAL')),
-    voluptuous.Optional('match_by'): voluptuous.All(
-        voluptuous.Any([unicode], [str]), voluptuous.Length(max=255)),
-    voluptuous.Optional('ok_actions'): voluptuous.All(
-        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
-    voluptuous.Optional('alarm_actions'): voluptuous.All(
-        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
-    voluptuous.Optional('undetermined_actions'): voluptuous.All(
-        voluptuous.Any([str], [unicode]), voluptuous.Length(max=400)),
-    voluptuous.Optional('actions_enabled'): bool}
+MAX_ITEM_LENGTH = 50
 
-request_body_schema = voluptuous.Schema(alarm_definition_schema, required=True,
-                                        extra=True)
+
+def list_item_length(v):
+    if not isinstance(v, list):
+        raise Invalid('Not a list: {}'.format(type(v)))
+    for i in v:
+        if not isinstance(i, (str, unicode)):
+            raise Invalid('list item <{}> -> {} not one of (str, unicode)'
+                          .format(i, type(i)))
+        if len(i) > MAX_ITEM_LENGTH:
+            raise Invalid('length {} > {}'.format(len(i), MAX_ITEM_LENGTH))
+
+
+alarm_definition_schema = {
+    Required('name'): All(Any(str, unicode), Length(max=255)),
+    Required('expression'): All(Any(str, unicode)),
+    Optional('description'): All(Any(str, unicode), Length(max=255)),
+    Optional('severity'): All(Upper, Any('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    Optional('match_by'): Any([unicode], [str]),
+    Optional('ok_actions'): list_item_length,
+    Optional('alarm_actions'): list_item_length,
+    Optional('undetermined_actions'): list_item_length,
+    Optional('actions_enabled'): bool}
+
+request_body_schema = Schema(alarm_definition_schema, required=True,
+                             extra=True)
 
 
 def validate(msg):

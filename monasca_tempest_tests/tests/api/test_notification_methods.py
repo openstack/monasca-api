@@ -15,6 +15,8 @@
 # TODO(RMH): Validate whether a 200 or 201 should be returned and resolve.
 # TODO(RMH): Documentation says 200, but a 201 is being returned.
 
+import time
+
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
@@ -31,6 +33,10 @@ class TestNotificationMethods(base.BaseMonascaTest):
     def resource_setup(cls):
         super(TestNotificationMethods, cls).resource_setup()
 
+    @classmethod
+    def resource_cleanup(cls):
+        super(TestNotificationMethods, cls).resource_cleanup()
+
     @test.attr(type="gate")
     def test_create_notification_method(self):
         notification = helpers.create_notification()
@@ -38,6 +44,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             notification)
         self.assertEqual(201, resp.status)
         id = response_body['id']
+
         resp, response_body = self.monasca_client.\
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
@@ -46,7 +53,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_name(self):
         notification = helpers.create_notification(name=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -54,7 +61,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_type(self):
         notification = helpers.create_notification(type=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -62,7 +69,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_address(self):
         notification = helpers.create_notification(address=None)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest,exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -71,7 +78,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     def test_create_notification_method_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_NOTIFICATION_METHOD_NAME_LENGTH + 1)
         notification = helpers.create_notification(name=long_name)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -81,7 +88,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         long_address = "x" * (
             constants.MAX_NOTIFICATION_METHOD_ADDRESS_LENGTH + 1)
         notification = helpers.create_notification(address=long_address)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -95,34 +102,110 @@ class TestNotificationMethods(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_notification_methods(self):
-        resp, body = self.monasca_client.list_notification_methods()
-        self.assertEqual(200, resp.status)
-
-    @test.attr(type="gate")
-    def test_list_notification_methods_with_offset_limit(self):
-        query_parms = '?offset=1&limit=2'
-        resp, body = self.monasca_client.list_notification_methods(query_parms)
-        self.assertEqual(200, resp.status)
-
-    @test.attr(type="gate")
-    def test_list_notification_methods_response_body(self):
-        # TODO(RMH): Validate response body
+        notification = helpers.create_notification()
+        resp, response_body = self.monasca_client.create_notifications(
+            notification)
+        self.assertEqual(201, resp.status)
+        id = response_body['id']
         resp, response_body = self.monasca_client.list_notification_methods()
+        self.assertEqual(200, resp.status)
+        # Test response body
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
         element = elements[0]
         self.assertTrue(set(['id', 'links', 'name', 'type', 'address']) ==
                         set(element))
-        # check if 'id' is an int. NOPE its unicode
         self.assertTrue(type(element['id']) is unicode)
-        # check if 'links' is link
         self.assertTrue(type(element['links']) is list)
-        # check if 'name' is a string. NOPE its unicode
         self.assertTrue(type(element['name']) is unicode)
-        # check if 'type' is an unicode
         self.assertTrue(type(element['type']) is unicode)
-        # check if 'address' is an unicode
         self.assertTrue(type(element['address']) is unicode)
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id)
+        self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
+    def test_list_notification_methods_with_offset_limit(self):
+        name1 = data_utils.rand_name('notification')
+        name2 = data_utils.rand_name('notification')
+        name3 = data_utils.rand_name('notification')
+        name4 = data_utils.rand_name('notification')
+        notification1 = helpers.create_notification(name=name1)
+        notification2 = helpers.create_notification(name=name2)
+        notification3 = helpers.create_notification(name=name3)
+        notification4 = helpers.create_notification(name=name4)
+
+        resp, response_body = self.monasca_client.create_notifications(
+            notification1)
+        id1 = response_body['id']
+        self.assertEqual(201, resp.status)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification2)
+        id2 = response_body['id']
+        self.assertEqual(201, resp.status)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification3)
+        id3 = response_body['id']
+        self.assertEqual(201, resp.status)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification4)
+        id4 = response_body['id']
+        self.assertEqual(201, resp.status)
+
+        resp, response_body = self.monasca_client.list_notification_methods()
+        elements = response_body['elements']
+
+        first_element = elements[0]
+        last_element = elements[3]
+
+        query_parms = '?limit=4'
+        resp, response_body = self.monasca_client.\
+            list_notification_methods(query_parms)
+        self.assertEqual(200, resp.status)
+        self.assertEqual(4, len(elements))
+        self.assertEqual(first_element, elements[0])
+
+        timeout = time.time() + 60 * 1   # 1 minute timeout
+        for limit in xrange(1, 5):
+            next_element = elements[limit - 1]
+            while True:
+                if time.time() < timeout:
+                    query_parms = '?offset=' + str(next_element['id']) + \
+                                  '&limit=' + str(limit)
+                    resp, response_body = self.monasca_client.\
+                        list_notification_methods(query_parms)
+                    self.assertEqual(200, resp.status)
+                    new_elements = response_body['elements']
+                    if len(new_elements) > limit - 1:
+                        self.assertEqual(limit, len(new_elements))
+                        next_element = new_elements[limit - 1]
+                    elif 0 < len(new_elements) <= limit - 1:
+                        self.assertEqual(last_element, new_elements[0])
+                        break
+                    else:
+                        self.assertEqual(last_element, next_element)
+                        break
+                else:
+                    msg = "Failed " \
+                          "test_list_notification_methods_with_offset_limit:" \
+                          " one minute timeout on offset limit test loop."
+                    raise exceptions.TimeoutException(msg)
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id1)
+        self.assertEqual(204, resp.status)
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id2)
+        self.assertEqual(204, resp.status)
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id3)
+        self.assertEqual(204, resp.status)
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id4)
+        self.assertEqual(204, resp.status)
 
     @test.attr(type="gate")
     def test_get_notification_method(self):
@@ -225,7 +308,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         new_name_long = "x" * (constants.MAX_NOTIFICATION_METHOD_NAME_LENGTH
                                + 1)
-        self.assertRaises(exceptions.UnprocessableEntity,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.update_notification_method, id,
                           name=new_name_long, type=response_body['type'],
                           address=response_body['address'])
@@ -270,7 +353,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(204, resp.status)
 
     @test.attr(type="gate")
-    def test_delete_notification_method(self):
+    def test_create_and_delete_notification_method(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
             notification)

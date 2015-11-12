@@ -43,16 +43,20 @@ set -o xtrace
 ERREXIT=$(set +o | grep errexit)
 set -o errexit
 
+# Set default implementations to python
+export MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+
 # Determine if we are running in devstack-gate or devstack.
-if [[ $BASE ]]; then
+if [[ $DEST ]]; then
 
     # We are running in devstack-gate.
-    export MONASCA_BASE="${BASE}/new"
+    export MONASCA_BASE=${MONASCA_BASE:-"${DEST}"}
 
 else
 
     # We are running in devstack.
-    export MONASCA_BASE="/opt/stack"
+    export MONASCA_BASE=${MONASCA_BASE:-"/opt/stack"}
 
 fi
 
@@ -144,7 +148,9 @@ function extra_monasca {
 
     install_monasca_default_alarms
 
-    install_monasca_horizon_ui
+    if is_service_enabled horizon; then
+        install_monasca_horizon_ui
+    fi
 
     install_monasca_smoke_test
 }
@@ -260,6 +266,8 @@ function install_monasca_virtual_env {
     sudo mkdir -p /opt/monasca || true
 
     (cd /opt/monasca ; sudo virtualenv .)
+
+    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport simport)
 }
 
 function clean_monasca_virtual_env {
@@ -491,7 +499,7 @@ function install_schema {
 
     sudo chown root:root /opt/monasca/sqls/mon.sql
 
-    sudo mysql -uroot -ppassword < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -uroot -psecretmysql < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/winchester.sql /opt/monasca/sqls/winchester.sql
 
@@ -499,7 +507,7 @@ function install_schema {
 
     sudo chown root:root /opt/monasca/sqls/winchester.sql
 
-    sudo mysql -uroot -ppassword < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -uroot -psecretmysql < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo mkdir -p /opt/kafka/logs || true
 
@@ -641,6 +649,12 @@ function install_monasca_api_java {
 
     sudo chmod 0640 /etc/monasca/api-config.yml
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/bindHost: 127\.0\.0\.1/bindHost: ${SERVICE_HOST}/g" /etc/monasca/api-config.yml
+
+    fi
+
     sudo start monasca-api || sudo restart monasca-api
 
 }
@@ -650,6 +664,8 @@ function install_monasca_api_python {
     echo_summary "Install Monasca monasca_api_python"
 
     sudo apt-get -y install python-dev
+    sudo apt-get -y install python-mysqldb
+    sudo apt-get -y install libmysqlclient-dev
 
     (cd /opt/monasca; sudo -H ./bin/pip install gunicorn)
 
@@ -657,7 +673,7 @@ function install_monasca_api_python {
 
     MONASCA_API_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-api/dist/monasca-api-*.tar.gz)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_API_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_API_SRC_DIST)
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -698,6 +714,12 @@ function install_monasca_api_python {
     sudo chown mon-api:root /etc/monasca/api-config.ini
 
     sudo chmod 0660 /etc/monasca/api-config.ini
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/host = 127\.0\.0\.1/host = ${SERVICE_HOST}/g"  /etc/monasca/api-config.ini
+
+    fi
 
     sudo ln -s /etc/monasca/api-config.ini /etc/api-config.ini
 
@@ -783,6 +805,12 @@ function install_monasca_persister_java {
 
     sudo chmod 0640 /etc/monasca/persister-config.yml
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/bindHost: 127\.0\.0\.1/bindHost: ${SERVICE_HOST}/g" /etc/monasca/persister-config.yml
+
+    fi
+
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-persister/monasca-persister.conf /etc/init/monasca-persister.conf
 
     sudo chown root:root /etc/init/monasca-persister.conf
@@ -811,7 +839,7 @@ function install_monasca_persister_python {
 
     (cd /opt/monasca-persister ; sudo virtualenv .)
 
-    (cd /opt/monasca-persister ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_PERSISTER_SRC_DIST)
+    (cd /opt/monasca-persister ; sudo -H ./bin/pip install $MONASCA_PERSISTER_SRC_DIST)
 
     sudo useradd --system -g monasca mon-persister || true
 
@@ -910,7 +938,9 @@ function install_monasca_notification {
 
     MONASCA_NOTIFICATION_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-notification/dist/monasca-notification-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport  $MONASCA_NOTIFICATION_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install  --allow-unverified simport $MONASCA_NOTIFICATION_SRC_DIST)
+
+    (cd /opt/monasca ; sudo -H ./bin/pip install mysql-python)
 
     sudo useradd --system -g monasca mon-notification || true
 
@@ -977,7 +1007,7 @@ function install_storm {
 
     echo_summary "Install Monasca Storm"
 
-    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz -o /root/apache-storm-0.9.5.tar.gz
+    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-0.9.6/apache-storm-0.9.6.tar.gz -o /root/apache-storm-0.9.6.tar.gz
 
     sudo groupadd --system storm || true
 
@@ -989,9 +1019,9 @@ function install_storm {
 
     sudo chmod 0755 /opt/storm
 
-    sudo tar -xzf /root/apache-storm-0.9.5.tar.gz -C /opt/storm
+    sudo tar -xzf /root/apache-storm-0.9.6.tar.gz -C /opt/storm
 
-    sudo ln -s /opt/storm/apache-storm-0.9.5 /opt/storm/current
+    sudo ln -s /opt/storm/apache-storm-0.9.6 /opt/storm/current
 
     sudo mkdir /var/storm || true
 
@@ -1013,11 +1043,11 @@ function install_storm {
 
     sudo chmod 0644 /opt/storm/current/logback/cluster.xml
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
-    sudo chown storm:storm /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo chown storm:storm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
-    sudo chmod 0644 /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo chmod 0644 /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm-nimbus.conf /etc/init/storm-nimbus.conf
 
@@ -1045,7 +1075,7 @@ function clean_storm {
 
     sudo rm /etc/init/storm-nimbus.conf
 
-    sudo rm /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo rm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
     sudo rm /opt/storm/current/logback/cluster.xml
 
@@ -1063,7 +1093,7 @@ function clean_storm {
 
     sudo rm -rf /opt/storm
 
-    sudo rm /root/apache-storm-0.9.5.tar.gz
+    sudo rm /root/apache-storm-0.9.6.tar.gz
 
 }
 
@@ -1138,13 +1168,22 @@ function install_monasca_keystone_client {
 
     MONASCA_KEYSTONE_SRC_DIST=$(ls -td "${MONASCA_BASE}"/python-keystoneclient/dist/python-keystoneclient-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_KEYSTONE_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_KEYSTONE_SRC_DIST)
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/keystone/create_monasca_service.py /usr/local/bin/create_monasca_service.py
 
     sudo chmod 0700 /usr/local/bin/create_monasca_service.py
 
-    sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST}
+
+    else
+
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py "127.0.0.1"
+
+    fi
 
 }
 
@@ -1178,7 +1217,7 @@ function install_monasca_agent {
 
     MONASCA_AGENT_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-agent/dist/monasca-agent-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport $MONASCA_AGENT_SRC_DIST)
+    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
 
@@ -1205,6 +1244,11 @@ function install_monasca_agent {
     sudo chown root:root /usr/local/bin/monasca-reconfigure
 
     sudo chmod 0750 /usr/local/bin/monasca-reconfigure
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s/--monasca_url 'http:\/\/127\.0\.0\.1:8070\/v2\.0'/--monasca_url 'http:\/\/${SERVICE_HOST}:8070\/v2\.0'/" /usr/local/bin/monasca-reconfigure
+    fi
 
     sudo /usr/local/bin/monasca-reconfigure
 
@@ -1260,9 +1304,17 @@ function install_monasca_smoke_test {
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-smoke-test/smoke2_configs.py ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2_configs.py
 
-    sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py || true
+    if [[ ${SERVICE_HOST} ]]; then
 
-    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=test OS_PASSWORD=password OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py")
+        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi ${SERVICE_HOST} || true
+
+    else
+
+        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi "127.0.0.1" || true
+
+    fi
+
+    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=admin OS_PASSWORD=secretadmin OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py" || true)
 }
 
 function clean_monasca_smoke_test {
@@ -1293,7 +1345,7 @@ function install_monasca_horizon_ui {
 
     (cd /opt/monasca-horizon-ui ; sudo virtualenv .)
 
-    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport monasca-ui)
+    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
 
     sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 

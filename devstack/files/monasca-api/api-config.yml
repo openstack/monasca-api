@@ -97,10 +97,10 @@ middleware:
   agentAuthorizedRoles: [monasca-agent]
   adminAuthMethod: token
   adminUser: "admin"
-  adminPassword: ""
+  adminPassword: "secretadmin"
   adminProjectId:
   adminProjectName:
-  adminToken: "password"
+  adminToken: "111222333444"
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576
 
@@ -108,10 +108,12 @@ server:
   applicationConnectors:
     - type: http
       port: 8070
+      bindHost: 127.0.0.1
       maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
   adminConnectors:
     - type: http
       port: 8081
+      bindHost: 127.0.0.1
   requestLog:
    timeZone: UTC
    appenders:

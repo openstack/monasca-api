@@ -53,7 +53,7 @@ class TestVersions(testing.TestBase):
         self.assertEqual(version['id'], u'v2.0')
         self.assertEqual(version['status'], u'CURRENT')
         date_object = datetime.datetime.strptime(version['updated'],
-                                                 "%Y-%m-%dT%H:%M:%SZ")
+                                                 "%Y-%m-%dT%H:%M:%S.%fZ")
         self.assertTrue(isinstance(date_object, datetime.datetime))
         links = response['links']
         self.assertTrue(isinstance(links, list))
@@ -65,4 +65,4 @@ class TestVersions(testing.TestBase):
 
     def test_invalid_version_id(self):
         self.simulate_request('/versions/v1.0')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, '422 Unprocessable Entity')

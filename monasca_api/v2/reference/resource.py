@@ -1,4 +1,5 @@
 # Copyright 2014 Hewlett-Packard
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,6 +17,7 @@ import falcon
 from oslo_log import log
 
 from monasca_api.common.repositories import exceptions
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
 LOG = log.getLogger(__name__)
 
@@ -33,10 +35,12 @@ def resource_try_catch_block(fun):
             raise falcon.HTTPNotFound
         except falcon.HTTPBadRequest:
             raise
+        except exceptions.MultipleMetricException as ex:
+            raise falcon.HTTPConflict(ex.__class__.__name__, ex.message)
         except exceptions.AlreadyExistsException as ex:
             raise falcon.HTTPConflict(ex.__class__.__name__, ex.message)
         except exceptions.InvalidUpdateException as ex:
-            raise falcon.HTTPBadRequest(ex.__class__.__name__, ex.message)
+            raise HTTPUnprocessableEntityError(ex.__class__.__name__, ex.message)
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
             msg = " ".join(map(str, ex.message.args))

@@ -23,6 +23,7 @@ import simport
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions
 import monasca_api.expression_parser.alarm_expr_parser
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import (
     alarm_definition_request_body_schema as schema_alarms)
 from monasca_api.v2.common import validation
@@ -125,8 +126,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         # Validator makes actions_enabled optional. So, check it here.
         if not actions_enabled:
-            raise falcon.HTTPBadRequest('Bad request', 'Missing '
-                                                       'actions_enabled')
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               'Missing actions_enabled')
 
         # Optional args
         description = get_query_alarm_definition_description(alarm_definition,
@@ -344,7 +345,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         except Exception as ex:
             LOG.debug(ex)
-            raise falcon.HTTPBadRequest('Bad request', ex.message)
+            raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
     @resource.resource_try_catch_block
     def _alarm_definition_update_or_patch(self, tenant_id,
@@ -371,7 +372,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                 title = "Invalid alarm expression".encode('utf8')
                 msg = "parser failed on expression '{}' at column {}".format(
                     expression.encode('utf8'), str(ex.column).encode('utf8'))
-                raise falcon.HTTPBadRequest(title, msg)
+                raise HTTPUnprocessableEntityError(title, msg)
         else:
             sub_expr_list = None
 
@@ -476,7 +477,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             title = "Invalid alarm expression".encode('utf8')
             msg = "parser failed on expression '{}' at column {}".format(
                 expression.encode('utf8'), str(ex.column).encode('utf8'))
-            raise falcon.HTTPBadRequest(title, msg)
+            raise HTTPUnprocessableEntityError(title, msg)
 
         self._validate_name_not_conflicting(tenant_id, name)
 
@@ -585,7 +586,7 @@ def get_query_alarm_definition_name(alarm_definition, return_none=False):
                 raise Exception("Missing name")
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_alarm_definition_expression(alarm_definition,
@@ -601,7 +602,7 @@ def get_query_alarm_definition_expression(alarm_definition,
                 raise Exception("Missing expression")
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_query_alarm_definition_description(alarm_definition,
@@ -620,7 +621,7 @@ def get_query_alarm_definition_severity(alarm_definition, return_none=False):
         severity = alarm_definition['severity']
         severity = severity.decode('utf8').upper()
         if severity not in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
-            raise falcon.HTTPBadRequest('Bad request', 'Invalid severity')
+            raise HTTPUnprocessableEntityError('Unprocessable Entity', 'Invalid severity')
         return severity
     else:
         if return_none:
@@ -691,7 +692,7 @@ def get_query_alarm_definition_actions_enabled(alarm_definition,
                 return ''
     except Exception as ex:
         LOG.debug(ex)
-        raise falcon.HTTPBadRequest('Bad request', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
 def get_comma_separated_str_as_list(comma_separated_str):
