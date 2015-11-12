@@ -57,11 +57,13 @@ public class InfluxV9Utils {
     final StringBuilder sb = new StringBuilder();
 
     if (startTime != null) {
-      sb.append(String.format(" and time > %1$ds", startTime.getMillis() / 1000));
+      sb.append(String.format(" and time > " + "'" + ISODateTimeFormat.dateTime().print(startTime)
+              + "'"));
     }
 
     if (endTime != null) {
-      sb.append(String.format(" and time < %1$ds", endTime.getMillis() / 1000));
+      sb.append(String.format(" and time < " + "'" + ISODateTimeFormat.dateTime().print(endTime)
+              + "'"));
     }
 
     return sb.toString();

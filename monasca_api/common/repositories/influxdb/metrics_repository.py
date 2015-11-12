@@ -133,10 +133,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                         'utf8'))
 
         if start_timestamp:
-            where_clause += " and time > " + str(int(start_timestamp)) + "s"
+            where_clause += " and time > " + str(int(start_timestamp *
+                                                     1000000)) + "u"
 
             if end_timestamp:
-                where_clause += " and time < " + str(int(end_timestamp)) + "s"
+                where_clause += " and time < " + str(int(end_timestamp *
+                                                         1000000)) + "u"
 
         return where_clause
 
@@ -468,11 +470,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             time_clause = ''
             if start_timestamp:
-                time_clause += (" and time > " + str(int(start_timestamp)) +
-                                "s ")
+                time_clause += " and time > " + str(int(start_timestamp *
+                                                        1000000)) + "u "
 
             if end_timestamp:
-                time_clause += " and time < " + str(int(end_timestamp)) + "s "
+                time_clause += " and time < " + str(int(end_timestamp *
+                                                        1000000)) + "u "
 
             offset_clause = self._build_offset_clause(offset, limit)
 

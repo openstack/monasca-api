@@ -20,6 +20,7 @@ import urlparse
 
 import falcon
 from oslo_log import log
+from oslo_utils import timeutils
 import simplejson
 
 from monasca_api.common.repositories import constants
@@ -222,7 +223,8 @@ def get_query_endtime_timestamp(req, required=True):
 
 
 def _convert_time_string(date_time_string):
-    dt = datetime.datetime.strptime(date_time_string, "%Y-%m-%dT%H:%M:%SZ")
+    dt = timeutils.parse_isotime(date_time_string)
+    dt = dt.replace(tzinfo=None)
     timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
     return timestamp
 
