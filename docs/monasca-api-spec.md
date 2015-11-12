@@ -354,13 +354,13 @@ Up to 16 separate key/value pairs of value meta are allowed per measurement. The
 
 Alarm Definitions are policies that specify how Alarms should be created. By using Alarm Definitions, the user doesn't have to create individual alarms for each system or service. Instead, a small number of Alarm Definitions can be managed and Monasca will create Alarms for systems and services as they appear.
 
-An Alarm Definition has an expression for evaluating one or more metrics to determine if there is a problem. Depending on the Alarm Definition expression and match_by value, Monasca will create one or more Alarms depending on the Metrics that are received. The match_by parameter specifies which dimension or dimensions should be used to determine if one or more alarms will be created.
+An Alarm Definition has an expression for evaluating one or more metrics to determine if there is a problem. Depending on the Alarm Definition expression and match_by value, Monasca will create one or more Alarms depending on the measurements that are received. The match_by parameter specifies which dimension or dimensions should be used to determine if one or more alarms will be created.
 
 An example is the best way to show this. Imagine two Alarm Definitions have been created:
 
 Alarm Definition 1 has an expression of `avg(cpu.idle_perc{service=monitoring}) < 20` and the match_by parameter is not set.  Alarm Definition 2 has an expression of `min(cpu.idle_perc{service=monitoring}) < 10` and the match_by parameter is set to `hostname`.
 
-When the metric cpu.idle_perc{service=monitoring,hostname=mini-mon} is first received after the Metric Definitions have been created, an Alarm is created for both Alarm Definitions. The metric is added to both Alarms. The following set of Alarm Definitions and Alarm would exist:
+When a measurement for the metric cpu.idle_perc{service=monitoring,hostname=mini-mon} is first received after the Metric Definitions have been created, an Alarm is created for both Alarm Definitions. The metric is added to both Alarms. The following set of Alarm Definitions and Alarm would exist:
 
 Alarm Definition 1:
 ```
@@ -372,7 +372,7 @@ Alarm Definition 2:
 Alarm 1 - Metrics: cpu.idle_perc{service=monitoring,hostname=mini-mon}
 ```
 
-Now, when the metric cpu.idle_perc{service=monitoring,hostname=devstack} is received, the two Alarm Definitions define different behaviors. Since the value for the hostname dimension is different from the value for the existing Alarm from Alarm Definition 2, and Alarm Definition 2 has specified a match_by parameter on `hostname`, a new Alarm will be created.  Alarm Definition 1 does not have a value for match_by, so this metric is added to the existing Alarm. This gives us the following set of Alarm Definitions and Alarms:
+Now, when a measurement for the metric cpu.idle_perc{service=monitoring,hostname=devstack} is received, the two Alarm Definitions define different behaviors. Since the value for the hostname dimension is different from the value for the existing Alarm from Alarm Definition 2, and Alarm Definition 2 has specified a match_by parameter on `hostname`, a new Alarm will be created.  Alarm Definition 1 does not have a value for match_by, so this metric is added to the existing Alarm. This gives us the following set of Alarm Definitions and Alarms:
 
 Alarm Definition 1:
 ```
@@ -387,13 +387,13 @@ Alarm 2 - Metrics: cpu.idle_perc{service=monitoring,hostname=devstack}
 
 Alarm Definition 1 is evaluating the status of the monitoring service as a whole, while Alarm Definition 2 evaluates each system in the service.
 
-Now if another system is configured into the monitoring service, then its cpu.idle_perc metric will be added to the Alarm for Alarm Definition 1 and a new Alarm will be created for Alarm Definition 2, all without any user intervention. The system will be monitored without requiring the user to explicitly add alarms for the new system as other monitoring systems require.
+Now if another system is configured into the monitoring service, then when a measurement is received for its cpu.idle_perc metric, that metric will be added to the Alarm for Alarm Definition 1 and a new Alarm will be created for Alarm Definition 2, all without any user intervention. The system will be monitored without requiring the user to explicitly add alarms for the new system as other monitoring systems require.
 
 If an Alarm Definition expression has multiple subexpressions, for example, `avg(cpu.idle_perc{service=monitoring}) < 10 or avg(cpu.user_perc{service=monitoring}) > 60` and a match_by value set, then the metrics for both subexpressions must have the same value for the dimension specified in match_by. For example, assume this Alarm Definition:
 
 Expression `avg(cpu.idle_perc{service=monitoring}) < 10 or avg(cpu.user_perc{service=monitoring}) > 60` and match_by is `hostname`
 
-Now assume four metrics are received by Monasca:
+Now assume a measurement for each of these four metrics is received by Monasca:
 
 ```
 cpu.idle_perc{service=monitoring,hostname=mini-mon}
@@ -416,13 +416,21 @@ avg(cpu.idle_perc{service=monitoring,hostname=devstack}) and avg(cpu.user_perc{s
 
 Note that the value of match_by, "hostname", is used to match the metrics between the subexpressions, hence the name 'match_by'.
 
-An Alarm will only get created when metrics are seen that match all subexpressions in the Alarm Definition.  If match_by is set, then each metric must have a value for at least one of the values in match_by. If match_by is not set, only one Alarm will be created for an Alarm Definition.
+As a negative example, assume a measurement for the below metric is received by Monasca:
 
-The value of the match_by parameter can also be a list, for example, `hostname,device`. In that case, Alarms will be created based and metrics added based on all values of match_by.
+```
+cpu.idle_perc{service=nova,hostname=nova1}
+```
+
+This metric does not have the service=monitoring dimension, so it will not match the Alarm Definition and no Alarm will be created or metric added to an existing alarm.
+
+An Alarm will only get created when measurements are seen for metrics that match all subexpressions in the Alarm Definition.  If match_by is set, then each metric must have a value for at least one of the values in match_by. If match_by is not set, only one Alarm will be created for an Alarm Definition.
+
+The value of the match_by parameter can also be a list, for example, `hostname,device`. In that case, Alarms will be created and metrics added based on all values of match_by.
 
 For example, assume the Alarm Definition with the expression `max(disk.space_used_perc{service=monitoring}) > 90` and match_by set to `hostname`. This will create one alarm for each system that contains all of the metrics for each device. If instead, the match_by is set to `hostname,device`, then a separate alarm will be created for each device in each system.
 
-To illustrate, assume these four metrics are received by Monasca:
+To illustrate, assume a measurement for each of these four metrics is received by Monasca:
 ```
 disk.space_used_perc{device:/dev/sda1,hostname=mini-mon}
 disk.space_used_perc{device:tmpfs,hostname=mini-mon}
@@ -430,7 +438,7 @@ disk.space_used_perc{device:/dev/sda1,hostname=devstack}
 disk.space_used_perc{device:tmpfs,hostname=devstack}
 ```
 
-Given the expression  `max(disk.space_used_perc{service=monitoring}) > 90` and match_by set to `hostname`, this will create two alarms:
+Given the expression  `max(disk.space_used_perc) > 90` and match_by set to `hostname`, this will create two alarms:
 
 ```
 Alarm 1 - Metrics: disk.space_used_perc{device:/dev/sda1,hostname=mini-mon}, disk.space_used_perc{device:tmpfs,hostname=mini-mon}
@@ -450,20 +458,20 @@ The second value of match_by will create an Alarm for each device. For each devi
 
 If desired, an Alarm Definition can be created that exactly matches a set of metrics. The match_by should not be set. Only one Alarm will be created for that Alarm Definition.
 
-Alarms have a state that is set by the Threshold Engine based on the incoming metrics.
+Alarms have a state that is set by the Threshold Engine based on the incoming measurements.
 
-* UNDETERMINED - No metrics for at least one of the subexpressions has been received in any period for a least 2 * periods (see below for definition of period and periods
-* OK - Metrics have been received and the Alarm Definition Expression evaluates to false for the given metrics
-* ALARM - Metrics have been received and the Alarm Definition Expression evaluates to true for the given metrics
+* UNDETERMINED - No measurements have been received for at least one of the subexpressions in any period for a least 2 * periods (see below for definition of period and periods
+* OK - Measurements have been received and the Alarm Definition Expression evaluates to false for the given measurements
+* ALARM - Measurements have been received and the Alarm Definition Expression evaluates to true for the given measurements
 
 The Alarms are evaluated and their state is set once per minute.
 
-Alarms contain three fields that may be edited via the API. These are the alarm state, lifecycle state, and the link. The alarm state is updated by Monasca as metrics are evaluated, and can be changed manually as necessary. The lifecycle state and link fields are not maintained or updated by Monasca, instead these are provided for storing information related to external tools.
+Alarms contain three fields that may be edited via the API. These are the alarm state, lifecycle state, and the link. The alarm state is updated by Monasca as measurements are evaluated, and can be changed manually as necessary. The lifecycle state and link fields are not maintained or updated by Monasca, instead these are provided for storing information related to external tools.
 
 ## Alarm Definition Expressions
 The alarm definition expression syntax allows the creation of simple or complex alarm definitions to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
 
-An alarm expression is a boolean equation which if it evaluates to true with the incoming metrics, will then trigger a notification to be sent.
+An alarm expression is a boolean equation which is used to evaluate the state of an alarm based on the received measurements. If the expression evaluates to true the state of the alarm to be set to ALARM. If it evaluates to false, the state of the alarm will be set to OK.
 
 ### Syntax
 
