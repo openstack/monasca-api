@@ -402,9 +402,9 @@ function install_influxdb {
 
     sudo mkdir -p /opt/monasca_download_dir || true
 
-    sudo curl http://s3.amazonaws.com/influxdb/influxdb_0.9.1_amd64.deb -o /opt/monasca_download_dir/influxdb_0.9.1_amd64.deb
+    sudo curl http://s3.amazonaws.com/influxdb/influxdb_0.9.4.2_amd64.deb -o /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
 
-    sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_0.9.1_amd64.deb
+    sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/influxdb/influxdb.conf /etc/opt/influxdb/influxdb.conf
 
@@ -450,7 +450,7 @@ function clean_influxdb {
 
     sudo rm -rf /opt/influxdb
 
-    sudo rm -f  /opt/monasca_download_dir/influxdb_0.9.1_amd64.deb
+    sudo rm -f  /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
 
     sudo rm -rf /opt/monasca_download_dir
 
