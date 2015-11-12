@@ -1007,7 +1007,7 @@ function install_storm {
 
     echo_summary "Install Monasca Storm"
 
-    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz -o /root/apache-storm-0.9.5.tar.gz
+    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-0.9.6/apache-storm-0.9.6.tar.gz -o /root/apache-storm-0.9.6.tar.gz
 
     sudo groupadd --system storm || true
 
@@ -1019,9 +1019,9 @@ function install_storm {
 
     sudo chmod 0755 /opt/storm
 
-    sudo tar -xzf /root/apache-storm-0.9.5.tar.gz -C /opt/storm
+    sudo tar -xzf /root/apache-storm-0.9.6.tar.gz -C /opt/storm
 
-    sudo ln -s /opt/storm/apache-storm-0.9.5 /opt/storm/current
+    sudo ln -s /opt/storm/apache-storm-0.9.6 /opt/storm/current
 
     sudo mkdir /var/storm || true
 
@@ -1043,11 +1043,11 @@ function install_storm {
 
     sudo chmod 0644 /opt/storm/current/logback/cluster.xml
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
-    sudo chown storm:storm /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo chown storm:storm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
-    sudo chmod 0644 /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo chmod 0644 /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm-nimbus.conf /etc/init/storm-nimbus.conf
 
@@ -1075,7 +1075,7 @@ function clean_storm {
 
     sudo rm /etc/init/storm-nimbus.conf
 
-    sudo rm /opt/storm/apache-storm-0.9.5/conf/storm.yaml
+    sudo rm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
     sudo rm /opt/storm/current/logback/cluster.xml
 
@@ -1093,7 +1093,7 @@ function clean_storm {
 
     sudo rm -rf /opt/storm
 
-    sudo rm /root/apache-storm-0.9.5.tar.gz
+    sudo rm /root/apache-storm-0.9.6.tar.gz
 
 }
 
