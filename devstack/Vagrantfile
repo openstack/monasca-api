@@ -78,6 +78,9 @@ Vagrant.configure(2) do |config|
     echo '[[local|localrc]]
 
 SERVICE_HOST=192.168.10.6
+HOST_IP=192.168.10.6
+HOST_IP_IFACE=eth1
+MYSQL_HOST=192.168.10.6
 MYSQL_PASSWORD=secretmysql
 DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
