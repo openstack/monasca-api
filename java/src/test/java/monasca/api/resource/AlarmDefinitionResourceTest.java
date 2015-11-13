@@ -118,9 +118,10 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .put(ClientResponse.class,
-                 new UpdateAlarmDefinitionCommand("Disk Exceeds 1k Operations", null, expression,
+                 new UpdateAlarmDefinitionCommand("Disk Exceeds 1k Operations", "", expression,
                                                   Arrays.asList("service", "instance_id"), "LOW",
-                                                  true, alarmActions, null, null));
+                                                  true, alarmActions, new ArrayList<String>(),
+                                                  new ArrayList<String>()));
 
     assertEquals(response.getStatus(), 200);
     verify(service).update(eq("abc"), eq("123"), any(AlarmExpression.class),

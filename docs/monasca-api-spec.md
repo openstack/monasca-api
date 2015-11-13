@@ -1954,17 +1954,16 @@ None.
 Consists of an alarm definition. An alarm has the following properties:
 
 * name (string(255), required) - A name of the alarm definition.
-* description (string(255), optional) -  A description of an alarm definition.
+* description (string(255), required) -  A description of an alarm definition.
 * expression (string, required) - An alarm expression.
-* match_by ([string], optional) - The metric dimensions to use to create unique alarms. If specified, this MUST be the same as the existing value for match_by
-* severity (string, optional) - Severity of an alarm definition. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
-* alarm_actions ([string(50)], optional) 
-* ok_actions ([string(50)], optional)
-* undetermined_actions ([string(50)], optional)
+* match_by ([string], required) - The metric dimensions to use to create unique alarms. This MUST be the same as the existing value for match_by
+* severity (string, required) - Severity of an alarm definition. Must be either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
+* alarm_actions ([string(50)], required)
+* ok_actions ([string(50)], required)
+* undetermined_actions ([string(50)], required)
+* actions_enabled (boolean, required) If actions should be enabled (set to true) or ignored (set to false)
 
-If optional parameters are not specified they will be reset to their default state.
-
-Only the parameters that are specified will be updated. See Changing Alarm Definitions for restrictions on changing expression and match_by.
+See Changing Alarm Definitions for restrictions on changing expression and match_by.
 
 #### Request Examples
 ```
@@ -1981,6 +1980,7 @@ Cache-Control: no-cache
    "match_by":[
      "hostname"
    ],
+   "severity": "LOW",
    "alarm_actions":[  
       "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
    ],
@@ -1989,7 +1989,8 @@ Cache-Control: no-cache
    ],
    "undetermined_actions":[  
       "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
-   ]
+   ],
+   "actions_enabled": true
 }
 ```
 
