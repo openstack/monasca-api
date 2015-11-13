@@ -45,7 +45,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
         # create another alarm definition
         name1 = data_utils.rand_name('alarm_definition1')
-        expression1 = "max(cpu.system_perc) > 0"
+        expression1 = "max(name-1) > 0"
         alarm_definition1 = helpers.create_alarm_definition(
             name=name1,
             expression=expression1)
@@ -53,7 +53,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
         # create another alarm definition
         name2 = data_utils.rand_name('alarm_definition2')
-        expression1 = "avg(mysql.performance.slow_queries) > 10.0"
+        expression1 = "avg(name-1) > 10.0"
         alarm_definition2 = helpers.create_alarm_definition(
             name=name2,
             expression=expression1)
@@ -63,14 +63,12 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         for i in xrange(300):
             metric = helpers.create_metric()
             cls.monasca_client.create_metrics(metric)
-            cls._start_timestamp = start_timestamp + i
-            cls._end_timestamp = end_timestamp + i
-            time.sleep(1)
             resp, response_body = cls.monasca_client.\
                 list_alarms_state_history()
             elements = response_body['elements']
             if len(elements) >= 3:
                 break
+            time.sleep(1)
 
     @test.attr(type="gate")
     def test_list_alarms_state_history(self):
@@ -168,7 +166,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
             for limit in xrange(1, 3):
                 query_parms = '?limit=' + str(limit) + \
-                              '&offset=' + str(last_element_id)
+                              '&offset=' + str(first_element_id)
                 resp, response_body = self.monasca_client.\
                     list_alarms_state_history(query_parms)
                 elements = response_body['elements']
