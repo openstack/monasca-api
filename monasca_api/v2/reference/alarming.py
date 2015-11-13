@@ -110,8 +110,7 @@ class Alarming(object):
                     sub_alarms_event_msg = (
                         self._build_sub_alarm_event_msg(sub_alarm_dict,
                                                         prev_alarm_id))
-                    alarm_event_msg[event_type][
-                        u'subAlarms': sub_alarms_event_msg]
+                    alarm_event_msg[event_type][u'subAlarms'] = sub_alarms_event_msg
                     self.send_event(self.events_message_queue,
                                     alarm_event_msg)
 
