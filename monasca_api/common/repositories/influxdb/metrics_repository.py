@@ -282,6 +282,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             return json_measurement_list
 
+        except exceptions.MultipleMetricsException as ex:
+            raise
+
         except exceptions.RepositoryException as ex:
 
             if (isinstance(ex.message, InfluxDBClientError) and
