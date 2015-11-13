@@ -239,7 +239,6 @@ class TestMeasurements(base.BaseMonascaTest):
             measurements = elements[0]['measurements']
             if measurements:
                 first_measurement = measurements[0]
-                last_measurement = measurements[3]
             else:
                 error_msg = "Failed " \
                             "test_list_measurements_with_offset_limit: not " \
@@ -258,40 +257,37 @@ class TestMeasurements(base.BaseMonascaTest):
             query_parms)
         self.assertEqual(200, resp.status)
 
-        elements = response_body['elements']
-        element = elements[0]
-        measurements = element['measurements']
+        measurements = response_body['elements'][0]['measurements']
         self.assertEqual(4, len(measurements))
         self.assertEqual(first_measurement, measurements[0])
-        timeout = time.time() + 60 * 1   # 1 minute timeout
-        for limit in xrange(1, 4):
-            next_measurement = measurements[limit - 1]
-            while True:
-                if time.time() >= timeout:
-                    msg = "Failed test_list_measurements_with_offset_limit: " \
-                          "one minute timeout on offset limit test loop."
-                    raise exceptions.TimeoutException(msg)
-                else:
-                    query_parms = '?name=' + str(self._name2) + \
-                                  '&merge_metrics=true&start_time=' + \
-                                  str(start_time) + '&end_time=' + end_time + \
-                                  '&offset=' + str(next_measurement[0]) + \
-                                  '&limit=' + str(limit)
-                    resp, response_body = self.monasca_client.\
-                        list_measurements(query_parms)
-                    self.assertEqual(200, resp.status)
-                    element = response_body['elements'][0]
-                    new_measurement = element['measurements']
 
-                    if len(new_measurement) > limit - 1:
-                        self.assertEqual(limit, len(new_measurement))
-                        next_measurement = new_measurement[limit - 1]
-                    elif 0 < len(new_measurement) <= limit - 1:
-                        self.assertEqual(last_measurement, new_measurement[0])
-                        break
-                    else:
-                        self.assertEqual(last_measurement, next_measurement)
-                    break
+        for measurement_index in xrange(len(measurements) - 2):
+            max_limit = len(measurements) - measurement_index
+
+            for limit in xrange(1, max_limit):
+                first_index = measurement_index + 1
+                last_index = measurement_index + limit + 1
+                expected_measurements = measurements[first_index:last_index]
+
+                offset_timestamp = measurements[measurement_index][0]
+                query_parms = '?name=' + str(self._name2) + \
+                              '&merge_metrics=true&start_time=' + \
+                              str(start_time) + '&end_time=' + end_time + \
+                              '&offset=' + str(offset_timestamp) + \
+                              '&limit=' + str(limit)
+                resp, response_body = self.monasca_client.list_measurements(query_parms)
+                self.assertEqual(200, resp.status)
+                if 'elements' not in response_body or not response_body['elements']:
+                    error_msg = 'No metrics found, expected 1'
+                    self.fail(error_msg)
+                if not response_body['elements'][0]['measurements']:
+                    error_msg = 'Found 0 measurements, expected {}'.format(limit)
+                    self.fail(error_msg)
+                new_measurements = response_body['elements'][0]['measurements']
+
+                self.assertEqual(limit, len(new_measurements))
+                for i in xrange(len(expected_measurements)):
+                    self.assertEqual(expected_measurements[i], new_measurements[i])
 
     @test.attr(type="gate")
     def test_list_measurements_with_merge_metrics(self):
