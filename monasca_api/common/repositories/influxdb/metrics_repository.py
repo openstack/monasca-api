@@ -127,7 +127,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.iteritems())):
-                where_clause += " and {} = '{}'".format(
+                where_clause += " and \"{}\" = '{}'".format(
                     dimension_name.encode('utf8'), dimension_value.encode(
                         'utf8'))
 
@@ -165,6 +165,13 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             json_metric_list = self._build_serie_metric_list(result)
 
             return json_metric_list
+
+        except InfluxDBClientError as ex:
+            if ex.message.startswith(MEASUREMENT_NOT_FOUND_MSG):
+                return []
+            else:
+                LOG.exception(ex)
+                raise exceptions.RepositoryException(ex)
 
         except Exception as ex:
             LOG.exception(ex)
