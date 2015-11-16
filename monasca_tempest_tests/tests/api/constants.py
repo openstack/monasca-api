@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-MAX_RETRIES = 60
+MAX_RETRIES = 30
 RETRY_WAIT_SECS = 1
+ONE_MINUTE_TIME_OUT = 60
 
 MAX_METRIC_NAME_LENGTH = 255
 MAX_DIMENSION_KEY_LENGTH = 255

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 import time
 
 from tempest.common.utils import data_utils
@@ -26,7 +27,12 @@ def create_metric(name='name-1',
                       'key-2': 'value-2'
                   },
                   timestamp=time.time() * 1000,
-                  value=0.0):
+                  value=0.0,
+                  value_meta={
+                      'key-1': 'value-1',
+                      'key-2': 'value-2'
+                  },
+                  ):
     metric = {}
     if name is not None:
         metric['name'] = name
@@ -36,6 +42,8 @@ def create_metric(name='name-1',
         metric['timestamp'] = timestamp
     if value is not None:
         metric['value'] = value
+    if value_meta is not None:
+        metric['value_meta'] = value_meta
     return metric
 
 
@@ -80,22 +88,23 @@ def create_alarm_definition(name=None,
     return alarm_definition
 
 
-def create_alarms_for_test_alarms(self, num):
+def create_alarms_for_test_alarms(cls, num):
     for num in xrange(num):
         # create an alarm definition
         expression = "avg(name-1) > 0"
         name = data_utils.rand_name('name-1')
         alarm_definition = create_alarm_definition(
             name=name, expression=expression)
-        self.monasca_client.create_alarm_definitions(
+        resp, response_body = cls.monasca_client.create_alarm_definitions(
             alarm_definition)
+        cls.assertEqual(201, resp.status)
 
     # create some metrics
     for i in xrange(180):
         metric = create_metric(name='name-1')
-        self.monasca_client.create_metrics(metric)
+        cls.monasca_client.create_metrics(metric)
         time.sleep(1)
-        resp, response_body = self.monasca_client.list_alarms()
+        resp, response_body = cls.monasca_client.list_alarms()
         elements = response_body['elements']
         if len(elements) >= num:
             break
@@ -121,6 +130,7 @@ def create_alarm_definitions_with_num(cls, expression):
             expression=expression)
         resp, response_body = cls.monasca_client.create_alarm_definitions(
             alarm_definition)
+        cls.assertEqual(201, resp.status)
         alarm_def_id.append(response_body['id'])
     return alarm_def_id
 
@@ -195,3 +205,59 @@ def create_metrics_for_test_alarms_match_by(cls, num, sub_expressions, list):
             elements = response_body['elements']
             if len(elements) >= num:
                 break
+
+
+def timestamp_to_iso(timestamp):
+    time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
+    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M:%S")
+    time_iso_base += 'Z'
+    return time_iso_base
+
+
+def timestamp_to_iso_millis(timestamp):
+    time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
+    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M")
+    time_iso_microsecond = time_utc.strftime(".%f")
+    time_iso_second = time_utc.strftime("%S")
+    if float(time_iso_microsecond[0:4]) == 0.0:
+        time_iso_millisecond = time_utc.strftime("%Y-%m-%dT%H:%M:%S") + 'Z'
+    else:
+        millisecond = str(int(time_iso_second[1]) +
+                          float(time_iso_microsecond[0:4]))
+        time_iso_new = time_iso_base + ':' + time_iso_second[0] + millisecond
+        time_iso_millisecond = time_iso_new + 'Z'
+    return time_iso_millisecond
+
+
+def test_list_measurements_test_element(cls, element, test_key,
+                                        test_value):
+    cls.assertEqual(set(element),
+                    set(['columns', 'dimensions', 'id', 'measurements',
+                         'name']))
+    cls.assertEqual(set(element['columns']),
+                    set(['timestamp', 'value', 'value_meta']))
+    cls.assertTrue(str(element['id']) is not None)
+    if test_key is not None and test_value is not None:
+        cls.assertEqual(str(element['dimensions'][test_key]), test_value)
+
+
+def test_list_measurements_test_measurement(cls, measurement, test_metric,
+                                            test_vm_key, test_vm_value):
+    time_iso_millisecond = timestamp_to_iso_millis(test_metric['timestamp'])
+    cls.assertEqual(str(measurement[0]), time_iso_millisecond)
+    cls.assertEqual(measurement[1], test_metric['value'])
+    if test_vm_key is not None and test_vm_value is not None:
+        cls.assertEqual(str(measurement[2][test_vm_key]), test_vm_value)
+
+
+def test_list_metrics_test_element(cls, element, test_key=None, test_value=None,
+                                   test_name=None):
+    cls.assertTrue(type(element['id']) is unicode)
+    cls.assertTrue(type(element['name']) is unicode)
+    cls.assertTrue(type(element['dimensions']) is dict)
+    cls.assertEqual(set(element), set(['dimensions', 'id', 'name']))
+    cls.assertTrue(str(element['id']) is not None)
+    if test_key is not None and test_value is not None:
+        cls.assertEqual(str(element['dimensions'][test_key]), test_value)
+    if test_name is not None:
+        cls.assertEqual(str(element['name']), test_name)

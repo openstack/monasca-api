@@ -24,8 +24,6 @@ from tempest.common.utils import data_utils
 from tempest import test
 from tempest_lib import exceptions
 
-WAIT_TIME = 30
-
 
 class TestMetrics(base.BaseMonascaTest):
 
@@ -39,18 +37,101 @@ class TestMetrics(base.BaseMonascaTest):
 
     @test.attr(type='gate')
     def test_create_metric(self):
-        metric = helpers.create_metric()
-        resp, body = self.monasca_client.create_metrics(metric)
+        name = data_utils.rand_name('name')
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        timestamp = int(time.time() * 1000)
+        time_iso = helpers.timestamp_to_iso(timestamp)
+        value_meta_key = data_utils.rand_name('value_meta_key')
+        value_meta_value = data_utils.rand_name('value_meta_value')
+        metric = helpers.create_metric(name=name,
+                                       dimensions={key: value},
+                                       timestamp=timestamp,
+                                       value=1.23,
+                                       value_meta={
+                                           value_meta_key: value_meta_value
+                                       })
+        resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
+        query_param = '?name=' + name + '&start_time=' + time_iso
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_measurements(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if str(element['name']) == name:
+                    helpers.test_list_measurements_test_element(
+                        self, element, key, value)
+                    measurement = element['measurements'][0]
+                    helpers.test_list_measurements_test_measurement(
+                        self, measurement, metric, value_meta_key,
+                        value_meta_value)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_create_metric: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
 
     @test.attr(type='gate')
     def test_create_metrics(self):
+        name = data_utils.rand_name('name')
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        timestamp = int(time.time() * 1000)
+        time_iso = helpers.timestamp_to_iso(timestamp)
+        value_meta_key1 = data_utils.rand_name('meta_key')
+        value_meta_value1 = data_utils.rand_name('meta_value')
+        value_meta_key2 = data_utils.rand_name('value_meta_key')
+        value_meta_value2 = data_utils.rand_name('value_meta_value')
         metrics = [
-            helpers.create_metric(),
-            helpers.create_metric()
+            helpers.create_metric(name=name,
+                                  dimensions={key: value},
+                                  timestamp=timestamp,
+                                  value=1.23,
+                                  value_meta={
+                                      value_meta_key1: value_meta_value1
+                                  }),
+            helpers.create_metric(name=name,
+                                  dimensions={key: value},
+                                  timestamp=timestamp + 6000,
+                                  value=4.56,
+                                  value_meta={
+                                      value_meta_key2: value_meta_value2
+                                  })
         ]
-        resp, body = self.monasca_client.create_metrics(metrics)
+        resp, response_body = self.monasca_client.create_metrics(metrics)
         self.assertEqual(204, resp.status)
+        query_param = '?name=' + name + '&start_time=' + str(time_iso)
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_measurements(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if str(element['name']) == name \
+                        and len(element['measurements']) == 2:
+                    helpers.test_list_measurements_test_element(
+                        self, element, key, value)
+                    first_measurement = element['measurements'][0]
+                    second_measurement = element['measurements'][1]
+                    helpers.test_list_measurements_test_measurement(
+                        self, first_measurement, metrics[0], value_meta_key1,
+                        value_meta_value1)
+                    helpers.test_list_measurements_test_measurement(
+                        self, second_measurement, metrics[1], value_meta_key2,
+                        value_meta_value2)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_create_metrics: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
 
     @test.attr(type='gate')
     @test.attr(type=['negative'])
@@ -62,9 +143,42 @@ class TestMetrics(base.BaseMonascaTest):
 
     @test.attr(type='gate')
     def test_create_metric_with_no_dimensions(self):
-        metric = helpers.create_metric(dimensions=None)
-        resp, body = self.monasca_client.create_metrics(metric)
+        name = data_utils.rand_name('name')
+        timestamp = int(time.time() * 1000)
+        time_iso = helpers.timestamp_to_iso(timestamp)
+        value_meta_key = data_utils.rand_name('value_meta_key')
+        value_meta_value = data_utils.rand_name('value_meta_value')
+        metric = helpers.create_metric(name=name,
+                                       dimensions=None,
+                                       timestamp=timestamp,
+                                       value=1.23,
+                                       value_meta={
+                                           value_meta_key: value_meta_value
+                                       })
+        resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
+        query_param = '?name=' + str(name) + '&start_time=' + str(time_iso)
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_measurements(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if str(element['name']) == name:
+                    helpers.test_list_measurements_test_element(
+                        self, element, test_key=None, test_value=None)
+                    measurement = element['measurements'][0]
+                    helpers.test_list_measurements_test_measurement(
+                        self, measurement, metric, value_meta_key,
+                        value_meta_value)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_create_metric_with_no_dimensions: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
 
     @test.attr(type='gate')
     @test.attr(type=['negative'])
@@ -80,7 +194,6 @@ class TestMetrics(base.BaseMonascaTest):
         timestamp = time.time() * 1000
         metric = helpers.create_metric(timestamp=timestamp,
                                        value=None)
-        return
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)
@@ -142,64 +255,65 @@ class TestMetrics(base.BaseMonascaTest):
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
         element = elements[0]
+        helpers.test_list_metrics_test_element(
+            self, element, test_key=None, test_value=None, test_name=None)
         self.assertTrue(set(['id', 'name', 'dimensions']) == set(element))
-        self.assertTrue(type(element['id']) is unicode)
-        self.assertTrue(type(element['name']) is unicode)
-        self.assertTrue(type(element['dimensions']) is dict)
 
     @test.attr(type='gate')
     def test_list_metrics_with_dimensions(self):
-        name_org = data_utils.rand_name('name')
+        name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
-        metric = helpers.create_metric(name=name_org,
-                                       dimensions={key: 'value-1'})
-        self.monasca_client.create_metrics(metric)
-        for timer in xrange(WAIT_TIME):
-            query_parms = '?dimensions=' + str(key) + ':value-1'
-            resp, response_body = self.monasca_client.list_metrics(query_parms)
+        value = data_utils.rand_name('value')
+        metric = helpers.create_metric(name=name,
+                                       dimensions={key: value})
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        query_param = '?dimensions=' + key + ':' + value
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_metrics(query_param)
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
-            if elements:
-                dimensions = elements[0]
-                name = dimensions['name']
-                self.assertEqual(name_org, str(name))
-                break
-            else:
-                time.sleep(1)
-                if timer == WAIT_TIME - 1:
-                    skip_msg = "Skipped test_list_metrics_with_dimensions: " \
-                               "timeout on waiting for metrics: at least " \
-                               "one metric is needed. Current number of " \
-                               "metrics = 0"
-                    raise self.skipException(skip_msg)
+            for element in elements:
+                if str(element['dimensions'][key]) == value:
+                    helpers.test_list_metrics_test_element(
+                        self, element, test_name=name)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_list_metrics_with_dimensions: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
 
     @test.attr(type='gate')
     def test_list_metrics_with_name(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
-        value_org = data_utils.rand_name('value')
+        value = data_utils.rand_name('value')
         metric = helpers.create_metric(name=name,
-                                       dimensions={key: value_org})
-        self.monasca_client.create_metrics(metric)
-        for timer in xrange(WAIT_TIME):
-            query_parms = '?name=' + name
-            resp, response_body = self.monasca_client.list_metrics(query_parms)
+                                       dimensions={key: value})
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        query_param = '?name=' + str(name)
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_metrics(query_param)
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
-            if elements:
-                dimensions = elements[0]
-                dimension = dimensions['dimensions']
-                value = dimension[unicode(key)]
-                self.assertEqual(value_org, str(value))
-                break
-            else:
-                time.sleep(1)
-                if timer == WAIT_TIME - 1:
-                    skip_msg = "Skipped test_list_metrics_with_name: " \
-                               "timeout on waiting for metrics: at least one " \
-                               "metric is needed. Current number of metrics " \
-                               "= 0"
-                    raise self.skipException(skip_msg)
+            for element in elements:
+                if str(element['name']) == name:
+                    helpers.test_list_metrics_test_element(
+                        self, element, test_key=key, test_value=value)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_list_metrics_with_name: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
 
     @test.attr(type='gate')
     def test_list_metrics_with_offset_limit(self):
@@ -218,20 +332,19 @@ class TestMetrics(base.BaseMonascaTest):
                 key1: 'value-4', key2: 'value-4'})
         ]
         self.monasca_client.create_metrics(metrics)
-        query_parms = '?name=' + name
-        for timer in xrange(WAIT_TIME):
-            resp, response_body = self.monasca_client.list_metrics(query_parms)
+        query_param = '?name=' + name
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.list_metrics(query_param)
             elements = response_body['elements']
             if elements and len(elements) == 4:
                 break
-            else:
-                time.sleep(1)
-                if timer == WAIT_TIME - 1:
-                    skip_msg = ("Skipped test_list_metrics_with_offset_limit: "
-                                "timeout on waiting for metrics: 4 metrics "
-                                "are needed. Current number of elements = "
-                                "{}").format(len(elements))
-                    raise self.skipException(skip_msg)
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = ("Failed test_list_metrics_with_offset_limit: "
+                             "timeout on waiting for metrics: 4 metrics "
+                             "are needed. Current number of elements = "
+                             "{}").format(len(elements))
+                self.fail(error_msg)
 
         first_element = elements[0]
         last_element = elements[3]
@@ -241,7 +354,7 @@ class TestMetrics(base.BaseMonascaTest):
         elements = response_body['elements']
         self.assertEqual(4, len(elements))
         self.assertEqual(first_element, elements[0])
-        timeout = time.time() + 60 * 1   # 1 minute timeout
+        timeout = time.time() + constants.ONE_MINUTE_TIME_OUT
         for limit in xrange(1, 5):
             next_element = elements[limit - 1]
             while True:
