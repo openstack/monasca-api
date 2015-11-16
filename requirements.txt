@@ -1,7 +1,7 @@
 falcon==0.2.0
 gunicorn>=19.1.0
 keystonemiddleware
-oslo.config>=1.2.1
+oslo.config>=1.2.1,<=2.6.0
 oslo.middleware
 oslo.log
 oslo.serialization
