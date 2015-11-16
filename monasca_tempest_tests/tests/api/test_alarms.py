@@ -349,7 +349,7 @@ class TestAlarms(base.BaseMonascaTest):
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression)
         self.monasca_client.create_alarm_definitions(alarm_definition)
-        helpers.create_metrics_for_test_alarms_match_by(self, num=1,
+        helpers.create_metrics_for_test_alarms_match_by(self, num=2,
                                                         sub_expressions=False,
                                                         list=False)
         resp, response_body = self.monasca_client.list_alarms()
