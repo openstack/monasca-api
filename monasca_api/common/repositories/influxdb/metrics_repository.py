@@ -13,13 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from datetime import datetime
 import json
 
 from influxdb import client
 from influxdb.exceptions import InfluxDBClientError
 from oslo_config import cfg
 from oslo_log import log
+from oslo_utils import timeutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
@@ -495,7 +496,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                    u'reason': point[5],
                                    u'reason_data': point[6],
                                    u'sub_alarms': json.loads(point[7]),
-                                   u'tenant_id': point[8]}
+                                   u'id': str(self._get_millis_from_timestamp(
+                                       timeutils.parse_isotime(point[0])))}
 
                     # java api formats these during json serialization
                     if alarm_point[u'sub_alarms']:
@@ -515,3 +517,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
 
             raise exceptions.RepositoryException(ex)
+
+    def _get_millis_from_timestamp(self, dt):
+        dt = dt.replace(tzinfo=None)
+        return int((dt - datetime(1970, 1, 1)).total_seconds() * 1000)

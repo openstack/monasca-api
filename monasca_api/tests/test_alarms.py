@@ -67,7 +67,7 @@ ALARM_HISTORY = OrderedDict((
         u"sub_alarm_state": u"ALARM",
         u"current_values": [50.1],
     }]),
-    (u"tenant_id", TENANT_ID),
+    (u"id", u"1420070400000"),
 ))
 
 
@@ -111,11 +111,13 @@ class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
 
         mock_data = copy.deepcopy(ALARM_HISTORY)
 
+        del mock_data[u"id"]
         del mock_data[u"timestamp"]
         del mock_data[u"sub_alarms"][0][u"sub_alarm_expression"][u"metric_name"]
         del mock_data[u"sub_alarms"][0][u"sub_alarm_expression"][u"dimensions"]
         mock_data[u"sub_alarms"] = json.dumps(mock_data[u"sub_alarms"])
         mock_data[u"metrics"] = json.dumps(mock_data[u"metrics"])
+        mock_data[u"tenant_id"] = TENANT_ID
 
         self.mock.return_value.query.return_value.raw = {
             "series": [self._build_series("alarm_state_history", mock_data)]
@@ -183,7 +185,7 @@ class TestAlarmsStateHistory(AlarmTestBase):
             u'/v2.0/alarms/%s/state-history/' % ALARM_HISTORY[u"alarm_id"],
             headers={
                 'X-Roles': 'admin',
-                'X-Tenant-Id': ALARM_HISTORY[u"tenant_id"],
+                'X-Tenant-Id': TENANT_ID,
             })
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
