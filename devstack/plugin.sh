@@ -153,6 +153,8 @@ function extra_monasca {
     fi
 
     install_monasca_smoke_test
+
+    ln -sf "/var/log/monasca/api/monasca-api.log" ${SCREEN_LOGDIR}/screen-monasca-api.log
 }
 
 function unstack_monasca {
