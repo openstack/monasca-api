@@ -17,7 +17,7 @@ from voluptuous import All
 from voluptuous import Any
 from voluptuous import Invalid
 from voluptuous import Length
-from voluptuous import Optional
+from voluptuous import Marker
 from voluptuous import Required
 from voluptuous import Schema
 from voluptuous import Upper
@@ -44,20 +44,20 @@ def list_item_length(v):
 alarm_definition_schema = {
     Required('name'): All(Any(str, unicode), Length(max=255)),
     Required('expression'): All(Any(str, unicode)),
-    Optional('description'): All(Any(str, unicode), Length(max=255)),
-    Optional('severity'): All(Upper, Any('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
-    Optional('match_by'): Any([unicode], [str]),
-    Optional('ok_actions'): list_item_length,
-    Optional('alarm_actions'): list_item_length,
-    Optional('undetermined_actions'): list_item_length,
-    Optional('actions_enabled'): bool}
-
-request_body_schema = Schema(alarm_definition_schema, required=True,
-                             extra=True)
+    Marker('description'): All(Any(str, unicode), Length(max=255)),
+    Marker('severity'): All(Upper, Any('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    Marker('match_by'): Any([unicode], [str]),
+    Marker('ok_actions'): list_item_length,
+    Marker('alarm_actions'): list_item_length,
+    Marker('undetermined_actions'): list_item_length,
+    Marker('actions_enabled'): bool}
 
 
-def validate(msg):
+def validate(msg, require_all=False):
     try:
+        request_body_schema = Schema(alarm_definition_schema,
+                                     required=require_all,
+                                     extra=True)
         request_body_schema(msg)
     except Exception as ex:
         LOG.debug(ex)

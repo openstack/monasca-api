@@ -113,34 +113,21 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         alarm_definition = helpers.read_json_msg_body(req)
 
-        self._validate_alarm_definition(alarm_definition)
+        self._validate_alarm_definition(alarm_definition, require_all=True)
 
         tenant_id = helpers.get_tenant_id(req)
 
-        # Mandatory positional args
         name = get_query_alarm_definition_name(alarm_definition)
         expression = get_query_alarm_definition_expression(alarm_definition)
         actions_enabled = (
-            get_query_alarm_definition_actions_enabled(alarm_definition,
-                                                       required=True))
-
-        # Validator makes actions_enabled optional. So, check it here.
-        if not actions_enabled:
-            raise HTTPUnprocessableEntityError('Unprocessable Entity',
-                                               'Missing actions_enabled')
-
-        # Optional args
-        description = get_query_alarm_definition_description(alarm_definition,
-                                                             return_none=True)
-        alarm_actions = get_query_alarm_definition_alarm_actions(
-            alarm_definition, return_none=True)
-        ok_actions = get_query_ok_actions(alarm_definition, return_none=True)
+            get_query_alarm_definition_actions_enabled(alarm_definition))
+        description = get_query_alarm_definition_description(alarm_definition)
+        alarm_actions = get_query_alarm_definition_alarm_actions(alarm_definition)
+        ok_actions = get_query_ok_actions(alarm_definition)
         undetermined_actions = get_query_alarm_definition_undetermined_actions(
-            alarm_definition, return_none=True)
-        match_by = get_query_alarm_definition_match_by(alarm_definition,
-                                                       return_none=True)
-        severity = get_query_alarm_definition_severity(alarm_definition,
-                                                       return_none=True)
+            alarm_definition)
+        match_by = get_query_alarm_definition_match_by(alarm_definition)
+        severity = get_query_alarm_definition_severity(alarm_definition)
 
         result = self._alarm_definition_update_or_patch(tenant_id,
                                                         alarm_definition_id,
@@ -335,10 +322,10 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         return result
 
-    def _validate_alarm_definition(self, alarm_definition):
+    def _validate_alarm_definition(self, alarm_definition, require_all=False):
 
         try:
-            schema_alarms.validate(alarm_definition)
+            schema_alarms.validate(alarm_definition, require_all=require_all)
             if 'match_by' in alarm_definition:
                 for name in alarm_definition['match_by']:
                     validation.dimension_key(name)
