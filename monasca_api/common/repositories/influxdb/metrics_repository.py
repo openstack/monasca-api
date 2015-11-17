@@ -372,8 +372,8 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             for serie in result.raw['series']:
 
                 if 'values' in serie:
-                    columns = ([column.replace('mean', 'avg') for column in
-                                serie['columns']])
+                    columns = [column.replace('time', 'timestamp').replace('mean', 'avg')
+                               for column in serie['columns']]
 
                     stats_list = []
                     for stats in serie['values']:
