@@ -693,7 +693,7 @@ function install_monasca_api_java {
     if [[ ${SERVICE_HOST} ]]; then
 
         # set influxdb ip address
-        sudo sed -i "s/url: \"http://127\.0\.0\.1:8086\"/url: \"http://${SERVICE_HOST}:8086\"/g" /etc/monasca/api-config.yml
+        sudo sed -i "s/url: \"http:\/\/127\.0\.0\.1:8086\"/url: \"http:\/\/${SERVICE_HOST}:8086\"/g" /etc/monasca/api-config.yml
         # set kafka ip address
         sudo sed -i "s/127\.0\.0\.1:9092/${SERVICE_HOST}:9092/g" /etc/monasca/api-config.yml
         # set zookeeper ip address
