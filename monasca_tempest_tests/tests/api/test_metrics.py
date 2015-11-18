@@ -347,36 +347,30 @@ class TestMetrics(base.BaseMonascaTest):
                 self.fail(error_msg)
 
         first_element = elements[0]
-        last_element = elements[3]
         query_parms = '?name=' + name + '&limit=4'
         resp, response_body = self.monasca_client.list_metrics(query_parms)
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
         self.assertEqual(4, len(elements))
         self.assertEqual(first_element, elements[0])
-        timeout = time.time() + constants.ONE_MINUTE_TIME_OUT
-        for limit in xrange(1, 5):
-            next_element = elements[limit - 1]
-            while True:
-                if time.time() >= timeout:
-                    msg = "Failed test_list_metrics_with_offset_limit: one " \
-                          "minute timeout on offset limit test loop"
-                    raise exceptions.TimeoutException(msg)
-                else:
-                    query_parms = '?name=' + name + '&offset=' + \
-                                  str(next_element['id']) + '&limit=' + \
-                                  str(limit)
-                    resp, response_body = self.\
-                        monasca_client.list_metrics(query_parms)
-                    self.assertEqual(200, resp.status)
-                    new_elements = response_body['elements']
 
-                    if len(new_elements) > limit - 1:
-                        self.assertEqual(limit, len(new_elements))
-                        next_element = new_elements[limit - 1]
-                    elif 0 < len(new_elements) <= limit - 1:
-                        self.assertEqual(last_element, new_elements[0])
-                        break
-                    else:
-                        self.assertEqual(last_element, next_element)
-                        break
+        for metric_index in xrange(len(elements) - 1):
+            metric = elements[metric_index]
+            max_limit = 3 - metric_index
+
+            for limit in xrange(1, max_limit):
+                first_index = metric_index + 1
+                last_index = first_index + limit
+                expected_elements = elements[first_index:last_index]
+
+                query_parms = '?name=' + name + '&offset=' + \
+                              str(metric['id']) + '&limit=' + \
+                              str(limit)
+                resp, response_body = self.\
+                    monasca_client.list_metrics(query_parms)
+                self.assertEqual(200, resp.status)
+                new_elements = response_body['elements']
+
+                self.assertEqual(limit, len(new_elements))
+                for i in xrange(len(expected_elements)):
+                    self.assertEqual(expected_elements[i], new_elements[i])

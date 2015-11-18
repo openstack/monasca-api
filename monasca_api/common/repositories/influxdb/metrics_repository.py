@@ -162,7 +162,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             result = self.influxdb_client.query(query)
 
-            json_metric_list = self._build_serie_metric_list(result)
+            json_metric_list = self._build_serie_metric_list(result, offset)
 
             return json_metric_list
 
@@ -177,7 +177,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _build_serie_metric_list(self, series_names):
+    def _build_serie_metric_list(self, series_names, offset):
 
         json_metric_list = []
 
@@ -186,7 +186,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         if 'series' in series_names.raw:
 
-            id = 0
+            metric_id = 0
+            if offset:
+                metric_id = int(offset) + 1
 
             for series in series_names.raw['series']:
 
@@ -198,10 +200,10 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                         if value and not name.startswith(u'_')
                     }
 
-                    metric = {u'id': str(id),
+                    metric = {u'id': str(metric_id),
                               u'name': series[u'name'],
                               u'dimensions': dimensions}
-                    id += 1
+                    metric_id += 1
 
                     json_metric_list.append(metric)
 
