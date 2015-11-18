@@ -1144,7 +1144,7 @@ function install_storm {
     if [[ ${SERVICE_HOST} ]]; then
 
         # set zookeeper ip address
-        sudo sed -i "s/127\.0\.0\.1\/${SERVICE_HOST}/g" /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+        sudo sed -i "s/127\.0\.0\.1/${SERVICE_HOST}/g" /opt/storm/apache-storm-0.9.6/conf/storm.yaml
 
     fi
 
@@ -1231,7 +1231,7 @@ function install_monasca_thresh {
         # set zookeeper ip address
         sudo sed -i "s/zookeeperConnect: \"127\.0\.0\.1:2181\"/zookeeperConnect: \"${SERVICE_HOST}:2181\"/g" /etc/monasca/thresh-config.yml
         # set mysql ip address
-        sudo sed -i "s/jdbc:mysql:\/\/127\.0\.0\.1\/mon/jdbc:mysql:\/\/${SERVICE_HOST}\/mon/g" /etc/monasca/thresh-config.yml
+        sudo sed -i "s/jdbc:mysql:\/\/127\.0\.0\.1/jdbc:mysql:\/\/${SERVICE_HOST}/g" /etc/monasca/thresh-config.yml
     fi
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-thresh/monasca-thresh /etc/init.d/monasca-thresh
