@@ -115,7 +115,7 @@ class Alarming(object):
                                     alarm_event_msg)
 
                 alarm_metrics_event_msg = []
-                alarm_event_msg = {event_type: {u'tenant_id': tenant_id,
+                alarm_event_msg = {event_type: {u'tenantId': tenant_id,
                                                 u'alarmDefinitionId':
                                                     alarm_definition_id,
                                                 u'alarmId': alarm_metric_row[
