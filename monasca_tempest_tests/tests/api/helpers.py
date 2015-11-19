@@ -87,40 +87,14 @@ def create_alarm_definition(name=None,
     return alarm_definition
 
 
-def delete_alarm_definitions(cls):
+def delete_alarm_definitions(monasca_client):
     # Delete alarm definitions
-    resp, response_body = cls.monasca_client.list_alarm_definitions()
+    resp, response_body = monasca_client.list_alarm_definitions()
     elements = response_body['elements']
     if elements:
         for element in elements:
             alarm_def_id = element['id']
-            cls.monasca_client.delete_alarm_definition(alarm_def_id)
-
-
-def create_alarm_definitions_with_num(cls, expression):
-    cls.rule = {'expression': 'mem_total_mb > 0'}
-    alarm_def_id = []
-    for i in xrange(NUM_ALARM_DEFINITIONS):
-        alarm_definition = create_alarm_definition(
-            name='alarm-definition-' + str(i),
-            description=data_utils.rand_name('description'),
-            expression=expression)
-        resp, response_body = cls.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        cls.assertEqual(201, resp.status)
-        alarm_def_id.append(response_body['id'])
-    return alarm_def_id
-
-
-def create_alarm_definition_for_test_alarm_definition():
-    # Create an alarm definition
-    name = data_utils.rand_name('alarm_definition')
-    expression = "max(cpu.system_perc) > 0"
-    alarm_definition = create_alarm_definition(
-        name=name,
-        description="description",
-        expression=expression)
-    return alarm_definition
+            monasca_client.delete_alarm_definition(alarm_def_id)
 
 
 def timestamp_to_iso(timestamp):

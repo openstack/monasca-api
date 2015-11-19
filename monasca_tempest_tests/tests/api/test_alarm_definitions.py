@@ -41,26 +41,24 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         name = data_utils.rand_name('alarm_definition')
         expression = "max(cpu.system_perc) > 0"
         alarm_definition = helpers.create_alarm_definition(
-            name=name, description="description", expression=expression)
+            name=name, description="description", expression=expression,
+            match_by=['hostname'], severity="MEDIUM")
         resp, response_body = self.monasca_client.create_alarm_definitions(
             alarm_definition)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(name, response_body['name'])
-        self.assertEqual(expression, response_body['expression'])
-
-        helpers.delete_alarm_definitions(self)
+        self._verify_create_alarm_definitions(resp, response_body,
+                                              alarm_definition)
 
     @test.attr(type="gate")
     def test_create_alarm_definition_with_notification(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
-        u_address = 'root@localhost'
-
+        notification_address = 'root@localhost'
         resp, response_body = self.monasca_client.create_notification_method(
-            notification_name, type=notification_type, address=u_address)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name, response_body['name'])
-        notification_id = response_body['id']
+            name=notification_name, type=notification_type,
+            address=notification_address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type,
+            notification_address)
 
         # Create an alarm definition
         alarm_def_name = data_utils.rand_name('monitoring_alarm_definition')
@@ -72,21 +70,16 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             ok_actions=[notification_id],
             undetermined_actions=[notification_id],
             severity="LOW")
-        resp, body = self.monasca_client.create_alarm_definitions(
+        resp, response_body = self.monasca_client.create_alarm_definitions(
             alarm_definition)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual(expression, body['expression'])
-        self.assertEqual(notification_id, body['ok_actions'][0])
-        self.assertEqual(notification_id, body['alarm_actions'][0])
-        self.assertEqual(notification_id, body['undetermined_actions'][0])
+        self._verify_create_alarm_definitions(resp, response_body,
+                                              alarm_definition)
+        self.assertEqual(notification_id, response_body['ok_actions'][0])
+        self.assertEqual(notification_id, response_body['alarm_actions'][0])
+        self.assertEqual(notification_id,
+                         response_body['undetermined_actions'][0])
 
-        helpers.delete_alarm_definitions(self)
-
-        # Delete notification
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id)
-        self.assertEqual(204, resp.status)
+        self._delete_notification(notification_id)
 
     @test.attr(type="gate")
     def test_create_alarm_definition_with_multiple_notifications(self):
@@ -98,17 +91,17 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         notification_type2 = 'PAGERDUTY'
         address2 = 'http://localhost.com'
 
-        resp, body = self.monasca_client.create_notification_method(
+        resp, response_body = self.monasca_client.create_notification_method(
             notification_name1, type=notification_type1, address=address1)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name1, body['name'])
-        notification_id1 = body['id']
+        notification_id1 = self._verify_create_notification_method(
+            resp, response_body, notification_name1, notification_type1,
+            address1)
 
-        resp, body = self.monasca_client.create_notification_method(
+        resp, response_body = self.monasca_client.create_notification_method(
             notification_name2, type=notification_type2, address=address2)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name2, body['name'])
-        notification_id2 = body['id']
+        notification_id2 = self._verify_create_notification_method(
+            resp, response_body, notification_name2, notification_type2,
+            address2)
 
         # Create an alarm definition
         alarm_def_name = data_utils.rand_name('monitoring_alarm_definition')
@@ -117,36 +110,25 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             expression="mem_total_mb > 0",
             alarm_actions=[notification_id1, notification_id2],
             ok_actions=[notification_id1, notification_id2],
+            undetermined_actions=[notification_id1, notification_id2],
             severity="LOW")
-        resp, body = self.monasca_client.create_alarm_definitions(
+        resp, response_body = self.monasca_client.create_alarm_definitions(
             alarm_definition)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual("mem_total_mb > 0", body['expression'])
+        self._verify_create_alarm_definitions(resp, response_body,
+                                              alarm_definition)
 
-        helpers.delete_alarm_definitions(self)
-
-        # Delete notification 1
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id1)
-        self.assertEqual(204, resp.status)
-
-        # Delete notification 2
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id2)
-        self.assertEqual(204, resp.status)
+        self._delete_notification(notification_id1)
+        self._delete_notification(notification_id2)
 
     @test.attr(type="gate")
     def test_create_alarm_definition_with_url_in_expression(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
-        u_address = 'root@localhost'
-
-        resp, body = self.monasca_client.create_notification_method(
-            notification_name, type=notification_type, address=u_address)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name, body['name'])
-        notification_id = body['id']
+        address = 'root@localhost'
+        resp, response_body = self.monasca_client.create_notification_method(
+            notification_name, type=notification_type, address=address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type, address)
 
         # Create an alarm definition
         alarm_def_name = data_utils.rand_name('monitoring_alarm_definition')
@@ -155,33 +137,25 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             expression="avg(mem_total_mb{url=https://www.google.com}) gt 0",
             alarm_actions=[notification_id],
             ok_actions=[notification_id],
+            undetermined_actions=[notification_id],
             severity="LOW")
-        resp, body = self.monasca_client.create_alarm_definitions(
+        resp, response_body = self.monasca_client.create_alarm_definitions(
             alarm_definition)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual("avg(mem_total_mb{url=https://www.google.com}) gt 0",
-                         body['expression'])
-
-        helpers.delete_alarm_definitions(self)
-
-        # Delete notification
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id)
-        self.assertEqual(204, resp.status)
+        self._verify_create_alarm_definitions(resp, response_body,
+                                              alarm_definition)
+        self._delete_notification(notification_id)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_create_alarm_definition_with_special_chars_in_expression(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
-        u_address = 'root@localhost'
+        address = 'root@localhost'
 
-        resp, body = self.monasca_client.create_notification_method(
-            notification_name, type=notification_type, address=u_address)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name, body['name'])
-        notification_id = body['id']
+        resp, response_body = self.monasca_client.create_notification_method(
+            notification_name, type=notification_type, address=address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type, address)
 
         # Create an alarm definition
         alarm_def_name = data_utils.rand_name('monitoring_alarm')
@@ -191,6 +165,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                        "gt 0",
             alarm_actions=[notification_id],
             ok_actions=[notification_id],
+            undetermined_actions=[notification_id],
             severity="LOW")
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_alarm_definitions,
@@ -291,58 +266,40 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_alarm_definitions(self):
         expression = "avg(cpu_utilization{service=compute}) >= 1234"
-        helpers.create_alarm_definitions_with_num(self, expression)
-        resp, response_body = self.monasca_client.list_alarm_definitions()
-        self.assertEqual(200, resp.status)
+        response_body_list = self._create_alarm_definitions(
+            expression=expression, number_of_definitions=1)
+        query_param = '?name=' + str(response_body_list[0]['name'])
+        resp, response_body = self.monasca_client.list_alarm_definitions(
+            query_param)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
 
         # Test list alarm definition response body
         elements = response_body['elements']
+        self._verify_list_get_alarm_definitions_elements(elements, 1,
+                                                         response_body_list[0])
         links = response_body['links']
-        link = links[0]
-        self.assertEqual(len(elements), NUM_ALARM_DEFINITIONS)
-        self.assertTrue(isinstance(response_body, dict))
-        self.assertTrue(set(['links', 'elements']) == set(response_body))
-        self.assertTrue(isinstance(links, list))
-        self.assertTrue(set(['rel', 'href']) == set(link))
-        self.assertEqual(link['rel'], u'self')
-        for definition in elements:
-            self.assertTrue(set(['id',
-                                 'links',
-                                 'name',
-                                 'description',
-                                 'expression',
-                                 'match_by',
-                                 'severity',
-                                 'actions_enabled',
-                                 'ok_actions',
-                                 'alarm_actions',
-                                 'undetermined_actions']) ==
-                            set(definition))
-        helpers.delete_alarm_definitions(self)
+        self._verify_list_alarm_definitions_links(links)
 
     @test.attr(type="gate")
     def test_list_alarm_definitions_with_name(self):
         name = data_utils.rand_name('alarm_definition')
-        description = data_utils.rand_name('description')
-        expression = "max(cpu.system_perc) > 0"
         alarm_definition = helpers.create_alarm_definition(
             name=name,
-            description=description,
-            expression=expression)
-        resp, body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
+            description=data_utils.rand_name('description'),
+            expression="max(cpu.system_perc) > 0")
+        resp, res_body_create_alarm_def = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
 
         query_parms = "?name=" + str(name)
         resp, response_body = self.monasca_client.list_alarm_definitions(
             query_parms)
-        self.assertEqual(200, resp.status)
-        description_new = response_body['elements'][0]['description']
-        self.assertEqual(description, description_new)
-        expression_new = response_body['elements'][0]['expression']
-        self.assertEqual(expression, expression_new)
-
-        helpers.delete_alarm_definitions(self)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
+        elements = response_body['elements']
+        self._verify_list_get_alarm_definitions_elements(
+            elements, 1, res_body_create_alarm_def)
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
 
     @test.attr(type="gate")
     def test_list_alarm_definitions_with_dimensions(self):
@@ -354,27 +311,29 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                      '}) >= 1000'
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression)
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
+        resp, res_body_create_alarm_def = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
 
         # List alarms
         query_parms = '?dimensions=' + str(key) + ':' + str(value)
         resp, response_body = self.monasca_client.\
             list_alarm_definitions(query_parms)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
         elements = response_body['elements']
-        name_new = elements[0]['name']
-        self.assertEqual(1, len(elements))
-        self.assertEqual(name, str(name_new))
-
-        helpers.delete_alarm_definitions(self)
+        self._verify_list_get_alarm_definitions_elements(
+            elements, 1, res_body_create_alarm_def)
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
 
     @test.attr(type="gate")
     def test_list_alarm_definitions_with_offset_limit(self):
+        helpers.delete_alarm_definitions(self.monasca_client)
         expression = "max(cpu.system_perc) > 0"
-        helpers.create_alarm_definitions_with_num(self, expression)
+        self._create_alarm_definitions(
+            expression=expression, number_of_definitions=NUM_ALARM_DEFINITIONS)
         resp, response_body = self.monasca_client.list_alarm_definitions()
-        self.assertEqual(200, resp.status)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
         first_element = response_body['elements'][0]
         last_element = response_body['elements'][1]
 
@@ -414,274 +373,315 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           "one minute timeout"
                     raise exceptions.TimeoutException(msg)
 
-        helpers.delete_alarm_definitions(self)
-
     # Get
 
     @test.attr(type="gate")
     def test_get_alarm_definition(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        alarm_def_id = response_body['id']
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         resp, response_body = self.monasca_client.get_alarm_definition(
-            alarm_def_id)
+            response_body_list[0]['id'])
         self.assertEqual(200, resp.status)
-
-        # Test Get Alarm Definition Response Body
-        self.assertTrue(isinstance(response_body, dict))
-        self.assertTrue(set(['id', 'links', 'name', 'description',
-                             'expression', 'match_by', 'severity',
-                             'actions_enabled', 'alarm_actions',
-                             'ok_actions', 'undetermined_actions'
-                             ]) ==
-                        set(response_body))
+        self._verify_element_set(response_body)
+        self._verify_list_get_alarm_definitions_elements(response_body, 0,
+                                                         response_body_list[0])
         links = response_body['links']
-        self.assertTrue(isinstance(links, list))
-        link = links[0]
-        self.assertTrue(set(['rel', 'href']) ==
-                        set(link))
-        self.assertEqual(link['rel'], u'self')
-
-        helpers.delete_alarm_definitions(self)
+        self._verify_list_alarm_definitions_links(links)
 
     # Update
 
     @test.attr(type="gate")
     def test_update_alarm_definition(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        id = response_body['id']
-
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         # Update alarm definition
         updated_name = data_utils.rand_name('updated_name')
         updated_description = 'updated description'
-        updated_expression = response_body['expression']
+        updated_expression = "max(cpu.system_perc) < 0"
         resp, response_body = self.monasca_client.update_alarm_definition(
-            id=id,
+            id=str(response_body_list[0]['id']),
             name=updated_name,
             expression=updated_expression,
             description=updated_description,
             actions_enabled='true'
         )
         self.assertEqual(200, resp.status)
-
+        self._verify_update_patch_alarm_definition(response_body, updated_name,
+                                                   updated_expression,
+                                                   updated_description, None)
         # Validate fields updated
-        self.assertEqual(updated_name, response_body['name'])
-        self.assertEqual(updated_expression, response_body['expression'])
-        self.assertEqual(updated_description, response_body['description'])
-
-        # Get and validate details of alarm definition after update
-        resp, response_body = self.monasca_client.get_alarm_definition(id)
-        self.assertEqual(200, resp.status)
-        self.assertEqual(updated_name, response_body['name'])
-        self.assertEqual(updated_description, response_body['description'])
-        self.assertEqual(updated_expression, response_body['expression'])
-
-        # Test Updated alarm definition Response Body
-        self.assertTrue(isinstance(response_body, dict))
-        self.assertTrue(set(['id', 'links', 'name', 'description',
-                             'expression', 'match_by', 'severity',
-                             'actions_enabled', 'alarm_actions',
-                             'ok_actions', 'undetermined_actions'
-                             ]) ==
-                        set(response_body))
-
+        resp, response_body = self.monasca_client.get_alarm_definition(
+            response_body_list[0]['id'])
+        self._verify_update_patch_alarm_definition(response_body, updated_name,
+                                                   updated_expression,
+                                                   updated_description, None)
         links = response_body['links']
-        self.assertTrue(isinstance(links, list))
-        link = links[0]
-        self.assertTrue(set(['rel', 'href']) ==
-                        set(link))
-        self.assertEqual(link['rel'], u'self')
-
-        helpers.delete_alarm_definitions(self)
+        self._verify_list_alarm_definitions_links(links)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_update_alarm_definition_with_a_different_match_by(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        id = response_body['id']
-        name = response_body['name']
-        expression = response_body['expression']
-        description = response_body['description']
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
+        name = response_body_list[0]['name']
+        expression = response_body_list[0]['expression']
+        description = response_body_list[0]['description']
         updated_match_by = ['hostname']
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.update_alarm_definition,
-                          id=id, name=name, expression=expression,
+                          id=response_body_list[0]['id'], name=name,
+                          expression=expression,
                           description=description, actions_enabled='true',
                           match_by=updated_match_by)
-        helpers.delete_alarm_definitions(self)
 
     @test.attr(type="gate")
     def test_update_notification_in_alarm_definition(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
-        u_address = 'root@localhost'
+        address = 'root@localhost'
 
-        resp, body = self.monasca_client.create_notification_method(
-            notification_name, type=notification_type, address=u_address)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name, body['name'])
-        notification_id = body['id']
+        resp, response_body = self.monasca_client.create_notification_method(
+            notification_name, type=notification_type, address=address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type, address)
 
         # Create an alarm definition
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        self.assertEqual(201, resp.status)
-        alarm_def_id = response_body['id']
-        expression = response_body['expression']
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
+        expression = response_body_list[0]['expression']
 
         # Update alarm definition
-        alarm_def_name = data_utils.rand_name('monitoring_alarm_update')
-        resp, body = self.monasca_client.update_alarm_definition(
-            alarm_def_id,
-            name=alarm_def_name,
+        update_alarm_def_name = data_utils.rand_name('monitoring_alarm_update')
+        resp, response_body = self.monasca_client.update_alarm_definition(
+            response_body_list[0]['id'],
+            name=update_alarm_def_name,
             expression=expression,
             actions_enabled='true',
             alarm_actions=[notification_id],
-            ok_actions=[notification_id]
-        )
+            ok_actions=[notification_id],
+            undetermined_actions=[notification_id])
         self.assertEqual(200, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual(expression, body['expression'])
-        self.assertEqual(notification_id, body['alarm_actions'][0])
-        self.assertEqual(notification_id, body['ok_actions'][0])
-
+        self._verify_update_patch_alarm_definition(response_body,
+                                                   update_alarm_def_name,
+                                                   None, None, notification_id)
         # Get and verify details of an alarm after update
-        resp, body = self.monasca_client.get_alarm_definition(alarm_def_id)
-        self.assertEqual(200, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual(expression, body['expression'])
-
-        helpers.delete_alarm_definitions(self)
-
-        # Delete notification
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id)
-        self.assertEqual(204, resp.status)
+        resp, response_body = self.monasca_client.get_alarm_definition(
+            response_body_list[0]['id'])
+        self._verify_update_patch_alarm_definition(response_body,
+                                                   update_alarm_def_name,
+                                                   None, None, notification_id)
+        self._delete_notification(notification_id)
 
     # Patch
 
     @test.attr(type="gate")
     def test_patch_alarm_definition(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.\
-            create_alarm_definitions(alarm_definition)
-        id = response_body['id']
-
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         # Patch alarm definition
         patched_name = data_utils.rand_name('patched_name')
         resp, response_body = self.monasca_client.patch_alarm_definition(
-            id=id,
+            id=response_body_list[0]['id'],
             name=patched_name
         )
         self.assertEqual(200, resp.status)
-
+        self._verify_update_patch_alarm_definition(response_body, patched_name,
+                                                   None, None, None)
         # Validate fields updated
-        self.assertEqual(patched_name, response_body['name'])
-
-        helpers.delete_alarm_definitions(self)
+        resp, response_body = self.monasca_client.get_alarm_definition(
+            response_body_list[0]['id'])
+        self._verify_update_patch_alarm_definition(response_body, patched_name,
+                                                   None, None, None)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_patch_alarm_definition_with_a_different_match_by(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.\
-            create_alarm_definitions(alarm_definition)
-        id = response_body['id']
-
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         # Patch alarm definition
         patched_match_by = ['hostname']
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.patch_alarm_definition,
-                          id=id, match_by=patched_match_by)
-        helpers.delete_alarm_definitions(self)
+                          id=response_body_list[0]['id'],
+                          match_by=patched_match_by)
 
     @test.attr(type="gate")
     def test_patch_actions_in_alarm_definition(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
-        u_address = 'root@localhost'
+        address = 'root@localhost'
 
-        resp, body = self.monasca_client.create_notification_method(
-            notification_name, type=notification_type, address=u_address)
-        self.assertEqual(201, resp.status)
-        self.assertEqual(notification_name, body['name'])
-        notification_id = body['id']
+        resp, response_body = self.monasca_client.create_notification_method(
+            notification_name, type=notification_type, address=address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type, address)
 
         # Create an alarm definition
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        self.assertEqual(201, resp.status)
-        alarm_def_id = response_body['id']
-        expression = response_body['expression']
-
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         # Patch alarm definition
-        alarm_def_name = data_utils.rand_name('monitoring_alarm_update')
+        patch_alarm_def_name = data_utils.rand_name('monitoring_alarm_update')
         resp, body = self.monasca_client.patch_alarm_definition(
-            alarm_def_id,
-            name=alarm_def_name,
-            expression=expression,
+            response_body_list[0]['id'],
+            name=patch_alarm_def_name,
+            expression=response_body_list[0]['expression'],
             actions_enabled='true',
             alarm_actions=[notification_id],
             ok_actions=[notification_id],
             undetermined_actions=[notification_id]
         )
         self.assertEqual(200, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual(expression, body['expression'])
-        self.assertEqual(notification_id, body['alarm_actions'][0])
-        self.assertEqual(notification_id, body['ok_actions'][0])
-        self.assertEqual(notification_id, body['undetermined_actions'][0])
-
+        self._verify_update_patch_alarm_definition(body, patch_alarm_def_name,
+                                                   None, None, notification_id)
         # Get and verify details of an alarm after update
-        resp, body = self.monasca_client.get_alarm_definition(alarm_def_id)
-        self.assertEqual(200, resp.status)
-        self.assertEqual(alarm_def_name, body['name'])
-        self.assertEqual(expression, body['expression'])
-        self.assertEqual(notification_id, body['alarm_actions'][0])
-        self.assertEqual(notification_id, body['ok_actions'][0])
-        self.assertEqual(notification_id, body['undetermined_actions'][0])
-
-        helpers.delete_alarm_definitions(self)
-
-        # Delete notification
-        resp, body = self.monasca_client.delete_notification_method(
-            notification_id)
-        self.assertEqual(204, resp.status)
+        resp, response_body = self.monasca_client.get_alarm_definition(
+            response_body_list[0]['id'])
+        self._verify_update_patch_alarm_definition(response_body,
+                                                   patch_alarm_def_name, None,
+                                                   None, notification_id)
+        self._delete_notification(notification_id)
 
     # Delete
 
     @test.attr(type="gate")
     def test_create_and_delete_alarm_definition(self):
-        alarm_definition = helpers.\
-            create_alarm_definition_for_test_alarm_definition()
-        resp, response_body = self.monasca_client.\
-            create_alarm_definitions(alarm_definition)
-        alarm_def_id = response_body['id']
-
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
         # Delete alarm definitions
         resp, response_body = self.monasca_client.list_alarm_definitions()
-        if 'elements' in response_body:
-            elements = response_body['elements']
-            if elements:
-                for element in elements:
-                    current_id = element['id']
-                    resp, body = self.monasca_client.delete_alarm_definition(
-                        current_id)
-                    self.assertEqual(204, resp.status)
-                    self.assertRaises(exceptions.NotFound,
-                                      self.monasca_client.get_alarm_definition,
-                                      alarm_def_id)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
+        elements = response_body['elements']
+        for element in elements:
+            if element['id'] == response_body_list[0]['id']:
+                resp, body = self.monasca_client.delete_alarm_definition(
+                    response_body_list[0]['id'])
+                self.assertEqual(204, resp.status)
+                self.assertRaises(exceptions.NotFound,
+                                  self.monasca_client.get_alarm_definition,
+                                  response_body_list[0]['id'])
+                return
+        self.fail("Failed test_create_and_delete_alarm_definition: "
+                  "cannot find the alarm definition just created.")
+
+    def _create_alarm_definitions(self, expression, number_of_definitions):
+        self.rule = {'expression': 'mem_total_mb > 0'}
+        if expression is None:
+            expression = "max(cpu.system_perc) > 0"
+        response_body_list = []
+        for i in xrange(number_of_definitions):
+            alarm_definition = helpers.create_alarm_definition(
+                name=data_utils.rand_name('alarm_definition'),
+                description=data_utils.rand_name('description'),
+                expression=expression,
+                match_by=['device'])
+            resp, response_body = self.monasca_client.create_alarm_definitions(
+                alarm_definition)
+            self.assertEqual(201, resp.status)
+            response_body_list.append(response_body)
+        return response_body_list
+
+    def _verify_list_alarm_definitions_response_body(self, resp,
+                                                     response_body):
+        self.assertEqual(200, resp.status)
+        self.assertTrue(isinstance(response_body, dict))
+        self.assertTrue(set(['links', 'elements']) == set(response_body))
+
+    def _verify_list_get_alarm_definitions_elements(self, elements, num,
+                                                    res_body_create_alarm_def):
+        if num > 0:
+            self.assertEqual(len(elements), num)
+            for element in elements:
+                self._verify_alarm_definitions_element(
+                    element, res_body_create_alarm_def)
+        else:
+            self._verify_alarm_definitions_element(elements,
+                                                   res_body_create_alarm_def)
+
+    def _verify_alarm_definitions_element(self, response_body,
+                                          res_body_create_alarm_def):
+        self._verify_element_set(response_body)
+        self.assertEqual(response_body['name'],
+                         res_body_create_alarm_def['name'])
+        self.assertEqual(response_body['expression'],
+                         res_body_create_alarm_def['expression'])
+        self.assertEqual(response_body['id'], res_body_create_alarm_def['id'])
+        self.assertEqual(response_body['description'],
+                         res_body_create_alarm_def['description'])
+        self.assertEqual(response_body['match_by'],
+                         res_body_create_alarm_def['match_by'])
+        self.assertEqual(response_body['severity'],
+                         res_body_create_alarm_def['severity'])
+
+    def _verify_element_set(self, element):
+        self.assertTrue(set(['id',
+                             'links',
+                             'name',
+                             'description',
+                             'expression',
+                             'match_by',
+                             'severity',
+                             'actions_enabled',
+                             'ok_actions',
+                             'alarm_actions',
+                             'undetermined_actions']) ==
+                        set(element))
+
+    def _verify_list_alarm_definitions_links(self, links):
+        self.assertTrue(isinstance(links, list))
+        link = links[0]
+        self.assertTrue(set(['rel', 'href']) == set(link))
+        self.assertEqual(link['rel'], u'self')
+
+    def _verify_create_alarm_definitions(self, resp, response_body,
+                                         alarm_definition):
+        self.assertEqual(201, resp.status)
+        self.assertEqual(alarm_definition['name'], response_body['name'])
+
+        self.assertEqual(alarm_definition['expression'],
+                         str(response_body['expression']))
+        if 'description' in alarm_definition:
+            self.assertEqual(alarm_definition['description'],
+                             str(response_body['description']))
+        else:
+            self.assertEqual('', str(response_body['description']))
+        if 'match_by' in alarm_definition:
+            self.assertEqual(alarm_definition['match_by'],
+                             response_body['match_by'])
+        else:
+            self.assertEqual([], response_body['match_by'])
+        if 'severity' in alarm_definition:
+            self.assertEqual(alarm_definition['severity'],
+                             str(response_body['severity']))
+        else:
+            self.assertEqual('LOW', str(response_body['severity']))
+
+    def _verify_update_patch_alarm_definition(self, response_body,
+                                              updated_name, updated_expression,
+                                              updated_description,
+                                              notification_id):
+        if updated_name is not None:
+            self.assertEqual(updated_name, response_body['name'])
+        if updated_expression is not None:
+            self.assertEqual(updated_expression, response_body['expression'])
+        if updated_description is not None:
+            self.assertEqual(updated_description, response_body['description'])
+        if notification_id is not None:
+            self.assertEqual(notification_id,
+                             response_body['alarm_actions'][0])
+            self.assertEqual(notification_id, response_body['ok_actions'][0])
+            self.assertEqual(notification_id,
+                             response_body['undetermined_actions'][0])
+
+    def _delete_notification(self, notification_id):
+        resp, body = self.monasca_client.delete_notification_method(
+            notification_id)
+        self.assertEqual(204, resp.status)
+
+    def _verify_create_notification_method(
+            self, resp, response_body, test_name, test_type, test_address):
+        self.assertEqual(201, resp.status)
+        self.assertEqual(test_name, response_body['name'])
+        self.assertEqual(test_type, response_body['type'])
+        self.assertEqual(test_address, response_body['address'])
+        notification_id = response_body['id']
+        return notification_id
