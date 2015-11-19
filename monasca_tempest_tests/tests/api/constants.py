@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-MAX_RETRIES = 30
+MAX_RETRIES = 60
 RETRY_WAIT_SECS = 1
 ONE_MINUTE_TIME_OUT = 60
 

@@ -229,6 +229,19 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         return json_metric_list
 
+    def _get_dimensions(self, tenant_id, region, name, dimensions):
+        metrics_list = self.list_metrics(tenant_id, region, name,
+                                         dimensions, None, 2)
+
+        if len(metrics_list) > 1:
+            raise (exceptions.MultipleMetricsException(
+                MetricsRepository.MULTIPLE_METRICS_MESSAGE))
+
+        if not metrics_list:
+            return {}
+
+        return metrics_list[0]['dimensions']
+
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
                          limit, merge_metrics_flag):
@@ -236,16 +249,6 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         json_measurement_list = []
 
         try:
-
-            if not merge_metrics_flag:
-
-                metrics_list = self.list_metrics(tenant_id, region, name,
-                                                 dimensions, None, 2)
-
-                if len(metrics_list) > 1:
-                    raise (exceptions.MultipleMetricsException(
-                        MetricsRepository.MULTIPLE_METRICS_MESSAGE))
-
             query = self._build_select_measurement_query(dimensions, name,
                                                          tenant_id,
                                                          region,
@@ -254,6 +257,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                                          offset, limit)
 
             if not merge_metrics_flag:
+                dimensions = self._get_dimensions(tenant_id, region, name, dimensions)
                 query += " slimit 1"
 
             result = self.influxdb_client.query(query)
@@ -347,15 +351,6 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         json_statistics_list = []
 
         try:
-
-            if not merge_metrics_flag:
-                metrics_list = self.list_metrics(tenant_id, region, name,
-                                                 dimensions, None, 2)
-
-                if len(metrics_list) > 1:
-                    raise (exception.MultipleMetricsException(
-                        MetricsRepository.MULTIPLE_METRICS_MESSAGE))
-
             query = self._build_statistics_query(dimensions, name, tenant_id,
                                                  region,
                                                  start_timestamp,
@@ -363,6 +358,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                                  period, offset, limit)
 
             if not merge_metrics_flag:
+                dimensions = self._get_dimensions(tenant_id, region, name, dimensions)
                 query += " slimit 1"
 
             result = self.influxdb_client.query(query)
