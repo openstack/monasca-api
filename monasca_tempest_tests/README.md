@@ -78,6 +78,7 @@ The Monasca Tempest Tests can be run using a variety of methods including:
 1. [Testr](https://wiki.openstack.org/wiki/Testr)
 2. [Os-testr](http://docs.openstack.org/developer/os-testr/)
 3. [PyCharm](https://www.jetbrains.com/pycharm/)
+4. Tempest Scripts in Devstack
 
 ## Run the tests from the CLI using testr
 
@@ -119,6 +120,14 @@ Assuming that you have already created a PyCharm project for the ```monasca-api`
 6. Select the Python interpreter for your project to be the same as the one virtualenv created above. For example, ~/repos/tempest/.venv
 7. Run the tests. You should also be able to debug them.
 8. Step and repeat for other tests.
+
+## Run the tests from the CLI using tempest scripts in devstack
+
+1. In /opt/stack/tempest, run ```./run_tempest.sh monasca_tempest_tests```
+2. If asked to create a new virtual environment, select yes
+3. Activate the virtual environment ```source .venv/bin/activate```
+4. In your monasca-api directory, run ```python setup.py install```
+5. In /opt/stack/tempest, run ```./run_tempest.sh monasca_tempest_tests```
 
 # References
 This section provides a few additional references that might be useful:
