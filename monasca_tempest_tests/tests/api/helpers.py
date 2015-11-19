@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import datetime
 import time
 
@@ -88,36 +87,14 @@ def create_alarm_definition(name=None,
     return alarm_definition
 
 
-def create_alarms_for_test_alarms(cls, num):
-    for num in xrange(num):
-        # create an alarm definition
-        expression = "avg(name-1) > 0"
-        name = data_utils.rand_name('name-1')
-        alarm_definition = create_alarm_definition(
-            name=name, expression=expression)
-        resp, response_body = cls.monasca_client.create_alarm_definitions(
-            alarm_definition)
-        cls.assertEqual(201, resp.status)
-
-    # create some metrics
-    for i in xrange(180):
-        metric = create_metric(name='name-1')
-        cls.monasca_client.create_metrics(metric)
-        time.sleep(1)
-        resp, response_body = cls.monasca_client.list_alarms()
-        elements = response_body['elements']
-        if len(elements) >= num:
-            break
-
-
-def delete_alarm_definitions(self):
+def delete_alarm_definitions(monasca_client):
     # Delete alarm definitions
-    resp, response_body = self.monasca_client.list_alarm_definitions()
+    resp, response_body = monasca_client.list_alarm_definitions()
     elements = response_body['elements']
     if elements:
         for element in elements:
             alarm_def_id = element['id']
-            self.monasca_client.delete_alarm_definition(alarm_def_id)
+            monasca_client.delete_alarm_definition(alarm_def_id)
 
 
 def create_alarm_definitions_with_num(cls, expression):
@@ -146,67 +123,6 @@ def create_alarm_definition_for_test_alarm_definition():
     return alarm_definition
 
 
-def create_metrics_for_test_alarms_match_by(cls, num, sub_expressions, list):
-    # list=True when match_by is a set
-    # sub_expressions=True when expression of the alarm has multiple
-    # sub expressions
-    # create some metrics
-    for i in xrange(180):
-        if list:
-            metric1 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
-                            'device': '/dev/sda1'})
-            metric2 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack',
-                            'device': '/dev/sda1'})
-            metric3 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
-                            'device': 'tmpfs'})
-            metric4 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack',
-                            'device': 'tmpfs'})
-            cls.monasca_client.create_metrics(metric1)
-            cls.monasca_client.create_metrics(metric2)
-            cls.monasca_client.create_metrics(metric3)
-            cls.monasca_client.create_metrics(metric4)
-            time.sleep(1)
-            resp, response_body = cls.monasca_client.list_alarms()
-            elements = response_body['elements']
-            if len(elements) >= num:
-                break
-        else:
-            metric1 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon'})
-            metric2 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack'})
-            cls.monasca_client.create_metrics(metric1)
-            cls.monasca_client.create_metrics(metric2)
-            if sub_expressions:
-                metric3 = create_metric(
-                    name='cpu.user_perc',
-                    dimensions={'service': 'monitoring',
-                                'hostname': 'mini-mon'})
-                metric4 = create_metric(
-                    name='cpu.user_perc',
-                    dimensions={'service': 'monitoring',
-                                'hostname': 'devstack'})
-                cls.monasca_client.create_metrics(metric3)
-                cls.monasca_client.create_metrics(metric4)
-            else:
-                pass
-            time.sleep(1)
-            resp, response_body = cls.monasca_client.list_alarms()
-            elements = response_body['elements']
-            if len(elements) >= num:
-                break
-
-
 def timestamp_to_iso(timestamp):
     time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
     time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M:%S")
@@ -227,37 +143,3 @@ def timestamp_to_iso_millis(timestamp):
         time_iso_new = time_iso_base + ':' + time_iso_second[0] + millisecond
         time_iso_millisecond = time_iso_new + 'Z'
     return time_iso_millisecond
-
-
-def test_list_measurements_test_element(cls, element, test_key,
-                                        test_value):
-    cls.assertEqual(set(element),
-                    set(['columns', 'dimensions', 'id', 'measurements',
-                         'name']))
-    cls.assertEqual(set(element['columns']),
-                    set(['timestamp', 'value', 'value_meta']))
-    cls.assertTrue(str(element['id']) is not None)
-    if test_key is not None and test_value is not None:
-        cls.assertEqual(str(element['dimensions'][test_key]), test_value)
-
-
-def test_list_measurements_test_measurement(cls, measurement, test_metric,
-                                            test_vm_key, test_vm_value):
-    time_iso_millisecond = timestamp_to_iso_millis(test_metric['timestamp'])
-    cls.assertEqual(str(measurement[0]), time_iso_millisecond)
-    cls.assertEqual(measurement[1], test_metric['value'])
-    if test_vm_key is not None and test_vm_value is not None:
-        cls.assertEqual(str(measurement[2][test_vm_key]), test_vm_value)
-
-
-def test_list_metrics_test_element(cls, element, test_key=None, test_value=None,
-                                   test_name=None):
-    cls.assertTrue(type(element['id']) is unicode)
-    cls.assertTrue(type(element['name']) is unicode)
-    cls.assertTrue(type(element['dimensions']) is dict)
-    cls.assertEqual(set(element), set(['dimensions', 'id', 'name']))
-    cls.assertTrue(str(element['id']) is not None)
-    if test_key is not None and test_value is not None:
-        cls.assertEqual(str(element['dimensions'][test_key]), test_value)
-    if test_name is not None:
-        cls.assertEqual(str(element['name']), test_name)
