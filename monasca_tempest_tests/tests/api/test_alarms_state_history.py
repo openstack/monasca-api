@@ -22,6 +22,8 @@ from oslo_utils import timeutils
 from tempest.common.utils import data_utils
 from tempest import test
 
+NUM_ALARM_DEFINITIONS = 3
+
 
 class TestAlarmsStateHistory(base.BaseMonascaTest):
 
@@ -29,44 +31,23 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
     def resource_setup(cls):
         super(TestAlarmsStateHistory, cls).resource_setup()
 
-        start_timestamp = int(time.time() * 1000)
-        beginning_timestamp = int(time.time()) - 60
-        cls._beginning_time = timeutils.iso8601_from_timestamp(
-            beginning_timestamp)
-        end_timestamp = int(time.time() * 1000) + 1000
+        cls._test_start_time = timeutils.iso8601_from_timestamp(
+            int(time.time()) - 60)
 
-        # create an alarm definition
-        expression = "avg(name-1) > 0"
-        name = data_utils.rand_name('alarm_definition')
-        alarm_definition = helpers.create_alarm_definition(
-            name=name,
-            expression=expression)
-        cls.monasca_client.create_alarm_definitions(alarm_definition)
+        for i in xrange(1, NUM_ALARM_DEFINITIONS + 1):
+            alarm_definition = helpers.create_alarm_definition(
+                name=data_utils.rand_name('alarm_definition' + str(i)),
+                expression="min(name-1) < " + str(i))
+            cls.monasca_client.create_alarm_definitions(alarm_definition)
 
-        # create another alarm definition
-        name1 = data_utils.rand_name('alarm_definition1')
-        expression1 = "max(name-1) > 0"
-        alarm_definition1 = helpers.create_alarm_definition(
-            name=name1,
-            expression=expression1)
-        cls.monasca_client.create_alarm_definitions(alarm_definition1)
-
-        # create another alarm definition
-        name2 = data_utils.rand_name('alarm_definition2')
-        expression1 = "avg(name-1) > 10.0"
-        alarm_definition2 = helpers.create_alarm_definition(
-            name=name2,
-            expression=expression1)
-        cls.monasca_client.create_alarm_definitions(alarm_definition2)
-
-        # create some metrics
-        for i in xrange(300):
+        # create some metrics to prime the system and create three alarms
+        for i in xrange(60):
             metric = helpers.create_metric()
             cls.monasca_client.create_metrics(metric)
             resp, response_body = cls.monasca_client.\
                 list_alarms_state_history()
             elements = response_body['elements']
-            if len(elements) >= 3:
+            if len(elements) >= NUM_ALARM_DEFINITIONS:
                 break
             time.sleep(1)
 
@@ -138,7 +119,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_end_time(self):
-        query_parms = '?end_time=' + str(self._beginning_time)
+        query_parms = '?end_time=' + str(self._test_start_time)
         resp, response_body = self.monasca_client.list_alarms_state_history(
             query_parms)
         elements = response_body['elements']
@@ -158,13 +139,13 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         number_of_alarms = len(elements)
-        if number_of_alarms >= 3:
+        if number_of_alarms >= NUM_ALARM_DEFINITIONS:
             first_element = elements[0]
-            last_element = elements[2]
+            last_element = elements[-1]
             first_element_id = first_element['id']
             last_element_id = last_element['id']
 
-            for limit in xrange(1, 3):
+            for limit in xrange(1, NUM_ALARM_DEFINITIONS + 1):
                 query_parms = '?limit=' + str(limit) + \
                               '&offset=' + str(first_element_id)
                 resp, response_body = self.monasca_client.\
