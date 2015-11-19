@@ -87,14 +87,14 @@ def create_alarm_definition(name=None,
     return alarm_definition
 
 
-def delete_alarm_definitions(monasca_client):
+def delete_alarm_definitions(cls):
     # Delete alarm definitions
-    resp, response_body = monasca_client.list_alarm_definitions()
+    resp, response_body = cls.monasca_client.list_alarm_definitions()
     elements = response_body['elements']
     if elements:
         for element in elements:
             alarm_def_id = element['id']
-            monasca_client.delete_alarm_definition(alarm_def_id)
+            cls.monasca_client.delete_alarm_definition(alarm_def_id)
 
 
 def create_alarm_definitions_with_num(cls, expression):
