@@ -61,12 +61,10 @@ class TestMetrics(base.BaseMonascaTest):
             elements = response_body['elements']
             for element in elements:
                 if str(element['name']) == name:
-                    helpers.test_list_measurements_test_element(
-                        self, element, key, value)
+                    self._verify_list_measurements_element(element, key, value)
                     measurement = element['measurements'][0]
-                    helpers.test_list_measurements_test_measurement(
-                        self, measurement, metric, value_meta_key,
-                        value_meta_value)
+                    self._verify_list_measurements_measurement(
+                        measurement, metric, value_meta_key, value_meta_value)
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
@@ -114,15 +112,14 @@ class TestMetrics(base.BaseMonascaTest):
             for element in elements:
                 if str(element['name']) == name \
                         and len(element['measurements']) == 2:
-                    helpers.test_list_measurements_test_element(
-                        self, element, key, value)
+                    self._verify_list_measurements_element(element, key, value)
                     first_measurement = element['measurements'][0]
                     second_measurement = element['measurements'][1]
-                    helpers.test_list_measurements_test_measurement(
-                        self, first_measurement, metrics[0], value_meta_key1,
+                    self._verify_list_measurements_measurement(
+                        first_measurement, metrics[0], value_meta_key1,
                         value_meta_value1)
-                    helpers.test_list_measurements_test_measurement(
-                        self, second_measurement, metrics[1], value_meta_key2,
+                    self._verify_list_measurements_measurement(
+                        second_measurement, metrics[1], value_meta_key2,
                         value_meta_value2)
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
@@ -153,8 +150,7 @@ class TestMetrics(base.BaseMonascaTest):
                                        timestamp=timestamp,
                                        value=1.23,
                                        value_meta={
-                                           value_meta_key: value_meta_value
-                                       })
+                                           value_meta_key: value_meta_value})
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
         query_param = '?name=' + str(name) + '&start_time=' + str(time_iso)
@@ -165,12 +161,11 @@ class TestMetrics(base.BaseMonascaTest):
             elements = response_body['elements']
             for element in elements:
                 if str(element['name']) == name:
-                    helpers.test_list_measurements_test_element(
-                        self, element, test_key=None, test_value=None)
+                    self._verify_list_measurements_element(
+                        element, test_key=None, test_value=None)
                     measurement = element['measurements'][0]
-                    helpers.test_list_measurements_test_measurement(
-                        self, measurement, metric, value_meta_key,
-                        value_meta_value)
+                    self._verify_list_measurements_measurement(
+                        measurement, metric, value_meta_key, value_meta_value)
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
@@ -255,8 +250,8 @@ class TestMetrics(base.BaseMonascaTest):
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         elements = response_body['elements']
         element = elements[0]
-        helpers.test_list_metrics_test_element(
-            self, element, test_key=None, test_value=None, test_name=None)
+        self._verify_list_metrics_element(element, test_key=None,
+                                          test_value=None, test_name=None)
         self.assertTrue(set(['id', 'name', 'dimensions']) == set(element))
 
     @test.attr(type='gate')
@@ -264,20 +259,17 @@ class TestMetrics(base.BaseMonascaTest):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
         value = data_utils.rand_name('value')
-        metric = helpers.create_metric(name=name,
-                                       dimensions={key: value})
+        metric = helpers.create_metric(name=name, dimensions={key: value})
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
         query_param = '?dimensions=' + key + ':' + value
         for i in xrange(constants.MAX_RETRIES):
-            resp, response_body = self.monasca_client.\
-                list_metrics(query_param)
+            resp, response_body = self.monasca_client.list_metrics(query_param)
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
             for element in elements:
                 if str(element['dimensions'][key]) == value:
-                    helpers.test_list_metrics_test_element(
-                        self, element, test_name=name)
+                    self._verify_list_metrics_element(element, test_name=name)
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
@@ -298,14 +290,13 @@ class TestMetrics(base.BaseMonascaTest):
         self.assertEqual(204, resp.status)
         query_param = '?name=' + str(name)
         for i in xrange(constants.MAX_RETRIES):
-            resp, response_body = self.monasca_client.\
-                list_metrics(query_param)
+            resp, response_body = self.monasca_client.list_metrics(query_param)
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
             for element in elements:
                 if str(element['name']) == name:
-                    helpers.test_list_metrics_test_element(
-                        self, element, test_key=key, test_value=value)
+                    self._verify_list_metrics_element(element, test_key=key,
+                                                      test_value=value)
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
@@ -374,3 +365,35 @@ class TestMetrics(base.BaseMonascaTest):
                 self.assertEqual(limit, len(new_elements))
                 for i in xrange(len(expected_elements)):
                     self.assertEqual(expected_elements[i], new_elements[i])
+
+    def _verify_list_measurements_element(self, element, test_key, test_value):
+        self.assertEqual(set(element),
+                         set(['columns', 'dimensions', 'id', 'measurements',
+                             'name']))
+        self.assertEqual(set(element['columns']),
+                         set(['timestamp', 'value', 'value_meta']))
+        self.assertTrue(str(element['id']) is not None)
+        if test_key is not None and test_value is not None:
+            self.assertEqual(str(element['dimensions'][test_key]), test_value)
+
+    def _verify_list_measurements_measurement(self, measurement,
+                                              test_metric, test_vm_key,
+                                              test_vm_value):
+        time_iso_millisecond = helpers.timestamp_to_iso_millis(
+            test_metric['timestamp'])
+        self.assertEqual(str(measurement[0]), time_iso_millisecond)
+        self.assertEqual(measurement[1], test_metric['value'])
+        if test_vm_key is not None and test_vm_value is not None:
+            self.assertEqual(str(measurement[2][test_vm_key]), test_vm_value)
+
+    def _verify_list_metrics_element(self, element, test_key=None,
+                                     test_value=None, test_name=None):
+        self.assertTrue(type(element['id']) is unicode)
+        self.assertTrue(type(element['name']) is unicode)
+        self.assertTrue(type(element['dimensions']) is dict)
+        self.assertEqual(set(element), set(['dimensions', 'id', 'name']))
+        self.assertTrue(str(element['id']) is not None)
+        if test_key is not None and test_value is not None:
+            self.assertEqual(str(element['dimensions'][test_key]), test_value)
+        if test_name is not None:
+            self.assertEqual(str(element['name']), test_name)
