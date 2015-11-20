@@ -67,6 +67,9 @@ ALARM_HISTORY = OrderedDict((
         u"sub_alarm_state": u"ALARM",
         u"current_values": [50.1],
     }]),
+    # Only present in data returned from InfluxDB:
+    (u"tenant_id", TENANT_ID),
+    # Only present in data returned from API:
     (u"id", u"1420070400000"),
 ))
 
@@ -117,7 +120,6 @@ class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
         del mock_data[u"sub_alarms"][0][u"sub_alarm_expression"][u"dimensions"]
         mock_data[u"sub_alarms"] = json.dumps(mock_data[u"sub_alarms"])
         mock_data[u"metrics"] = json.dumps(mock_data[u"metrics"])
-        mock_data[u"tenant_id"] = TENANT_ID
 
         self.mock.return_value.query.return_value.raw = {
             "series": [self._build_series("alarm_state_history", mock_data)]
@@ -180,6 +182,7 @@ class TestAlarmsStateHistory(AlarmTestBase):
         expected_elements = {u"elements": [dict(ALARM_HISTORY)]}
         del expected_elements[u"elements"][0][u"time"]
         del expected_elements[u"elements"][0][u"sub_alarms"][0][u"sub_alarm_expression"][u"metric_definition"]
+        del expected_elements[u"elements"][0][u"tenant_id"]
 
         response = self.simulate_request(
             u'/v2.0/alarms/%s/state-history/' % ALARM_HISTORY[u"alarm_id"],
