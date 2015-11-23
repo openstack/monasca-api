@@ -347,17 +347,17 @@ function install_kafka {
 
     echo_summary "Install Monasca Kafka"
 
-    sudo curl http://apache.mirrors.tds.net/kafka/0.8.1.1/kafka_2.9.2-0.8.1.1.tgz -o /root/kafka_2.9.2-0.8.1.1.tgz
+    sudo curl http://apache.mirrors.tds.net/kafka/${BASE_KAFKA_VERSION}/kafka_${KAFKA_VERSION}.tgz -o /root/kafka_${KAFKA_VERSION}.tgz
 
     sudo groupadd --system kafka || true
 
     sudo useradd --system -g kafka kafka || true
 
-    sudo tar -xzf /root/kafka_2.9.2-0.8.1.1.tgz -C /opt
+    sudo tar -xzf /root/kafka_${KAFKA_VERSION}.tgz -C /opt
 
-    sudo ln -s /opt/kafka_2.9.2-0.8.1.1 /opt/kafka
+    sudo ln -s /opt/kafka_${KAFKA_VERSION} /opt/kafka
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/kafka/kafka-server-start.sh /opt/kafka_2.9.2-0.8.1.1/bin/kafka-server-start.sh
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/kafka/kafka-server-start.sh /opt/kafka_${KAFKA_VERSION}/bin/kafka-server-start.sh
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/kafka/kafka.conf /etc/init/kafka.conf
 
@@ -422,9 +422,9 @@ function clean_kafka {
 
     sudo groupdel kafka
 
-    sudo rm -rf /opt/kafka_2.9.2-0.8.1.1
+    sudo rm -rf /opt/kafka_${KAFKA_VERSION}
 
-    sudo rm -rf /root/kafka_2.9.2-0.8.1.1.tgz
+    sudo rm -rf /root/kafka_${KAFKA_VERSION}.tgz
 
 }
 
@@ -434,9 +434,9 @@ function install_influxdb {
 
     sudo mkdir -p /opt/monasca_download_dir || true
 
-    sudo curl http://s3.amazonaws.com/influxdb/influxdb_0.9.4.2_amd64.deb -o /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
+    sudo curl http://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb -o /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
 
-    sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
+    sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/influxdb/influxdb.conf /etc/opt/influxdb/influxdb.conf
 
@@ -489,7 +489,7 @@ function clean_influxdb {
 
     sudo rm -rf /opt/influxdb
 
-    sudo rm -f  /opt/monasca_download_dir/influxdb_0.9.4.2_amd64.deb
+    sudo rm -f  /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
 
     sudo rm -rf /opt/monasca_download_dir
 
@@ -1110,7 +1110,7 @@ function install_storm {
 
     echo_summary "Install Monasca Storm"
 
-    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-0.9.6/apache-storm-0.9.6.tar.gz -o /root/apache-storm-0.9.6.tar.gz
+    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-${STORM_VERSION}/apache-storm-${STORM_VERSION}.tar.gz -o /root/apache-storm-${STORM_VERSION}.tar.gz
 
     sudo groupadd --system storm || true
 
@@ -1122,9 +1122,9 @@ function install_storm {
 
     sudo chmod 0755 /opt/storm
 
-    sudo tar -xzf /root/apache-storm-0.9.6.tar.gz -C /opt/storm
+    sudo tar -xzf /root/apache-storm-${STORM_VERSION}.tar.gz -C /opt/storm
 
-    sudo ln -s /opt/storm/apache-storm-0.9.6 /opt/storm/current
+    sudo ln -s /opt/storm/apache-storm-${STORM_VERSION} /opt/storm/current
 
     sudo mkdir /var/storm || true
 
@@ -1146,16 +1146,16 @@ function install_storm {
 
     sudo chmod 0644 /opt/storm/current/logback/cluster.xml
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
-    sudo chown storm:storm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+    sudo chown storm:storm /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
-    sudo chmod 0644 /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+    sudo chmod 0644 /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
     if [[ ${SERVICE_HOST} ]]; then
 
         # set zookeeper ip address
-        sudo sed -i "s/127\.0\.0\.1/${SERVICE_HOST}/g" /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+        sudo sed -i "s/127\.0\.0\.1/${SERVICE_HOST}/g" /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
     fi
 
@@ -1185,7 +1185,7 @@ function clean_storm {
 
     sudo rm /etc/init/storm-nimbus.conf
 
-    sudo rm /opt/storm/apache-storm-0.9.6/conf/storm.yaml
+    sudo rm /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
     sudo rm /opt/storm/current/logback/cluster.xml
 
@@ -1203,7 +1203,7 @@ function clean_storm {
 
     sudo rm -rf /opt/storm
 
-    sudo rm /root/apache-storm-0.9.6.tar.gz
+    sudo rm /root/apache-storm-${STORM_VERSION}.tar.gz
 
 }
 
