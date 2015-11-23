@@ -18,8 +18,8 @@ from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import exceptions
-from monasca_api.common.repositories.mysql import mysql_repository
 from monasca_api.common.repositories import notifications_repository as nr
+from monasca_common.repositories.mysql import mysql_repository
 
 LOG = log.getLogger(__name__)
 

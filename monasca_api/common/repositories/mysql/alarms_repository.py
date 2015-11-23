@@ -18,7 +18,7 @@ from time import time
 
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
-from monasca_api.common.repositories.mysql import mysql_repository
+from monasca_common.repositories.mysql import mysql_repository
 
 
 LOG = log.getLogger(__name__)
