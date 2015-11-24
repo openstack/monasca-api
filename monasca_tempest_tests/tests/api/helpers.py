@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import datetime
 import time
 
 from tempest.common.utils import data_utils
@@ -26,7 +26,12 @@ def create_metric(name='name-1',
                       'key-2': 'value-2'
                   },
                   timestamp=time.time() * 1000,
-                  value=0.0):
+                  value=0.0,
+                  value_meta={
+                      'key-1': 'value-1',
+                      'key-2': 'value-2'
+                  },
+                  ):
     metric = {}
     if name is not None:
         metric['name'] = name
@@ -36,6 +41,8 @@ def create_metric(name='name-1',
         metric['timestamp'] = timestamp
     if value is not None:
         metric['value'] = value
+    if value_meta is not None:
+        metric['value_meta'] = value_meta
     return metric
 
 
@@ -80,35 +87,14 @@ def create_alarm_definition(name=None,
     return alarm_definition
 
 
-def create_alarms_for_test_alarms(self, num):
-    for num in xrange(num):
-        # create an alarm definition
-        expression = "avg(name-1) > 0"
-        name = data_utils.rand_name('name-1')
-        alarm_definition = create_alarm_definition(
-            name=name, expression=expression)
-        self.monasca_client.create_alarm_definitions(
-            alarm_definition)
-
-    # create some metrics
-    for i in xrange(180):
-        metric = create_metric(name='name-1')
-        self.monasca_client.create_metrics(metric)
-        time.sleep(1)
-        resp, response_body = self.monasca_client.list_alarms()
-        elements = response_body['elements']
-        if len(elements) >= num:
-            break
-
-
-def delete_alarm_definitions(self):
+def delete_alarm_definitions(cls):
     # Delete alarm definitions
-    resp, response_body = self.monasca_client.list_alarm_definitions()
+    resp, response_body = cls.monasca_client.list_alarm_definitions()
     elements = response_body['elements']
     if elements:
         for element in elements:
             alarm_def_id = element['id']
-            self.monasca_client.delete_alarm_definition(alarm_def_id)
+            cls.monasca_client.delete_alarm_definition(alarm_def_id)
 
 
 def create_alarm_definitions_with_num(cls, expression):
@@ -121,6 +107,7 @@ def create_alarm_definitions_with_num(cls, expression):
             expression=expression)
         resp, response_body = cls.monasca_client.create_alarm_definitions(
             alarm_definition)
+        cls.assertEqual(201, resp.status)
         alarm_def_id.append(response_body['id'])
     return alarm_def_id
 
@@ -136,62 +123,23 @@ def create_alarm_definition_for_test_alarm_definition():
     return alarm_definition
 
 
-def create_metrics_for_test_alarms_match_by(cls, num, sub_expressions, list):
-    # list=True when match_by is a set
-    # sub_expressions=True when expression of the alarm has multiple
-    # sub expressions
-    # create some metrics
-    for i in xrange(180):
-        if list:
-            metric1 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
-                            'device': '/dev/sda1'})
-            metric2 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack',
-                            'device': '/dev/sda1'})
-            metric3 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon',
-                            'device': 'tmpfs'})
-            metric4 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack',
-                            'device': 'tmpfs'})
-            cls.monasca_client.create_metrics(metric1)
-            cls.monasca_client.create_metrics(metric2)
-            cls.monasca_client.create_metrics(metric3)
-            cls.monasca_client.create_metrics(metric4)
-            time.sleep(1)
-            resp, response_body = cls.monasca_client.list_alarms()
-            elements = response_body['elements']
-            if len(elements) >= num:
-                break
-        else:
-            metric1 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'mini-mon'})
-            metric2 = create_metric(
-                name='cpu.idle_perc',
-                dimensions={'service': 'monitoring', 'hostname': 'devstack'})
-            cls.monasca_client.create_metrics(metric1)
-            cls.monasca_client.create_metrics(metric2)
-            if sub_expressions:
-                metric3 = create_metric(
-                    name='cpu.user_perc',
-                    dimensions={'service': 'monitoring',
-                                'hostname': 'mini-mon'})
-                metric4 = create_metric(
-                    name='cpu.user_perc',
-                    dimensions={'service': 'monitoring',
-                                'hostname': 'devstack'})
-                cls.monasca_client.create_metrics(metric3)
-                cls.monasca_client.create_metrics(metric4)
-            else:
-                pass
-            time.sleep(1)
-            resp, response_body = cls.monasca_client.list_alarms()
-            elements = response_body['elements']
-            if len(elements) >= num:
-                break
+def timestamp_to_iso(timestamp):
+    time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
+    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M:%S")
+    time_iso_base += 'Z'
+    return time_iso_base
+
+
+def timestamp_to_iso_millis(timestamp):
+    time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
+    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M")
+    time_iso_microsecond = time_utc.strftime(".%f")
+    time_iso_second = time_utc.strftime("%S")
+    if float(time_iso_microsecond[0:4]) == 0.0:
+        time_iso_millisecond = time_utc.strftime("%Y-%m-%dT%H:%M:%S") + 'Z'
+    else:
+        millisecond = str(int(time_iso_second[1]) +
+                          float(time_iso_microsecond[0:4]))
+        time_iso_new = time_iso_base + ':' + time_iso_second[0] + millisecond
+        time_iso_millisecond = time_iso_new + 'Z'
+    return time_iso_millisecond

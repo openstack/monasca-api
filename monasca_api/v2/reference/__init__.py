@@ -106,9 +106,11 @@ kafka_opts = [cfg.StrOpt('uri', help='Address to kafka server. For example: '
                   'If True, message will not be parsed, otherwise '
                   'messages will be parsed.')),
               cfg.MultiOpt('partitions', item_type=types.Integer(),
-                           default=[0],
-                           help='The sleep time when no messages on kafka '
-                                'queue.'),
+                           default=0,
+                           help='The partitions this connection should '
+                                'listen for messages on. Currently does not '
+                                'support multiple partitions. '
+                                'Default is to listen on partition 0.'),
               cfg.BoolOpt('drop_data', default=False, help=(
                   'Specify if received data should be simply dropped. '
                   'This parameter is only for testing purposes.')), ]

@@ -80,7 +80,7 @@ def main(argv=None):
 
 #   Check retention policy
     policies = influxdb_get(uri=api_uri,
-                            query="SHOW RETENTION POLICIES {0}".format(DBNAME))
+                            query="SHOW RETENTION POLICIES ON {0}".format(DBNAME))
     if not any(pol[0] == SHARDSPACE_NAME for pol in policies):
         # Set retention policy
         policy = "CREATE RETENTION POLICY {0} ON {1} DURATION {2} REPLICATION {3} DEFAULT".format(SHARDSPACE_NAME,

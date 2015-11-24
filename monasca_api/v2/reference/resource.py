@@ -24,31 +24,34 @@ LOG = log.getLogger(__name__)
 
 def resource_try_catch_block(fun):
     def try_it(*args, **kwargs):
-
         try:
-
             return fun(*args, **kwargs)
 
-        except falcon.HTTPNotFound:
+        except falcon.HTTPError:
             raise
+
         except exceptions.DoesNotExistException:
             raise falcon.HTTPNotFound
-        except falcon.HTTPBadRequest:
-            raise
-        except exceptions.MultipleMetricException as ex:
-            raise falcon.HTTPConflict(ex.__class__.__name__, ex.message)
+
+        except exceptions.MultipleMetricsException as ex:
+            raise falcon.HTTPConflict("MultipleMetrics", ex.message)
+
         except exceptions.AlreadyExistsException as ex:
             raise falcon.HTTPConflict(ex.__class__.__name__, ex.message)
+
         except exceptions.InvalidUpdateException as ex:
             raise HTTPUnprocessableEntityError(ex.__class__.__name__, ex.message)
+
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
             msg = " ".join(map(str, ex.message.args))
             raise falcon.HTTPInternalServerError('The repository was unable '
                                                  'to process your request',
                                                  msg)
+
         except Exception as ex:
             LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable', ex)
+            raise falcon.HTTPInternalServerError('Service unavailable',
+                                                 ex.message)
 
     return try_it

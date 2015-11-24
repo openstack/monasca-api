@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from tempest import config
+from tempest.common import credentials_factory
 import tempest.test
 from tempest_lib import exceptions
 
@@ -30,7 +31,10 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
     @classmethod
     def resource_setup(cls):
         super(BaseMonascaTest, cls).resource_setup()
-        cls.os = clients.Manager()
+        auth_version = CONF.identity.auth_version
+        cred_provider = credentials_factory.LegacyCredentialProvider(auth_version)
+        credentials = cred_provider.get_primary_creds()
+        cls.os = clients.Manager(credentials=credentials)
         cls.monasca_client = cls.os.monasca_client
 
     @staticmethod

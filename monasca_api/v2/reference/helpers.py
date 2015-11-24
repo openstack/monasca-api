@@ -122,7 +122,11 @@ def get_query_param(req, param_name, required=False, default_val=None):
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if param_name in params:
-            param_val = params[param_name].decode('utf8')
+            if isinstance(params[param_name], list):
+                param_val = params[param_name][0].decode('utf8')
+            else:
+                param_val = params[param_name].decode('utf8')
+
             return param_val
         else:
             if required:
@@ -353,12 +357,12 @@ def paginate_measurement(measurement, uri, limit):
         if new_query_params:
             next_link += '?' + '&'.join(new_query_params)
 
-        truncated_measurement = {u'dimensions': measurement[0]['dimensions'],
-                                 u'measurements': (measurement[0]
-                                                   ['measurements'][:limit]),
-                                 u'name': measurement[0]['name'],
-                                 u'columns': measurement[0]['columns'],
-                                 u'id': new_offset}
+        truncated_measurement = [{u'dimensions': measurement[0]['dimensions'],
+                                  u'measurements': (measurement[0]
+                                                    ['measurements'][:limit]),
+                                  u'name': measurement[0]['name'],
+                                  u'columns': measurement[0]['columns'],
+                                  u'id': new_offset}]
 
         resource = {u'links': ([{u'rel': u'self',
                                  u'href': self_link.decode('utf8')},

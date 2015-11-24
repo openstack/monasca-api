@@ -277,9 +277,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                   offset, limit)
 
         result = []
-
         if not alarm_rows:
-            return result
+            return helpers.paginate(result, req_uri, limit)
 
         # Forward declaration
         alarm = {}
@@ -384,7 +383,10 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
 
         # get_alarms expects 'metric_dimensions' for dimensions key.
         if 'dimensions' in query_parms:
-            new_query_parms = {'metric_dimensions': query_parms['dimensions']}
+            dimensions = query_parms['dimensions']
+            if not isinstance(dimensions, list):
+                dimensions = [dimensions]
+            new_query_parms = {'metric_dimensions': dimensions}
         else:
             new_query_parms = {}
 

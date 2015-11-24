@@ -47,6 +47,7 @@ class Alarming(object):
                                        old_state, new_state,
                                        time_ms):
 
+        # This is a change via the API, so there is no SubAlarm info to add
         sub_alarms = []
         metrics = []
         alarm_transitioned_event_msg = {u'alarm-transitioned': {
@@ -64,8 +65,6 @@ class Alarming(object):
             u'subAlarms': sub_alarms,
             u'metrics': metrics}
         }
-
-        # TODO(msbielinski): need to populate subalarms
 
         for alarm_metric_row in alarm_metric_rows:
             metric = self._build_metric(alarm_metric_row)
@@ -110,13 +109,12 @@ class Alarming(object):
                     sub_alarms_event_msg = (
                         self._build_sub_alarm_event_msg(sub_alarm_dict,
                                                         prev_alarm_id))
-                    alarm_event_msg[event_type][
-                        u'subAlarms': sub_alarms_event_msg]
+                    alarm_event_msg[event_type][u'subAlarms'] = sub_alarms_event_msg
                     self.send_event(self.events_message_queue,
                                     alarm_event_msg)
 
                 alarm_metrics_event_msg = []
-                alarm_event_msg = {event_type: {u'tenant_id': tenant_id,
+                alarm_event_msg = {event_type: {u'tenantId': tenant_id,
                                                 u'alarmDefinitionId':
                                                     alarm_definition_id,
                                                 u'alarmId': alarm_metric_row[
