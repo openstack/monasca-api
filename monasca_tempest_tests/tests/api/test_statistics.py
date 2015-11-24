@@ -211,7 +211,6 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         elements = body['elements'][0]['statistics']
         first_element = elements[0]
-        last_element = elements[3]
 
         query_parms = '?name=' + name + '&merge_metrics=true&statistics=avg'\
                       + '&start_time=' + str(start_time) + '&end_time=' + \
@@ -222,38 +221,35 @@ class TestStatistics(base.BaseMonascaTest):
         elements = response_body['elements'][0]['statistics']
         self.assertEqual(4, len(elements))
         self.assertEqual(first_element, elements[0])
-        timeout = time.time() + 60 * 1   # 1 minute timeout
-        for limit in xrange(1, 5):
-            next_element = elements[limit - 1]
-            offset_timestamp = start_timestamp
-            while True:
-                if time.time() >= timeout:
-                    msg = "Failed test_list_statistics_with_offset_limit: " \
-                          "one minute timeout on offset limit test loop."
-                    raise exceptions.TimeoutException(msg)
-                else:
-                    offset_timestamp += 1000 * limit
-                    offset = timeutils.iso8601_from_timestamp(
-                        offset_timestamp / 1000)
-                    query_parms = '?name=' + name + '&merge_metrics=true' + \
-                                  '&statistics=avg' + '&start_time=' + \
-                                  str(start_time) + '&end_time=' + \
-                                  str(end_time) + '&period=1' + '&limit=' + \
-                                  str(limit) + '&offset=' + str(offset)
-                    resp, response_body = self.monasca_client.list_statistics(
-                        query_parms)
-                    self.assertEqual(200, resp.status)
-                    new_elements = response_body['elements'][0]['statistics']
 
-                    if len(new_elements) > limit - 1:
-                        self.assertEqual(limit, len(new_elements))
-                        next_element = new_elements[limit - 1]
-                    elif 0 < len(new_elements) <= limit - 1:
-                        self.assertEqual(last_element, new_elements[0])
-                        break
-                    else:
-                        self.assertEqual(last_element, next_element)
-                        break
+        for index in xrange(1, 5):
+            max_limit = 5 - index
+
+            for limit in xrange(1, max_limit):
+                offset_timestamp = start_timestamp + (1000 * index)
+                offset = timeutils.iso8601_from_timestamp(offset_timestamp / 1000)
+
+                last_index = index + limit
+                expected_elements = elements[index:last_index]
+
+                query_parms = '?name=' + name + '&merge_metrics=true' + \
+                                      '&statistics=avg' + '&start_time=' + \
+                                      str(start_time) + '&end_time=' + \
+                                      str(end_time) + '&period=1' + '&limit=' + \
+                                      str(limit) + '&offset=' + str(offset)
+                resp, response_body = self.monasca_client.list_statistics(query_parms)
+                self.assertEqual(200, resp.status)
+                if not response_body['elements']:
+                    self.fail("No metrics returned")
+                if not response_body['elements'][0]['statistics']:
+                    self.fail("No statistics returned")
+                new_elements = response_body['elements'][0]['statistics']
+
+                self.assertEqual(limit, len(new_elements))
+                # bug in the python API causes limit 1 to not have matching timestamps
+                if limit > 1:
+                    self.assertEqual(expected_elements, new_elements)
+
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])

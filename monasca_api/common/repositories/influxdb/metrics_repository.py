@@ -236,8 +236,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                          dimensions, None, 2)
 
         if len(metrics_list) > 1:
-            raise (exceptions.MultipleMetricsException(
-                MetricsRepository.MULTIPLE_METRICS_MESSAGE))
+            raise exceptions.MultipleMetricsException(self.MULTIPLE_METRICS_MESSAGE)
 
         if not metrics_list:
             return {}
