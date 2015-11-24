@@ -20,7 +20,7 @@ import mock
 
 import unittest
 
-invalid_chars = "<>={}(),'\"\\;&"
+invalid_chars = "<>={}(),\"\\;&"
 
 
 class TestMetricNameValidation(unittest.TestCase):
