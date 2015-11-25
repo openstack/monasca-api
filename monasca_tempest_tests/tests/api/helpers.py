@@ -25,7 +25,7 @@ def create_metric(name='name-1',
                       'key-1': 'value-1',
                       'key-2': 'value-2'
                   },
-                  timestamp=time.time() * 1000,
+                  timestamp=int(round(time.time() * 1000)),
                   value=0.0,
                   value_meta={
                       'key-1': 'value-1',
