@@ -1481,7 +1481,7 @@ function install_monasca_horizon_ui {
 
     sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
-    sudo ln -s opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
+    sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
 
     sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
 
