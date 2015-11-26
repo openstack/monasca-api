@@ -222,6 +222,13 @@ def get_query_endtime_timestamp(req, required=True):
         raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
+def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
+    if end_timestamp:
+        if not start_timestamp < end_timestamp:
+            raise falcon.HTTPBadRequest('Bad request',
+                                        'start_time must be before end_time')
+
+
 def _convert_time_string(date_time_string):
     dt = timeutils.parse_isotime(date_time_string)
     dt = dt.replace(tzinfo=None)

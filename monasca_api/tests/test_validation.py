@@ -134,3 +134,40 @@ class TestRoleValidation(unittest.TestCase):
         self.assertRaises(
             falcon.HTTPUnauthorized,
             helpers.validate_authorization, req, authorized_roles)
+
+
+class TestTimestampsValidation(unittest.TestCase):
+
+    def test_valid_timestamps(self):
+        start_time = '2015-01-01T00:00:00Z'
+        end_time = '2015-01-01T00:00:01Z'
+        start_timestamp = helpers._convert_time_string(start_time)
+        end_timestamp = helpers._convert_time_string(end_time)
+
+        try:
+            helpers.validate_start_end_timestamps(start_timestamp,
+                                                  end_timestamp)
+        except:
+            self.fail("shouldn't happen")
+
+    def test_same_timestamps(self):
+        start_time = '2015-01-01T00:00:00Z'
+        end_time = start_time
+        start_timestamp = helpers._convert_time_string(start_time)
+        end_timestamp = helpers._convert_time_string(end_time)
+
+        self.assertRaises(
+            falcon.HTTPBadRequest,
+            helpers.validate_start_end_timestamps,
+            start_timestamp, end_timestamp)
+
+    def test_end_before_than_start(self):
+        start_time = '2015-01-01T00:00:00Z'
+        end_time = '2014-12-31T23:59:59Z'
+        start_timestamp = helpers._convert_time_string(start_time)
+        end_timestamp = helpers._convert_time_string(end_time)
+
+        self.assertRaises(
+            falcon.HTTPBadRequest,
+            helpers.validate_start_end_timestamps,
+            start_timestamp, end_timestamp)
