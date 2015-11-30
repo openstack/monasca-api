@@ -40,7 +40,7 @@ class TestMeasurements(base.BaseMonascaTest):
         for i in xrange(NUM_MEASUREMENTS):
             metric = helpers.create_metric(
                 name=name,
-                timestamp=start_timestamp + i)
+                timestamp=start_timestamp + (i * 10))
             metrics.append(metric)
         cls.monasca_client.create_metrics(metrics)
         cls._metrics = metrics
