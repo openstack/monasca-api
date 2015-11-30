@@ -22,8 +22,8 @@ from oslo_utils import timeutils
 from tempest.common.utils import data_utils
 from tempest import test
 
-NUM_ALARM_DEFINITIONS = 3
-
+NUM_ALARM_DEFINITIONS = 9
+MIN_HISTORY = 3
 
 class TestAlarmsStateHistory(base.BaseMonascaTest):
 
@@ -36,7 +36,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
 
         for i in xrange(1, NUM_ALARM_DEFINITIONS + 1):
             alarm_definition = helpers.create_alarm_definition(
-                name=data_utils.rand_name('alarm_definition' + str(i)),
+                name=data_utils.rand_name('alarm_state_history' + str(i)),
                 expression="min(name-1) < " + str(i))
             cls.monasca_client.create_alarm_definitions(alarm_definition)
 
@@ -47,7 +47,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
             resp, response_body = cls.monasca_client.\
                 list_alarms_state_history()
             elements = response_body['elements']
-            if len(elements) >= NUM_ALARM_DEFINITIONS:
+            if len(elements) >= MIN_HISTORY:
                 break
             time.sleep(1)
 
@@ -139,13 +139,11 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
         number_of_alarms = len(elements)
-        if number_of_alarms >= NUM_ALARM_DEFINITIONS:
+        if number_of_alarms >= MIN_HISTORY:
             first_element = elements[0]
-            last_element = elements[-1]
             first_element_id = first_element['id']
-            last_element_id = last_element['id']
 
-            for limit in xrange(1, NUM_ALARM_DEFINITIONS + 1):
+            for limit in xrange(1, MIN_HISTORY):
                 query_parms = '?limit=' + str(limit) + \
                               '&offset=' + str(first_element_id)
                 resp, response_body = self.monasca_client.\
