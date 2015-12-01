@@ -67,7 +67,11 @@ public class MiddlewareConfiguration {
   @JsonProperty
   public String adminProjectName = "";
   @JsonProperty
+  public String adminUserDomainId = "";
+  @JsonProperty
   public String adminUserDomainName = "";
+  @JsonProperty
+  public String adminProjectDomainId = "";
   @JsonProperty
   public String adminProjectDomainName = "";
   @JsonProperty
