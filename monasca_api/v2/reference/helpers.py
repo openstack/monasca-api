@@ -438,12 +438,11 @@ def paginate_statistics(statistic, uri, limit):
         if new_query_params:
             next_link += '?' + '&'.join(new_query_params)
 
-        truncated_statistic = {u'dimensions': statistic[0]['dimensions'],
-                               u'statistics': (statistic[0]['statistics'][
-                                               :limit]),
-                               u'name': statistic[0]['name'],
-                               u'columns': statistic[0]['columns'],
-                               u'id': new_offset}
+        truncated_statistic = [{u'dimensions': statistic[0]['dimensions'],
+                                u'statistics': (statistic[0]['statistics'][:limit]),
+                                u'name': statistic[0]['name'],
+                                u'columns': statistic[0]['columns'],
+                                u'id': new_offset}]
 
         resource = {u'links': ([{u'rel': u'self',
                                  u'href': self_link.decode('utf8')},
