@@ -25,7 +25,7 @@ def create_metric(name='name-1',
                       'key-1': 'value-1',
                       'key-2': 'value-2'
                   },
-                  timestamp=int(round(time.time() * 1000)),
+                  timestamp=None,
                   value=0.0,
                   value_meta={
                       'key-1': 'value-1',
@@ -39,6 +39,8 @@ def create_metric(name='name-1',
         metric['dimensions'] = dimensions
     if timestamp is not None:
         metric['timestamp'] = timestamp
+    else:
+        metric['timestamp'] = int(time.time() * 1000)
     if value is not None:
         metric['value'] = value
     if value_meta is not None:
