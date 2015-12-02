@@ -2527,8 +2527,7 @@ Returns a JSON alarm object with the following fields:
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* alarm_definition_id (string) - Name of alarm.
-* description (string) - ID of the alarm definition.
+* alarm_definition (JSON object) - Summary of alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 * lifecycle_state (string) - Lifecycle state of alarm.
@@ -2551,7 +2550,18 @@ Returns a JSON alarm object with the following fields:
          "href":"http://192.168.10.4:8080/v2.0/alarms/f9935bcc-9641-4cbf-8224-0993a947ea83/state-history"
       }
    ],
-   "alarm_definition_id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+   "alarm_definition":
+   {
+      "id":"ad837fca-5564-4cbf-523-0117f7dac6ad",
+      "name":"Average CPU percent greater than 10",
+      "severity":"LOW",
+      "links":[
+         {
+            "rel":"self",
+            "href":"http://192.168.10.4:8080/v2.0/alarm-definitions/ad837fca-5564-4cbf-523-0117f7dac6ad
+         }
+      ]
+   },
    "metrics":[{
       "name":"cpu.system_perc",
       "dimensions":{  
