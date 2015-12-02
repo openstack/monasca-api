@@ -363,7 +363,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         else:
             sub_expr_list = None
 
-        self._validate_name_not_conflicting(tenant_id, name, expected_id=definition_id)
+        if name:
+            self._validate_name_not_conflicting(tenant_id, name, expected_id=definition_id)
 
         alarm_def_row, sub_alarm_def_dicts = (
             self._alarm_definitions_repo.update_or_patch_alarm_definition(

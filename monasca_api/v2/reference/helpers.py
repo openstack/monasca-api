@@ -1,5 +1,5 @@
 # Copyright 2014 Hewlett-Packard
-# Copyright 2015 Cray Ltd.
+# Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +20,7 @@ import urlparse
 
 import falcon
 from oslo_log import log
+from oslo_utils import timeutils
 import simplejson
 
 from monasca_api.common.repositories import constants
@@ -222,7 +223,8 @@ def get_query_endtime_timestamp(req, required=True):
 
 
 def _convert_time_string(date_time_string):
-    dt = datetime.datetime.strptime(date_time_string, "%Y-%m-%dT%H:%M:%SZ")
+    dt = timeutils.parse_isotime(date_time_string)
+    dt = dt.replace(tzinfo=None)
     timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
     return timestamp
 
@@ -436,12 +438,11 @@ def paginate_statistics(statistic, uri, limit):
         if new_query_params:
             next_link += '?' + '&'.join(new_query_params)
 
-        truncated_statistic = {u'dimensions': statistic[0]['dimensions'],
-                               u'statistics': (statistic[0]['statistics'][
-                                               :limit]),
-                               u'name': statistic[0]['name'],
-                               u'columns': statistic[0]['columns'],
-                               u'id': new_offset}
+        truncated_statistic = [{u'dimensions': statistic[0]['dimensions'],
+                                u'statistics': (statistic[0]['statistics'][:limit]),
+                                u'name': statistic[0]['name'],
+                                u'columns': statistic[0]['columns'],
+                                u'id': new_offset}]
 
         resource = {u'links': ([{u'rel': u'self',
                                  u'href': self_link.decode('utf8')},

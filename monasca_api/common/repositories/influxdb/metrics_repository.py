@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 # Copyright 2014 Hewlett-Packard
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -133,10 +134,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                         'utf8'))
 
         if start_timestamp:
-            where_clause += " and time > " + str(int(start_timestamp)) + "s"
+            where_clause += " and time > " + str(int(start_timestamp *
+                                                     1000000)) + "u"
 
             if end_timestamp:
-                where_clause += " and time < " + str(int(end_timestamp)) + "s"
+                where_clause += " and time < " + str(int(end_timestamp *
+                                                         1000000)) + "u"
 
         return where_clause
 
@@ -236,8 +239,7 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                                          dimensions, None, 2)
 
         if len(metrics_list) > 1:
-            raise (exceptions.MultipleMetricsException(
-                MetricsRepository.MULTIPLE_METRICS_MESSAGE))
+            raise exceptions.MultipleMetricsException(self.MULTIPLE_METRICS_MESSAGE)
 
         if not metrics_list:
             return {}
@@ -468,11 +470,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             time_clause = ''
             if start_timestamp:
-                time_clause += (" and time > " + str(int(start_timestamp)) +
-                                "s ")
+                time_clause += " and time > " + str(int(start_timestamp *
+                                                        1000000)) + "u "
 
             if end_timestamp:
-                time_clause += " and time < " + str(int(end_timestamp)) + "s "
+                time_clause += " and time < " + str(int(end_timestamp *
+                                                        1000000)) + "u "
 
             offset_clause = self._build_offset_clause(offset, limit)
 

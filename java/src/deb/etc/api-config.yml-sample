@@ -80,7 +80,9 @@ middleware:
   adminPassword: admin
   adminProjectId:
   adminProjectName:
+  adminUserDomainId:
   adminUserDomainName:
+  adminProjectDomainId:
   adminProjectDomainName:
   adminToken:
   timeToCacheToken: 600
