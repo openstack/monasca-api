@@ -1,4 +1,5 @@
 # Copyright 2014 Hewlett-Packard
+# Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -21,7 +22,7 @@ import six
 class NotificationsRepository(object):
 
     @abc.abstractmethod
-    def create_notification(self, id, tenant_id, name, notification_type,
+    def create_notification(self, tenant_id, name, notification_type,
                             address):
         return
 
@@ -38,6 +39,6 @@ class NotificationsRepository(object):
         return
 
     @abc.abstractmethod
-    def update_notification(self, id, tenant_id, name, notification_type,
+    def update_notification(self, notification_id, tenant_id, name, notification_type,
                             address):
         return

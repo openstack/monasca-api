@@ -13,9 +13,10 @@
 # under the License.
 
 import datetime
+import json
+
 import falcon
 import falcon.testing as testing
-import json
 
 from monasca_api.v2.reference import versions
 

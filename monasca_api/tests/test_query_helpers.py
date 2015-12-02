@@ -13,12 +13,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import monasca_api.v2.reference.helpers as helpers
+import unittest
 
 from mock import Mock
-from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
-import unittest
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
+import monasca_api.v2.reference.helpers as helpers
 
 
 class TestGetQueryDimension(unittest.TestCase):

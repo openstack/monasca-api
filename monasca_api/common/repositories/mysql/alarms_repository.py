@@ -13,8 +13,9 @@
 # under the License.
 
 from datetime import datetime
-from oslo_log import log
 from time import time
+
+from oslo_log import log
 
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions

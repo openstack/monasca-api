@@ -35,7 +35,7 @@ class TestAlarms(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_alarms(self):
         alarm_definition_ids, expected_metric \
-             = self._create_alarms_for_test_alarms(num=1)
+            = self._create_alarms_for_test_alarms(num=1)
         resp, response_body = self.monasca_client.list_alarms()
         self.assertEqual(200, resp.status)
         for element in response_body['elements']:

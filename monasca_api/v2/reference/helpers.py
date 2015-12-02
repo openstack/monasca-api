@@ -16,12 +16,13 @@
 
 import datetime
 import json
-import six.moves.urllib.parse as urlparse
 
 import falcon
 from oslo_log import log
 from oslo_utils import timeutils
 import simplejson
+import six.moves.urllib.parse as urlparse
+
 
 from monasca_api.common.repositories import constants
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
