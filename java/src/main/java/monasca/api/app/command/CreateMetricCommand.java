@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import monasca.api.app.validation.DimensionValidation;
 import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.ValueMetaValidation;
-import monasca.common.model.Services;
 import monasca.common.model.metric.Metric;
 import monasca.api.resource.exception.Exceptions;
 
@@ -39,7 +38,8 @@ public class CreateMetricCommand {
   @Size(min = 1, max = MAX_NAME_LENGTH)
   public String name;
   public Map<String, String> dimensions;
-  public long timestamp;
+  @NotNull
+  public Long timestamp;
   @NotNull
   public Double value;
   public Map<String, String> valueMeta;
@@ -47,10 +47,10 @@ public class CreateMetricCommand {
   public CreateMetricCommand() {}
 
   public CreateMetricCommand(String name, @Nullable Map<String, String> dimensions,
-      @Nullable Long timestamp, double value, @Nullable Map<String, String> valueMeta) {
+      long timestamp, double value, @Nullable Map<String, String> valueMeta) {
     setName(name);
     setDimensions(dimensions);
-    setTimestamp(timestamp);
+    this.timestamp = timestamp;
     setValueMeta(valueMeta);
     this.value = value;
   }
@@ -93,7 +93,7 @@ public class CreateMetricCommand {
     int result = 1;
     result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+    result = prime * result + ((timestamp == null) ? 0: (int) (timestamp ^ (timestamp >>> 32)));
     long temp;
     temp = (value == null) ? 0 : Double.doubleToLongBits(value);
     result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -115,13 +115,6 @@ public class CreateMetricCommand {
   @JsonProperty
   public void setName(String name) {
     this.name = MetricNameValidation.normalize(name);
-  }
-
-  @JsonProperty
-  public void setTimestamp(Long timestamp) {
-    this.timestamp =
-        timestamp == null || timestamp.longValue() == 0L ? System.currentTimeMillis()
-            : timestamp.longValue();
   }
 
   public Metric toMetric() {
