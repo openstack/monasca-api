@@ -179,7 +179,8 @@ class TestMetrics(base.BaseMonascaTest):
     @test.attr(type='gate')
     @test.attr(type=['negative'])
     def test_create_metric_with_no_timestamp(self):
-        metric = helpers.create_metric(timestamp=None)
+        metric = helpers.create_metric()
+        metric['timestamp'] = None
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)
