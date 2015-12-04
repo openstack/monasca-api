@@ -276,7 +276,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                     measurements_list = []
                     for point in serie['values']:
                         value_meta = json.loads(point[2]) if point[2] else {}
-                        measurements_list.append([point[0],
+                        timestamp = point[0][:19] + '.' + point[0][20:-1].ljust(3, '0') + 'Z'
+
+                        measurements_list.append([timestamp,
                                                   point[1],
                                                   value_meta])
 
