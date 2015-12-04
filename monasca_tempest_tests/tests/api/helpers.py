@@ -108,14 +108,7 @@ def timestamp_to_iso(timestamp):
 
 def timestamp_to_iso_millis(timestamp):
     time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
-    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M")
+    time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M:%S")
     time_iso_microsecond = time_utc.strftime(".%f")
-    time_iso_second = time_utc.strftime("%S")
-    if float(time_iso_microsecond[0:4]) == 0.0:
-        time_iso_millisecond = time_utc.strftime("%Y-%m-%dT%H:%M:%S") + 'Z'
-    else:
-        millisecond = str(int(time_iso_second[1]) +
-                          float(time_iso_microsecond[0:4]))
-        time_iso_new = time_iso_base + ':' + time_iso_second[0] + millisecond
-        time_iso_millisecond = time_iso_new + 'Z'
+    time_iso_millisecond = time_iso_base + time_iso_microsecond[0:4] + 'Z'
     return time_iso_millisecond
