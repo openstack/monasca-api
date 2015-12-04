@@ -14,7 +14,6 @@
 
 # TODO(RMH): Check if ' should be added in the list of INVALID_CHARS.
 # TODO(RMH): test_create_metric_no_value, should return 422 if value not sent
-import datetime
 import time
 
 from monasca_tempest_tests.tests.api import base
@@ -42,6 +41,8 @@ class TestMetrics(base.BaseMonascaTest):
         value = data_utils.rand_name('value')
         timestamp = int(round(time.time() * 1000))
         time_iso = helpers.timestamp_to_iso(timestamp)
+        end_timestamp = int(round((time.time() + 3600 * 24) * 1000))
+        end_time_iso = helpers.timestamp_to_iso(end_timestamp)
         value_meta_key = data_utils.rand_name('value_meta_key')
         value_meta_value = data_utils.rand_name('value_meta_value')
         metric = helpers.create_metric(name=name,
@@ -53,7 +54,8 @@ class TestMetrics(base.BaseMonascaTest):
                                        })
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
-        query_param = '?name=' + name + '&start_time=' + time_iso
+        query_param = '?name=' + name + '&start_time=' + time_iso + \
+                      '&end_time=' + end_time_iso
         for i in xrange(constants.MAX_RETRIES):
             resp, response_body = self.monasca_client.\
                 list_measurements(query_param)
@@ -81,6 +83,8 @@ class TestMetrics(base.BaseMonascaTest):
         value = data_utils.rand_name('value')
         timestamp = int(round(time.time() * 1000))
         time_iso = helpers.timestamp_to_iso(timestamp)
+        end_timestamp = int(round(timestamp + 3600 * 24 * 1000))
+        end_time_iso = helpers.timestamp_to_iso(end_timestamp)
         value_meta_key1 = data_utils.rand_name('meta_key')
         value_meta_value1 = data_utils.rand_name('meta_value')
         value_meta_key2 = data_utils.rand_name('value_meta_key')
@@ -103,7 +107,8 @@ class TestMetrics(base.BaseMonascaTest):
         ]
         resp, response_body = self.monasca_client.create_metrics(metrics)
         self.assertEqual(204, resp.status)
-        query_param = '?name=' + name + '&start_time=' + str(time_iso)
+        query_param = '?name=' + name + '&start_time=' + str(time_iso) + \
+                      '&end_time=' + str(end_time_iso)
         for i in xrange(constants.MAX_RETRIES):
             resp, response_body = self.monasca_client.\
                 list_measurements(query_param)
@@ -143,6 +148,8 @@ class TestMetrics(base.BaseMonascaTest):
         name = data_utils.rand_name('name')
         timestamp = int(round(time.time() * 1000))
         time_iso = helpers.timestamp_to_iso(timestamp)
+        end_timestamp = int(round(timestamp + 3600 * 24 * 1000))
+        end_time_iso = helpers.timestamp_to_iso(end_timestamp)
         value_meta_key = data_utils.rand_name('value_meta_key')
         value_meta_value = data_utils.rand_name('value_meta_value')
         metric = helpers.create_metric(name=name,
@@ -153,7 +160,8 @@ class TestMetrics(base.BaseMonascaTest):
                                            value_meta_key: value_meta_value})
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
-        query_param = '?name=' + str(name) + '&start_time=' + str(time_iso)
+        query_param = '?name=' + str(name) + '&start_time=' + str(time_iso) \
+                      + '&end_time=' + str(end_time_iso)
         for i in xrange(constants.MAX_RETRIES):
             resp, response_body = self.monasca_client.\
                 list_measurements(query_param)
@@ -166,7 +174,8 @@ class TestMetrics(base.BaseMonascaTest):
                     if len(element['measurements']) > 0:
                         measurement = element['measurements'][0]
                         self._verify_list_measurements_measurement(
-                            measurement, metric, value_meta_key, value_meta_value)
+                            measurement, metric, value_meta_key,
+                            value_meta_value)
                         return
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
@@ -384,14 +393,12 @@ class TestMetrics(base.BaseMonascaTest):
         # Timestamps stored in influx sometimes are 1 millisecond different to
         # the value stored by the persister. Check if the timestamps are
         # equal in one millisecond range to pass the test.
-        time_iso_millis = \
-            self._timestamp_to_iso_millis_delta(test_metric['timestamp'], 0)
-        time_iso_millis_plus = \
-            self._timestamp_to_iso_millis_delta(test_metric['timestamp'],
-                                                0.001)
-        time_iso_millis_minus = \
-            self._timestamp_to_iso_millis_delta(test_metric['timestamp'],
-                                                -0.001)
+        time_iso_millis = helpers.timestamp_to_iso_millis(
+            test_metric['timestamp'] + 0)
+        time_iso_millis_plus = helpers.timestamp_to_iso_millis(
+            test_metric['timestamp'] + 1)
+        time_iso_millis_minus = helpers.timestamp_to_iso_millis(
+            test_metric['timestamp'] - 1)
         if str(measurement[0]) != time_iso_millis and str(measurement[0]) != \
                 time_iso_millis_plus and str(measurement[0]) != \
                 time_iso_millis_minus:
@@ -414,18 +421,3 @@ class TestMetrics(base.BaseMonascaTest):
             self.assertEqual(str(element['dimensions'][test_key]), test_value)
         if test_name is not None:
             self.assertEqual(str(element['name']), test_name)
-
-    def _timestamp_to_iso_millis_delta(self, timestamp, delta):
-        time_utc = datetime.datetime.utcfromtimestamp(timestamp / 1000.0)
-        time_iso_base = time_utc.strftime("%Y-%m-%dT%H:%M")
-        time_iso_microsecond = time_utc.strftime(".%f")
-        time_iso_second = time_utc.strftime("%S")
-        if float(time_iso_microsecond[0:4]) == 0.0:
-            time_iso_millis_delta = \
-                time_iso_base + str(int(time_iso_second) + delta) + 'Z'
-        else:
-            millis_delta = str(int(time_iso_second[1]) + float(
-                time_iso_microsecond[0:4]) + delta)
-            time_iso_millis_delta = \
-                time_iso_base + ':' + time_iso_second[0] + millis_delta + 'Z'
-        return time_iso_millis_delta
