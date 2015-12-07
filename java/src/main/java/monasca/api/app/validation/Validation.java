@@ -150,7 +150,7 @@ public final class Validation {
    * @throws WebApplicationException if the {@code startTime} or {@code endTime} are invalid
    */
   public static void validateTimes(DateTime startTime, DateTime endTime) {
-    if (!startTime.isBefore(endTime))
+    if (endTime != null && !startTime.isBefore(endTime))
         throw Exceptions.badRequest("start_time (%s) must be before end_time (%s)", startTime, endTime);
   }
 
