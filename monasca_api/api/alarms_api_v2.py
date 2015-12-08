@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -33,6 +33,14 @@ class AlarmsV2API(object):
 
     def on_get(self, req, res, alarm_id):
         res.status = '501 Not Implemented'
+
+
+class AlarmsCountV2API(object):
+    def __init__(self):
+        super(AlarmsCountV2API, self).__init__()
+
+    def on_get(self, req, res):
+        res.status = "501 Not Implemented"
 
 
 class AlarmsStateHistoryV2API(object):
