@@ -1679,7 +1679,7 @@ Cache-Control: no-cache
 {  
    "name":"Average CPU percent greater than 10",
    "description":"The average CPU percent is greater than 10",
-   "expression":"(avg(cpu,user_perc{hostname=devstack}) > 10)",
+   "expression":"(avg(cpu.user_perc{hostname=devstack}) > 10)",
    "match_by":[
      "hostname"
    ],
