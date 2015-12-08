@@ -22,6 +22,7 @@ Document Version: v2.0
       - [More Complex Example](#more-complex-example)
       - [Compound alarm example](#compound-alarm-example)
     - [Changing Alarm Definitions](#changing-alarm-definitions)
+  - [Notification Methods](#notification-methods)
 - [Common Request Headers](#common-request-headers)
   - [Common Http Request Headers](#common-http-request-headers)
   - [Non-standard request headers](#non-standard-request-headers)
@@ -32,7 +33,7 @@ Document Version: v2.0
 - [JSON Results](#json-results)
 - [Versions](#versions)
   - [List Versions](#list-versions)
-    - [GET](#get)
+    - [GET /](#get-)
       - [Headers](#headers)
       - [Path Parameters](#path-parameters)
       - [Query Parameters](#query-parameters)
@@ -114,7 +115,7 @@ Document Version: v2.0
       - [Status Code](#status-code-4)
       - [Response Body](#response-body-6)
       - [Response Examples](#response-examples-5)
-- [Notification Methods](#notification-methods)
+- [Notification Methods](#notification-methods-1)
   - [Create Notification Method](#create-notification-method)
     - [POST /v2.0/notification-methods](#post-v20notification-methods)
       - [Headers](#headers-7)
@@ -234,6 +235,7 @@ Document Version: v2.0
     - [Response](#response-17)
       - [Status Code](#status-code-15)
       - [Response Body](#response-body-17)
+- [Alarms](#alarms)
   - [List Alarms](#list-alarms)
     - [GET /v2.0/alarms](#get-v20alarms)
       - [Headers](#headers-18)
@@ -1369,7 +1371,7 @@ Cache-Control: no-cache
 ### Response
 
 #### Status Code
-* 200 - OK
+* 201 - OK
 
 #### Response Body
 Returns a JSON notification method object with the following fields:
@@ -2215,6 +2217,9 @@ Cache-Control: no-cache
 None.
 ___
 
+# Alarms
+Operations for working with alarms.
+
 ## List Alarms
 List alarms
 
@@ -2260,7 +2265,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* alarm_definition_id (string) - Name of alarm.
+* alarm_definition (JSON object) - Summary of alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 * lifecycle_state (string) - Lifecycle state of alarm.

@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO(RMH): Update documentation. Get alarms returns alarm_definition, not
-# TODO(RMH): alarm_definition_id in response body
 import time
 
 from monasca_tempest_tests.tests.api import base
