@@ -90,7 +90,9 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       int limit,
       Boolean mergeMetricsFlag) throws MultipleMetricsException {
 
-    try (Handle h = db.open()) {
+    Handle h = null;
+    try {
+      h = db.open();
 
       StringBuilder sb = new StringBuilder();
 
@@ -230,6 +232,10 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       }
 
       return new ArrayList<>(results.values());
+    } finally {
+      if (null != h) {
+        h.close();
+      }
     }
   }
 }

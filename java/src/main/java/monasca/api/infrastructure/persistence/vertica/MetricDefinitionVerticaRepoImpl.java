@@ -135,7 +135,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     String sql = String.format(FIND_METRIC_NAMES_SQL, defSubSelect);
 
-    try (Handle h = db.open()) {
+    Handle h = null;
+    try {
+      h = db.open();
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
@@ -157,6 +159,10 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
+    } finally {
+      if (null != h) {
+        h.close();
+      }
     }
   }
 
@@ -247,7 +253,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
                       MetricQueries.buildDimensionAndClause(dimensions, "defDims"),
                       limitPart);
 
-    try (Handle h = db.open()) {
+    Handle h = null;
+    try {
+      h = db.open();
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
@@ -277,6 +285,10 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
+    } finally {
+      if (null != h) {
+        h.close();
+      }
     }
   }
 }

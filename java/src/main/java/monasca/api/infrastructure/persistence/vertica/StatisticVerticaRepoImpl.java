@@ -86,7 +86,9 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     // Sort the column names so that they match the order of the statistics in the results.
     List<String> statisticsColumns = createColumnsList(statisticsCols);
 
-    try (Handle h = db.open()) {
+    Handle h = null;
+    try {
+      h = db.open();
 
       Map<byte[], Statistics> byteMap = findDefIds(h, tenantId, name, dimensions);
 
@@ -146,6 +148,10 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       statisticsList.add(statistics);
 
+    } finally {
+      if (null != h) {
+        h.close();
+      }
     }
 
     return statisticsList;
