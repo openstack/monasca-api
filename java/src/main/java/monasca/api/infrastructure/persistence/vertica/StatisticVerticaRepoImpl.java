@@ -86,9 +86,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     // Sort the column names so that they match the order of the statistics in the results.
     List<String> statisticsColumns = createColumnsList(statisticsCols);
 
-    Handle h = null;
-    try {
-      h = db.open();
+    try (Handle h = db.open()) {
 
       Map<byte[], Statistics> byteMap = findDefIds(h, tenantId, name, dimensions);
 
@@ -108,7 +106,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       String sql = createQuery(byteMap.keySet(), period, startTime, endTime, offset, statisticsCols);
 
-      logger.debug("vertics sql: {}", sql);
+      logger.debug("vertica sql: {}", sql);
 
       Query<Map<String, Object>>
           query =
@@ -148,10 +146,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       statisticsList.add(statistics);
 
-    } finally {
-      if (null != h) {
-        h.close();
-      }
     }
 
     return statisticsList;
