@@ -288,7 +288,7 @@ class TestAlarms(base.BaseMonascaTest):
     def test_create_alarms_with_match_by(self):
         # Create an alarm definition with no match_by
         name = data_utils.rand_name('alarm_definition_1')
-        expression = "avg(cpu.idle_perc{service=monitoring}) < 20"
+        expression = "max(cpu.idle_perc{service=monitoring}) < 20"
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression)
         resp, response_body = self.monasca_client.create_alarm_definitions(
@@ -307,7 +307,7 @@ class TestAlarms(base.BaseMonascaTest):
 
         # Create an alarm definition with match_by
         name = data_utils.rand_name('alarm_definition_2')
-        expression = "avg(cpu.idle_perc{service=monitoring}) < 20"
+        expression = "max(cpu.idle_perc{service=monitoring}) < 20"
         match_by = ['hostname']
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression,
@@ -331,8 +331,8 @@ class TestAlarms(base.BaseMonascaTest):
     def test_create_alarms_with_sub_expressions_and_match_by(self):
         # Create an alarm definition with sub-expressions and match_by
         name = data_utils.rand_name('alarm_definition_3')
-        expression = "avg(cpu.idle_perc{service=monitoring}) < 10 or " \
-                     "avg(cpu.user_perc{service=monitoring}) > 60"
+        expression = "max(cpu.idle_perc{service=monitoring}) < 10 or " \
+                     "max(cpu.user_perc{service=monitoring}) > 60"
         match_by = ['hostname']
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression,
@@ -362,7 +362,7 @@ class TestAlarms(base.BaseMonascaTest):
     def test_create_alarms_with_match_by_list(self):
         # Create an alarm definition with match_by as a list
         name = data_utils.rand_name('alarm_definition')
-        expression = "avg(cpu.idle_perc{service=monitoring}) < 10"
+        expression = "max(cpu.idle_perc{service=monitoring}) < 10"
         match_by = ['hostname', 'device']
         alarm_definition = helpers.create_alarm_definition(
             name=name, description="description", expression=expression,
@@ -405,7 +405,7 @@ class TestAlarms(base.BaseMonascaTest):
         alarm_definition_ids = []
         for i in xrange(num):
             # create an alarm definition
-            expression = "avg(" + metric_name + ") > 0"
+            expression = "max(" + metric_name + ") > 0"
             name = data_utils.rand_name('name-1')
             alarm_definition = helpers.create_alarm_definition(
                 name=name, expression=expression)
