@@ -72,6 +72,8 @@ class TestStatistics(base.BaseMonascaTest):
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
 
+        assert False, "Failed to find enough measurements to test"
+
     @classmethod
     def resource_cleanup(cls):
         super(TestStatistics, cls).resource_cleanup()

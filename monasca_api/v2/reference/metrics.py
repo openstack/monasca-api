@@ -101,12 +101,15 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     @resource.resource_try_catch_block
     def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset,
-                      limit):
+                      limit, start_timestamp, end_timestamp):
 
         result = self._metrics_repo.list_metrics(tenant_id,
                                                  self._region,
                                                  name,
-                                                 dimensions, offset, limit)
+                                                 dimensions,
+                                                 offset, limit,
+                                                 start_timestamp,
+                                                 end_timestamp)
 
         return helpers.paginate(result, req_uri, limit)
 
@@ -133,8 +136,12 @@ class Metrics(metrics_api_v2.MetricsV2API):
         helpers.validate_query_dimensions(dimensions)
         offset = helpers.get_query_param(req, 'offset')
         limit = helpers.get_limit(req)
+        start_timestamp = helpers.get_query_starttime_timestamp(req, False)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
+        helpers.validate_start_end_timestamps(start_timestamp, end_timestamp)
         result = self._list_metrics(tenant_id, name, dimensions,
-                                    req.uri, offset, limit)
+                                    req.uri, offset, limit,
+                                    start_timestamp, end_timestamp)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
@@ -168,6 +175,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
+        helpers.validate_start_end_timestamps(start_timestamp, end_timestamp)
         offset = helpers.get_query_param(req, 'offset')
         limit = helpers.get_limit(req)
         merge_metrics_flag = get_merge_metrics_flag(req)
@@ -222,6 +230,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         helpers.validate_query_dimensions(dimensions)
         start_timestamp = helpers.get_query_starttime_timestamp(req)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
+        helpers.validate_start_end_timestamps(start_timestamp, end_timestamp)
         statistics = helpers.get_query_statistics(req)
         period = helpers.get_query_period(req)
         offset = helpers.get_query_param(req, 'offset')

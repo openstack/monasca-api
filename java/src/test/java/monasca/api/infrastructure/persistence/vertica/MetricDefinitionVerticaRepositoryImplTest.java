@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -17,6 +17,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.testng.annotations.AfterClass;
@@ -85,8 +86,52 @@ public class MetricDefinitionVerticaRepositoryImplTest {
   }
 
   public void shouldFindWithoutDimensions() throws Exception {
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null, null, 1);
+    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", null, null, null, null, 1);
     assertEquals(defs.size(), 3);
+  }
+
+  public void shouldFindWithStartTime() throws Exception {
+    List<MetricDefinition> defs = repo.find("bob",
+                                            "cpu_utilization",
+                                            null,
+                                            new DateTime(2014, 1, 1, 0, 0, 0),
+                                            null,
+                                            null,
+                                            1);
+    assertEquals(defs.size(), 3);
+  }
+
+  public void shouldExcludeWithStartTime() throws Exception {
+    List<MetricDefinition> defs = repo.find("bob",
+                                            "cpu_utilization",
+                                            null,
+                                            new DateTime(2014, 1, 1, 0, 1, 1),
+                                            null,
+                                            null,
+                                            1);
+    assertEquals(defs.size(), 0);
+  }
+
+  public void shouldFindWithEndTime() throws Exception {
+    List<MetricDefinition> defs = repo.find("bob",
+                                            "cpu_utilization",
+                                            null,
+                                            new DateTime(2014, 1, 1, 0, 0, 0),
+                                            new DateTime(2014, 1, 1, 0, 1, 1),
+                                            null,
+                                            1);
+    assertEquals(defs.size(), 3);
+  }
+
+  public void shouldExcludeWithEndTime() throws Exception {
+    List<MetricDefinition> defs = repo.find("bob",
+                                            "cpu_utilization",
+                                            null,
+                                            new DateTime(2013, 1, 1, 0, 0, 0),
+                                            new DateTime(2013, 12, 31, 0, 0, 0),
+                                            null,
+                                            1);
+    assertEquals(defs.size(), 0);
   }
 
   public void shouldFindWithDimensions() throws Exception {
@@ -94,11 +139,11 @@ public class MetricDefinitionVerticaRepositoryImplTest {
     dims.put("service", "compute");
     dims.put("instance_id", "123");
 
-    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", dims, null, 1);
+    List<MetricDefinition> defs = repo.find("bob", "cpu_utilization", dims, null, null, null, 1);
     assertEquals(defs.size(), 2);
 
     dims.put("flavor_id", "2");
-    defs = repo.find("bob", "cpu_utilization", dims, null, 1);
+    defs = repo.find("bob", "cpu_utilization", dims, null, null, null, 1);
     assertEquals(defs.size(), 1);
   }
 }
