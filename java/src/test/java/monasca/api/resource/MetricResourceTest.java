@@ -81,6 +81,8 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   public void shouldCreateSet() throws Exception {
     String json = jsonFixture("fixtures/metricSet.json");
     CreateMetricCommand[] metrics = fromJson(json, CreateMetricCommand[].class);
+    metrics[0].timestamp = timestamp;
+    metrics[1].timestamp = timestamp;
     ClientResponse response = createResponseFor(metrics);
 
     assertEquals(response.getStatus(), 204);
@@ -101,13 +103,13 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   }
 
   @SuppressWarnings("unchecked")
-  public void shouldCreateWithoutTimestamp() throws Exception {
+  public void shouldErrorOnCreateWithoutTimestamp() throws Exception {
     String json = jsonFixture("fixtures/metricWithoutTimestamp.json");
     CreateMetricCommand metric = fromJson(json, CreateMetricCommand.class);
     ClientResponse response = createResponseFor(metric);
 
-    assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString());
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+            "[timestamp may not be null");
   }
 
   @SuppressWarnings("unchecked")
@@ -141,13 +143,13 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
   }
 
   @SuppressWarnings("unchecked")
-  public void shouldCreateWithZeroTimestamp() {
+  public void shouldErrorOnCreateWithZeroTimestamp() {
     ClientResponse response =
         createResponseFor(new CreateMetricCommand("test_metrictype", dimensions, 0L, 0.0,
             valueMeta));
 
-    assertEquals(response.getStatus(), 204);
-    verify(service).create(any(List.class), eq("abc"), anyString());
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+            String.format("Timestamp %s is out of legal range", 0L));
   }
 
   public void shouldErrorOnPostWithCrossTenant() {
@@ -196,8 +198,9 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
 
   public void shouldErrorOnCreateWithoutName() throws Exception {
     String json = jsonFixture("fixtures/metricWithoutName.json");
-    ClientResponse response = createResponseFor(json);
-
+    CreateMetricCommand metric = fromJson(json, CreateMetricCommand.class);
+    metric.timestamp = timestamp;
+    ClientResponse response = createResponseFor(metric);
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[name may not be empty");
   }
@@ -210,7 +213,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         "Dimension name cannot be empty");
   }
 
-  public void shouldErrorOnCreateWithBadValue() {
+  public void shouldErrorOnCreateWithBadDimensionValue() {
     Map<String, String> dims = new HashMap<String, String>();
     dims.put("blah", "");
     ClientResponse response =
@@ -299,10 +302,12 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         "Timestamp " + local_timestamp + " is out of legal range");
   }
 
-  public void shouldRequireMetricValuesToBeDoubles() throws Exception {
+  public void shouldErrorOnCreateWithValuesToBeString() throws Exception {
     ClientResponse response =
         createResponseFor("{\"namespace\": \"foo\",\"timestamp\": 1380750420,\"value\": \"foo\"}");
-    assertEquals(response.getStatus(), 400);
+
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+            "Unable to process the provided JSON");
   }
 
   private ClientResponse createResponseFor(Object request) {
@@ -314,5 +319,15 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
     return client().resource("/v2.0/metrics?tenant_id=" + crossTenantId)
         .header("X-Tenant-Id", "abc").header("Content-Type", MediaType.APPLICATION_JSON)
         .post(ClientResponse.class, request);
+  }
+
+  public void shouldErrorOnCreateWithoutValue() throws Exception {
+    String json = jsonFixture("fixtures/metricWithoutValue.json");
+    CreateMetricCommand metric = fromJson(json, CreateMetricCommand.class);
+    metric.timestamp = timestamp;
+    ClientResponse response = createResponseFor(metric);
+
+    ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
+            "[value may not be null");
   }
 }
