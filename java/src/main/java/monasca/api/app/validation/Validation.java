@@ -78,7 +78,7 @@ public final class Validation {
     try {
       return ISO_8601_FORMATTER.parseDateTime(date);
     } catch (Exception e) {
-      throw Exceptions.unprocessableEntity("%s must be an ISO 8601 formatted time", parameterName);
+      throw Exceptions.unprocessableEntity("%s (%s) must be an ISO 8601 formatted time", parameterName, date);
     }
   }
 
@@ -106,7 +106,7 @@ public final class Validation {
     try {
       return Integer.parseInt(number);
     } catch (NumberFormatException e) {
-      throw Exceptions.unprocessableEntity("%s must be valid number", parameterName);
+      throw Exceptions.unprocessableEntity("%s (%s) must be valid number", parameterName, number);
     }
   }
 
@@ -151,7 +151,7 @@ public final class Validation {
    */
   public static void validateTimes(DateTime startTime, DateTime endTime) {
     if (!startTime.isBefore(endTime))
-        throw Exceptions.badRequest("start_time must be before end_time");
+        throw Exceptions.badRequest("start_time (%s) must be before end_time (%s)", startTime, endTime);
   }
 
   public static Boolean validateAndParseMergeMetricsFlag(String mergeMetricsFlag) {
