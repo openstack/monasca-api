@@ -157,9 +157,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     String sql = String.format(FIND_METRIC_NAMES_SQL, defSubSelect);
 
-    Handle h = null;
-    try {
-      h = db.open();
+    try (Handle h = db.open()) {
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
@@ -181,10 +179,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
-    } finally {
-      if (null != h) {
-        h.close();
-      }
+
     }
   }
 
@@ -273,9 +268,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
     // Can't bind limit in a nested sub query. So, just tack on as String.
     String limitPart = " limit " + Integer.toString(limit + 1);
 
-    Handle h = null;
-    try {
-      h = db.open();
+    try (Handle h = db.open()) {
 
       // If startTime/endTime is specified, create the 'IN' select statement
       String timeInClause = createTimeInClause(h, startTime, endTime, tenantId, name, dimensions);
@@ -321,10 +314,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       DimensionQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
-    } finally {
-      if (null != h) {
-        h.close();
-      }
+
     }
   }
 
