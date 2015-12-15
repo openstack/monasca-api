@@ -197,6 +197,44 @@ public final class Links {
 
   }
 
+  public static Object paginateAlarming(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
+      throws UnsupportedEncodingException {
+
+    // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
+    if (limit == 0) {
+      Paged paged = new Paged();
+      paged.elements = elements != null ? elements : new ArrayList<>();
+      return paged;
+    }
+
+    Paged paged = new Paged();
+
+    paged.links.add(getSelfLink(uriInfo));
+
+    if (elements != null) {
+
+      if (elements.size() > limit) {
+
+        String offset = String.valueOf(limit);
+
+        paged.links.add(getNextLink(offset, uriInfo));
+
+        // Truncate the list. Normally this will just truncate one extra element.
+        elements = elements.subList(0, limit);
+      }
+
+      paged.elements = elements;
+
+    } else {
+
+      paged.elements = new ArrayList<>();
+
+    }
+
+    return paged;
+
+  }
+
   public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 

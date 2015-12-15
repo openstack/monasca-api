@@ -23,6 +23,7 @@ from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
+from monasca_api.v2.common import validation
 from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
@@ -116,12 +117,26 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
+            if 'sort_by' in query_parms:
+                if isinstance(query_parms['sort_by'], basestring):
+                    query_parms['sort_by'] = [query_parms['sort_by']]
+
+                allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link',
+                                   'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
+                validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
 
             # ensure metric_dimensions is a list
             if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
                 query_parms['metric_dimensions'] = query_parms['metric_dimensions'].split(',')
 
             offset = helpers.get_query_param(req, 'offset')
+            if offset is not None and not isinstance(offset, int):
+                try:
+                    offset = int(offset)
+                except Exception as ex:
+                    LOG.exception(ex)
+                    raise HTTPUnprocessableEntityError("Unprocessable Entity",
+                                                       "Offset value {} must be an integer".format(offset))
 
             limit = helpers.get_limit(req)
 

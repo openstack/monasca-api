@@ -1,4 +1,4 @@
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -176,21 +176,18 @@ class TestAlarms(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_alarms_by_offset_limit(self):
-        helpers.delete_alarm_definitions(self.monasca_client)
-        self._create_alarms_for_test_alarms(num=2)
-        resp, response_body = self.monasca_client.list_alarms()
+        definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=2)
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
         self._verify_list_alarms_elements(resp, response_body,
                                           expect_num_elements=2)
         elements = response_body['elements']
-        first_element = elements[0]
-        next_element = elements[1]
-        id_first_element = first_element['id']
-        query_parms = '?offset=' + str(id_first_element) + '&limit=1'
+        second_element = elements[1]
+        query_parms = '?metric_name=' + expected_metric['name'] + '&offset=1&limit=1'
         resp, response_body1 = self.monasca_client.list_alarms(query_parms)
         elements = response_body1['elements']
         self.assertEqual(1, len(elements))
-        self.assertEqual(elements[0]['id'], next_element['id'])
-        self.assertEqual(elements[0], next_element)
+        self.assertEqual(elements[0]['id'], second_element['id'])
+        self.assertEqual(elements[0], second_element)
 
     @test.attr(type="gate")
     def test_get_alarm(self):
@@ -206,6 +203,66 @@ class TestAlarms(base.BaseMonascaTest):
         self._verify_alarm_keys(response_body)
         metric = element['metrics'][0]
         self._verify_metric_in_alarm(metric, expected_metric)
+
+    @test.attr(type="gate")
+    def test_list_alarms_sort_by(self):
+        alarm_definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'] +
+                                                              '&sort_by=created_timestamp')
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        elements = response_body['elements']
+        last_timestamp = elements[0]['created_timestamp']
+        for element in elements:
+            assert element['state'] >= last_timestamp,\
+                "Created_timestamps are not in sorted order {} came before {}".format(last_timestamp,
+                                                                                      element['created_timestamp'])
+            last_timestamp = element['created_timestamp']
+
+    @test.attr(type='gate')
+    def test_list_alarms_sort_by_asc_desc(self):
+        alarm_definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'] +
+                                                              '&sort_by=created_timestamp')
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        elements = response_body['elements']
+        last_timestamp = elements[0]['created_timestamp']
+        for element in elements:
+            assert element['state'] >= last_timestamp,\
+                "Created_timestamps are not in ascending order {} came before {}".format(last_timestamp,
+                                                                                         element['created_timestamp'])
+            last_timestamp = element['created_timestamp']
+
+        resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'] +
+                                                              '&sort_by=created_timestamp')
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        elements = response_body['elements']
+        last_timestamp = elements[0]['created_timestamp']
+        for element in elements:
+            assert element['state'] >= last_timestamp,\
+                "Created_timestamps are not in descending order {} came before {}".format(last_timestamp,
+                                                                                          element['created_timestamp'])
+            last_timestamp = element['created_timestamp']
+
+
+    @test.attr(type="gate")
+    def test_list_alarms_invalid_sort_by(self):
+        query_parms = '?sort_by=not_valid_field'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarms, query_parms)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])

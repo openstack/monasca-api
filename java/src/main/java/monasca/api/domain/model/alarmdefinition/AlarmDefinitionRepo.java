@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -48,7 +48,7 @@ public interface AlarmDefinitionRepo {
    * Returns alarms for the given criteria.
    */
   List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                             String offset, int limit);
+                             List<String> sortBy, String offset, int limit);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmDefId}

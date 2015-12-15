@@ -71,6 +71,10 @@ public class AlarmResource {
                                                                      "lifecycle_state",
                                                                      "metric_name", "dimension_name",
                                                                      "dimension_value");
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id", "state",
+                                                                    "severity", "lifecycle_state", "link",
+                                                                    "state_updated_timestamp", "updated_timestamp",
+                                                                    "created_timestamp");
 
   @Inject
   public AlarmResource(AlarmService service, AlarmRepo repo,
@@ -153,11 +157,11 @@ public class AlarmResource {
 
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<AlarmStateHistory> resources = stateHistoryRepo.find(tenantId,
-        dimensions,
-        startTime,
-        endTime,
-        offset,
-        paging_limit
+                                                                    dimensions,
+                                                                    startTime,
+                                                                    endTime,
+                                                                    offset,
+                                                                    paging_limit
     );
     return Links.paginate(paging_limit, resources, uriInfo);
   }
@@ -173,6 +177,7 @@ public class AlarmResource {
       @QueryParam("lifecycle_state") String lifecycleState,
       @QueryParam("link") String link,
       @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
+      @QueryParam("sort_by") String sortBy,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit)
       throws Exception {
@@ -185,9 +190,14 @@ public class AlarmResource {
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);
 
+    List<String> sortByList = Validation.parseAndValidateSortBy(sortBy, ALLOWED_SORT_BY);
+    if (!Strings.isNullOrEmpty(offset)) {
+      Validation.parseAndValidateNumber(offset, "offset");
+    }
+
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
-                                         lifecycleState, link, stateUpdatedStart,
+                                         lifecycleState, link, stateUpdatedStart, sortByList,
                                          offset, paging_limit, true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(
@@ -196,8 +206,10 @@ public class AlarmResource {
           AlarmDefinitionResource.ALARM_DEFINITIONS_PATH
       );
     }
-    return Links.paginate(paging_limit, Links.hydrate(alarms, uriInfo), uriInfo);
+    return Links.paginateAlarming(paging_limit, Links.hydrate(alarms, uriInfo), uriInfo);
   }
+
+
 
   @PATCH
   @Timed

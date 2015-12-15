@@ -50,16 +50,15 @@ import javax.inject.Named;
  */
 public class AlarmMySqlRepoImpl implements AlarmRepo {
 
+  private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
   private final PersistUtils persistUtils;
 
-  private static final Joiner COMMA_JOINER = Joiner.on(',');
-
   private static final String FIND_ALARM_BY_ID_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.id as alarm_id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
       + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
       + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
@@ -72,18 +71,18 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final String FIND_ALARMS_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.id as alarm_id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
       + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
       + "md.name as metric_name, group_concat(mdim.name, '=', mdim.value order by mdim.name) as metric_dimensions "
       + "from alarm as a "
-      + "inner join %s as alarm_id_list on alarm_id_list.id = a.id "
+      + "inner join %1$s as alarm_id_list on alarm_id_list.id = a.id "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
       + "inner join alarm_metric as am on am.alarm_id = a.id "
       + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
       + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
       + "left outer join metric_dimension as mdim on mdim.dimension_set_id = mdd.metric_dimension_set_id "
       + "group by a.id, md.name, mdim.dimension_set_id "
-      + "order by a.id ASC";
+      + "%2$s";
 
   @Inject
   public AlarmMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
@@ -122,8 +121,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
-                          String lifecycleState, String link, DateTime stateUpdatedStart, String offset,
-                          int limit, boolean enforceLimit) {
+                          String lifecycleState, String link, DateTime stateUpdatedStart,
+                          List<String> sortBy, String offset, int limit, boolean enforceLimit) {
 
     StringBuilder
         sbWhere =
@@ -180,19 +179,32 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
     }
 
-    if (offset != null) {
-      sbWhere.append(" and a.id > :offset");
+    StringBuilder sortByClause = new StringBuilder();
+    if (sortBy != null && !sortBy.isEmpty()) {
+      sortByClause.append(" order by ");
+      sortByClause.append(COMMA_JOINER.join(sortBy));
+      // if alarm_id is not in the list, add it
+      if (sortByClause.indexOf("alarm_id") == -1) {
+        sortByClause.append(",alarm_id ASC");
+      }
+      sortByClause.append(' ');
+    } else {
+      sortByClause.append(" order by alarm_id ASC ");
     }
-
-    sbWhere.append(" order by a.id ASC ");
 
     if (enforceLimit && limit > 0) {
       sbWhere.append(" limit :limit");
     }
 
+    if (offset != null) {
+      sbWhere.append(" offset ");
+      sbWhere.append(offset);
+      sbWhere.append(' ');
+    }
+
     sbWhere.append(")");
 
-    String sql = String.format(FIND_ALARMS_SQL, sbWhere);
+    String sql = String.format(FIND_ALARMS_SQL, sbWhere, sortByClause);
 
     try (Handle h = db.open()) {
 
@@ -220,10 +232,6 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       if (stateUpdatedStart != null) {
         q.bind("stateUpdatedStart", stateUpdatedStart.toString());
-      }
-
-      if (offset != null) {
-        q.bind("offset", offset);
       }
 
       if (enforceLimit && limit > 0) {
@@ -267,7 +275,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
     final List<Alarm> alarms = new LinkedList<>();
     List<MetricDefinition> alarmedMetrics = null;
     for (final Map<String, Object> row : rows) {
-      final String alarmId = (String) row.get("id");
+      final String alarmId = (String) row.get("alarm_id");
       if (!alarmId.equals(previousAlarmId)) {
         alarmedMetrics = new ArrayList<>();
         alarm =

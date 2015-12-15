@@ -1,4 +1,4 @@
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -326,6 +326,48 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
+    @test.attr(type='gate')
+    def test_list_alarm_definitions_sort_by(self):
+        alarm_definitions = []
+        alarm_definitions.append(helpers.create_alarm_definition(
+            name='alarm def sort by 01',
+            expression='test_metric_01 > 1',
+            severity='HIGH'
+        ))
+        alarm_definitions.append(helpers.create_alarm_definition(
+            name='alarm def sort by 04',
+            expression='test_metric_04 > 1',
+            severity='LOW'
+        ))
+        alarm_definitions.append(helpers.create_alarm_definition(
+            name='alarm def sort by 02',
+            expression='test_metric_02 > 1',
+            severity='CRITICAL'
+        ))
+        alarm_definitions.append(helpers.create_alarm_definition(
+            name='alarm def sort by 03',
+            expression='test_metric_03 > 1',
+            severity='MEDIUM'
+        ))
+        for definition in alarm_definitions:
+            self.monasca_client.create_alarm_definitions(definition)
+
+        resp, response_body = self.monasca_client.list_alarm_definitions('?sort_by=severity')
+        self.assertEqual(200, resp.status)
+
+        prev_severity = 'CRITICAL'
+        for alarm_definition in response_body['elements']:
+            assert prev_severity <= alarm_definition['severity'],\
+                "Severity {} came after {}".format(alarm_definition['severity'], prev_severity)
+            prev_severity = alarm_definition['severity']
+
+    @test.attr(type='gate')
+    @test.attr(type=['negative'])
+    def test_list_alarm_definitions_invalid_sort_by(self):
+        query_parms = '?sort_by=random'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarm_definitions, query_parms)
+
     @test.attr(type="gate")
     def test_list_alarm_definitions_with_offset_limit(self):
         helpers.delete_alarm_definitions(self.monasca_client)
@@ -347,31 +389,15 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertEqual(first_element, elements[0])
         self.assertEqual(last_element, elements[1])
 
-        timeout = time.time() + 60 * 1   # 1 minute timeout
-        for limit in xrange(1, 3):
-            next_element = elements[limit - 1]
-            while True:
-                if time.time() < timeout:
-                    query_parms = '?offset=' + str(next_element['id']) + \
-                                  '&limit=' + str(limit)
-                    resp, response_body = self.monasca_client.\
-                        list_alarm_definitions(query_parms)
-                    self.assertEqual(200, resp.status)
-                    new_elements = response_body['elements']
-                    if len(new_elements) > limit - 1:
-                        self.assertEqual(limit, len(new_elements))
-                        next_element = new_elements[limit - 1]
-                    elif 0 < len(new_elements) <= limit - 1:
-                        self.assertEqual(last_element, new_elements[0])
-                        break
-                    else:
-                        self.assertEqual(last_element, next_element)
-                        break
-                else:
-                    msg = "Failed " \
-                          "test_list_alarm_definitions_with_offset_limit: " \
-                          "one minute timeout"
-                    raise exceptions.TimeoutException(msg)
+        for offset in xrange(0, 2):
+            for limit in xrange(1, 3 - offset):
+                query_parms = '?offset=' + str(offset) + '&limit=' + str(limit)
+                resp, response_body = self.monasca_client.list_alarm_definitions(query_parms)
+                self.assertEqual(200, resp.status)
+                new_elements = response_body['elements']
+                self.assertEqual(limit, len(new_elements))
+                self.assertEqual(elements[offset], new_elements[0])
+                self.assertEqual(elements[offset+limit-1], new_elements[-1])
 
     # Get
 
