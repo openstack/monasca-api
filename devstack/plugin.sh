@@ -355,7 +355,7 @@ function install_kafka {
 
     sudo tar -xzf /root/kafka_${KAFKA_VERSION}.tgz -C /opt
 
-    sudo ln -s /opt/kafka_${KAFKA_VERSION} /opt/kafka
+    sudo ln -sf /opt/kafka_${KAFKA_VERSION} /opt/kafka
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/kafka/kafka-server-start.sh /opt/kafka_${KAFKA_VERSION}/bin/kafka-server-start.sh
 
@@ -379,7 +379,7 @@ function install_kafka {
 
     sudo chmod 755 /var/log/kafka
 
-    sudo ln -s /opt/kafka/config /etc/kafka
+    sudo ln -sf /opt/kafka/config /etc/kafka
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/kafka/log4j.properties /etc/kafka/log4j.properties
 
@@ -764,7 +764,7 @@ function install_monasca_api_python {
 
     fi
 
-    sudo ln -s /etc/monasca/api-config.conf /etc/api-config.conf
+    sudo ln -sf /etc/monasca/api-config.conf /etc/api-config.conf
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-api/python/api-config.ini /etc/monasca/api-config.ini
 
@@ -779,7 +779,7 @@ function install_monasca_api_python {
 
     fi
 
-    sudo ln -s /etc/monasca/api-config.ini /etc/api-config.ini
+    sudo ln -sf /etc/monasca/api-config.ini /etc/api-config.ini
 
     sudo start monasca-api || sudo restart monasca-api
 }
@@ -1118,7 +1118,7 @@ function install_storm {
 
     sudo tar -xzf /root/apache-storm-${STORM_VERSION}.tar.gz -C /opt/storm
 
-    sudo ln -s /opt/storm/apache-storm-${STORM_VERSION} /opt/storm/current
+    sudo ln -sf /opt/storm/apache-storm-${STORM_VERSION} /opt/storm/current
 
     sudo mkdir /var/storm || true
 
@@ -1132,7 +1132,7 @@ function install_storm {
 
     sudo chmod 0775 /var/log/storm
 
-    sudo ln -s /var/log/storm /opt/storm/current/logs
+    sudo ln -sf /var/log/storm /opt/storm/current/logs
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/cluster.xml /opt/storm/current/logback/cluster.xml
 
@@ -1473,9 +1473,9 @@ function install_monasca_horizon_ui {
 
     (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
 
-    sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
+    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
-    sudo ln -s /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
+    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
 
     sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
 
