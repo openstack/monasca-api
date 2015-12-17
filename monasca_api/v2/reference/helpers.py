@@ -262,7 +262,14 @@ def get_query_period(req):
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'period' in params:
-            return params['period']
+            period = params['period']
+            try:
+                period = int(period)
+            except Exception:
+                raise Exception("Period must be a valid integer")
+            if period < 0:
+                raise Exception("Period must be a positive integer")
+            return str(period)
         else:
             return None
     except Exception as ex:
