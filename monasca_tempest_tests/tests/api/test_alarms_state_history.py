@@ -36,6 +36,7 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
             cls.monasca_client.create_alarm_definitions(alarm_definition)
 
         # create some metrics to prime the system and create three alarms
+        num_transitions = 0
         for i in xrange(60):
             metric = helpers.create_metric()
             cls.monasca_client.create_metrics(metric)
@@ -43,8 +44,12 @@ class TestAlarmsStateHistory(base.BaseMonascaTest):
                 list_alarms_state_history()
             elements = response_body['elements']
             if len(elements) >= MIN_HISTORY:
-                break
-            time.sleep(5)
+                return
+            else:
+                num_transitions = len(elements)
+            time.sleep(1)
+
+        assert False, "Required {} alarm state transitions, but found {}".format(MIN_HISTORY, num_transitions)
 
     # @test.attr(type="gate")
     # def test_list_alarms_state_history(self):
