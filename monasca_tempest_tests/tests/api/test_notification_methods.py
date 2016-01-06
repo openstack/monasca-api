@@ -12,9 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO(RMH): Validate whether a 200 or 201 should be returned and resolve.
-# TODO(RMH): Documentation says 200, but a 201 is being returned.
-
 import time
 
 from monasca_tempest_tests.tests.api import base
