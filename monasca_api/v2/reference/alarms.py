@@ -229,6 +229,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         alarm_rows = self._alarms_repo.get_alarm(tenant_id, alarm_id)
 
+        req_uri_no_id = req_uri.replace('/' + alarm_id, "")
         first_row = True
         for alarm_row in alarm_rows:
             if first_row:
@@ -238,7 +239,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
-                                                     req_uri))
+                                                     req_uri_no_id))
 
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
@@ -253,7 +254,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                          u'created_timestamp':
                              alarm_row['created_timestamp'].isoformat() + 'Z',
                          u'alarm_definition': ad}
-                helpers.add_links_to_resource(alarm, req_uri)
+                helpers.add_links_to_resource(alarm, req_uri_no_id)
 
                 first_row = False
 
