@@ -14,7 +14,7 @@
 
 import re
 
-invalid_chars = "<>={}(),'\"\\\\;&"
+invalid_chars = "<>={}(),\"\\\\;&"
 restricted_chars = re.compile('[' + invalid_chars + ']')
 
 
