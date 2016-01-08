@@ -80,9 +80,10 @@ class Alarming(object):
         metric = {u'name': alarm_metric_row['name'],
                   u'dimensions': dimensions}
 
-        for dimension in alarm_metric_row['dimensions'].split(','):
-            parsed_dimension = dimension.split('=')
-            dimensions[parsed_dimension[0]] = parsed_dimension[1]
+        if alarm_metric_row['dimensions']:
+            for dimension in alarm_metric_row['dimensions'].split(','):
+                parsed_dimension = dimension.split('=')
+                dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
         return metric
 
