@@ -343,8 +343,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             constants.MAX_NOTIFICATION_METHOD_ADDRESS_LENGTH + 1)
         self.assertRaises(exceptions.BadRequest,
                           self.monasca_client.update_notification_method, id,
-                          name=response_body['name'], type=new_address_long,
-                          address=response_body['address'])
+                          name=response_body['name'], type=response_body['type'],
+                          address=new_address_long)
         resp, response_body = \
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
