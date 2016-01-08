@@ -84,14 +84,20 @@ The Monasca Tempest Tests can be run using a variety of methods including:
 
 [Testr](https://wiki.openstack.org/wiki/Testr) is a test runner that can be used to run the Tempest tests.
 
-1. In the Tempest root dir, create a list of the Monasca Tempest Tests in a file.
+1. Initializing testr is necessary to set up the .testrepository directory before using it for the first time. In the Tempest root dir:
 
+    ```
+    testr init
+    ```
+
+2. Create a list of the Monasca Tempest Tests in a file:
+    
     ```
     testr list-tests monasca_tempest_tests > monasca_tempest_tests
 
     ```
 
-2. Run the tests using testr
+3. Run the tests using testr:
 
     ```
     testr run --load-list=monasca_tempest_tests

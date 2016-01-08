@@ -231,7 +231,7 @@ def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
 
 def _convert_time_string(date_time_string):
     dt = timeutils.parse_isotime(date_time_string)
-    dt = dt.replace(tzinfo=None)
+    dt = timeutils.normalize_time(dt)
     timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
     return timestamp
 
@@ -262,7 +262,14 @@ def get_query_period(req):
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'period' in params:
-            return params['period']
+            period = params['period']
+            try:
+                period = int(period)
+            except Exception:
+                raise Exception("Period must be a valid integer")
+            if period < 0:
+                raise Exception("Period must be a positive integer")
+            return str(period)
         else:
             return None
     except Exception as ex:

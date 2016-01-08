@@ -29,10 +29,10 @@ public class JsonMappingExceptionManager implements ExceptionMapper<JsonMappingE
   @Override
   public Response toResponse(JsonMappingException exception) {
     return Response
-        .status(FaultType.BAD_REQUEST.statusCode)
+        .status(FaultType.UNPROCESSABLE_ENTITY.statusCode)
         .type(MediaType.APPLICATION_JSON)
         .entity(
-            Exceptions.buildLoggedErrorMessage(FaultType.BAD_REQUEST,
+            Exceptions.buildLoggedErrorMessage(FaultType.UNPROCESSABLE_ENTITY,
                 "Unable to process the provided JSON",
                 Exceptions.stripLocationFromStacktrace(exception.getMessage()), null)).build();
   }

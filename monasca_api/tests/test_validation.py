@@ -21,7 +21,7 @@ import mock
 
 import unittest
 
-invalid_chars = "<>={}(),'\"\\;&"
+invalid_chars = "<>={}(),\"\\;&"
 
 
 class TestMetricNameValidation(unittest.TestCase):
@@ -171,3 +171,31 @@ class TestTimestampsValidation(unittest.TestCase):
             falcon.HTTPBadRequest,
             helpers.validate_start_end_timestamps,
             start_timestamp, end_timestamp)
+
+
+class TestConvertTimeString(unittest.TestCase):
+
+    def test_valid_date_time_string(self):
+        date_time_string = '2015-01-01T00:00:00Z'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400., timestamp)
+
+    def test_valid_date_time_string_with_mills(self):
+        date_time_string = '2015-01-01T00:00:00.025Z'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400.025, timestamp)
+
+    def test_valid_date_time_string_with_timezone(self):
+        date_time_string = '2015-01-01T09:00:00+09:00'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400., timestamp)
+
+    def test_invalid_date_time_string(self):
+        date_time_string = '2015-01-01T00:00:000Z'
+
+        self.assertRaises(
+            ValueError,
+            helpers._convert_time_string, date_time_string)

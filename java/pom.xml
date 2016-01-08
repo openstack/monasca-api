@@ -153,8 +153,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.9.2</artifactId>
-            <version>0.8.0</version>
+            <artifactId>kafka_2.11</artifactId>
+            <version>0.8.2.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jdmk</groupId>
