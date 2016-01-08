@@ -1373,7 +1373,7 @@ Cache-Control: no-cache
 ### Response
 
 #### Status Code
-* 201 - OK
+* 201 - Created
 
 #### Response Body
 Returns a JSON notification method object with the following fields:
