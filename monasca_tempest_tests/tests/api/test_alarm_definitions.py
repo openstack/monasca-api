@@ -583,7 +583,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
     def _verify_list_alarm_definitions_response_body(self, resp,
                                                      response_body):
         self.assertEqual(200, resp.status)
-        self.assertTrue(isinstance(response_body, dict))
+        self.assertIsInstance(response_body, dict)
         self.assertTrue(set(['links', 'elements']) == set(response_body))
 
     def _verify_list_get_alarm_definitions_elements(self, elements, num,
@@ -627,7 +627,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                         set(element))
 
     def _verify_list_alarm_definitions_links(self, links):
-        self.assertTrue(isinstance(links, list))
+        self.assertIsInstance(links, list)
         link = links[0]
         self.assertTrue(set(['rel', 'href']) == set(link))
         self.assertEqual(link['rel'], u'self')

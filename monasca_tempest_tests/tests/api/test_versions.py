@@ -32,7 +32,7 @@ class TestVersions(base.BaseMonascaTest):
         self.assertEqual(resp.status, 200)
         response_body = json.loads(response_body)
 
-        self.assertTrue(isinstance(response_body, dict))
+        self.assertIsInstance(response_body, dict)
         version = response_body
         self.assertTrue(set(['id', 'links', 'status', 'updated']) ==
                         set(version))
@@ -40,9 +40,9 @@ class TestVersions(base.BaseMonascaTest):
         self.assertEqual(version['status'], u'CURRENT')
         date_object = datetime.datetime.strptime(version['updated'],
                                                  "%Y-%m-%dT%H:%M:%S.%fZ")
-        self.assertTrue(isinstance(date_object, datetime.datetime))
+        self.assertIsInstance(date_object, datetime.datetime)
         links = response_body['links']
-        self.assertTrue(isinstance(links, list))
+        self.assertIsInstance(links, list)
         link = links[0]
         self.assertTrue(set(['rel', 'href']) ==
                         set(link))
