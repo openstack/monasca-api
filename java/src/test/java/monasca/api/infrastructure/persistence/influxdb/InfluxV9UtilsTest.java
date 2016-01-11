@@ -1,6 +1,8 @@
 /*
  * Copyright 2015 FUJITSU LIMITED
  *
+ * Copyright (c) 2016 Hewlett Packard Enterprise Development Company LP
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
  *
@@ -22,7 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 
-@Test(groups = "functional")
+@Test
 public class InfluxV9UtilsTest {
 
   private InfluxV9Utils instance;
@@ -60,5 +62,31 @@ public class InfluxV9UtilsTest {
   public void testTimeOffsetPart_0() throws Exception {
     final String offset = "0";
     assertEquals(String.format(" and time > '%1$s'", offset), this.instance.timeOffsetPart(offset));
+  }
+
+  @Test(groups = {"threeDigitMillisTimestamp"})
+  public void testThreeDigitMillisTimestamp_with_3digit() throws Exception {
+    final String origTimestamp = "2016-01-11T16:10:34.472Z";
+    assertEquals(this.instance.threeDigitMillisTimestamp(origTimestamp), origTimestamp);
+  }
+
+  @Test(groups = {"threeDigitMillisTimestamp"})
+  public void testThreeDigitMillisTimestamp_with_2digit() throws Exception {
+    final String origTimestamp_1 = "2016-01-11T16:10:34.47Z";
+    assertEquals(this.instance.threeDigitMillisTimestamp(origTimestamp_1), "2016-01-11T16:10:34.470Z");
+    final String origTimestamp_2 = "2016-01-11T16:10:34.40Z";
+    assertEquals(this.instance.threeDigitMillisTimestamp(origTimestamp_2), "2016-01-11T16:10:34.400Z");
+  }
+
+  @Test(groups = {"threeDigitMillisTimestamp"})
+  public void testThreeDigitMillisTimestamp_with_1digit() throws Exception {
+    final String origTimestamp = "2016-01-11T16:10:34.4Z";
+    assertEquals(this.instance.threeDigitMillisTimestamp(origTimestamp), "2016-01-11T16:10:34.400Z");
+  }
+
+  @Test(groups = {"threeDigitMillisTimestamp"})
+  public void testThreeDigitMillisTimestamp_with_0digit() throws Exception {
+    final String origTimestamp = "2016-01-11T16:10:34Z";
+    assertEquals(this.instance.threeDigitMillisTimestamp(origTimestamp), "2016-01-11T16:10:34.000Z");
   }
 }
