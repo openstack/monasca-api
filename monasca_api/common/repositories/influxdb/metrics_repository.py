@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 # Copyright 2014 Hewlett-Packard
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -135,11 +135,23 @@ class MetricsRepository(metrics_repository.MetricsRepository):
                     sorted(dimensions.iteritems())):
                 # replace ' with \' to make query parsable
                 clean_dimension_name = dimension_name.replace("\'", "\\'")
-                clean_dimension_value = dimension_value.replace("\'", "\\'")
+                if dimension_value == "":
+                    where_clause += " and \"{}\" =~ /.*/ ".format(
+                        clean_dimension_name)
+                elif '|' in dimension_value:
+                    # replace ' with \' to make query parsable
+                    clean_dimension_value = dimension_value.replace("\'", "\\'")
 
-                where_clause += " and \"{}\" = '{}'".format(
-                    clean_dimension_name.encode('utf8'),
-                    clean_dimension_value.encode('utf8'))
+                    where_clause += " and \"{}\" =~ /^{}$/ ".format(
+                        clean_dimension_name.encode('utf8'),
+                        clean_dimension_value.encode('utf8'))
+                else:
+                    # replace ' with \' to make query parsable
+                    clean_dimension_value = dimension_value.replace("\'", "\\'")
+
+                    where_clause += " and \"{}\" = '{}' ".format(
+                        clean_dimension_name.encode('utf8'),
+                        clean_dimension_value.encode('utf8'))
 
         if start_timestamp is not None:
             where_clause += " and time > " + str(int(start_timestamp *

@@ -95,9 +95,11 @@ public final class Validation {
       String[] dimensionArr = Iterables.toArray(COLON_SPLITTER.split(dimensionStr), String.class);
       if (dimensionArr.length == 2)
         dimensions.put(dimensionArr[0], dimensionArr[1]);
+      if (dimensionArr.length == 1)
+        dimensions.put(dimensionArr[0], "");
     }
 
-    DimensionValidation.validate(dimensions);
+    //DimensionValidation.validate(dimensions);
     return dimensions;
   }
 

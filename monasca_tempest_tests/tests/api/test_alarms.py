@@ -90,6 +90,96 @@ class TestAlarms(base.BaseMonascaTest):
                          element['alarm_definition']['id'])
 
     @test.attr(type="gate")
+    def test_list_alarms_by_metric_dimensions_no_value(self):
+        metric_name = data_utils.rand_name('metric')
+        match_by_key = data_utils.rand_name('key')
+        dim_key = data_utils.rand_name('key')
+        alarm_def = helpers.create_alarm_definition(
+            name=data_utils.rand_name('definition'),
+            expression=metric_name + " > 1",
+            match_by=[match_by_key])
+        metric_1 = helpers.create_metric(metric_name,
+                                         {match_by_key: data_utils.rand_name('value'),
+                                          dim_key: data_utils.rand_name('value')})
+        metric_2 = helpers.create_metric(metric_name,
+                                         {match_by_key: data_utils.rand_name('value'),
+                                          dim_key: data_utils.rand_name('value')})
+        metric_3 = helpers.create_metric(metric_name,
+                                         {match_by_key: data_utils.rand_name('value')})
+        metrics = [metric_1, metric_2, metric_3]
+        resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
+        self.assertEqual(201, resp.status)
+
+        for i in xrange(constants.MAX_RETRIES):
+            resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
+            self.assertEqual(204, resp.status)
+            resp, response_body = self.monasca_client.list_alarms('?metric_name=' + metric_name)
+            self.assertEqual(200, resp.status)
+            if len(response_body['elements']) >= 3:
+                break
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i >= constants.MAX_RETRIES - 1:
+                self.fail("Timeout creating alarms, required 3 but found {}".format(
+                    len(response_body['elements'])))
+
+        query_parms = '?metric_dimensions=' + dim_key
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=2)
+        dimension_sets = []
+        for element in response_body['elements']:
+            self.assertEqual(metric_name, element['metrics'][0]['name'])
+            dimension_sets.append(element['metrics'][0]['dimensions'])
+        self.assertIn(metric_1['dimensions'], dimension_sets)
+        self.assertIn(metric_2['dimensions'], dimension_sets)
+        self.assertNotIn(metric_3['dimensions'], dimension_sets)
+
+
+    @test.attr(type="gate")
+    def test_list_alarms_by_metric_dimensions_multi_value(self):
+        metric_name = data_utils.rand_name('metric')
+        match_by_key = data_utils.rand_name('key')
+        dim_key = data_utils.rand_name('key')
+        dim_value_1 = data_utils.rand_name('value')
+        dim_value_2 = data_utils.rand_name('value')
+        alarm_def = helpers.create_alarm_definition(
+            name=data_utils.rand_name('definition'),
+            expression=metric_name + " > 1",
+            match_by=[match_by_key])
+        metric_1 = helpers.create_metric(metric_name, {match_by_key: data_utils.rand_name('value'),
+                                                       dim_key: dim_value_1})
+        metric_2 = helpers.create_metric(metric_name, {match_by_key: data_utils.rand_name('value'),
+                                                       dim_key: dim_value_2})
+        metric_3 = helpers.create_metric(metric_name, {match_by_key: data_utils.rand_name('value')})
+        metrics = [metric_1, metric_2, metric_3]
+        resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
+        self.assertEqual(201, resp.status)
+        for i in xrange(constants.MAX_RETRIES):
+            resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
+            self.assertEqual(204, resp.status)
+            resp, response_body = self.monasca_client.list_alarms('?metric_name=' + metric_name)
+            self.assertEqual(200, resp.status)
+            if len(response_body['elements']) >= 3:
+                return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i >= constants.MAX_RETRIES - 1:
+                self.fail("Timeout creating alarms, required 3 but found {}".format(
+                    len(response_body['elements'])))
+
+        query_parms = '?metric_dimensions=' + dim_key + ':' + dim_value_1 + '|' + dim_value_2
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=2)
+        dimension_sets = []
+        for element in response_body['elements']:
+            self.assertEqual(metric_name, element['metrics'][0]['name'])
+            dimension_sets.append(element['metrics'][0]['dimensions'])
+        self.assertIn(metric_1['dimensions'], dimension_sets)
+        self.assertIn(metric_2['dimensions'], dimension_sets)
+        self.assertNotIn(metric_3['dimensions'], dimension_sets)
+
+
+    @test.attr(type="gate")
     def test_list_alarms_by_state(self):
         helpers.delete_alarm_definitions(self.monasca_client)
         self._create_alarms_for_test_alarms(num=3)
