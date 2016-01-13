@@ -213,12 +213,10 @@ class TestNotificationValidation(unittest.TestCase):
             self.fail("shouldn't happen")
 
     def test_validation_exception_for_email(self):
-        # ToDo: this function is not implemented yet.
-        # notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
-        # self.assertRaises(
-        #     schemas_exceptions.ValidationException,
-        #     schemas_notifications.validate, notification)
-        pass
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
 
     def test_validation_for_webhook(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
@@ -228,12 +226,10 @@ class TestNotificationValidation(unittest.TestCase):
             self.fail("shouldn't happen")
 
     def test_validation_exception_for_webhook(self):
-        # ToDo: this function is not implemented yet.
-        # notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://localhost"}
-        # self.assertRaises(
-        #     schemas_exceptions.ValidationException,
-        #     schemas_notifications.validate, notification)
-        pass
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://localhost"}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
 
     def test_validation_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
