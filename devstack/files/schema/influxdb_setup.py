@@ -38,7 +38,7 @@ RETENTION = '90d'
 import json
 import sys
 import time
-import urllib
+import six.moves.urllib.parse as urlparse
 import urllib2
 
 
@@ -50,7 +50,7 @@ def influxdb_get(uri, query, db=None):
         getparams['db'] = db
 
     try:
-        params = urllib.urlencode(getparams)
+        params = urlparse.urlencode(getparams)
         uri = "{}&{}".format(uri,params)
         req = urllib2.urlopen(uri)
         json_value = json.loads(req.read())

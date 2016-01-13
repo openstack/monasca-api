@@ -15,8 +15,7 @@
 
 import datetime
 import json
-import urllib
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 import falcon
 from oslo_log import log
@@ -323,7 +322,7 @@ def paginate(resource, uri, limit):
 
         next_link = build_base_uri(parsed_uri)
 
-        new_query_params = [u'offset' + '=' + urllib.quote(
+        new_query_params = [u'offset' + '=' + urlparse.quote(
             new_offset.encode('utf8'), safe='')]
 
         _get_old_query_params_except_offset(new_query_params, parsed_uri)
@@ -365,7 +364,7 @@ def paginate_measurement(measurement, uri, limit):
 
         next_link = build_base_uri(parsed_uri)
 
-        new_query_params = [u'offset' + '=' + urllib.quote(
+        new_query_params = [u'offset' + '=' + urlparse.quote(
             new_offset.encode('utf8'), safe='')]
 
         _get_old_query_params_except_offset(new_query_params, parsed_uri)
@@ -403,10 +402,10 @@ def _get_old_query_params(parsed_uri):
         for query_param in parsed_uri.query.split('&'):
             query_param_name, query_param_val = query_param.split('=')
 
-            old_query_params.append(urllib.quote(
+            old_query_params.append(urlparse.quote(
                 query_param_name.encode('utf8'), safe='')
                 + "="
-                + urllib.quote(query_param_val.encode('utf8'), safe=''))
+                + urlparse.quote(query_param_val.encode('utf8'), safe=''))
 
     return old_query_params
 
@@ -417,9 +416,9 @@ def _get_old_query_params_except_offset(new_query_params, parsed_uri):
         for query_param in parsed_uri.query.split('&'):
             query_param_name, query_param_val = query_param.split('=')
             if query_param_name.lower() != 'offset':
-                new_query_params.append(urllib.quote(
+                new_query_params.append(urlparse.quote(
                     query_param_name.encode(
-                        'utf8'), safe='') + "=" + urllib.quote(
+                        'utf8'), safe='') + "=" + urlparse.quote(
                     query_param_val.encode(
                         'utf8'), safe=''))
 
@@ -444,7 +443,7 @@ def paginate_statistics(statistic, uri, limit):
 
         next_link = build_base_uri(parsed_uri)
 
-        new_query_params = [u'offset' + '=' + urllib.quote(
+        new_query_params = [u'offset' + '=' + urlparse.quote(
             new_offset.encode('utf8'), safe='')]
 
         _get_old_query_params_except_offset(new_query_params, parsed_uri)
