@@ -670,7 +670,7 @@ function install_monasca_api_java {
 
     sudo chown root:monasca /var/log/monasca/api
 
-    sudo chmod 0755 /var/log/monasca/api
+    sudo chmod 0775 /var/log/monasca/api
 
     sudo mkdir -p /etc/monasca || true
 
@@ -851,7 +851,7 @@ function install_monasca_persister_java {
 
     sudo chown root:monasca /var/log/monasca/persister
 
-    sudo chmod 0755 /var/log/monasca/persister
+    sudo chmod 0775 /var/log/monasca/persister
 
     sudo mkdir -p /etc/monasca || true
 
