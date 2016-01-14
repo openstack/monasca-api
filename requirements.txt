@@ -5,6 +5,8 @@ oslo.middleware<2.9.0
 oslo.serialization<1.10.0
 oslo.utils<2.6.0
 
+python-keystoneclient<=1.7.2
+
 falcon==0.2.0
 gunicorn>=19.1.0
 keystonemiddleware
