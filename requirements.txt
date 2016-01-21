@@ -1,11 +1,11 @@
-oslo.config<2.5.0
-oslo.i18n<=2.6.0
-oslo.log<1.12.0
-oslo.middleware<2.9.0
-oslo.serialization<1.10.0
-oslo.utils<2.6.0
+oslo.config
+oslo.i18n
+oslo.log
+oslo.middleware
+oslo.serialization
+oslo.utils
 
-python-keystoneclient<=1.7.2
+python-keystoneclient
 
 falcon==0.2.0
 gunicorn>=19.1.0

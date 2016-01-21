@@ -711,13 +711,17 @@ function install_monasca_api_python {
     sudo apt-get -y install python-mysqldb
     sudo apt-get -y install libmysqlclient-dev
 
-    (cd /opt/monasca; sudo -H ./bin/pip install gunicorn)
+    sudo mkdir -p /opt/monasca-api
+
+    (cd /opt/monasca-api; sudo virtualenv .)
+
+    (cd /opt/monasca-api; sudo -H ./bin/pip install gunicorn)
 
     (cd "${MONASCA_BASE}"/monasca-api ; sudo python setup.py sdist)
 
     MONASCA_API_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-api/dist/monasca-api-*.tar.gz)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_API_SRC_DIST)
+    (cd /opt/monasca-api ; sudo -H ./bin/pip install $MONASCA_API_SRC_DIST)
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -1330,7 +1334,15 @@ function install_monasca_agent {
 
     MONASCA_AGENT_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-agent/dist/monasca-agent-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
+    sudo mkdir -p /opt/monasca-agent/
+
+    (cd /opt/monasca-agent ; sudo virtualenv .)
+
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport simport)
+
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install psutil==3.0.1)
+
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
 
