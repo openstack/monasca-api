@@ -24,6 +24,8 @@ import simport
 
 dispatcher_opts = [cfg.StrOpt('versions', default=None,
                               help='Versions'),
+                   cfg.StrOpt('version_2_0', default=None,
+                              help='Version 2.0'),
                    cfg.StrOpt('metrics', default=None,
                               help='Metrics'),
                    cfg.StrOpt('metrics_measurements', default=None,
@@ -61,6 +63,11 @@ def launch(conf, config_file="/etc/monasca/api-config.conf"):
     versions = simport.load(cfg.CONF.dispatcher.versions)()
     app.add_route("/", versions)
     app.add_route("/{version_id}", versions)
+
+    # The following resource is a workaround for a regression in falcon 0.3
+    # which causes the path '/v2.0' to not route to the versions resource
+    version_2_0 = simport.load(cfg.CONF.dispatcher.version_2_0)()
+    app.add_route("/v2.0", version_2_0)
 
     metrics = simport.load(cfg.CONF.dispatcher.metrics)()
     app.add_route("/v2.0/metrics", metrics)
