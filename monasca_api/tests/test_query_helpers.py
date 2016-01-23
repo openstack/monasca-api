@@ -90,3 +90,36 @@ class TestGetQueryDimension(unittest.TestCase):
 
         self.assertRaises(
             HTTPUnprocessableEntityError, helpers.get_query_dimensions, req)
+
+
+class TestGetOldQueryParams(unittest.TestCase):
+
+    def test_old_query_params(self):
+        uri = Mock()
+        uri.query = "foo=bar&spam=ham"
+
+        result = helpers._get_old_query_params(uri)
+        self.assertEqual(result, ["foo=bar", "spam=ham"])
+
+    def test_old_query_params_with_equals(self):
+        uri = Mock()
+        uri.query = "foo=spam=ham"
+
+        result = helpers._get_old_query_params(uri)
+        self.assertEqual(result, ["foo=spam%3Dham"])
+
+    def test_old_query_params_except_offset(self):
+        uri = Mock()
+        uri.query = "foo=bar&spam=ham"
+        result = []
+
+        helpers._get_old_query_params_except_offset(result, uri)
+        self.assertEqual(result, ["foo=bar", "spam=ham"])
+
+    def test_old_query_params_except_offset_with_equals(self):
+        uri = Mock()
+        uri.query = "foo=spam=ham&offset=bar"
+        result = []
+
+        helpers._get_old_query_params_except_offset(result, uri)
+        self.assertEqual(result, ["foo=spam%3Dham"])
