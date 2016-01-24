@@ -17,8 +17,16 @@ package monasca.api.app.command;
 import static monasca.common.dropwizard.JsonHelpers.jsonFixture;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -29,6 +37,15 @@ import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 
 @Test
 public class CreateNotificationMethodTest extends AbstractModelTest {
+
+  private static Validator validator;
+
+  @BeforeClass
+  public static void setUp() {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    validator = factory.getValidator();
+  }
+
   public void shouldDeserializeFromJson() throws Exception {
     CreateNotificationMethodCommand newNotificationMethod =
         new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b");
@@ -73,7 +90,7 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
 
   public void testValidationForWebhook() {
     CreateNotificationMethodCommand newNotificationMethod =
-        new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.WEBHOOK, "http://somedomain.com");
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "http://somedomain.com");
       newNotificationMethod.validate();
   }
 
@@ -89,5 +106,44 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
     CreateNotificationMethodCommand newNotificationMethod =
         new CreateNotificationMethodCommand("MyPagerduty", NotificationMethodType.PAGERDUTY, "nzH2LVRdMzun11HNC2oD");
       newNotificationMethod.validate();
+  }
+
+  public void testValidationForMaxNameAddress() {
+    String name = StringUtils.repeat("A", 250);
+    assertEquals(name.length(), 250);
+    String address = "http://" + StringUtils.repeat("A", 502) + ".io";
+    assertEquals(address.length(), 512);
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand(name, NotificationMethodType.WEBHOOK, address);
+    Set<ConstraintViolation<CreateNotificationMethodCommand>> constraintViolations =
+        validator.validate(newNotificationMethod);
+
+    assertEquals(constraintViolations.size(), 0);
+  }
+
+  public void testValidationExceptionForExceededNameLength() {
+    String name = StringUtils.repeat("A", 251);
+    assertEquals(name.length(), 251);
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand(name, NotificationMethodType.WEBHOOK, "http://somedomain.com");
+    Set<ConstraintViolation<CreateNotificationMethodCommand>> constraintViolations =
+        validator.validate(newNotificationMethod);
+
+    assertEquals(constraintViolations.size(), 1);
+    assertEquals(constraintViolations.iterator().next().getMessage(),
+        "size must be between 1 and 250");
+  }
+
+  public void testValidationExceptionForExceededAddressLength() {
+    String address = "http://" + StringUtils.repeat("A", 503) + ".io";
+    assertEquals(address.length(), 513);
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, address);
+    Set<ConstraintViolation<CreateNotificationMethodCommand>> constraintViolations =
+        validator.validate(newNotificationMethod);
+
+    assertEquals(constraintViolations.size(), 1);
+    assertEquals(constraintViolations.iterator().next().getMessage(),
+        "size must be between 1 and 512");
   }
 }

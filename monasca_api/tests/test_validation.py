@@ -14,6 +14,8 @@
 # under the License.
 
 import falcon
+import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
+import monasca_api.v2.common.schemas.notifications_request_body_schema as schemas_notifications
 import monasca_api.v2.common.validation as validation
 import monasca_api.v2.reference.helpers as helpers
 
@@ -199,3 +201,71 @@ class TestConvertTimeString(unittest.TestCase):
         self.assertRaises(
             ValueError,
             helpers._convert_time_string, date_time_string)
+
+
+class TestNotificationValidation(unittest.TestCase):
+
+    def test_validation_for_email(self):
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_email(self):
+        # ToDo: this function is not implemented yet.
+        # notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
+        # self.assertRaises(
+        #     schemas_exceptions.ValidationException,
+        #     schemas_notifications.validate, notification)
+        pass
+
+    def test_validation_for_webhook(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_webhook(self):
+        # ToDo: this function is not implemented yet.
+        # notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://localhost"}
+        # self.assertRaises(
+        #     schemas_exceptions.ValidationException,
+        #     schemas_notifications.validate, notification)
+        pass
+
+    def test_validation_for_pagerduty(self):
+        notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
+                        "address": "nzH2LVRdMzun11HNC2oD"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_for_max_name_address(self):
+        name = "A" * 250
+        self.assertEqual(250, len(name))
+        address = "http://" + "A" * 502 + ".io"
+        self.assertEqual(512, len(address))
+        notification = {"name": name, "type": "WEBHOOK", "address": address}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_exceeded_name_length(self):
+        name = "A" * 251
+        self.assertEqual(251, len(name))
+        notification = {"name": name, "type": "WEBHOOK", "address": "http://somedomain.com"}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
+
+    def test_validation_exception_for_exceeded_address_length(self):
+        address = "http://" + "A" * 503 + ".io"
+        self.assertEqual(513, len(address))
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": address}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)

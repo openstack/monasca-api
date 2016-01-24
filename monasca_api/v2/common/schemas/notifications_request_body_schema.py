@@ -28,7 +28,7 @@ notification_schema = {
                        "PAGERDUTY", "pagerduty")),
     voluptuous.Required('address'): voluptuous.Schema(
         voluptuous.All(voluptuous.Any(str, unicode),
-                       voluptuous.Length(max=100)))}
+                       voluptuous.Length(max=512)))}
 
 request_body_schema = voluptuous.Schema(voluptuous.Any(notification_schema))
 
