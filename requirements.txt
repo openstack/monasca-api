@@ -23,3 +23,4 @@ eventlet
 kafka-python>=0.9.2,<0.9.3
 simplejson
 simport
+validate_email>=1.3
