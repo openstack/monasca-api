@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 # Copyright 2015 Cray Inc.
+# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +22,7 @@ import falcon.testing
 import fixtures
 import testtools.matchers as matchers
 
+from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.v2.reference import alarm_definitions
 from monasca_api.v2.reference import alarms
 
@@ -195,9 +198,9 @@ class TestAlarmsStateHistory(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
 
-class TestAlarmDefinitionList(AlarmTestBase):
+class TestAlarmDefinition(AlarmTestBase):
     def setUp(self):
-        super(TestAlarmDefinitionList, self).setUp()
+        super(TestAlarmDefinition, self).setUp()
 
         self.alarm_def_repo_mock = self.useFixture(fixtures.MockPatch(
             'monasca_api.common.repositories.alarm_definitions_repository.AlarmDefinitionsRepository'
@@ -205,10 +208,283 @@ class TestAlarmDefinitionList(AlarmTestBase):
 
         self.alarm_definition_resource = alarm_definitions.AlarmDefinitions()
 
+        self.api.add_route("/v2.0/alarm-definitions/",
+                           self.alarm_definition_resource)
         self.api.add_route("/v2.0/alarm-definitions/{alarm_definition_id}",
                            self.alarm_definition_resource)
 
-    def test_alarm_definition_specific_alarm(self):
+    def test_alarm_definition_create(self):
+        self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
+        self.alarm_def_repo_mock.return_value.create_alarm_definition.return_value = \
+            u"00000001-0001-0001-0001-000000000001"
+
+        alarm_def = {
+            "name": "Test Definition",
+            "expression": "test.metric > 10"
+        }
+
+        expected_data = {
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'',
+            u'match_by': [],
+            u'name': u'Test Definition',
+            u'actions_enabled': u'true',
+            u'undetermined_actions': [],
+            u'expression': u'test.metric > 10',
+            u'id': u'00000001-0001-0001-0001-000000000001',
+            u'severity': u'LOW',
+        }
+
+        response = self.simulate_request("/v2.0/alarm-definitions/",
+                                         headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                         method="POST",
+                                         body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertThat(response, RESTResponseEquals(expected_data))
+
+    def test_alarm_definition_create_with_valid_expressions(self):
+        self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
+        self.alarm_def_repo_mock.return_value.create_alarm_definition.return_value = \
+            u"00000001-0001-0001-0001-000000000001"
+
+        valid_expressions = [
+            "max(-_.千幸福的笑脸{घोड़ा=馬,  "
+            "dn2=dv2,千幸福的笑脸घ=千幸福的笑脸घ}) gte 100 "
+            "times 3 && "
+            "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >99 and "
+            "count(fizzle) lt 0or count(baz) > 1)".decode('utf8'),
+
+            "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
+            " or max(biz)>100)".decode('utf8'),
+
+            "max(foo)>=100",
+
+            "test_metric{this=that, that =  this} < 1",
+
+            "max  (  3test_metric5  {  this  =  that  })  lt  5 times    3",
+
+            "3test_metric5 lt 3",
+
+            "ntp.offset > 1 or ntp.offset < -5",
+        ]
+
+        alarm_def = {
+            u'name': u'Test Definition',
+            u'expression': u'test.metric > 10'
+        }
+
+        expected_data = {
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'',
+            u'match_by': [],
+            u'name': u'Test Definition',
+            u'actions_enabled': u'true',
+            u'undetermined_actions': [],
+            u'expression': u'test.metric > 10',
+            u'id': u'00000001-0001-0001-0001-000000000001',
+            u'severity': u'LOW',
+        }
+
+        for expression in valid_expressions:
+            alarm_def[u'expression'] = expression
+            expected_data[u'expression'] = expression
+            response = self.simulate_request("/v2.0/alarm-definitions/",
+                                             headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                             method="POST",
+                                             body=json.dumps(alarm_def))
+
+            self.assertEqual(self.srmock.status, falcon.HTTP_201,
+                             u'Expression {} should have passed'.format(expression))
+            self.assertThat(response, RESTResponseEquals(expected_data))
+
+    def test_alarm_definition_create_with_invalid_expressions(self):
+        bad_expressions = [
+            "test=metric > 10",
+            "test.metric{dim=this=that} > 10",
+            "test_metric(5) > 2"
+            "test_metric > 10 and or alt_metric > 10"
+        ]
+
+        alarm_def = {
+            u'name': 'Test Definition',
+            u'expression': 'test.metric > 10'
+        }
+
+        for expression in bad_expressions:
+            alarm_def[u'expression'] = expression
+            self.simulate_request("/v2.0/alarm-definitions/",
+                                  headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                  method="POST",
+                                  body=json.dumps(alarm_def))
+
+            self.assertEqual(self.srmock.status, '422 Unprocessable Entity',
+                             u'Expression {} should have failed'.format(expression))
+
+    def test_alarm_definition_update(self):
+        self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
+        self.alarm_def_repo_mock.return_value.update_or_patch_alarm_definition.return_value = (
+            {u'alarm_actions': [],
+             u'ok_actions': [],
+             u'description': u'Non-ASCII character: \u2603'.encode('utf-8'),
+             u'match_by': u'hostname',
+             u'name': u'Test Alarm',
+             u'actions_enabled': True,
+             u'undetermined_actions': [],
+             u'expression': u'max(test.metric{hostname=host}) gte 1',
+             u'id': u'00000001-0001-0001-0001-000000000001',
+             u'severity': u'LOW'},
+            {'old': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                row={'id': '11111',
+                     'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                     'function': 'max',
+                     'metric_name': 'test.metric',
+                     'dimensions': 'hostname=host',
+                     'operator': 'gte',
+                     'threshold': 1,
+                     'period': 60,
+                     'periods': 1})},
+             'changed': {},
+             'new': {},
+             'unchanged': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                 row={'id': '11111',
+                      'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                      'function': 'max',
+                      'metric_name': 'test.metric',
+                      'dimensions': 'hostname=host',
+                      'operator': 'gte',
+                      'threshold': 1,
+                      'period': 60,
+                      'periods': 1})}
+             }
+        )
+
+        expected_def = {
+            u'id': u'00000001-0001-0001-0001-000000000001',
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'Non-ASCII character: \u2603',
+            u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
+                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                        u'rel': u'self'}],
+            u'match_by': [u'hostname'],
+            u'name': u'Test Alarm',
+            u'actions_enabled': True,
+            u'undetermined_actions': [],
+            u'expression': u'max(test.metric{hostname=host}) gte 1',
+            u'severity': u'LOW',
+        }
+
+        alarm_def = {
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'',
+            u'match_by': [u'hostname'],
+            u'name': u'Test Alarm',
+            u'actions_enabled': True,
+            u'undetermined_actions': [],
+            u'expression': u'max(test.metric{hostname=host}) gte 1',
+            u'severity': u'LOW',
+        }
+
+        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+                                       headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                       method="PUT",
+                                       body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        result_def = json.loads(result[0])
+        self.assertEqual(result_def, expected_def)
+
+    def test_alarm_definition_update_missing_fields(self):
+        self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
+        self.alarm_def_repo_mock.return_value.update_or_patch_alarm_definition.return_value = (
+            {u'alarm_actions': [],
+             u'ok_actions': [],
+             u'description': u'Non-ASCII character: \u2603'.encode('utf-8'),
+             u'match_by': u'hostname',
+             u'name': u'Test Alarm',
+             u'actions_enabled': True,
+             u'undetermined_actions': [],
+             u'expression': u'max(test.metric{hostname=host}) gte 1',
+             u'id': u'00000001-0001-0001-0001-000000000001',
+             u'severity': u'LOW'},
+            {'old': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                row={'id': '11111',
+                     'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                     'function': 'max',
+                     'metric_name': 'test.metric',
+                     'dimensions': 'hostname=host',
+                     'operator': 'gte',
+                     'threshold': 1,
+                     'period': 60,
+                     'periods': 1})},
+             'changed': {},
+             'new': {},
+             'unchanged': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                 row={'id': '11111',
+                      'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                      'function': 'max',
+                      'metric_name': 'test.metric',
+                      'dimensions': 'hostname=host',
+                      'operator': 'gte',
+                      'threshold': 1,
+                      'period': 60,
+                      'periods': 1})}
+             }
+        )
+
+        expected_def = {
+            u'id': u'00000001-0001-0001-0001-000000000001',
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'Non-ASCII character: \u2603',
+            u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
+                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                        u'rel': u'self'}],
+            u'match_by': [u'hostname'],
+            u'name': u'Test Alarm',
+            u'actions_enabled': True,
+            u'undetermined_actions': [],
+            u'expression': u'max(test.metric{hostname=host}) gte 1',
+            u'severity': u'LOW',
+        }
+
+        alarm_def = {
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': u'',
+            u'match_by': [u'hostname'],
+            u'name': u'Test Alarm',
+            u'actions_enabled': True,
+            u'undetermined_actions': [],
+            u'expression': u'max(test.metric{hostname=host}) gte 1',
+            u'severity': u'LOW',
+        }
+
+        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+                                       headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                       method="PUT",
+                                       body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        result_def = json.loads(result[0])
+        self.assertEqual(result_def, expected_def)
+
+        for key, value in alarm_def.iteritems():
+            del alarm_def[key]
+
+            self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+                                  headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                  method="PUT",
+                                  body=json.dumps(alarm_def))
+            self.assertEqual(self.srmock.status, "422 Unprocessable Entity",
+                             u"should have failed without key {}".format(key))
+            alarm_def[key] = value
+
+    def test_alarm_definition_get_specific_alarm(self):
 
         self.alarm_def_repo_mock.return_value.get_alarm_definition.return_value = {
             'alarm_actions': None,
@@ -246,7 +522,7 @@ class TestAlarmDefinitionList(AlarmTestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
-    def test_alarm_definition_specific_alarm_description_none(self):
+    def test_alarm_definition_get_specific_alarm_description_none(self):
 
         self.alarm_def_repo_mock.return_value.get_alarm_definition.return_value = {
             'alarm_actions': None,
