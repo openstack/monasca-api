@@ -85,7 +85,6 @@ DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
 ADMIN_PASSWORD=secretadmin
 SERVICE_PASSWORD=secretservice
-SERVICE_TOKEN=111222333444
 
 LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
