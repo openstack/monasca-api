@@ -214,13 +214,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         select_clause = AlarmsRepository.base_query
 
-        order_by_clause = " order by a.id "
-
         where_clause = " where ad.tenant_id = %s "
-
-        if offset:
-            where_clause += " and a.id > %s"
-            parms.append(offset.encode('utf8'))
 
         if 'alarm_definition_id' in query_parms:
             parms.append(query_parms['alarm_definition_id'])
@@ -287,13 +281,29 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             parms += sub_select_parms
             where_clause += sub_select_clause
 
+        if 'sort_by' in query_parms:
+            order_by_clause = " order by " + ','.join(query_parms['sort_by'])
+            if 'alarm_id' not in query_parms['sort_by']:
+                order_by_clause += ",alarm_id "
+            else:
+                order_by_clause += " "
+        else:
+            order_by_clause = " order by a.id "
+
+        if offset:
+            offset_clause = " offset {}".format(offset)
+        else:
+            offset_clause = ""
+
         if limit:
             limit_clause = " limit %s "
             parms.append(limit + 1)
         else:
             limit_clause = ""
 
-        query = select_clause + where_clause + order_by_clause + limit_clause
+        query = select_clause + where_clause + order_by_clause + limit_clause + offset_clause
+
+        LOG.debug("Query: {}".format(query))
 
         return self._execute_query(query, parms)
 

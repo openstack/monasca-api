@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -76,8 +76,8 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
-    def get_alarm_definitions(self, tenant_id, name, dimensions, offset,
-                              limit):
+    def get_alarm_definitions(self, tenant_id, name, dimensions,
+                              sort_by, offset, limit):
 
         parms = [tenant_id]
 
@@ -89,14 +89,20 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             where_clause += " and ad.name = %s "
             parms.append(name.encode('utf8'))
 
-        order_by_clause = " order by ad.id, ad.created_at "
+        if sort_by is not None:
+            order_by_clause = " order by " + ','.join(sort_by)
+            if 'id' not in sort_by:
+                order_by_clause += ",ad.id "
+            else:
+                order_by_clause += " "
+        else:
+            order_by_clause = " order by ad.id "
+
+        limit_offset_clause = " limit %s "
+        parms.append(limit + 1)
 
         if offset:
-            where_clause += " and ad.id > %s "
-            parms.append(offset.encode('utf8'))
-
-        limit_clause = " limit %s "
-        parms.append(limit + 1)
+            limit_offset_clause += ' offset {}'.format(offset)
 
         if dimensions:
             inner_join = """ inner join sub_alarm_definition as sad
@@ -119,7 +125,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             select_clause += inner_join
             parms = inner_join_parms + parms
 
-        query = select_clause + where_clause + order_by_clause + limit_clause
+        query = select_clause + where_clause + order_by_clause + limit_offset_clause
 
         return self._execute_query(query, parms)
 

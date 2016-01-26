@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +63,8 @@ public class AlarmDefinitionResource {
   private final PersistUtils persistUtils;
   public final static String ALARM_DEFINITIONS = "alarm-definitions";
   public final static String ALARM_DEFINITIONS_PATH = "/v2.0/" + ALARM_DEFINITIONS;
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("id", "name", "severity",
+                                                                    "updated_at", "created_at");
 
   @Inject
   public AlarmDefinitionResource(AlarmDefinitionService service,
@@ -93,20 +96,27 @@ public class AlarmDefinitionResource {
   public Object list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("sort_by") String sortByStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit) throws UnsupportedEncodingException {
     Map<String, String> dimensions =
         Strings.isNullOrEmpty(dimensionsStr) ? null : Validation
             .parseAndValidateDimensions(dimensionsStr);
 
+    List<String> sortByList = Validation.parseAndValidateSortBy(sortByStr, ALLOWED_SORT_BY);
+    if (!Strings.isNullOrEmpty(offset)) {
+      Validation.parseAndValidateNumber(offset, "offset");
+    }
+
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<AlarmDefinition> resources = repo.find(tenantId,
-        name,
-        dimensions,
-        offset,
-        paging_limit
+                                                      name,
+                                                      dimensions,
+                                                      sortByList,
+                                                      offset,
+                                                      paging_limit
     );
-    return Links.paginate(paging_limit, Links.hydrate(resources, uriInfo), uriInfo);
+    return Links.paginateAlarming(paging_limit, Links.hydrate(resources, uriInfo), uriInfo);
   }
 
   @GET
