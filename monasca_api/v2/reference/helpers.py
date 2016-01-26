@@ -1,5 +1,6 @@
 # Copyright 2014 Hewlett-Packard
 # Copyright 2015 Cray Inc. All Rights Reserved.
+# Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -470,6 +471,21 @@ def paginate_statistics(statistic, uri, limit):
                     u'elements': statistic}
 
     return resource
+
+
+def create_alarms_count_next_link(uri, offset, limit):
+    if offset is None:
+            offset = 0
+    parsed_url = urlparse.urlparse(uri)
+    base_url = build_base_uri(parsed_url)
+    new_query_params = [u'offset=' + urlparse.quote(str(offset + limit))]
+    _get_old_query_params_except_offset(new_query_params, parsed_url)
+
+    next_link = base_url
+    if new_query_params:
+        next_link += '?' + '&'.join(new_query_params)
+
+    return next_link
 
 
 def build_base_uri(parsed_uri):

@@ -38,7 +38,9 @@ import org.slf4j.LoggerFactory;
 
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
+import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.alarm.AlarmRepo;
+import monasca.api.resource.exception.Exceptions;
 import monasca.common.hibernate.db.AlarmDb;
 import monasca.common.hibernate.db.SubAlarmDb;
 import monasca.common.hibernate.type.BinaryId;
@@ -522,5 +524,14 @@ public class AlarmSqlRepoImpl
     }
 
     return subAlarms;
+  }
+
+  @Override
+  public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
+                                   Map<String, String> metricDimensions, AlarmState state,
+                                   String lifecycleState, String link, DateTime stateUpdatedStart,
+                                   List<String> groupBy, String offset, int limit) {
+    // Not Implemented
+    return null;
   }
 }

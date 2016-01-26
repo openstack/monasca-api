@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -294,5 +294,130 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             limit_clause = ""
 
         query = select_clause + where_clause + order_by_clause + limit_clause
+
+        return self._execute_query(query, parms)
+
+    @mysql_repository.mysql_try_catch_block
+    def get_alarms_count(self, tenant_id, query_parms, offset, limit):
+
+        select_clause = """select count(*) as count{}
+                        from alarm as a
+                        join alarm_definition as ad on ad.id = a.alarm_definition_id
+                        """
+
+        if 'group_by' in query_parms:
+            group_by_str = ",".join(query_parms['group_by'])
+
+            metric_group_by = {'metric_name',
+                               'dimension_name',
+                               'dimension_value'}.intersection(set(query_parms['group_by']))
+            if metric_group_by:
+                metric_select = """
+                    join (  select distinct am.alarm_id{}
+                            from metric_definition as md
+                            join metric_definition_dimensions as mdd on md.id = mdd.metric_definition_id
+                            join metric_dimension as mdim on mdd.metric_dimension_set_id = mdim.dimension_set_id
+                            join alarm_metric as am on am.metric_definition_dimensions_id = mdd.id
+                         ) as metrics on a.id = metrics.alarm_id """
+                sub_select_clause = ""
+                if 'metric_name' in metric_group_by:
+                    sub_select_clause += ', md.name as metric_name'
+                if 'dimension_name' in metric_group_by:
+                    sub_select_clause += ', mdim.name as dimension_name'
+                if 'dimension_value' in metric_group_by:
+                    sub_select_clause += ', mdim.value as dimension_value'
+
+                select_clause += metric_select.format(sub_select_clause)
+
+        else:
+            group_by_str = ""
+
+        parms = []
+
+        where_clause = " where ad.tenant_id = %s "
+        parms.append(tenant_id)
+
+        if 'alarm_definition_id' in query_parms:
+            parms.append(query_parms['alarm_definition_id'])
+            where_clause += " and ad.id = %s "
+
+        if 'state' in query_parms:
+            parms.append(query_parms['state'].encode('utf8'))
+            where_clause += " and a.state = %s "
+
+        if 'lifecycle_state' in query_parms:
+            parms.append(query_parms['lifecycle_state'].encode('utf8'))
+            where_clause += " and a.lifecycle_state = %s "
+
+        if 'link' in query_parms:
+            parms.append(query_parms['link'].encode('utf8'))
+            where_clause += " and a.link = %s "
+
+        if 'state_updated_start_time' in query_parms:
+            parms.append(query_parms['state_updated_start_time']
+                         .encode("utf8"))
+            where_clause += " and state_updated_at >= %s "
+
+        if 'metric_name' in query_parms:
+            sub_select_clause = """
+                and a.id in (select distinct a.id from alarm as a
+                            inner join alarm_metric as am on am.alarm_id
+                            = a.id
+                            inner join metric_definition_dimensions as mdd
+                                on mdd.id =
+                                am.metric_definition_dimensions_id
+                            inner join (select distinct id from
+                            metric_definition
+                                        where name = %s) as md
+                            on md.id = mdd.metric_definition_id)
+                """
+            parms.append(query_parms['metric_name'].encode('utf8'))
+            where_clause += sub_select_clause
+
+        if 'metric_dimensions' in query_parms:
+            sub_select_clause = """
+                and a.id in (select distinct a.id from alarm as a
+                            inner join alarm_metric as am on am.alarm_id = a.id
+                            inner join metric_definition_dimensions as mdd
+                                on mdd.id = am.metric_definition_dimensions_id
+                """
+            sub_select_parms = []
+            i = 0
+            for metric_dimension in query_parms['metric_dimensions']:
+                parsed_dimension = metric_dimension.split(':')
+                sub_select_clause += """
+                    inner join (select distinct dimension_set_id
+                                from metric_dimension
+                                where name = %s and value = %s) as md{}
+                    on md{}.dimension_set_id = mdd.metric_dimension_set_id
+                    """.format(i, i)
+                i += 1
+                sub_select_parms += [parsed_dimension[0].encode('utf8'),
+                                     parsed_dimension[1].encode('utf8')]
+
+            sub_select_clause += ")"
+            parms += sub_select_parms
+            where_clause += sub_select_clause
+
+        if group_by_str:
+            group_order_by_clause = " group by {} order by {} ".format(group_by_str, group_by_str)
+        else:
+            group_order_by_clause = ""
+
+        if limit:
+            limit_clause = " limit %s "
+            parms.append(limit + 1)
+        else:
+            limit_clause = ""
+
+        if offset:
+            offset_clause = " offset {} ".format(offset)
+        else:
+            offset_clause = ""
+
+        select_group_by = ',' + group_by_str if group_by_str else ""
+        select_clause = select_clause.format(select_group_by)
+
+        query = select_clause + where_clause + group_order_by_clause + limit_clause + offset_clause
 
         return self._execute_query(query, parms)

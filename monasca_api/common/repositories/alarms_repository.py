@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -46,4 +46,8 @@ class AlarmsRepository(object):
 
     @abc.abstractmethod
     def get_alarms(self, tenant_id, query_parms, offset, limit):
+        pass
+
+    @abc.abstractmethod
+    def get_alarms_count(self, tenant_id, query_parms, offset, limit):
         pass
