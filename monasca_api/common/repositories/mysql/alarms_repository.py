@@ -267,15 +267,27 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             i = 0
             for metric_dimension in query_parms['metric_dimensions']:
                 parsed_dimension = metric_dimension.split(':')
+                if len(parsed_dimension) == 1:
+                    values = None
+                    value_sql = ""
+                elif '|' in parsed_dimension[1]:
+                    values = parsed_dimension[1].encode('utf8').split('|')
+                    value_sql = " and ("
+                    value_sql += " or ".join(["value = %s" for j in xrange(len(values))])
+                    value_sql += ') '
+                else:
+                    values = [parsed_dimension[1]]
+                    value_sql = " and value = %s "
                 sub_select_clause += """
                     inner join (select distinct dimension_set_id
                                 from metric_dimension
-                                where name = %s and value = %s) as md{}
+                                where name = %s {}) as md{}
                     on md{}.dimension_set_id = mdd.metric_dimension_set_id
-                    """.format(i, i)
+                    """.format(value_sql, i, i)
                 i += 1
-                sub_select_parms += [parsed_dimension[0].encode('utf8'),
-                                     parsed_dimension[1].encode('utf8')]
+                sub_select_parms.append(parsed_dimension[0].encode('utf8'))
+                if len(parsed_dimension) > 1 and values:
+                    sub_select_parms.extend(values)
 
             sub_select_clause += ")"
             parms += sub_select_parms

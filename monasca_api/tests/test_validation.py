@@ -1,5 +1,6 @@
 # Copyright 2015 Hewlett-Packard
 # Copyright 2015 Cray Inc. All Rights Reserved.
+# Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -23,7 +24,7 @@ import mock
 
 import unittest
 
-invalid_chars = "<>={}(),\"\\;&"
+invalid_chars = "<>={}(),\"\\|;&"
 
 
 class TestMetricNameValidation(unittest.TestCase):

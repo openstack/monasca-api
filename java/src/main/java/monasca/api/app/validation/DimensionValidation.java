@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -33,8 +33,8 @@ public final class DimensionValidation {
   private static final Map<String, DimensionValidator> VALIDATORS;
   private static final Pattern UUID_PATTERN = Pattern
       .compile("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
-  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("[^><={}(),\"\\\\;&]+$");
-  private static final String INVALID_CHAR_STRING = "> < = { } ( ) \" \\ , ; &";
+  private static final Pattern VALID_DIMENSION_NAME = Pattern.compile("[^><={}(),\"\\\\;&\\|]+$");
+  private static final String INVALID_CHAR_STRING = "> < = { } ( ) \" \\ , ; & |";
 
   private DimensionValidation() {}
 

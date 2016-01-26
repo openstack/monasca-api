@@ -16,7 +16,7 @@ from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
 import re
 
-invalid_chars = "<>={}(),'\"\\\\;&"
+invalid_chars = "<>={}(),\"\\\\|;&"
 restricted_chars = re.compile('[' + invalid_chars + ']')
 
 
