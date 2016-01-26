@@ -13,19 +13,13 @@
 # under the License.
 
 from oslo_log import log
-import sys
+import six.moves.urllib.parse as urlparse
 from validate_email import validate_email
 import voluptuous
 
 from monasca_api.v2.common.schemas import exceptions
 
-if sys.version_info >= (3,):
-    import urllib.parse as urlparse
-else:
-    import urlparse
-
 LOG = log.getLogger(__name__)
-ADDRESS_ERR_MESSAGE = "Address {} is not of correct format"
 
 schemes = ['http', 'https']
 
@@ -59,16 +53,20 @@ def validate(msg):
 
 def _validate_email(address):
     if not validate_email(address):
-        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+        raise exceptions.ValidationException("Address {} is not of correct format".format(address))
 
 
 def _validate_url(address):
     try:
         parsed = urlparse.urlparse(address)
-    except:
-        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+    except Exception:
+        raise exceptions.ValidationException("Address {} is not of correct format".format(address))
 
-    if not parsed.scheme or not parsed.netloc:
-        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+    if not parsed.scheme:
+        raise exceptions.ValidationException("Address {} does not have URL scheme".format(address))
+    if not parsed.netloc:
+        raise exceptions.ValidationException("Address {} does not have network location"
+                                             .format(address))
     if parsed.scheme not in schemes:
-        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+        raise exceptions.ValidationException("Address {} scheme is not in {}"
+                                             .format(address, schemes))
