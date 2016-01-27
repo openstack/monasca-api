@@ -284,9 +284,15 @@ function install_monasca_virtual_env {
 
     sudo mkdir -p /opt/monasca || true
 
-    (cd /opt/monasca ; sudo virtualenv .)
+    sudo chown $STACK_USER:monasca /opt/monasca
 
-    (cd /opt/monasca ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport simport)
+    (cd /opt/monasca ; virtualenv .)
+
+    PIP_VIRTUAL_ENV=/opt/monasca
+
+    pip_install --pre --allow-all-external --allow-unverified simport simport
+
+    unset PIP_VIRTUAL_ENV
 }
 
 function clean_monasca_virtual_env {
@@ -713,15 +719,21 @@ function install_monasca_api_python {
 
     sudo mkdir -p /opt/monasca-api
 
-    (cd /opt/monasca-api; sudo virtualenv .)
+    sudo chown $STACK_USER:monasca /opt/monasca-api
 
-    (cd /opt/monasca-api; sudo -H ./bin/pip install gunicorn)
+    (cd /opt/monasca-api; virtualenv .)
+
+    PIP_VIRTUAL_ENV=/opt/monasca-api
+
+    pip_install gunicorn
 
     (cd "${MONASCA_BASE}"/monasca-api ; sudo python setup.py sdist)
 
     MONASCA_API_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-api/dist/monasca-api-*.tar.gz)
 
-    (cd /opt/monasca-api ; sudo -H ./bin/pip install $MONASCA_API_SRC_DIST)
+    pip_install $MONASCA_API_SRC_DIST
+
+    unset PIP_VIRTUAL_ENV
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -825,6 +837,8 @@ function clean_monasca_api_python {
 
     sudo rm /var/log/upstart/monasca-api.log*
 
+    sudo rm -rf /opt/monasca-api
+
     sudo userdel mon-api
 
 }
@@ -904,9 +918,15 @@ function install_monasca_persister_python {
 
     sudo mkdir -p /opt/monasca-persister || true
 
-    (cd /opt/monasca-persister ; sudo virtualenv .)
+    sudo chown $STACK_USER:monasca /opt/monasca-persister
 
-    (cd /opt/monasca-persister ; sudo -H ./bin/pip install $MONASCA_PERSISTER_SRC_DIST)
+    (cd /opt/monasca-persister ; virtualenv .)
+
+    PIP_VIRTUAL_ENV=/opt/monasca-persister
+
+    pip_install $MONASCA_PERSISTER_SRC_DIST
+
+    unset PIP_VIRTUAL_ENV
 
     sudo useradd --system -g monasca mon-persister || true
 
@@ -1028,9 +1048,13 @@ function install_monasca_notification {
 
     MONASCA_NOTIFICATION_SRC_DIST=$(ls -td "${MONASCA_BASE}"/monasca-notification/dist/monasca-notification-*.tar.gz | head -1)
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install  --allow-unverified simport $MONASCA_NOTIFICATION_SRC_DIST)
+    PIP_VIRTUAL_ENV=/opt/monasca
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install mysql-python)
+    pip_install --allow-unverified simport $MONASCA_NOTIFICATION_SRC_DIST
+
+    pip_install mysql-python
+
+    unset PIP_VIRTUAL_ENV
 
     sudo useradd --system -g monasca mon-notification || true
 
@@ -1275,17 +1299,11 @@ function install_monasca_keystone_client {
 
     sudo apt-get -y install python-dev
 
-     if [[ ! -d "${MONASCA_BASE}"/python-keystoneclient ]]; then
+    PIP_VIRTUAL_ENV=/opt/monasca
 
-        sudo git clone https://git.openstack.org/openstack/python-keystoneclient "${MONASCA_BASE}"/python-keystoneclient
+    pip_install python-keystoneclient
 
-    fi
-
-    (cd "${MONASCA_BASE}"/python-keystoneclient ; sudo python setup.py sdist)
-
-    MONASCA_KEYSTONE_SRC_DIST=$(ls -td "${MONASCA_BASE}"/python-keystoneclient/dist/python-keystoneclient-*.tar.gz | head -1)
-
-    (cd /opt/monasca ; sudo -H ./bin/pip install $MONASCA_KEYSTONE_SRC_DIST)
+    unset PIP_VIRTUAL_ENV
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/keystone/create_monasca_service.py /usr/local/bin/create_monasca_service.py
 
@@ -1336,13 +1354,19 @@ function install_monasca_agent {
 
     sudo mkdir -p /opt/monasca-agent/
 
-    (cd /opt/monasca-agent ; sudo virtualenv .)
+    sudo chown $STACK_USER:monasca /opt/monasca-agent
 
-    (cd /opt/monasca-agent ; sudo -H ./bin/pip  install --pre --allow-all-external --allow-unverified simport simport)
+    (cd /opt/monasca-agent ; virtualenv .)
 
-    (cd /opt/monasca-agent ; sudo -H ./bin/pip install psutil==3.0.1)
+    PIP_VIRTUAL_ENV=/opt/monasca-agent
 
-    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
+    pip_install --pre --allow-all-external --allow-unverified simport simport
+
+    pip_install $MONASCA_AGENT_SRC_DIST
+
+    (cd /opt/monasca-agent ; ./bin/pip install psutil==3.0.1)
+
+    unset PIP_VIRTUAL_ENV
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
 
@@ -1404,6 +1428,8 @@ function clean_monasca_agent {
 
     sudo rm -rf /etc/monasca/agent
 
+    sudo rm -rf /opt/moansca-agent
+
     sudo apt-get -y purge libxslt1-dev
     sudo apt-get -y purge libxml2-dev
     sudo apt-get -y purge build-essential
@@ -1416,7 +1442,9 @@ function install_monasca_smoke_test {
 
     echo_summary "Install Monasca Smoke Test"
 
-    (cd /opt/monasca ; sudo -H ./bin/pip install mySQL-python)
+    PIP_VIRTUAL_ENV=/opt/monasca
+
+    pip_install mySQL-python
 
     sudo curl -L https://api.github.com/repos/hpcloud-mon/monasca-ci/tarball/master -o /opt/monasca/monasca-ci.tar.gz
 
@@ -1481,7 +1509,9 @@ function install_monasca_horizon_ui {
 
     sudo mkdir -p /opt/monasca-horizon-ui || true
 
-    (cd /opt/monasca-horizon-ui ; sudo virtualenv .)
+    sudo chown $STACK_USER:monasca /opt/monasca-horizon-ui
+
+    (cd /opt/monasca-horizon-ui ; virtualenv .)
 
     (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
 
