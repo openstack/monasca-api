@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
