@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014-2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -127,7 +127,7 @@ public class AlarmService {
       Map<String, AlarmSubExpression> subAlarms = repo.findAlarmSubExpressions(alarmId);
       String event =
           Serialization.toJson(new AlarmUpdatedEvent(alarmId, alarmDef.getId(),
-              tenantId, alarm.getMetrics(), subAlarms, newState, oldState));
+              tenantId, alarm.getMetrics(), subAlarms, newState, oldState, newLink, newLifecycleState));
       producer.send(new KeyedMessage<>(config.eventsTopic, String.valueOf(messageCount++), event));
 
       // Notify interested parties of transitioned alarm state
@@ -135,7 +135,7 @@ public class AlarmService {
         event =
             Serialization.toJson(new AlarmStateTransitionedEvent(tenantId, alarmId, alarmDef
                 .getId(), alarm.getMetrics(), alarmDef.getName(), alarmDef.getDescription(),
-                oldState, newState, alarmDef.getSeverity(), alarmDef.isActionsEnabled(),
+                oldState, newState, alarmDef.getSeverity(), newLink, newLifecycleState, alarmDef.isActionsEnabled(),
                 stateChangeReasonFor(oldState, newState), null, System.currentTimeMillis()));
         producer.send(new KeyedMessage<>(config.alarmStateTransitionsTopic, String.valueOf(messageCount++), event));
       }
