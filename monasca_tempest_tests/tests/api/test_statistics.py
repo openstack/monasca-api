@@ -24,6 +24,7 @@ from tempest import test
 from tempest_lib import exceptions
 
 NUM_MEASUREMENTS = 100
+MIN_REQUIRED_MEASUREMENTS = 2
 WAIT_TIME = 30
 metric_value1 = 1.23
 metric_value2 = 4.56
@@ -59,20 +60,24 @@ class TestStatistics(base.BaseMonascaTest):
         start_time_iso = helpers.timestamp_to_iso(cls._start_timestamp)
         cls._start_time_iso = start_time_iso
 
+        num_measurements = 0
         for i in xrange(constants.MAX_RETRIES):
             resp, response_body = cls.monasca_client.\
                 list_measurements(query_param)
             elements = response_body['elements']
             for element in elements:
-                if str(element['name']) == name and len(
-                        element['measurements']) == 2:
-                    cls._end_timestamp = cls._start_timestamp + 1000 * 3
-                    cls._end_time_iso = helpers.timestamp_to_iso(
-                        cls._end_timestamp)
-                    return
+                if str(element['name']) == name:
+                    if len(element['measurements']) >= MIN_REQUIRED_MEASUREMENTS:
+                        cls._end_timestamp = cls._start_timestamp + 1000 * 3
+                        cls._end_time_iso = helpers.timestamp_to_iso(
+                            cls._end_timestamp)
+                        return
+                    else:
+                        num_measurements = len(element['measurements'])
+                        break
             time.sleep(constants.RETRY_WAIT_SECS)
 
-        assert False, "Failed to find enough measurements to test"
+        assert False, "Required {} measurements, found {}".format(MIN_REQUIRED_MEASUREMENTS, num_measurements)
 
     @classmethod
     def resource_cleanup(cls):

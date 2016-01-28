@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 FUJITSU LIMITED
+ * Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.WebApplicationException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -346,53 +348,58 @@ public class AlarmSqlRepositoryImplTest {
   @Test(groups = "orm")
   public void shouldFind() {
 
-    checkList(repo.find("Not a tenant id", null, null, null, null, null, null, null, null, 1, false));
+    checkList(repo.find("Not a tenant id", null, null, null, null, null, null, null, null, null, 1, false));
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, null, null, null, 1, false), compoundAlarm);
+    checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, null, null, null, 1, false), compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("flavor_id", "222").build(), null, null, null,
-        null, null, 1, false), alarm1, alarm3);
+        null, null, null, 1, false), alarm1, alarm3);
 
     checkList(
         repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("service", "monitoring").put("hostname", "roland")
-            .build(), null, null, null, null, null, 1, false), compoundAlarm);
+            .build(), null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, null, null, null, 1, false), alarm2, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, null, null, null, null, 1, false), alarm2, compoundAlarm);
 
     checkList(
         repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", ImmutableMap.<String, String>builder()
-            .put("service", "monitoring").build(), null, null, null, null, null, 1, false), alarm1, alarm2);
+            .put("service", "monitoring").build(), null, null, null, null, null, null, 1, false), alarm1, alarm2);
 
-    checkList(repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, null, null, null, 1, false), alarm1,
+    checkList(repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, null, null, null, null, 1, false), alarm1,
         alarm2, alarm3);
 
     checkList(
-        repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, AlarmState.UNDETERMINED, null, null, null, null, 1, false),
+        repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, AlarmState.UNDETERMINED, null, null, null, null, null, 1, false),
         compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, null, null, null, 1, false), compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, null, null, null, null, 1, false), compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("service", "monitoring").build(),
-        AlarmState.UNDETERMINED, null, null, null, null, 1, false), alarm2, compoundAlarm);
+        AlarmState.UNDETERMINED, null, null, null, null, null, 1, false), alarm2, compoundAlarm);
 
     checkList(
         repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", ImmutableMap.<String, String>builder()
-            .put("service", "monitoring").build(), AlarmState.UNDETERMINED, null, null, null, null, 1, false), alarm2);
+            .put("service", "monitoring").build(), AlarmState.UNDETERMINED, null, null, null, null, null, 1, false), alarm2);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, 0, false));
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, null, 0, false));
 
     //checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
     //    compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, 1, false),
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, null, 1, false),
         alarm1, alarm2, alarm3, compoundAlarm);
 
+  }
+
+  @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
+  public void shouldFindThrowException() {
+    repo.find(TENANT_ID, null, null, null, null, null, null, null, Arrays.asList("severity", "state"), null, 1, true);
   }
 
   @Test(groups = "orm")

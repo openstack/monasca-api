@@ -12,9 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO(RMH): Validate whether a 200 or 201 should be returned and resolve.
-# TODO(RMH): Documentation says 200, but a 201 is being returned.
-
 import time
 
 from monasca_tempest_tests.tests.api import base
@@ -96,7 +93,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_notification_method_with_invalid_type(self):
         notification = helpers.create_notification(type='random')
-        self.assertRaises(exceptions.BadRequest,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
@@ -325,7 +322,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             notification)
         id = response_body['id']
         self.assertEqual(201, resp.status)
-        self.assertRaises(exceptions.BadRequest,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.update_notification_method, id,
                           name=response_body['name'], type='random',
                           address=response_body['address'])
@@ -344,10 +341,10 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         new_address_long = "x" * (
             constants.MAX_NOTIFICATION_METHOD_ADDRESS_LENGTH + 1)
-        self.assertRaises(exceptions.BadRequest,
+        self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.update_notification_method, id,
-                          name=response_body['name'], type=new_address_long,
-                          address=response_body['address'])
+                          name=response_body['name'], type=response_body['type'],
+                          address=new_address_long)
         resp, response_body = \
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)

@@ -189,8 +189,8 @@ valid_identifier_chars = (
 
 metric_name = (
     pyparsing.Word(valid_identifier_chars, min=1, max=255)("metric_name"))
-dimension_name = pyparsing.Word(valid_identifier_chars, min=1, max=255)
-dimension_value = pyparsing.Word(valid_identifier_chars, min=1, max=255)
+dimension_name = pyparsing.Word(valid_identifier_chars + ' ', min=1, max=255)
+dimension_value = pyparsing.Word(valid_identifier_chars + ' ', min=1, max=255)
 
 MINUS = pyparsing.Literal('-')
 integer_number = pyparsing.Word(pyparsing.nums)
@@ -289,6 +289,8 @@ def main():
         "3test_metric5 lt 3",
 
         "ntp.offset > 1 or ntp.offset < -5",
+
+        "max(3test_metric5{it's this=that's it}) lt 5 times 3",
     ]
 
     for expr in expr_list:
@@ -304,8 +306,8 @@ def main():
                 sub_expr.fmtd_sub_expr_str.encode('utf8')))
             print('sub_expr dimensions: {}'.format(
                 sub_expr.dimensions_str.encode('utf8')))
-            print()
-        print()
+            print("")
+        print("")
 
 
 if __name__ == "__main__":

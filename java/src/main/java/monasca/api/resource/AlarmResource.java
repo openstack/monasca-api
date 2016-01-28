@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- * 
+ * Copyright (c) 2014-2016 Hewlett Packard Enterprise Development Company, L.P.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -13,7 +13,9 @@
  */
 package monasca.api.resource;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.joda.time.DateTime;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +47,13 @@ import monasca.api.app.command.UpdateAlarmCommand;
 import monasca.api.app.validation.MetricNameValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.alarm.Alarm;
+import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistory;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
+import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.alarm.AlarmState;
 
 /**
@@ -60,6 +65,16 @@ public class AlarmResource {
   private final AlarmRepo repo;
   private final PersistUtils persistUtils;
   private final AlarmStateHistoryRepo stateHistoryRepo;
+
+  private final static List<String> ALLOWED_GROUP_BY = Arrays.asList("alarm_definition_id", "name",
+                                                                     "state", "severity", "link",
+                                                                     "lifecycle_state",
+                                                                     "metric_name", "dimension_name",
+                                                                     "dimension_value");
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id", "state",
+                                                                    "severity", "lifecycle_state", "link",
+                                                                    "state_updated_timestamp", "updated_timestamp",
+                                                                    "created_timestamp");
 
   @Inject
   public AlarmResource(AlarmService service, AlarmRepo repo,
@@ -91,7 +106,7 @@ public class AlarmResource {
 
   private Alarm fixAlarmLinks(UriInfo uriInfo, Alarm alarm) {
     Links.hydrate(alarm.getAlarmDefinition(), uriInfo,
-        AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
+                  AlarmDefinitionResource.ALARM_DEFINITIONS_PATH);
     return Links.hydrate(alarm, uriInfo, true);
   }
 
@@ -106,9 +121,9 @@ public class AlarmResource {
       throws Exception {
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<AlarmStateHistory> resource = stateHistoryRepo.findById(tenantId,
-        alarmId,
-        offset,
-        paging_limit
+                                                                       alarmId,
+                                                                       offset,
+                                                                       paging_limit
     );
     return Links.paginate(paging_limit, resource, uriInfo);
   }
@@ -142,11 +157,11 @@ public class AlarmResource {
 
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<AlarmStateHistory> resources = stateHistoryRepo.find(tenantId,
-        dimensions,
-        startTime,
-        endTime,
-        offset,
-        paging_limit
+                                                                    dimensions,
+                                                                    startTime,
+                                                                    endTime,
+                                                                    offset,
+                                                                    paging_limit
     );
     return Links.paginate(paging_limit, resources, uriInfo);
   }
@@ -162,6 +177,7 @@ public class AlarmResource {
       @QueryParam("lifecycle_state") String lifecycleState,
       @QueryParam("link") String link,
       @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
+      @QueryParam("sort_by") String sortBy,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit)
       throws Exception {
@@ -174,9 +190,14 @@ public class AlarmResource {
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);
 
+    List<String> sortByList = Validation.parseAndValidateSortBy(sortBy, ALLOWED_SORT_BY);
+    if (!Strings.isNullOrEmpty(offset)) {
+      Validation.parseAndValidateNumber(offset, "offset");
+    }
+
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
-                                         lifecycleState, link, stateUpdatedStart,
+                                         lifecycleState, link, stateUpdatedStart, sortByList,
                                          offset, paging_limit, true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(
@@ -185,8 +206,10 @@ public class AlarmResource {
           AlarmDefinitionResource.ALARM_DEFINITIONS_PATH
       );
     }
-    return Links.paginate(paging_limit, Links.hydrate(alarms, uriInfo), uriInfo);
+    return Links.paginateAlarming(paging_limit, Links.hydrate(alarms, uriInfo), uriInfo);
   }
+
+
 
   @PATCH
   @Timed
@@ -219,5 +242,63 @@ public class AlarmResource {
     Validation.validateLink(command.link);
 
     return fixAlarmLinks(uriInfo, service.update(tenantId, alarmId, command));
+  }
+
+  @GET
+  @Timed
+  @Path("/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Object getCount(@Context UriInfo uriInfo,
+                         @HeaderParam("X-Tenant-Id") String tenantId, @PathParam("alarm_id") String alarmId,
+                         @QueryParam("alarm_definition_id") String alarmDefId,
+                         @QueryParam("metric_name") String metricName,
+                         @QueryParam("metric_dimensions") String metricDimensionsStr,
+                         @QueryParam("state") AlarmState state,
+                         @QueryParam("lifecycle_state") String lifecycleState,
+                         @QueryParam("link") String link,
+                         @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
+                         @QueryParam("group_by") String groupByStr,
+                         @QueryParam("offset") String offset,
+                         @QueryParam("limit") String limit)
+      throws Exception {
+    Map<String, String> metricDimensions =
+        Strings.isNullOrEmpty(metricDimensionsStr) ? null : Validation
+            .parseAndValidateDimensions(metricDimensionsStr);
+    MetricNameValidation.validate(metricName, false);
+    DateTime stateUpdatedStart =
+        Validation.parseAndValidateDate(stateUpdatedStartStr,
+                                        "state_updated_start_time", false);
+    List<String> groupBy = (Strings.isNullOrEmpty(groupByStr)) ? null : parseAndValidateGroupBy(
+        groupByStr);
+
+    if (offset != null) {
+      Validation.parseAndValidateNumber(offset, "offset");
+    }
+
+    final int paging_limit = this.persistUtils.getLimit(limit);
+    final AlarmCount resource = repo.getAlarmsCount(tenantId,
+                                                    alarmDefId,
+                                                    metricName,
+                                                    metricDimensions,
+                                                    state,
+                                                    lifecycleState,
+                                                    link,
+                                                    stateUpdatedStart,
+                                                    groupBy,
+                                                    offset,
+                                                    paging_limit);
+    Links.paginateAlarmCount(resource, paging_limit, uriInfo);
+    return resource;
+  }
+
+  private List<String> parseAndValidateGroupBy(String groupByStr) {
+    List<String> groupBy = null;
+    if (!Strings.isNullOrEmpty(groupByStr)) {
+      groupBy = Lists.newArrayList(Splitter.on(',').omitEmptyStrings().trimResults().split(groupByStr));
+      if (!ALLOWED_GROUP_BY.containsAll(groupBy)) {
+        throw Exceptions.unprocessableEntity("Unprocessable Entity", "Invalid group_by field");
+      }
+    }
+    return groupBy;
   }
 }

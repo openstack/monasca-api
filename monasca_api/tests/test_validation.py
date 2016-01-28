@@ -1,5 +1,6 @@
 # Copyright 2015 Hewlett-Packard
 # Copyright 2015 Cray Inc. All Rights Reserved.
+# Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,6 +15,8 @@
 # under the License.
 
 import falcon
+import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
+import monasca_api.v2.common.schemas.notifications_request_body_schema as schemas_notifications
 import monasca_api.v2.common.validation as validation
 import monasca_api.v2.reference.helpers as helpers
 
@@ -21,7 +24,7 @@ import mock
 
 import unittest
 
-invalid_chars = "<>={}(),'\"\\;&"
+invalid_chars = "<>={}(),\"\\|;&"
 
 
 class TestMetricNameValidation(unittest.TestCase):
@@ -171,3 +174,95 @@ class TestTimestampsValidation(unittest.TestCase):
             falcon.HTTPBadRequest,
             helpers.validate_start_end_timestamps,
             start_timestamp, end_timestamp)
+
+
+class TestConvertTimeString(unittest.TestCase):
+
+    def test_valid_date_time_string(self):
+        date_time_string = '2015-01-01T00:00:00Z'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400., timestamp)
+
+    def test_valid_date_time_string_with_mills(self):
+        date_time_string = '2015-01-01T00:00:00.025Z'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400.025, timestamp)
+
+    def test_valid_date_time_string_with_timezone(self):
+        date_time_string = '2015-01-01T09:00:00+09:00'
+
+        timestamp = helpers._convert_time_string(date_time_string)
+        self.assertEqual(1420070400., timestamp)
+
+    def test_invalid_date_time_string(self):
+        date_time_string = '2015-01-01T00:00:000Z'
+
+        self.assertRaises(
+            ValueError,
+            helpers._convert_time_string, date_time_string)
+
+
+class TestNotificationValidation(unittest.TestCase):
+
+    def test_validation_for_email(self):
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_email(self):
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
+
+    def test_validation_for_webhook(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_webhook(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://localhost"}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
+
+    def test_validation_for_pagerduty(self):
+        notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
+                        "address": "nzH2LVRdMzun11HNC2oD"}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_for_max_name_address(self):
+        name = "A" * 250
+        self.assertEqual(250, len(name))
+        address = "http://" + "A" * 502 + ".io"
+        self.assertEqual(512, len(address))
+        notification = {"name": name, "type": "WEBHOOK", "address": address}
+        try:
+            schemas_notifications.validate(notification)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_exception_for_exceeded_name_length(self):
+        name = "A" * 251
+        self.assertEqual(251, len(name))
+        notification = {"name": name, "type": "WEBHOOK", "address": "http://somedomain.com"}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)
+
+    def test_validation_exception_for_exceeded_address_length(self):
+        address = "http://" + "A" * 503 + ".io"
+        self.assertEqual(513, len(address))
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": address}
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_notifications.validate, notification)

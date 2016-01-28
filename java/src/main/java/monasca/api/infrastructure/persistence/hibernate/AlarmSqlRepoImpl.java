@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 FUJITSU LIMITED
+ * Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +39,9 @@ import org.slf4j.LoggerFactory;
 
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
+import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.alarm.AlarmRepo;
+import monasca.api.resource.exception.Exceptions;
 import monasca.common.hibernate.db.AlarmDb;
 import monasca.common.hibernate.db.SubAlarmDb;
 import monasca.common.hibernate.type.BinaryId;
@@ -148,8 +151,12 @@ public class AlarmSqlRepoImpl
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
                           String lifecycleState, String link, DateTime stateUpdatedStart,
+                          List<String> sortBy,
                           String offset, int limit, boolean enforceLimit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering");
+    if (sortBy != null && !sortBy.isEmpty()) {
+      throw Exceptions.unprocessableEntity("Sort_by is not implemented for the hibernate database type");
+    }
 
     List<Alarm> alarms = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
         lifecycleState, link, stateUpdatedStart, offset, (3 * limit / 2), enforceLimit);
@@ -522,5 +529,14 @@ public class AlarmSqlRepoImpl
     }
 
     return subAlarms;
+  }
+
+  @Override
+  public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
+                                   Map<String, String> metricDimensions, AlarmState state,
+                                   String lifecycleState, String link, DateTime stateUpdatedStart,
+                                   List<String> groupBy, String offset, int limit) {
+    // Not Implemented
+    return null;
   }
 }

@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -80,9 +80,10 @@ class Alarming(object):
         metric = {u'name': alarm_metric_row['name'],
                   u'dimensions': dimensions}
 
-        for dimension in alarm_metric_row['dimensions'].split(','):
-            parsed_dimension = dimension.split('=')
-            dimensions[parsed_dimension[0]] = parsed_dimension[1]
+        if alarm_metric_row['dimensions']:
+            for dimension in alarm_metric_row['dimensions'].split(','):
+                parsed_dimension = dimension.split('=')
+                dimensions[parsed_dimension[0]] = parsed_dimension[1]
 
         return metric
 

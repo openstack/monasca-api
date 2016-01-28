@@ -32,8 +32,12 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
     def resource_setup(cls):
         super(BaseMonascaTest, cls).resource_setup()
         auth_version = CONF.identity.auth_version
-        cred_provider = credentials_factory.LegacyCredentialProvider(auth_version)
-        credentials = cred_provider.get_primary_creds()
+        cls.cred_provider = credentials_factory.get_credentials_provider(
+            cls.__name__,
+            force_tenant_isolation=True,
+            identity_version=auth_version)
+        credentials = cls.cred_provider.get_creds_by_roles(
+            ['monasca-user', 'anotherrole'])
         cls.os = clients.Manager(credentials=credentials)
         cls.monasca_client = cls.os.monasca_client
 
@@ -71,3 +75,4 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
                 for element in elements:
                     id = element['id']
                     cls.monasca_client.delete_alarm(id)
+        cls.cred_provider.clear_creds()

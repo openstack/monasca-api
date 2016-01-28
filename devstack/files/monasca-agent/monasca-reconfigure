@@ -1,5 +1,5 @@
 #!/bin/sh
-'/opt/monasca/bin/monasca-setup' \
+'/opt/monasca-agent/bin/monasca-setup' \
     -u 'monasca-agent' \
     -p 'password' \
      -s 'monitoring'  \

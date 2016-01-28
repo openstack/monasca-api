@@ -95,12 +95,12 @@ middleware:
   connRetryInterval: 50
   defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user, admin]
   agentAuthorizedRoles: [monasca-agent]
-  adminAuthMethod: token
+  adminAuthMethod: password
   adminUser: "admin"
   adminPassword: "secretadmin"
   adminProjectId:
-  adminProjectName:
-  adminToken: "111222333444"
+  adminProjectName: "admin"
+  adminToken:
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576
 

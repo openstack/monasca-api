@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014-2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,8 +13,13 @@
  */
 package monasca.api.infrastructure.persistence.mysql;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarm.Alarm;
+import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.PersistUtils;
@@ -46,6 +51,7 @@ import javax.inject.Named;
  */
 public class AlarmMySqlRepoImpl implements AlarmRepo {
 
+  private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
@@ -53,7 +59,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final String FIND_ALARM_BY_ID_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.id as alarm_id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
       + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
       + "md.name as metric_name, mdg.dimensions as metric_dimensions from alarm as a "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
@@ -66,18 +72,18 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final String FIND_ALARMS_SQL =
       "select ad.id as alarm_definition_id, ad.severity, ad.name as alarm_definition_name, "
-      + "a.id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
+      + "a.id as alarm_id, a.state, a.lifecycle_state, a.link, a.state_updated_at as state_updated_timestamp, "
       + "a.updated_at as updated_timestamp, a.created_at as created_timestamp, "
       + "md.name as metric_name, group_concat(mdim.name, '=', mdim.value order by mdim.name) as metric_dimensions "
       + "from alarm as a "
-      + "inner join %s as alarm_id_list on alarm_id_list.id = a.id "
+      + "inner join %1$s as alarm_id_list on alarm_id_list.id = a.id "
       + "inner join alarm_definition ad on ad.id = a.alarm_definition_id "
       + "inner join alarm_metric as am on am.alarm_id = a.id "
       + "inner join metric_definition_dimensions as mdd on mdd.id = am.metric_definition_dimensions_id "
       + "inner join metric_definition as md on md.id = mdd.metric_definition_id "
       + "left outer join metric_dimension as mdim on mdim.dimension_set_id = mdd.metric_dimension_set_id "
       + "group by a.id, md.name, mdim.dimension_set_id "
-      + "order by a.id ASC";
+      + "%2$s";
 
   @Inject
   public AlarmMySqlRepoImpl(@Named("mysql") DBI db, PersistUtils persistUtils) {
@@ -90,15 +96,28 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
     if (dimensions == null) {
       return;
     }
-
-    for (int i = 0; i < dimensions.size(); i++) {
+    int i = 0;
+    for (String dimension_key : dimensions.keySet()) {
       final String indexStr = String.valueOf(i);
       sbJoin.append(" inner join metric_dimension md").append(indexStr).append(" on md")
           .append(indexStr)
-          .append(".name = :dname").append(indexStr).append(" and md").append(indexStr)
-          .append(".value = :dvalue").append(indexStr)
-          .append(" and mdd.metric_dimension_set_id = md")
+          .append(".name = :dname").append(indexStr);
+      String dim_value = dimensions.get(dimension_key);
+      if (!Strings.isNullOrEmpty(dim_value)) {
+        sbJoin.append(" and (");
+        List<String> values = Splitter.on('|').splitToList(dim_value);
+        for (int j = 0; j < values.size(); j++) {
+          sbJoin.append(" md").append(indexStr)
+              .append(".value = :dvalue").append(indexStr).append('_').append(j);
+          if (j < values.size() - 1) {
+            sbJoin.append(" or");
+          }
+        }
+        sbJoin.append(")");
+      }
+      sbJoin.append(" and mdd.metric_dimension_set_id = md")
           .append(indexStr).append(".dimension_set_id");
+      i++;
     }
   }
 
@@ -116,8 +135,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
-                          String lifecycleState, String link, DateTime stateUpdatedStart, String offset,
-                          int limit, boolean enforceLimit) {
+                          String lifecycleState, String link, DateTime stateUpdatedStart,
+                          List<String> sortBy, String offset, int limit, boolean enforceLimit) {
 
     StringBuilder
         sbWhere =
@@ -174,19 +193,32 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
     }
 
-    if (offset != null) {
-      sbWhere.append(" and a.id > :offset");
+    StringBuilder sortByClause = new StringBuilder();
+    if (sortBy != null && !sortBy.isEmpty()) {
+      sortByClause.append(" order by ");
+      sortByClause.append(COMMA_JOINER.join(sortBy));
+      // if alarm_id is not in the list, add it
+      if (sortByClause.indexOf("alarm_id") == -1) {
+        sortByClause.append(",alarm_id ASC");
+      }
+      sortByClause.append(' ');
+    } else {
+      sortByClause.append(" order by alarm_id ASC ");
     }
-
-    sbWhere.append(" order by a.id ASC ");
 
     if (enforceLimit && limit > 0) {
       sbWhere.append(" limit :limit");
     }
 
+    if (offset != null) {
+      sbWhere.append(" offset ");
+      sbWhere.append(offset);
+      sbWhere.append(' ');
+    }
+
     sbWhere.append(")");
 
-    String sql = String.format(FIND_ALARMS_SQL, sbWhere);
+    String sql = String.format(FIND_ALARMS_SQL, sbWhere, sortByClause);
 
     try (Handle h = db.open()) {
 
@@ -214,10 +246,6 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       if (stateUpdatedStart != null) {
         q.bind("stateUpdatedStart", stateUpdatedStart.toString());
-      }
-
-      if (offset != null) {
-        q.bind("offset", offset);
       }
 
       if (enforceLimit && limit > 0) {
@@ -261,7 +289,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
     final List<Alarm> alarms = new LinkedList<>();
     List<MetricDefinition> alarmedMetrics = null;
     for (final Map<String, Object> row : rows) {
-      final String alarmId = (String) row.get("id");
+      final String alarmId = (String) row.get("alarm_id");
       if (!alarmId.equals(previousAlarmId)) {
         alarmedMetrics = new ArrayList<>();
         alarm =
@@ -399,5 +427,192 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       return subAlarms;
     }
+  }
+
+  @Override
+  public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
+                                   Map<String, String> metricDimensions, AlarmState state,
+                                   String lifecycleState, String link, DateTime stateUpdatedStart,
+                                   List<String> groupBy, String offset, int limit) {
+    final String SELECT_CLAUSE = "SELECT count(*) as count%1$s "
+                                 + " FROM alarm AS a "
+                                 + " INNER JOIN alarm_definition as ad on ad.id = a.alarm_definition_id ";
+
+    StringBuilder queryBuilder = new StringBuilder();
+
+    String groupByStr = "";
+    String metricSelect;
+    if (groupBy != null) {
+      groupByStr = COMMA_JOINER.join(groupBy);
+      queryBuilder.append(String.format(SELECT_CLAUSE, ',' + groupByStr));
+
+      if (groupBy.contains("metric_name") || groupBy.contains("dimension_name") || groupBy
+          .contains("dimension_value")) {
+        metricSelect = " INNER JOIN (SELECT distinct am.alarm_id%1$s "
+                       + "FROM metric_definition AS md "
+                       + "JOIN metric_definition_dimensions AS mdd on md.id = mdd.metric_definition_id "
+                       + "JOIN metric_dimension AS mdim ON mdd.metric_dimension_set_id = mdim.dimension_set_id "
+                       + "JOIN alarm_metric AS am ON am.metric_definition_dimensions_id = mdd.id)"
+                       + "AS metrics ON a.id = metrics.alarm_id ";
+        String subSelect = "";
+        if (groupBy.contains("metric_name")) {
+          subSelect = subSelect + ",md.name AS metric_name";
+        }
+        if (groupBy.contains("dimension_name")) {
+          subSelect = subSelect + ",mdim.name AS dimension_name";
+        }
+        if (groupBy.contains("dimension_value")) {
+          subSelect = subSelect + ",mdim.value AS dimension_value";
+        }
+
+        queryBuilder.append(String.format(metricSelect, subSelect));
+      }
+    } else {
+      queryBuilder.append(String.format(SELECT_CLAUSE, groupByStr));
+    }
+
+
+    queryBuilder.append(" INNER JOIN (SELECT a.id "
+                        + "FROM alarm AS a, alarm_definition AS ad "
+                        + "WHERE ad.id = a.alarm_definition_id "
+                        + "  AND ad.deleted_at IS NULL "
+                        + "  AND ad.tenant_id = :tenantId ");
+
+    if (alarmDefId != null) {
+      queryBuilder.append(" AND ad.id = :alarmDefId ");
+    }
+
+    if (metricName != null) {
+
+      queryBuilder.append(" AND a.id IN (SELECT distinct a.id FROM alarm AS a "
+                     + "INNER JOIN alarm_metric AS am ON am.alarm_id = a.id "
+                     + "INNER JOIN metric_definition_dimensions AS mdd "
+                     + "  ON mdd.id = am.metric_definition_dimensions_id "
+                     + "INNER JOIN (SELECT distinct id FROM metric_definition "
+                     + "            WHERE name = :metricName) AS md "
+                     + "  ON md.id = mdd.metric_definition_id ");
+
+      buildJoinClauseFor(metricDimensions, queryBuilder);
+
+      queryBuilder.append(")");
+
+    } else if (metricDimensions != null) {
+
+      queryBuilder.append(" AND a.id IN (SELECT distinct a.id FROM alarm AS a "
+                     + "INNER JOIN alarm_metric AS am ON am.alarm_id = a.id "
+                     + "INNER JOIN metric_definition_dimensions AS mdd "
+                     + "  ON mdd.id = am.metric_definition_dimensions_id ");
+
+      buildJoinClauseFor(metricDimensions, queryBuilder);
+
+      queryBuilder.append(")");
+
+    }
+
+    if (state != null) {
+      queryBuilder.append(" AND a.state = :state");
+    }
+
+    if (lifecycleState != null) {
+      queryBuilder.append(" AND a.lifecycle_state = :lifecycleState");
+    }
+
+    if (link != null) {
+      queryBuilder.append(" AND a.link = :link");
+    }
+
+    if (stateUpdatedStart != null) {
+      queryBuilder.append(" AND a.state_updated_at >= :stateUpdatedStart");
+    }
+
+    queryBuilder.append(") AS alarm_id_list ON alarm_id_list.id = a.id ");
+
+    if (groupBy != null) {
+      queryBuilder.append(" GROUP BY ");
+      queryBuilder.append(groupByStr);
+    }
+
+    queryBuilder.append(" ORDER BY ");
+    if (!Strings.isNullOrEmpty(groupByStr)) {
+      queryBuilder.append(groupByStr);
+    } else {
+      queryBuilder.append(" a.id ");
+    }
+
+    queryBuilder.append(" LIMIT :limit");
+
+    if (offset != null) {
+      queryBuilder.append(String.format(" OFFSET %1$s ", offset));
+    }
+
+
+
+    try (Handle h = db.open()) {
+
+      final Query<Map<String, Object>> q = h.createQuery(queryBuilder.toString()).bind("tenantId", tenantId);
+
+      if (alarmDefId != null) {
+        q.bind("alarmDefId", alarmDefId);
+      }
+
+      if (metricName != null) {
+        q.bind("metricName", metricName);
+      }
+
+      if (state != null) {
+        q.bind("state", state.name());
+      }
+
+      if (lifecycleState != null) {
+        q.bind("lifecycleState", lifecycleState);
+      }
+
+      if (link != null) {
+        q.bind("link", link);
+      }
+
+      if (stateUpdatedStart != null) {
+        q.bind("stateUpdatedStart", stateUpdatedStart.toString());
+      }
+
+      q.bind("limit", limit + 1);
+
+      DimensionQueries.bindDimensionsToQuery(q, metricDimensions);
+
+      final List<Map<String, Object>> rows = q.list();
+
+      return createAlarmCounts(groupBy, rows);
+
+    }
+  }
+
+  private AlarmCount createAlarmCounts(List<String> groupBy, List<Map<String, Object>> rows) {
+    List<List<Object>> counts = new ArrayList<>();
+
+    // if no results, return 0 and fill columns with null
+    if (rows.size() == 0) {
+      List<Object> countsAndTags =  new ArrayList<>();
+      countsAndTags.add(0);
+      if (groupBy != null) {
+        for (final String columnName : groupBy) {
+          countsAndTags.add(null);
+        }
+      }
+      counts.add(countsAndTags);
+      return new AlarmCount(groupBy, counts);
+    }
+
+    for (final Map<String, Object> row : rows) {
+      List<Object> countAndTags = new ArrayList<>();
+      countAndTags.add(row.get("count"));
+      if (groupBy != null && !groupBy.isEmpty()) {
+        for (final String columnName : groupBy) {
+          countAndTags.add(row.get(columnName));
+        }
+      }
+      counts.add(countAndTags);
+    }
+
+    return new AlarmCount(groupBy, counts);
   }
 }

@@ -22,6 +22,7 @@ Document Version: v2.0
       - [More Complex Example](#more-complex-example)
       - [Compound alarm example](#compound-alarm-example)
     - [Changing Alarm Definitions](#changing-alarm-definitions)
+  - [Notification Methods](#notification-methods)
 - [Common Request Headers](#common-request-headers)
   - [Common Http Request Headers](#common-http-request-headers)
   - [Non-standard request headers](#non-standard-request-headers)
@@ -32,7 +33,7 @@ Document Version: v2.0
 - [JSON Results](#json-results)
 - [Versions](#versions)
   - [List Versions](#list-versions)
-    - [GET](#get)
+    - [GET /](#get-)
       - [Headers](#headers)
       - [Path Parameters](#path-parameters)
       - [Query Parameters](#query-parameters)
@@ -114,7 +115,7 @@ Document Version: v2.0
       - [Status Code](#status-code-4)
       - [Response Body](#response-body-6)
       - [Response Examples](#response-examples-5)
-- [Notification Methods](#notification-methods)
+- [Notification Methods](#notification-methods-1)
   - [Create Notification Method](#create-notification-method)
     - [POST /v2.0/notification-methods](#post-v20notification-methods)
       - [Headers](#headers-7)
@@ -234,6 +235,7 @@ Document Version: v2.0
     - [Response](#response-17)
       - [Status Code](#status-code-15)
       - [Response Body](#response-body-17)
+- [Alarms](#alarms)
   - [List Alarms](#list-alarms)
     - [GET /v2.0/alarms](#get-v20alarms)
       - [Headers](#headers-18)
@@ -245,18 +247,19 @@ Document Version: v2.0
       - [Status Code](#status-code-16)
       - [Response Body](#response-body-18)
       - [Response Examples](#response-examples-15)
-  - [List Alarms State History](#list-alarms-state-history)
-    - [GET /v2.0/alarms/state-history](#get-v20alarmsstate-history)
+  - [Get Alarm Counts](#get-alarm-counts)
+    - [GET /v2.0/alarms/count](#get-v20alarmscount)
       - [Headers](#headers-19)
       - [Path Parameters](#path-parameters-19)
       - [Query Parameters](#query-parameters-19)
       - [Request Body](#request-body-19)
+      - [Request Examples](#request-examples-18)
     - [Response](#response-19)
       - [Status Code](#status-code-17)
       - [Response Body](#response-body-19)
-      - [Response Examples](#response-examples-16)
-  - [Get Alarm](#get-alarm)
-    - [GET /v2.0/alarms/{alarm_id}](#get-v20alarmsalarm_id)
+      - [Response Example](#response-example)
+  - [List Alarms State History](#list-alarms-state-history)
+    - [GET /v2.0/alarms/state-history](#get-v20alarmsstate-history)
       - [Headers](#headers-20)
       - [Path Parameters](#path-parameters-20)
       - [Query Parameters](#query-parameters-20)
@@ -264,20 +267,19 @@ Document Version: v2.0
     - [Response](#response-20)
       - [Status Code](#status-code-18)
       - [Response Body](#response-body-20)
-      - [Response Examples](#response-examples-17)
-  - [Update Alarm](#update-alarm)
-    - [PUT /v2.0/alarms/{alarm_id}](#put-v20alarmsalarm_id)
+      - [Response Examples](#response-examples-16)
+  - [Get Alarm](#get-alarm)
+    - [GET /v2.0/alarms/{alarm_id}](#get-v20alarmsalarm_id)
       - [Headers](#headers-21)
       - [Path Parameters](#path-parameters-21)
       - [Query Parameters](#query-parameters-21)
       - [Request Body](#request-body-21)
-      - [Request Examples](#request-examples-18)
     - [Response](#response-21)
       - [Status Code](#status-code-19)
       - [Response Body](#response-body-21)
-      - [Response Examples](#response-examples-18)
-  - [Patch Alarm](#patch-alarm)
-    - [PATCH /v2.0/alarms/{alarm_id}](#patch-v20alarmsalarm_id)
+      - [Response Examples](#response-examples-17)
+  - [Update Alarm](#update-alarm)
+    - [PUT /v2.0/alarms/{alarm_id}](#put-v20alarmsalarm_id)
       - [Headers](#headers-22)
       - [Path Parameters](#path-parameters-22)
       - [Query Parameters](#query-parameters-22)
@@ -286,9 +288,9 @@ Document Version: v2.0
     - [Response](#response-22)
       - [Status Code](#status-code-20)
       - [Response Body](#response-body-22)
-      - [Response Examples](#response-examples-19)
-  - [Delete Alarm](#delete-alarm)
-    - [DELETE /v2.0/alarms/{alarm_id}](#delete-v20alarmsalarm_id)
+      - [Response Examples](#response-examples-18)
+  - [Patch Alarm](#patch-alarm)
+    - [PATCH /v2.0/alarms/{alarm_id}](#patch-v20alarmsalarm_id)
       - [Headers](#headers-23)
       - [Path Parameters](#path-parameters-23)
       - [Query Parameters](#query-parameters-23)
@@ -297,16 +299,27 @@ Document Version: v2.0
     - [Response](#response-23)
       - [Status Code](#status-code-21)
       - [Response Body](#response-body-23)
-  - [List Alarm State History](#list-alarm-state-history)
-    - [GET /v2.0/alarms/{alarm_id}/state-history](#get-v20alarmsalarm_idstate-history)
+      - [Response Examples](#response-examples-19)
+  - [Delete Alarm](#delete-alarm)
+    - [DELETE /v2.0/alarms/{alarm_id}](#delete-v20alarmsalarm_id)
       - [Headers](#headers-24)
       - [Path Parameters](#path-parameters-24)
       - [Query Parameters](#query-parameters-24)
       - [Request Body](#request-body-24)
-      - [Request Data](#request-data)
+      - [Request Examples](#request-examples-21)
     - [Response](#response-24)
       - [Status Code](#status-code-22)
       - [Response Body](#response-body-24)
+  - [List Alarm State History](#list-alarm-state-history)
+    - [GET /v2.0/alarms/{alarm_id}/state-history](#get-v20alarmsalarm_idstate-history)
+      - [Headers](#headers-25)
+      - [Path Parameters](#path-parameters-25)
+      - [Query Parameters](#query-parameters-25)
+      - [Request Body](#request-body-25)
+      - [Request Data](#request-data)
+    - [Response](#response-25)
+      - [Status Code](#status-code-23)
+      - [Response Body](#response-body-25)
       - [Response Examples](#response-examples-20)
 - [License](#license)
 
@@ -979,7 +992,7 @@ None.
 #### Query Parameters
 * tenant_id (string, optional, restricted) - Tenant ID to from which to get metrics. This parameter can be used to get metrics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * name (string(255), optional) - A metric name to filter metrics by.
-* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
+* dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
 * start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.  This is useful for only listing metrics that have measurements since the specified start_time.
 * end_time (string, optional) - The end time in ISO 8601 combined date and time format in UTC.  Combined with start_time, this can be useful to only list metrics that have measurements in between the specified start_time and end_time.
 * offset (integer (InfluxDB) or hexadecimal string (Vertica), optional)
@@ -1371,7 +1384,7 @@ Cache-Control: no-cache
 ### Response
 
 #### Status Code
-* 200 - OK
+* 201 - Created
 
 #### Response Body
 Returns a JSON notification method object with the following fields:
@@ -1772,9 +1785,11 @@ None.
 
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
-* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
-* offset (string, optional)
+* dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
+* offset (integer, optional)
 * limit (integer, optional)
+* sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'id', 'created_at'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
+Allowed fields for sort_by are: 'id', 'name', 'severity', 'updated_at', 'created_at'
 
 #### Request Body
 None.
@@ -2217,6 +2232,9 @@ Cache-Control: no-cache
 None.
 ___
 
+# Alarms
+Operations for working with alarms.
+
 ## List Alarms
 List alarms
 
@@ -2233,13 +2251,15 @@ None.
 
 * alarm_definition_id (string, optional) - Alarm definition ID to filter by.
 * metric_name (string(255), optional) - Name of metric to filter by.
-* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`
+* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
 * link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
-* offset (string, optional)
+* offset (integer, optional)
 * limit (integer, optional)
+* sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'alarm_id'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
+Allowed fields for sort_by are: 'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link', 'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'
 
 #### Request Body
 None.
@@ -2262,7 +2282,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 
 * id (string) - ID of alarm.
 * links ([link]) - Links to alarm.
-* alarm_definition_id (string) - Name of alarm.
+* alarm_definition (JSON object) - Summary of alarm definition.
 * metrics ({string, string(255): string(255)}) - The metrics associated with the alarm.
 * state (string) - State of alarm, either `OK`, `ALARM` or `UNDETERMINED`.
 * lifecycle_state (string) - Lifecycle state of alarm.
@@ -2325,6 +2345,78 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
         }
     ]
 }
+```
+___
+
+##Get Alarm Counts
+Get the number of alarms that match the criteria.
+
+###GET /v2.0/alarms/count
+
+####Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Content-Type (string, required) - application/json
+* Accept (string) - application/json
+
+####Path Parameters
+None
+
+####Query Parameters
+* alarm_definition_id (string, optional) - Alarm definition ID to filter by.
+* metric_name (string(255), optional) - Name of metric to filter by.
+* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1,...`
+* state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* lifecycle_state (string(50), optional) - Lifecycle state to filter by.
+* link (string(512), optional) - Link to filter by.
+* state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
+* offset (integer, optional)
+* limit (integer, optional)
+* group_by (string, optional) – a list of fields to group the results by as ```field1,field2,…```
+The group_by field is limited to `alarm_definition_id`, `name`, `state`, `severity`, `link`, `lifecycle_state`, `metric_name`, `dimension_name`, `dimension_value`.
+If any of the fields `metric_name`, `dimension_name`, or `dimension_value` are specified, the sum of the resulting counts is not guaranteed to equal the total number of alarms in the system. Alarms with multiple metrics may be included in multiple counts when grouped by any of these three fields.
+
+####Request Body
+None
+
+####Request Examples
+```
+GET /v2.0/alarms/count?metric_name=cpu.system_perc&metric_dimensions=hostname:devstack&group_by=state,lifecycle_state
+HTTP/1.1 Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+```
+
+###Response
+####Status Code
+* 200 OK
+
+####Response Body
+Returns a JSON object containing the following fields:
+* links ([link]) - Links to alarms count resource
+* columns ([string]) - List of the column names, in the order they were returned
+* counts ([array[]]) - A two dimensional array of the counts returned
+
+####Response Example
+```
+{
+       "links": [
+           {
+               "rel": "self",
+               "href": "http://192.168.10.4:8080/v2.0/alarms/count?name=cpu.system_perc&dimensions=hostname%3Adevstack&group_by=state,lifecycle_state"
+           }
+       ],
+       "columns": ["count", "state", "lifecycle_state"],
+       "counts": [
+           [124, "ALARM", "ACKNOWLEDGED"],
+           [12, "ALARM", "RESOLVED"],
+           [235, "OK", "OPEN"],
+           [61, "OK", "RESOLVED"],
+           [13, "UNDETERMINED", "ACKNOWLEDGED"],
+           [1, "UNDETERMINED", "OPEN"],
+           [2, "UNDETERMINED", "RESOLVED"],
+       ]
+   }
 ```
 ___
 

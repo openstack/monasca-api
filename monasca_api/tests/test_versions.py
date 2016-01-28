@@ -31,11 +31,11 @@ class TestVersions(testing.TestBase):
         result = self.simulate_request('/versions')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         response = json.loads(result[0])
-        self.assertTrue(isinstance(response, dict))
+        self.assertIsInstance(response, dict)
         self.assertTrue(set(['links', 'elements']) ==
                         set(response))
         links = response['links']
-        self.assertTrue(isinstance(links, list))
+        self.assertIsInstance(links, list)
         link = links[0]
         self.assertTrue(set(['rel', 'href']) ==
                         set(link))
@@ -46,7 +46,7 @@ class TestVersions(testing.TestBase):
         result = self.simulate_request('/versions/v2.0')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         response = json.loads(result[0])
-        self.assertTrue(isinstance(response, dict))
+        self.assertIsInstance(response, dict)
         version = response
         self.assertTrue(set(['id', 'links', 'status', 'updated']) ==
                         set(version))
@@ -54,9 +54,9 @@ class TestVersions(testing.TestBase):
         self.assertEqual(version['status'], u'CURRENT')
         date_object = datetime.datetime.strptime(version['updated'],
                                                  "%Y-%m-%dT%H:%M:%S.%fZ")
-        self.assertTrue(isinstance(date_object, datetime.datetime))
+        self.assertIsInstance(date_object, datetime.datetime)
         links = response['links']
-        self.assertTrue(isinstance(links, list))
+        self.assertIsInstance(links, list)
         link = links[0]
         self.assertTrue(set(['rel', 'href']) ==
                         set(link))

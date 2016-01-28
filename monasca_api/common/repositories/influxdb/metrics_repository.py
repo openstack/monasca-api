@@ -1,6 +1,6 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -118,7 +118,9 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
         # name - optional
         if name:
-            where_clause += ' from  "{}" '.format(name.encode('utf8'))
+            # replace ' with \' to make query parsable
+            clean_name = name.replace("'", "\\'")
+            where_clause += ' from  "{}" '.format(clean_name.encode('utf8'))
 
         # tenant id
         where_clause += " where _tenant_id = '{}' ".format(tenant_id.encode(
@@ -131,9 +133,25 @@ class MetricsRepository(metrics_repository.MetricsRepository):
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.iteritems())):
-                where_clause += " and \"{}\" = '{}'".format(
-                    dimension_name.encode('utf8'), dimension_value.encode(
-                        'utf8'))
+                # replace ' with \' to make query parsable
+                clean_dimension_name = dimension_name.replace("\'", "\\'")
+                if dimension_value == "":
+                    where_clause += " and \"{}\" =~ /.*/ ".format(
+                        clean_dimension_name)
+                elif '|' in dimension_value:
+                    # replace ' with \' to make query parsable
+                    clean_dimension_value = dimension_value.replace("\'", "\\'")
+
+                    where_clause += " and \"{}\" =~ /^{}$/ ".format(
+                        clean_dimension_name.encode('utf8'),
+                        clean_dimension_value.encode('utf8'))
+                else:
+                    # replace ' with \' to make query parsable
+                    clean_dimension_value = dimension_value.replace("\'", "\\'")
+
+                    where_clause += " and \"{}\" = '{}' ".format(
+                        clean_dimension_name.encode('utf8'),
+                        clean_dimension_value.encode('utf8'))
 
         if start_timestamp is not None:
             where_clause += " and time > " + str(int(start_timestamp *

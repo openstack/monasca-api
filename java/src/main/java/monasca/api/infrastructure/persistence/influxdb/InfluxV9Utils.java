@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2015,2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,8 +13,10 @@
  */
 package monasca.api.infrastructure.persistence.influxdb;
 
-import com.google.inject.Inject;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -24,19 +26,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import monasca.api.infrastructure.persistence.PersistUtils;
+import monasca.common.util.Conversions;
 
 public class InfluxV9Utils {
-
-  private final PersistUtils persistUtils;
-
   private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;|\")+.*$");
 
-  @Inject
-  public InfluxV9Utils(PersistUtils persistUtils) {
-
-    this.persistUtils = persistUtils;
-
+  public InfluxV9Utils() {
   }
 
   public String sanitize(final String taintedString) {
@@ -139,8 +134,18 @@ public class InfluxV9Utils {
 
   public String timeOffsetPart(String offset) {
 
-    if (offset == null || offset.isEmpty()) {
-      return "";
+    if (StringUtils.isEmpty(offset)) {
+      return StringUtils.EMPTY;
+    }
+    if(!"0".equals(offset)){
+      Object convertible;
+      try {
+        convertible = Long.valueOf(offset);
+      } catch (IllegalArgumentException exp) {
+        // not a numeric value
+        convertible = offset;
+      }
+      offset = Conversions.variantToDateTime(convertible).toString(ISODateTimeFormat.dateTime());
     }
 
     return String.format(" and time > '%1$s'", offset);
@@ -163,8 +168,15 @@ public class InfluxV9Utils {
     if (dims != null && !dims.isEmpty()) {
       for (String k : dims.keySet()) {
         String v = dims.get(k);
-        if (k != null && !k.isEmpty() && v != null && !v.isEmpty()) {
-          sb.append(" and \"" + sanitize(k) + "\"=" + "'" + sanitize(v) + "'");
+        if (k != null && !k.isEmpty()) {
+          sb.append(" and \"" + sanitize(k) + "\"");
+          if (Strings.isNullOrEmpty(v)) {
+            sb.append("=~ /.*/");
+          } else if (v.contains("|")) {
+            sb.append("=~ " + "/^" + sanitize(v) + "$/");
+          } else {
+            sb.append("= " + "'" + sanitize(v) + "'");
+          }
         }
       }
     }
@@ -257,5 +269,18 @@ public class InfluxV9Utils {
     filteredMap.remove("_region");
 
     return filteredMap;
+  }
+
+  public String threeDigitMillisTimestamp(String origTimestamp) {
+    final int length = origTimestamp.length();
+    final String timestamp;
+    if (length == 20) {
+      timestamp = origTimestamp.substring(0, 19) + ".000Z";
+    } else {
+      final String millisecond = origTimestamp.substring(20, length - 1);
+      final String millisecond_3d = StringUtils.rightPad(millisecond, 3, '0');
+      timestamp = origTimestamp.substring(0, 19) + '.' + millisecond_3d + 'Z';
+    }
+    return timestamp;
   }
 }

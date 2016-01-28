@@ -51,7 +51,7 @@ class TestMetricsNames(base.BaseMonascaTest):
                     return
             time.sleep(constants.RETRY_WAIT_SECS)
 
-        cls.fail('Unable to initialize metrics')
+        assert False, 'Unable to initialize metrics'
 
     @classmethod
     def resource_cleanup(cls):

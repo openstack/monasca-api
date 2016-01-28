@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -23,6 +23,7 @@ from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import alarm_update_schema as schema_alarm
+from monasca_api.v2.common import validation
 from monasca_api.v2.reference import alarming
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
@@ -116,12 +117,27 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
+            if 'sort_by' in query_parms:
+                if isinstance(query_parms['sort_by'], basestring):
+                    query_parms['sort_by'] = [query_parms['sort_by']]
+
+                allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link',
+                                   'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
+                validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
 
             # ensure metric_dimensions is a list
             if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
                 query_parms['metric_dimensions'] = query_parms['metric_dimensions'].split(',')
+                self._validate_dimensions(query_parms['metric_dimensions'])
 
             offset = helpers.get_query_param(req, 'offset')
+            if offset is not None and not isinstance(offset, int):
+                try:
+                    offset = int(offset)
+                except Exception as ex:
+                    LOG.exception(ex)
+                    raise HTTPUnprocessableEntityError("Unprocessable Entity",
+                                                       "Offset value {} must be an integer".format(offset))
 
             limit = helpers.get_limit(req)
 
@@ -136,6 +152,20 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
+
+    @staticmethod
+    def _validate_dimensions(dimensions):
+        try:
+            assert isinstance(dimensions, list)
+            for dimension in dimensions:
+                name_value = dimension.split('=')
+                validation.dimension_key(name_value[0])
+                if len(name_value) > 1 and '|' in name_value[1]:
+                    values = name_value[1].split('|')
+                    for value in values:
+                        validation.dimension_value(value)
+        except Exception as e:
+            raise HTTPUnprocessableEntityError("Unprocessable Entity", e.message)
 
     @resource.resource_try_catch_block
     def _alarm_update(self, tenant_id, alarm_id, new_state, lifecycle_state,
@@ -229,6 +259,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         alarm_rows = self._alarms_repo.get_alarm(tenant_id, alarm_id)
 
+        req_uri_no_id = req_uri.replace('/' + alarm_id, "")
         first_row = True
         for alarm_row in alarm_rows:
             if first_row:
@@ -238,7 +269,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 helpers.add_links_to_resource(ad,
                                               re.sub('alarms',
                                                      'alarm-definitions',
-                                                     req_uri))
+                                                     req_uri_no_id))
 
                 metrics = []
                 alarm = {u'id': alarm_row['alarm_id'], u'metrics': metrics,
@@ -253,7 +284,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                          u'created_timestamp':
                              alarm_row['created_timestamp'].isoformat() + 'Z',
                          u'alarm_definition': ad}
-                helpers.add_links_to_resource(alarm, req_uri)
+                helpers.add_links_to_resource(alarm, req_uri_no_id)
 
                 first_row = False
 
@@ -327,6 +358,102 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         result.append(alarm)
 
         return helpers.paginate(result, req_uri, limit)
+
+
+class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
+
+    def __init__(self):
+        try:
+            super(AlarmsCount, self).__init__()
+            self._region = cfg.CONF.region
+            self._default_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles)
+            self._alarms_repo = simport.load(
+                cfg.CONF.repositories.alarms_driver)()
+
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
+
+    def on_get(self, req, res):
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        tenant_id = helpers.get_tenant_id(req)
+        query_parms = falcon.uri.parse_query_string(req.query_string)
+        if 'group_by' in query_parms:
+            if not isinstance(query_parms['group_by'], list):
+                query_parms['group_by'] = [query_parms['group_by']]
+            self._validate_group_by(query_parms['group_by'])
+
+        # ensure metric_dimensions is a list
+        if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
+            query_parms['metric_dimensions'] = query_parms['metric_dimensions'].split(',')
+
+        offset = helpers.get_query_param(req, 'offset')
+
+        if offset is not None:
+            try:
+                offset = int(offset)
+            except Exception:
+                raise HTTPUnprocessableEntityError("Unprocessable Entity",
+                                                   "Offset must be a valid integer, was {}".format(offset))
+
+        limit = helpers.get_limit(req)
+
+        result = self._alarms_count(req.uri, tenant_id, query_parms, offset, limit)
+
+        res.body = helpers.dumpit_utf8(result)
+        res.status = falcon.HTTP_200
+
+    @resource.resource_try_catch_block
+    def _alarms_count(self, req_uri, tenant_id, query_parms, offset, limit):
+
+        count_data = self._alarms_repo.get_alarms_count(tenant_id, query_parms, offset, limit)
+        group_by = query_parms['group_by'] if 'group_by' in query_parms else []
+
+        # result = count_data
+        result = {
+            'links': [
+                {
+                    'rel': 'self',
+                    'href': req_uri
+                }
+            ],
+            'columns': ['count']
+        }
+
+        if len(count_data) == 0 or count_data[0]['count'] == 0:
+            count = [0]
+            if 'group_by' in query_parms:
+                for field in query_parms['group_by']:
+                    result['columns'].append(field)
+                    count.append(None)
+            result['counts'] = [count]
+            return result
+
+        if len(count_data) > limit:
+            result['links'].append({'rel': 'next',
+                                    'href': helpers.create_alarms_count_next_link(req_uri, offset, limit)})
+            count_data = count_data[:limit]
+
+        result['columns'].extend(group_by)
+
+        result['counts'] = []
+        for row in count_data:
+            count_result = [row['count']]
+            for field in group_by:
+                count_result.append(row[field])
+            result['counts'].append(count_result)
+
+        return result
+
+    def _validate_group_by(self, group_by):
+        allowed_values = {'alarm_definition_id', 'name', 'state', 'severity',
+                          'link', 'lifecycle_state', 'metric_name',
+                          'dimension_name', 'dimension_value'}
+        if not set(group_by).issubset(allowed_values):
+            raise HTTPUnprocessableEntityError(
+                "Unprocessable Entity",
+                "One or more group-by values from {} are not in {}".format(group_by, allowed_values))
 
 
 class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,

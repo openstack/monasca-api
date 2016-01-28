@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,9 +13,11 @@
  */
 package monasca.api.app.validation;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -78,7 +80,7 @@ public final class Validation {
     try {
       return ISO_8601_FORMATTER.parseDateTime(date);
     } catch (Exception e) {
-      throw Exceptions.unprocessableEntity("%s must be an ISO 8601 formatted time", parameterName);
+      throw Exceptions.unprocessableEntity("%s (%s) must be an ISO 8601 formatted time", parameterName, date);
     }
   }
 
@@ -93,9 +95,11 @@ public final class Validation {
       String[] dimensionArr = Iterables.toArray(COLON_SPLITTER.split(dimensionStr), String.class);
       if (dimensionArr.length == 2)
         dimensions.put(dimensionArr[0], dimensionArr[1]);
+      if (dimensionArr.length == 1)
+        dimensions.put(dimensionArr[0], "");
     }
 
-    DimensionValidation.validate(dimensions);
+    //DimensionValidation.validate(dimensions);
     return dimensions;
   }
 
@@ -106,7 +110,7 @@ public final class Validation {
     try {
       return Integer.parseInt(number);
     } catch (NumberFormatException e) {
-      throw Exceptions.unprocessableEntity("%s must be valid number", parameterName);
+      throw Exceptions.unprocessableEntity("%s (%s) must be valid number", parameterName, number);
     }
   }
 
@@ -150,8 +154,8 @@ public final class Validation {
    * @throws WebApplicationException if the {@code startTime} or {@code endTime} are invalid
    */
   public static void validateTimes(DateTime startTime, DateTime endTime) {
-    if (!startTime.isBefore(endTime))
-        throw Exceptions.badRequest("start_time must be before end_time");
+    if (endTime != null && !startTime.isBefore(endTime))
+        throw Exceptions.badRequest("start_time (%s) must be before end_time (%s)", startTime, endTime);
   }
 
   public static Boolean validateAndParseMergeMetricsFlag(String mergeMetricsFlag) {
@@ -219,5 +223,27 @@ public final class Validation {
    */
   public static boolean isCrossProjectRequest(String crossTenantId, String tenantId) {
     return !Strings.isNullOrEmpty(crossTenantId) && !crossTenantId.equals(tenantId);
+  }
+
+  public static List<String> parseAndValidateSortBy(String sortBy, final List<String> allowed_sort_by) {
+    List<String> sortByList = new ArrayList<>();
+    if (sortBy != null && !sortBy.isEmpty()) {
+      List<String> fieldList = Lists
+          .newArrayList(Splitter.on(',').omitEmptyStrings().trimResults().split(sortBy));
+      for (String sortByField: fieldList) {
+        List<String> field = Lists.newArrayList(Splitter.on(' ').omitEmptyStrings().trimResults().split(sortByField));
+        if (field.size() > 2) {
+          throw Exceptions.unprocessableEntity(String.format("Invalid sort_by format %s", sortByField));
+        }
+        if (!allowed_sort_by.contains(field.get(0))) {
+          throw Exceptions.unprocessableEntity(String.format("Sort_by field %s must be one of %s", field.get(0), allowed_sort_by));
+        }
+        if (field.size() > 1 && !field.get(1).equals("desc") && !field.get(1).equals("asc")) {
+          throw Exceptions.unprocessableEntity(String.format("Sort_by value %s must be 'asc' or 'desc'", field.get(1)));
+        }
+        sortByList.add(Joiner.on(' ').join(field));
+      }
+    }
+    return sortByList;
   }
 }

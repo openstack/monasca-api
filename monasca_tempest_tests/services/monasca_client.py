@@ -1,4 +1,4 @@
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -258,6 +258,13 @@ class MonascaClient(rest_client.RestClient):
             request_body[key] = value
 
         resp, response_body = self.patch(uri, json.dumps(request_body))
+        return resp, json.loads(response_body)
+
+    def count_alarms(self, query_params=None):
+        uri = 'alarms/count'
+        if query_params is not None:
+            uri += query_params
+        resp, response_body = self.get(uri)
         return resp, json.loads(response_body)
 
     def list_alarms_state_history(self, query_params=None):

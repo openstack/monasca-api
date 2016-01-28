@@ -123,9 +123,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     List<AlarmStateHistory> alarmStateHistoryList = new ArrayList<>();
 
-    Handle h = null;
-    try {
-      h = vertica.open();
+    try (Handle h = vertica.open()) {
 
       Query<Map<String, Object>> verticaQuery =
           h.createQuery(sql)
@@ -146,13 +144,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       }
 
-    } finally {
-      if (null != h) {
-        h.close();
-      }
+      return alarmStateHistoryList;
     }
-
-    return alarmStateHistoryList;
 
   }
 
@@ -216,9 +209,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
     List<AlarmStateHistory> alarmStateHistoryList = new ArrayList<>();
 
-    Handle h = null;
-    try {
-      h = vertica.open();
+    try (Handle h = vertica.open()) {
 
       Query<Map<String, Object>> verticaQuery =
           h.createQuery(sql)
@@ -262,10 +253,6 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       }
 
-    } finally {
-      if (null != h) {
-        h.close();
-      }
     }
 
     return alarmStateHistoryList;

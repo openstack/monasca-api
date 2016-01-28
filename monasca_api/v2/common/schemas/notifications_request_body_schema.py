@@ -13,11 +13,21 @@
 # under the License.
 
 from oslo_log import log
+import sys
+from validate_email import validate_email
 import voluptuous
 
 from monasca_api.v2.common.schemas import exceptions
 
+if sys.version_info >= (3,):
+    import urllib.parse as urlparse
+else:
+    import urlparse
+
 LOG = log.getLogger(__name__)
+ADDRESS_ERR_MESSAGE = "Address {} is not of correct format"
+
+schemes = ['http', 'https']
 
 notification_schema = {
     voluptuous.Required('name'): voluptuous.Schema(
@@ -28,7 +38,7 @@ notification_schema = {
                        "PAGERDUTY", "pagerduty")),
     voluptuous.Required('address'): voluptuous.Schema(
         voluptuous.All(voluptuous.Any(str, unicode),
-                       voluptuous.Length(max=100)))}
+                       voluptuous.Length(max=512)))}
 
 request_body_schema = voluptuous.Schema(voluptuous.Any(notification_schema))
 
@@ -39,3 +49,26 @@ def validate(msg):
     except Exception as ex:
         LOG.debug(ex)
         raise exceptions.ValidationException(str(ex))
+
+    notification_type = str(msg['type']).upper()
+    if notification_type == 'EMAIL':
+        _validate_email(msg['address'])
+    elif notification_type == 'WEBHOOK':
+        _validate_url(msg['address'])
+
+
+def _validate_email(address):
+    if not validate_email(address):
+        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+
+
+def _validate_url(address):
+    try:
+        parsed = urlparse.urlparse(address)
+    except:
+        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+
+    if not parsed.scheme or not parsed.netloc:
+        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))
+    if parsed.scheme not in schemes:
+        raise exceptions.ValidationException(ADDRESS_ERR_MESSAGE.format(address))

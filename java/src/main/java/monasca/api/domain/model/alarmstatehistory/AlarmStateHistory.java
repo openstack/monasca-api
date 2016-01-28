@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.domain.common.AbstractEntity;
 import monasca.common.model.metric.MetricDefinition;
+import monasca.common.util.Conversions;
 
 public class AlarmStateHistory  extends AbstractEntity {
   private String alarmId;
@@ -43,8 +44,6 @@ public class AlarmStateHistory  extends AbstractEntity {
       String reason,
       String reasonData,
       DateTime timestamp) {
-
-    id = new Long(timestamp.getMillis()).toString();
     this.alarmId = alarmId;
     this.setMetrics(metrics);
     this.oldState = oldState;
@@ -52,7 +51,8 @@ public class AlarmStateHistory  extends AbstractEntity {
     this.subAlarms = subAlarms;
     this.reason = reason;
     this.reasonData = reasonData;
-    this.timestamp = timestamp;
+    this.timestamp = Conversions.variantToDateTime(timestamp);
+    this.id = timestamp.toString();
   }
 
   @Override
@@ -181,9 +181,9 @@ public class AlarmStateHistory  extends AbstractEntity {
   }
 
   public void setTimestamp(DateTime timestamp) {
-    this.timestamp = timestamp;
+    this.timestamp = Conversions.variantToDateTime(timestamp);
     // Set the id in the AbstractEntity class.
-    id = new Long(timestamp.getMillis()).toString();
+    id = timestamp.toString();
   }
 
   @Override

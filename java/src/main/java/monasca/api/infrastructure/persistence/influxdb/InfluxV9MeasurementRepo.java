@@ -129,7 +129,6 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
   }
 
   private List<Measurements> measurementsList(Series series) {
-
     List<Measurements> measurementsList = new LinkedList<>();
 
     if (!series.isEmpty()) {
@@ -141,9 +140,9 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
                              influxV9Utils.filterPrivateTags(serie.getTags()));
 
         for (String[] values : serie.getValues()) {
-
+          final String timestamp = influxV9Utils.threeDigitMillisTimestamp(values[0]);
           measurements.addMeasurement(
-              new Object[]{values[0], Double.parseDouble(values[1]), getValueMeta(values)});
+              new Object[]{timestamp, Double.parseDouble(values[1]), getValueMeta(values)});
         }
 
         measurementsList.add(measurements);
