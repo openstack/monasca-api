@@ -291,6 +291,40 @@ class TestMetrics(base.BaseMonascaTest):
                 self.fail(error_msg)
 
     @test.attr(type='gate')
+    def test_list_metrics_with_multiple_dimensions(self):
+        name = data_utils.rand_name('name')
+        key_1 = data_utils.rand_name('key')
+        value_1 = data_utils.rand_name('value')
+        key_2 = data_utils.rand_name('key')
+        value_2 = data_utils.rand_name('value')
+        metric = helpers.create_metric(name=name, dimensions={key_1: value_1, key_2: value_2})
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        query_param = '?dimensions=' + key_1 + ':' + value_1 + ',' + key_2 + ':' + value_2
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.list_metrics(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if str(element['dimensions'][key_1]) == value_1:
+                    self._verify_list_metrics_element(element,
+                                                      test_name=name,
+                                                      test_key=key_1,
+                                                      test_value=value_1)
+                    self._verify_list_metrics_element(element,
+                                                      test_name=name,
+                                                      test_key=key_2,
+                                                      test_value=value_2)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_list_metrics_with_dimensions: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
+
+    @test.attr(type='gate')
     def test_list_metrics_dimension_query_multi_value(self):
         name = data_utils.rand_name('name')
         key_service = "service"
