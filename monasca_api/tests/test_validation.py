@@ -14,15 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import unittest
+
 import falcon
+import mock
+
 import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
 import monasca_api.v2.common.schemas.notifications_request_body_schema as schemas_notifications
 import monasca_api.v2.common.validation as validation
 import monasca_api.v2.reference.helpers as helpers
 
-import mock
-
-import unittest
 
 invalid_chars = "<>={}(),\"\\|;&"
 
@@ -215,9 +216,10 @@ class TestNotificationValidation(unittest.TestCase):
 
     def test_validation_exception_for_email(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
-        self.assertRaises(
-            schemas_exceptions.ValidationException,
-            schemas_notifications.validate, notification)
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.validate(notification)
+        ex = ve.exception
+        self.assertEqual("Address name@domain. is not of correct format", ex.message)
 
     def test_validation_for_webhook(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
@@ -226,11 +228,26 @@ class TestNotificationValidation(unittest.TestCase):
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
 
-    def test_validation_exception_for_webhook(self):
-        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://localhost"}
-        self.assertRaises(
-            schemas_exceptions.ValidationException,
-            schemas_notifications.validate, notification)
+    def test_validation_exception_for_webhook_no_scheme(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.validate(notification)
+        ex = ve.exception
+        self.assertEqual("Address //somedomain.com does not have URL scheme", ex.message)
+
+    def test_validation_exception_for_webhook_no_netloc(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.validate(notification)
+        ex = ve.exception
+        self.assertEqual("Address http:// does not have network location", ex.message)
+
+    def test_validation_exception_for_webhook_invalid_scheme(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://somedomain.com"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.validate(notification)
+        ex = ve.exception
+        self.assertEqual("Address ftp://somedomain.com scheme is not in ['http', 'https']", ex.message)
 
     def test_validation_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
