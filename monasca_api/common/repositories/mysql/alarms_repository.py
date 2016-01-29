@@ -1,4 +1,4 @@
-# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -267,6 +267,10 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             parms.append(query_parms['state'].encode('utf8'))
             sub_query += " and a.state = %s "
 
+        if 'severity' in query_parms:
+            parms.append(query_parms['severity'].encode('utf8'))
+            sub_query += " and ad.severity = %s"
+
         if 'lifecycle_state' in query_parms:
             parms.append(query_parms['lifecycle_state'].encode('utf8'))
             sub_query += " and a.lifecycle_state = %s"
@@ -412,6 +416,10 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         if 'state' in query_parms:
             parms.append(query_parms['state'].encode('utf8'))
             where_clause += " and a.state = %s "
+
+        if 'severity' in query_parms:
+            parms.append(query_parms['severity'].encode('utf8'))
+            where_clause += " and ad.severity = %s "
 
         if 'lifecycle_state' in query_parms:
             parms.append(query_parms['lifecycle_state'].encode('utf8'))

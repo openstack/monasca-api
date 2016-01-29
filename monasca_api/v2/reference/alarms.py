@@ -117,6 +117,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
+            if 'state' in query_parms:
+                validation.validate_alarm_state(query_parms['state'])
+
+            if 'severity' in query_parms:
+                validation.validate_alarm_definition_severity(query_parms['severity'])
+
             if 'sort_by' in query_parms:
                 if isinstance(query_parms['sort_by'], basestring):
                     query_parms['sort_by'] = [query_parms['sort_by']]
@@ -381,6 +387,13 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         helpers.validate_authorization(req, self._default_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
         query_parms = falcon.uri.parse_query_string(req.query_string)
+
+        if 'state' in query_parms:
+            validation.validate_alarm_state(query_parms['state'])
+
+        if 'severity' in query_parms:
+            validation.validate_alarm_definition_severity(query_parms['severity'])
+
         if 'group_by' in query_parms:
             if not isinstance(query_parms['group_by'], list):
                 query_parms['group_by'] = [query_parms['group_by']]
