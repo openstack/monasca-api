@@ -144,6 +144,34 @@ class TestMetrics(base.BaseMonascaTest):
                           metric)
 
     @test.attr(type='gate')
+    @test.attr(type=['negative'])
+    def test_create_metric_with_empty_name(self):
+        metric = helpers.create_metric(name='')
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.create_metrics,
+                          metric)
+
+    @test.attr(type='gate')
+    @test.attr(type=['negative'])
+    def test_create_metric_with_empty_value_in_dimensions(self):
+        name = data_utils.rand_name('name')
+        metric = helpers.create_metric(name=name,
+                                       dimensions={'key': ''})
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.create_metrics,
+                          metric)
+
+    @test.attr(type='gate')
+    @test.attr(type=['negative'])
+    def test_create_metric_with_empty_key_in_dimensions(self):
+        name = data_utils.rand_name('name')
+        metric = helpers.create_metric(name=name,
+                                       dimensions={'': 'value'})
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.create_metrics,
+                          metric)
+
+    @test.attr(type='gate')
     def test_create_metric_with_no_dimensions(self):
         name = data_utils.rand_name('name')
         timestamp = int(round(time.time() * 1000))

@@ -23,18 +23,21 @@ restricted_chars = re.compile('[' + invalid_chars + ']')
 def metric_name(name):
     assert isinstance(name, (str, unicode)), "Metric name must be a string"
     assert len(name) <= 255, "Metric name must be 255 characters or less"
+    assert len(name) >= 1, "Metric name cannot be empty"
     assert not restricted_chars.search(name), "Invalid characters in metric name " + name
 
 
 def dimension_key(dkey):
     assert isinstance(dkey, (str, unicode)), "Dimension key must be a string"
     assert len(dkey) <= 255, "Dimension key must be 255 characters or less"
+    assert len(dkey) >= 1, "Dimension key cannot be empty"
     assert not restricted_chars.search(dkey), "Invalid characters in dimension name " + dkey
 
 
 def dimension_value(value):
     assert isinstance(value, (str, unicode)), "Dimension value must be a string"
     assert len(value) <= 255, "Dimension value must be 255 characters or less"
+    assert len(value) >= 1, "Dimension value cannot be empty"
     assert not restricted_chars.search(value), "Invalid characters in dimension value " + value
 
 
