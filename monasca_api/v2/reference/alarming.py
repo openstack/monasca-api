@@ -45,6 +45,7 @@ class Alarming(object):
                                        alarm_definition_row,
                                        alarm_metric_rows,
                                        old_state, new_state,
+                                       link, lifecycle_state,
                                        time_ms):
 
         # This is a change via the API, so there is no SubAlarm info to add
@@ -59,6 +60,8 @@ class Alarming(object):
             u'actionsEnabled': alarm_definition_row['actions_enabled'] == 1,
             u'stateChangeReason': 'Alarm state updated via API',
             u'severity': alarm_definition_row['severity'],
+            u'link': link,
+            u'lifecycleState': lifecycle_state,
             u'oldState': old_state,
             u'newState': new_state,
             u'timestamp': time_ms,
@@ -88,7 +91,8 @@ class Alarming(object):
         return metric
 
     def _send_alarm_event(self, event_type, tenant_id, alarm_definition_id,
-                          alarm_metric_rows, sub_alarm_rows, extra_info=None):
+                          alarm_metric_rows, sub_alarm_rows, link, lifecycle_state,
+                          extra_info=None):
 
         if not alarm_metric_rows:
             return
@@ -120,6 +124,8 @@ class Alarming(object):
                                                     alarm_definition_id,
                                                 u'alarmId': alarm_metric_row[
                                                     'alarm_id'],
+                                                u'link': link,
+                                                u'lifecycleState': lifecycle_state,
                                                 u'alarmMetrics':
                                                     alarm_metrics_event_msg}}
                 if extra_info:

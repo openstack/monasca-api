@@ -294,7 +294,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                   sub_alarm_definition_rows)
 
         self._send_alarm_event(u'alarm-deleted', tenant_id, id,
-                               alarm_metric_rows, sub_alarm_rows)
+                               alarm_metric_rows, sub_alarm_rows, None, None)
 
     @resource.resource_try_catch_block
     def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri, sort_by,

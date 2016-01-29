@@ -121,7 +121,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         with cnxn:
 
             select_query = """
-                select a.state
+                select a.state, a.link, a.lifecycle_state
                 from alarm as a
                 inner join alarm_definition as ad
                   on ad.id = a.alarm_definition_id
@@ -160,7 +160,7 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
             cursor.execute(update_query, parms)
 
-            return prev_alarm['state'], time_ms
+            return prev_alarm, time_ms
 
     @mysql_repository.mysql_try_catch_block
     def delete_alarm(self, tenant_id, id):
