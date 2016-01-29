@@ -193,18 +193,29 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
     }
 
-    StringBuilder sortByClause = new StringBuilder();
+    StringBuilder orderClause = new StringBuilder();
+
     if (sortBy != null && !sortBy.isEmpty()) {
-      sortByClause.append(" order by ");
-      sortByClause.append(COMMA_JOINER.join(sortBy));
+      // Convert friendly names to column names
+      replaceFieldName(sortBy, "alarm_id", "a.id");
+      replaceFieldName(sortBy, "alarm_definition_id", "ad.id");
+      replaceFieldName(sortBy, "alarm_definition_name", "ad.name");
+      replaceFieldName(sortBy, "created_timestamp", "a.created_at");
+      replaceFieldName(sortBy, "updated_timestamp", "a.updated_at");
+      replaceFieldName(sortBy, "state_updated_timestamp", "a.state_updated_at");
+
+      orderClause.append(" order by ");
+      orderClause.append(COMMA_JOINER.join(sortBy));
       // if alarm_id is not in the list, add it
-      if (sortByClause.indexOf("alarm_id") == -1) {
-        sortByClause.append(",alarm_id ASC");
+      if (orderClause.indexOf("a.id") == -1) {
+        orderClause.append(",a.id ASC");
       }
-      sortByClause.append(' ');
+      orderClause.append(' ');
     } else {
-      sortByClause.append(" order by alarm_id ASC ");
+      orderClause.append(" order by a.id ASC ");
     }
+
+    sbWhere.append(orderClause);
 
     if (enforceLimit && limit > 0) {
       sbWhere.append(" limit :limit");
@@ -218,7 +229,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
     sbWhere.append(")");
 
-    String sql = String.format(FIND_ALARMS_SQL, sbWhere, sortByClause);
+    String sql = String.format(FIND_ALARMS_SQL, sbWhere, orderClause);
 
     try (Handle h = db.open()) {
 
@@ -258,6 +269,15 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       return createAlarms(tenantId, rows);
 
+    }
+  }
+
+  private void replaceFieldName(List<String> list, String oldString, String newString) {
+    for (int i = 0; i < list.size(); i++) {
+      String listElement = list.get(i);
+      if (listElement.contains(oldString)) {
+        list.set(i, listElement.replace(oldString, newString));
+      }
     }
   }
 
