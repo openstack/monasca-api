@@ -16,10 +16,10 @@ six
 ujson>=1.33
 pyparsing
 voluptuous
-MySQL-python
 influxdb
 eventlet
 kafka-python
 simplejson
 simport
 validate_email>=1.3
+monasca-common>=0.0.2
