@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
 import monasca.api.resource.exception.Exceptions;
+import monasca.api.ApiConfig;
 import monasca.common.model.metric.MetricDefinition;
 
 import org.apache.commons.codec.DecoderException;
@@ -58,7 +59,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "%s "; // limit goes here
 
   private static final String FIND_METRIC_NAMES_SQL =
-      "SELECT distinct def.id, def.name "
+      "SELECT %s distinct def.id, def.name "
       + "FROM MonMetrics.Definitions def "
       + "WHERE def.id IN (%s) " // Subselect goes here
       + "ORDER BY def.id ASC ";
@@ -74,7 +75,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "ORDER BY max_id ASC %s"; // Limit goes here.
 
   private static final String DEFDIM_IDS_SELECT =
-      "SELECT to_hex(defDims.id) AS id "
+      "SELECT %s to_hex(defDims.id) AS id "
       + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
       + "WHERE defDims.definition_id = def.id "
       + "AND def.tenant_id = :tenantId "
@@ -92,11 +93,13 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
   private final DBI db;
 
+  private final String dbHint;
+
   @Inject
-  public MetricDefinitionVerticaRepoImpl(@Named("vertica") DBI db) {
-
+  public MetricDefinitionVerticaRepoImpl(@Named("vertica") DBI db, ApiConfig config)
+  {
     this.db = db;
-
+    this.dbHint = config.vertica.dbHint;
   }
 
   @Override
@@ -275,6 +278,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
       String sql =
         String.format(MetricQueries.FIND_METRIC_DEFS_SQL,
+                      this.dbHint,
                       String.format(METRIC_DEF_SUB_QUERY,
                                     namePart,
                                     offsetPart,
@@ -344,6 +348,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     String defDimSql = String.format(
         DEFDIM_IDS_SELECT,
+        this.dbHint,
         namePart,
         MetricQueries.buildDimensionAndClause(dimensions, "defDims"));
 

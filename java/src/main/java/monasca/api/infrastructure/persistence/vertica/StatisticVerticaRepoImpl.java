@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
+import monasca.api.ApiConfig;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -46,12 +47,14 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       ISODateTimeFormat.dateTime().withZoneUTC();
 
   private final DBI db;
+  private final String dbHint;
 
   @Inject
-  public StatisticVerticaRepoImpl(@Named("vertica") DBI db) {
-
+  public StatisticVerticaRepoImpl(@Named("vertica") DBI db,
+                                  ApiConfig config)
+  {
     this.db = db;
-
+    this.dbHint = config.vertica.dbHint;
   }
 
   @Override
@@ -213,6 +216,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     String sql = String.format(
         MetricQueries.FIND_METRIC_DEFS_SQL,
+        this.dbHint,
         MetricQueries.buildMetricDefinitionSubSql(name, dimensions));
 
     Query<Map<String, Object>> query =
@@ -300,7 +304,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append("SELECT ");
+    sb.append("SELECT "  + this.dbHint + " ");
     if (groupBy != null && !groupBy.isEmpty()) {
       sb.append(" to_hex(definition_dimensions_id) AS id, ");
     }

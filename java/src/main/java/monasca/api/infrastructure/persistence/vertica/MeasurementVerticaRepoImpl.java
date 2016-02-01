@@ -15,6 +15,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
+import monasca.api.ApiConfig;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       ISODateTimeFormat.dateTime().withZoneUTC();
 
   private static final String FIND_BY_METRIC_DEF_SQL =
-      "SELECT to_hex(mes.definition_dimensions_id) as def_dims_id, "
+      "SELECT %s to_hex(mes.definition_dimensions_id) as def_dims_id, "
       + "mes.time_stamp, mes.value, mes.value_meta "
       + "FROM MonMetrics.Measurements mes "
       + "WHERE to_hex(mes.definition_dimensions_id) %s " // Sub select query
@@ -61,7 +62,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
   private static final String
       DEFDIM_IDS_SELECT =
-      "SELECT defDims.id "
+      "SELECT %s defDims.id "
       + "FROM MonMetrics.DefinitionDimensions defDims "
       + "WHERE defDims.id IN (%s)";
 
@@ -71,11 +72,14 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
   private final static TypeReference VALUE_META_TYPE = new TypeReference<Map<String, String>>() {};
 
+  private final String dbHint;
+
   @Inject
   public MeasurementVerticaRepoImpl(
-      @Named("vertica") DBI db) {
-
+      @Named("vertica") DBI db, ApiConfig config)
+  {
     this.db = db;
+    this.dbHint = config.vertica.dbHint;
   }
 
   @Override
@@ -143,7 +147,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
       }
 
-      String sql = String.format(FIND_BY_METRIC_DEF_SQL, defDimInClause, sb, orderById);
+      String sql = String.format(FIND_BY_METRIC_DEF_SQL, this.dbHint, defDimInClause, sb, orderById);
 
       Query<Map<String, Object>> query = h.createQuery(sql)
               .bind("startTime", new Timestamp(startTime.getMillis()))
@@ -247,6 +251,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
     String defDimSql = String.format(
         MetricQueries.FIND_METRIC_DEFS_SQL,
+        this.dbHint,
         MetricQueries.buildMetricDefinitionSubSql(name, dimensions));
 
     Query<Map<String, Object>> query = h.createQuery(defDimSql).bind("tenantId", tenantId);
