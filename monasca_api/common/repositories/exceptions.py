@@ -13,22 +13,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-class RepositoryException(Exception):
-    pass
-
-
-class DoesNotExistException(RepositoryException):
-    pass
-
-
-class AlreadyExistsException(RepositoryException):
-    pass
-
-
-class InvalidUpdateException(RepositoryException):
-    pass
+from monasca_common.repositories.exceptions import AlreadyExistsException
+from monasca_common.repositories.exceptions import DoesNotExistException
+from monasca_common.repositories.exceptions import InvalidUpdateException
+from monasca_common.repositories.exceptions import RepositoryException
 
 
 class MultipleMetricsException(RepositoryException):
     pass
+
+__all__ = (AlreadyExistsException, DoesNotExistException, InvalidUpdateException,
+           RepositoryException, MultipleMetricsException)
