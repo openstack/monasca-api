@@ -269,8 +269,9 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             sub_query += " and a.state = %s "
 
         if 'severity' in query_parms:
-            parms.append(query_parms['severity'].encode('utf8'))
-            sub_query += " and ad.severity = %s"
+            severities = query_parms['severity'].split('|')
+            parms.extend([s.encode('utf8') for s in severities])
+            sub_query += " and (" + " or ".join(["ad.severity = %s" for s in severities]) + ")"
 
         if 'lifecycle_state' in query_parms:
             parms.append(query_parms['lifecycle_state'].encode('utf8'))
@@ -428,8 +429,9 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             where_clause += " and a.state = %s "
 
         if 'severity' in query_parms:
-            parms.append(query_parms['severity'].encode('utf8'))
-            where_clause += " and ad.severity = %s "
+            severities = query_parms['severity'].split('|')
+            parms.extend([s.encode('utf8') for s in severities])
+            where_clause += " and (" + " or ".join(["ad.severity = %s" for s in severities]) + ")"
 
         if 'lifecycle_state' in query_parms:
             parms.append(query_parms['lifecycle_state'].encode('utf8'))

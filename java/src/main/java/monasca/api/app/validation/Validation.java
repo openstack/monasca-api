@@ -33,14 +33,17 @@ import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 
+import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.resource.exception.Exceptions;
+import monasca.common.model.alarm.AlarmSeverity;
 
 /**
  * Validation related utilities.
  */
 public final class Validation {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
-  private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults().limit(2);
+  private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults().limit(
+      2);
   private static final Splitter SPACE_SPLITTER = Splitter.on(' ').omitEmptyStrings().trimResults();
   private static final Splitter VERTICAL_BAR_SPLITTER = Splitter.on('|').omitEmptyStrings().trimResults();
   private static final Joiner SPACE_JOINER = Joiner.on(' ');
@@ -169,7 +172,8 @@ public final class Validation {
    */
   public static void validateTimes(DateTime startTime, DateTime endTime) {
     if (endTime != null && !startTime.isBefore(endTime))
-        throw Exceptions.badRequest("start_time (%s) must be before end_time (%s)", startTime, endTime);
+        throw Exceptions.badRequest("start_time (%s) must be before end_time (%s)", startTime,
+                                    endTime);
   }
 
   public static Boolean validateAndParseMergeMetricsFlag(String mergeMetricsFlag) {
@@ -244,6 +248,24 @@ public final class Validation {
    */
   public static boolean isCrossProjectRequest(String crossTenantId, String tenantId) {
     return !Strings.isNullOrEmpty(crossTenantId) && !crossTenantId.equals(tenantId);
+  }
+
+  public static List<AlarmSeverity> parseAndValidateSeverity(String severityStr) {
+    List<AlarmSeverity> severityList = null;
+    if (severityStr != null && !severityStr.isEmpty()) {
+      severityList = new ArrayList<>();
+      List<String> severities = Lists.newArrayList(VERTICAL_BAR_SPLITTER.split(severityStr));
+      for (String severity : severities) {
+        AlarmSeverity s = AlarmSeverity.fromString(severity);
+        if (s != null) {
+          severityList.add(s);
+        } else {
+          throw Exceptions.unprocessableEntity(String.format("Invalid severity %s",
+                                                             severity));
+        }
+      }
+    }
+    return severityList;
   }
 
   public static List<String> parseAndValidateSortBy(String sortBy, final List<String> allowed_sort_by) {

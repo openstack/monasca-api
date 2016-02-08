@@ -311,6 +311,78 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual('CRITICAL', alarm['alarm_definition']['severity'])
 
     @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarms_by_severity_invalid_severity(self):
+        query_parms = '?severity=false_severity'
+        self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
+                          query_parms)
+
+    @test.attr(type="gate")
+    def test_list_alarms_by_severity_multiple_values(self):
+        metric_name = data_utils.rand_name("severity-metric")
+        alarm_defs = []
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='LOW'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='MEDIUM'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='HIGH'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='CRITICAL'
+        ))
+
+        alarm_def_ids = []
+        for definition in alarm_defs:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            self.assertEqual(201, resp.status)
+            alarm_def_ids.append(response_body['id'])
+
+        metric = helpers.create_metric(name=metric_name,
+                                       value=14)
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        for def_id in alarm_def_ids:
+            self._wait_for_alarms(1, def_id)
+
+        query_parms = '?severity=LOW|MEDIUM'
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self.assertEqual(200, resp.status)
+        for alarm in response_body['elements']:
+            self.assertIn(alarm['alarm_definition']['severity'], ['LOW', 'MEDIUM'])
+
+        query_parms = '?severity=HIGH|CRITICAL'
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self.assertEqual(200, resp.status)
+        for alarm in response_body['elements']:
+            self.assertIn(alarm['alarm_definition']['severity'], ['HIGH', 'CRITICAL'])
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarms_by_severity_multiple_values_invalid_severity(self):
+        query_parms = '?severity=false_severity|MEDIUM'
+        self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
+                          query_parms)
+
+        query_parms = '?severity=MEDIUM|false_severity'
+        self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
+                          query_parms)
+
+        query_parms = '?severity=LOW|false_severity|HIGH'
+        self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
+                          query_parms)
+
+    @test.attr(type="gate")
     def test_list_alarms_by_lifecycle_state(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)

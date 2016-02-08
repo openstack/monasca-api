@@ -1905,6 +1905,7 @@ None.
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
 * dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * offset (integer, optional)
 * limit (integer, optional)
 * sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'id', 'created_at'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
@@ -2412,6 +2413,7 @@ None.
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
 * link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
@@ -2525,6 +2527,7 @@ None
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
 * link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.

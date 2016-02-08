@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -285,8 +286,11 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 parms['b_md_name'] = query_parms['metric_name'].encode('utf8')
 
             if 'severity' in query_parms:
-                query = query.where(ad.c.severity == bindparam('b_severity'))
-                parms['b_severity'] = query_parms['severity'].encode('utf8')
+                severities = query_parms['severity'].split('|')
+                query = query.where(
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                for i, s in enumerate(severities):
+                    parms['b_severity' + str(i)] = s.encode('utf8')
 
             if 'state' in query_parms:
                 query = query.where(a.c.state == bindparam('b_state'))
@@ -493,8 +497,11 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(a.c.state == bindparam('b_state'))
 
             if 'severity' in query_parms:
-                query = query.where(ad.c.severity == bindparam('b_severity'))
-                parms['b_severity'] = query_parms['severity'].encode('utf8')
+                severities = query_parms['severity'].split('|')
+                query = query.where(
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                for i, s in enumerate(severities):
+                    parms['b_severity' + str(i)] = s.encode('utf8')
 
             if 'lifecycle_state' in query_parms:
                 parms['b_lifecycle_state'] = query_parms['lifecycle_state'].encode('utf8')

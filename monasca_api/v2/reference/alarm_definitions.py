@@ -85,7 +85,9 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             tenant_id = helpers.get_tenant_id(req)
             name = helpers.get_query_name(req)
             dimensions = helpers.get_query_dimensions(req)
-            severity = helpers.get_query_param(req, "severity")
+            severity = helpers.get_query_param(req, "severity", default_val=None)
+            if severity is not None:
+                validation.validate_severity_query(severity)
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, basestring):
