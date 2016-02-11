@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -27,7 +27,6 @@ import java.util.Map;
 
 import javax.inject.Named;
 
-import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.Utils;
 
 public class MySQLUtils
@@ -64,12 +63,23 @@ public class MySQLUtils
 
       logger.debug("mysql sql: {}", sql);
 
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      this.bindDimensionsToQuery(query, dimensions);
 
       alarmIdList = query.map(StringMapper.FIRST).list();
     }
 
     return alarmIdList;
+  }
+
+  private void bindDimensionsToQuery(Query query, Map<String, String> dimensions) {
+    if (dimensions != null) {
+      int i = 0;
+      for (Map.Entry<String, String> entry : dimensions.entrySet()) {
+        query.bind("dname" + i, entry.getKey());
+        query.bind("dvalue" + i, entry.getValue());
+        i++;
+      }
+    }
   }
 
 }

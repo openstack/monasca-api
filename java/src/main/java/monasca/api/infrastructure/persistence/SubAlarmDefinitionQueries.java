@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
+ * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,6 +14,8 @@
 package monasca.api.infrastructure.persistence;
 
 import com.google.common.base.Strings;
+
+import org.skife.jdbi.v2.Query;
 
 import java.util.Map;
 
@@ -47,5 +49,16 @@ public final class SubAlarmDefinitionQueries {
     }
 
     return sbJoin.toString();
+  }
+
+  public static void bindDimensionsToQuery(Query query, Map<String, String> dimensions) {
+    if (dimensions != null) {
+      int i = 0;
+      for (Map.Entry<String, String> entry: dimensions.entrySet()) {
+        query.bind("dname" + i, entry.getKey());
+        query.bind("dvalue" + i, entry.getValue());
+        i++;
+      }
+    }
   }
 }
