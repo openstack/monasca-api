@@ -90,6 +90,40 @@ class TestAlarms(base.BaseMonascaTest):
                          element['alarm_definition']['id'])
 
     @test.attr(type="gate")
+    def test_list_alarms_by_multiple_metric_dimensions(self):
+        metric = helpers.create_metric(
+            name=data_utils.rand_name("multi-dimension"),
+            dimensions={data_utils.rand_name("key-1"): data_utils.rand_name("value-1"),
+                        data_utils.rand_name("key-2"): data_utils.rand_name("value-2")},
+            value=20
+        )
+        dimension_strings = [key + '=' + value for key, value in metric['dimensions'].items()]
+        alarm_def = helpers.create_alarm_definition(
+            name=data_utils.rand_name("multi-dimensions"),
+            expression=metric['name'] + "{" + ','.join(dimension_strings) + '} > 15'
+        )
+
+        resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
+        self.assertEqual(201, resp.status)
+        alarm_def_id = response_body['id']
+
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        self._waiting_for_alarms(1, alarm_def_id)
+
+        query_dimensions = [key + ':' + value for key, value in metric['dimensions'].items()]
+        query_parms="?metric_dimensions=" + ','.join(query_dimensions)
+
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=1)
+        element = response_body['elements'][0]
+        metric = element['metrics'][0]
+        self._verify_metric_in_alarm(metric, metric)
+        self.assertEqual(alarm_def_id,
+                         element['alarm_definition']['id'])
+
+    @test.attr(type="gate")
     def test_list_alarms_by_metric_dimensions_no_value(self):
         metric_name = data_utils.rand_name('metric')
         match_by_key = data_utils.rand_name('key')

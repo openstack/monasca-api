@@ -326,6 +326,36 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
+    @test.attr(type="gate")
+    def test_list_alarm_definitions_with_multiple_dimensions(self):
+        # Create an alarm definition with random dimensions
+        name = data_utils.rand_name('alarm_definition')
+        dimensions = {data_utils.rand_name('key-1'): data_utils.rand_name('value-1'),
+                      data_utils.rand_name('key-2'): data_utils.rand_name('value-2')}
+        dimension_strings = [key + '=' + value for key, value in dimensions.items()]
+        expression = 'avg(cpu_utilization{' + ','.join(dimension_strings) + '}) >= 1000'
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression)
+        resp, res_body_create_alarm_def = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
+        self.assertEqual(201, resp.status)
+
+        # List alarms
+        query_dimensions = [key + ':' + value for key, value in dimensions.items()]
+        query_parms = '?dimensions=' + ','.join(query_dimensions)
+        resp, response_body = self.monasca_client.list_alarm_definitions(query_parms)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
+
+        elements = response_body['elements']
+        self._verify_list_get_alarm_definitions_elements(
+            elements, 1, res_body_create_alarm_def)
+
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
+
     @test.attr(type='gate')
     def test_list_alarm_definitions_sort_by(self):
         alarm_definitions = []

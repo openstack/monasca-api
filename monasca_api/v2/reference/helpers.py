@@ -173,11 +173,13 @@ def get_query_dimensions(req):
             dimensions_param = params['dimensions']
 
             if isinstance(dimensions_param, basestring):
-                dimensions_str_array = [dimensions_param, ]
+                dimensions_str_array = dimensions_param.split(',')
+            elif isinstance(dimensions_param, list):
+                dimensions_str_array = []
+                for sublist in dimensions_param:
+                    dimensions_str_array.extend(sublist.split(","))
             else:
-                dimensions_str_array = [
-                    s for sublist in dimensions_param
-                    for s in sublist.split(",")]
+                raise Exception("Error parsing dimensions, unknown format")
 
             for dimension in dimensions_str_array:
                 dimension_name_value = dimension.split(':')
