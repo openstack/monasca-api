@@ -343,31 +343,31 @@ public class AlarmDefinitionSqlRepositoryImplTest {
       fail();
     } catch (EntityNotFoundException expected) {
     }
-    assertEquals(Arrays.asList(alarmDef_234), repo.find("bob", null, null, null, null, 1));
+    assertEquals(Arrays.asList(alarmDef_234), repo.find("bob", null, null, null, null, null, 1));
   }
 
   public void shouldFindByDimension() {
     final Map<String, String> dimensions = new HashMap<>();
     dimensions.put("image_id", "888");
 
-    List<AlarmDefinition> result = repo.find("bob", null, dimensions, null, null, 1);
+    List<AlarmDefinition> result = repo.find("bob", null, dimensions, null, null, null, 1);
 
     assertEquals(Arrays.asList(alarmDef_123, alarmDef_234), result);
 
     dimensions.clear();
     dimensions.put("device", "1");
-    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", null, dimensions, null, null, 1));
+    assertEquals(Arrays.asList(alarmDef_123), repo.find("bob", null, dimensions, null, null, null, 1));
 
     dimensions.clear();
     dimensions.put("Not real", "AA");
-    assertEquals(0, repo.find("bob", null, dimensions, null, null, 1).size());
+    assertEquals(0, repo.find("bob", null, dimensions, null, null, null, 1).size());
   }
 
   public void shouldFindByName() {
     final Map<String, String> dimensions = new HashMap<>();
     dimensions.put("image_id", "888");
 
-    List<AlarmDefinition> result = repo.find("bob", "90% CPU", dimensions, null, null, 1);
+    List<AlarmDefinition> result = repo.find("bob", "90% CPU", dimensions, null, null, null, 1);
 
     assertEquals(Arrays.asList(alarmDef_123), result);
 
@@ -375,6 +375,6 @@ public class AlarmDefinitionSqlRepositoryImplTest {
 
   @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
   public void shouldFindThrowException() {
-    repo.find("bob", null, null, Arrays.asList("severity", "state"), null, 1);
+    repo.find("bob", null, null, null, Arrays.asList("severity", "state"), null, 1);
   }
 }

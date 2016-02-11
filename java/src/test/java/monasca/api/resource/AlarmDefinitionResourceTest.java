@@ -50,6 +50,8 @@ import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.common.Link;
 import monasca.api.resource.exception.ErrorMessages;
+import monasca.common.model.alarm.AlarmSeverity;
+
 import com.sun.jersey.api.client.ClientResponse;
 
 @Test
@@ -86,8 +88,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
     repo = mock(AlarmDefinitionRepo.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
-    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), (List<String>) anyList(),
-                   anyString(), anyInt())).thenReturn(
+    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()),
+                   (List<String>) anyList(), anyString(), anyInt())).thenReturn(
         Arrays.asList(alarmItem));
 
     addResources(new AlarmDefinitionResource(service, repo, new PersistUtils()));
@@ -277,7 +279,8 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
     assertEquals(alarms, Arrays.asList(alarmItem));
 
-    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), (List<String>) anyList(),
+    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()),
+                      (List<String>) anyList(),
                       anyString(), anyInt());
   }
 
@@ -309,7 +312,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), (List<String>) anyList(),
+    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()), (List<String>) anyList(),
                       anyString(), anyInt());
   }
 
@@ -355,7 +358,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   public void should500OnInternalException() {
     doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(),
 
-        (Map<String, String>) anyObject(), (List<String>) anyList(), anyString(), anyInt());
+        (Map<String, String>) anyObject(), AlarmSeverity.fromString(anyString()), (List<String>) anyList(), anyString(), anyInt());
 
     try {
       client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc").get(List.class);
