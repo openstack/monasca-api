@@ -121,7 +121,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 if isinstance(query_parms['sort_by'], basestring):
                     query_parms['sort_by'] = [query_parms['sort_by']]
 
-                allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link',
+                allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'alarm_definition_name',
+                                   'state', 'severity', 'lifecycle_state', 'link',
                                    'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
                 validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
 

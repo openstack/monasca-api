@@ -71,7 +71,8 @@ public class AlarmResource {
                                                                      "lifecycle_state",
                                                                      "metric_name", "dimension_name",
                                                                      "dimension_value");
-  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id", "state",
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id",
+                                                                    "alarm_definition_name", "state",
                                                                     "severity", "lifecycle_state", "link",
                                                                     "state_updated_timestamp", "updated_timestamp",
                                                                     "created_timestamp");

@@ -343,7 +343,7 @@ class TestAlarms(base.BaseMonascaTest):
         elements = response_body['elements']
         last_timestamp = elements[0]['created_timestamp']
         for element in elements:
-            assert element['state'] >= last_timestamp,\
+            assert element['created_timestamp'] >= last_timestamp, \
                 "Created_timestamps are not in sorted order {} came before {}".format(last_timestamp,
                                                                                       element['created_timestamp'])
             last_timestamp = element['created_timestamp']
@@ -381,6 +381,65 @@ class TestAlarms(base.BaseMonascaTest):
                                                                                           element['created_timestamp'])
             last_timestamp = element['created_timestamp']
 
+    @test.attr(type="gate")
+    def test_list_alarms_sort_by_offset_limit(self):
+        metric_1 = {'name': data_utils.rand_name('sorting-metric-1'),
+                    'dimensions': {
+                        data_utils.rand_name('key-1'): data_utils.rand_name('value-1')},
+                    'value': 3}
+        metric_2 = {'name': metric_1['name'],
+                    'dimensions': {
+                        data_utils.rand_name('key-2'): data_utils.rand_name('value-2')},
+                    'value': 3}
+        alarm_def = helpers.create_alarm_definition(
+            name=data_utils.rand_name('sorting-def'),
+            expression=metric_1['name'] + " < 12",
+            match_by=["hostname"]
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
+        self.assertEqual(201, resp.status)
+        alarm_def_id = response_body['id']
+
+        for i in xrange(3):
+            hostname = data_utils.rand_name('host')
+            metric_1['dimensions']['hostname'] = hostname
+            metric_2['dimensions']['hostname'] = hostname
+            metric_1['timestamp'] = int(time.time() * 1000)
+            metric_2['timestamp'] = int(time.time() * 1000)
+            resp, response_body = self.monasca_client.create_metrics([metric_1, metric_2])
+            self.assertEqual(204, resp.status)
+        self._waiting_for_alarms(3, alarm_def_id)
+
+        resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id)
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id +
+                                                              '&sort_by=alarm_id')
+        self._verify_list_alarms_elements(resp, response_body,
+                                          expect_num_elements=3)
+
+        full_elements = response_body['elements']
+        previous_id = full_elements[0]['id']
+        for element in full_elements[1:]:
+            assert element['id'] >= previous_id, \
+                "IDs are not in sorted order {} came before {}".format(previous_id,
+                                                                       element['created_timestamp'])
+            previous_id = element['id']
+
+        resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id +
+                                                              '&sort_by=alarm_id&limit=1')
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(1, len(elements))
+        self.assertEqual(full_elements[0]['id'], elements[0]['id'])
+
+        resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id +
+                                                              '&sort_by=alarm_id&offset=1')
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(2, len(elements))
+        self.assertEqual(full_elements[1]['id'], elements[0]['id'])
 
     @test.attr(type="gate")
     def test_list_alarms_invalid_sort_by(self):

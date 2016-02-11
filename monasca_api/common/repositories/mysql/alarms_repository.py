@@ -49,6 +49,29 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
             on mdg.dimension_set_id = mdd.metric_dimension_set_id
            """
 
+    base_list_query = """
+          select distinct a.id as alarm_id, a.state,
+          a.state_updated_at as state_updated_timestamp,
+          a.updated_at as updated_timestamp,
+          a.created_at as created_timestamp, a.lifecycle_state, a.link,
+          ad.id as alarm_definition_id, ad.name as alarm_definition_name,
+          ad.severity,
+          md.name as metric_name, mdg.dimensions as metric_dimensions
+          from alarm as a
+          inner join ({0}) as alarm_id_list on alarm_id_list.id = a.id
+          inner join alarm_definition as ad
+             on ad.id = a.alarm_definition_id
+          inner join alarm_metric as am on am.alarm_id = a.id
+          inner join metric_definition_dimensions as mdd
+             on mdd.id = am.metric_definition_dimensions_id
+          inner join metric_definition as md
+             on md.id = mdd.metric_definition_id
+          left join (select dimension_set_id, name, value,
+                      group_concat(name, '=', value) as dimensions
+                    from metric_dimension group by dimension_set_id) as mdg
+            on mdg.dimension_set_id = mdd.metric_dimension_set_id
+           """
+
     def __init__(self):
 
         super(AlarmsRepository, self).__init__()
@@ -212,13 +235,16 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         parms = [tenant_id]
 
-        select_clause = AlarmsRepository.base_query
+        select_clause = AlarmsRepository.base_list_query
 
-        where_clause = " where ad.tenant_id = %s "
+        sub_query = "select a.id " \
+                    "from alarm as a " \
+                    "join alarm_definition as ad on a.alarm_definition_id = ad.id " \
+                    "where ad.tenant_id = %s "
 
         if 'alarm_definition_id' in query_parms:
             parms.append(query_parms['alarm_definition_id'])
-            where_clause += " and ad.id = %s "
+            sub_query += " and ad.id = %s "
 
         if 'metric_name' in query_parms:
             sub_select_clause = """
@@ -235,24 +261,24 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                 """
 
             parms.append(query_parms['metric_name'].encode('utf8'))
-            where_clause += sub_select_clause
+            sub_query += sub_select_clause
 
         if 'state' in query_parms:
             parms.append(query_parms['state'].encode('utf8'))
-            where_clause += " and a.state = %s "
+            sub_query += " and a.state = %s "
 
         if 'lifecycle_state' in query_parms:
             parms.append(query_parms['lifecycle_state'].encode('utf8'))
-            where_clause += " and a.lifecycle_state = %s"
+            sub_query += " and a.lifecycle_state = %s"
 
         if 'link' in query_parms:
             parms.append(query_parms['link'].encode('utf8'))
-            where_clause += " and a.link = %s"
+            sub_query += " and a.link = %s"
 
         if 'state_updated_start_time' in query_parms:
             parms.append(query_parms['state_updated_start_time']
                          .encode("utf8"))
-            where_clause += " and state_updated_at >= %s"
+            sub_query += " and state_updated_at >= %s"
 
         if 'metric_dimensions' in query_parms:
             sub_select_clause = """
@@ -291,12 +317,25 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
             sub_select_clause += ")"
             parms += sub_select_parms
-            where_clause += sub_select_clause
+            sub_query += sub_select_clause
 
         if 'sort_by' in query_parms:
+            # Convert friendly names to column names
+            self._replace_field_name(query_parms['sort_by'], 'alarm_id', 'a.id')
+            self._replace_field_name(query_parms['sort_by'], 'alarm_definition_id', 'ad.id')
+            self._replace_field_name(query_parms['sort_by'], 'alarm_definition_name', 'ad.name')
+            # check this here to avoid conflict with updated_timestamp
+            self._replace_field_name(query_parms['sort_by'], 'state_updated_timestamp', 'a.state_updated_at')
+            self._replace_field_name(query_parms['sort_by'], 'updated_timestamp', 'a.updated_at')
+            self._replace_field_name(query_parms['sort_by'], 'created_timestamp', 'a.created_at')
+            # use custom ordering instead of alphanumeric
+            self._replace_field_name(query_parms['sort_by'], 'severity',
+                                     'FIELD(severity, "LOW", "MEDIUM", "HIGH", "CRITICAL")')
+            self._replace_field_name(query_parms['sort_by'], 'state',
+                                     'FIELD(state, "OK", "UNDETERMINED", "ALARM")')
             order_by_clause = " order by " + ','.join(query_parms['sort_by'])
-            if 'alarm_id' not in query_parms['sort_by']:
-                order_by_clause += ",alarm_id "
+            if 'a.id' not in query_parms['sort_by']:
+                order_by_clause += ",a.id "
             else:
                 order_by_clause += " "
         else:
@@ -313,11 +352,18 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
         else:
             limit_clause = ""
 
-        query = select_clause + where_clause + order_by_clause + limit_clause + offset_clause
+        query = select_clause.format(sub_query + order_by_clause + limit_clause + offset_clause) + order_by_clause
 
         LOG.debug("Query: {}".format(query))
 
         return self._execute_query(query, parms)
+
+    @staticmethod
+    def _replace_field_name(item_list, old_name, new_name):
+        for index, item in enumerate(item_list):
+            if old_name in item:
+                item_list[index] = item.replace(old_name, new_name)
+                return
 
     @mysql_repository.mysql_try_catch_block
     def get_alarms_count(self, tenant_id, query_parms, offset, limit):
