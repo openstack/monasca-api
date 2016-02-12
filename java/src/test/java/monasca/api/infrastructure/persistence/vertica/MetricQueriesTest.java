@@ -26,29 +26,30 @@ public class MetricQueriesTest {
 
   private final static String TABLE_TO_JOIN_DIMENSIONS_ON = "defdims";
 
-  public void metricQueriesBuildDimensionAndClauseTest1() {
+  public void metricQueriesBuildJoinClauseForTest1() {
     String expectedResult =
-        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
-        + "where name = :dname0 and value = :dvalue0 or name = :dname1 and value = :dvalue1 "
-        + "group by dimension_set_id  having count(*) = 2) ";
+        " inner join MonMetrics.Dimensions dim0 on dim0.name = :dname0 and dim0" + ".value "
+            + "= :dvalue0 and defdims.dimension_set_id = dim0.dimension_set_id inner join "
+            + "MonMetrics.Dimensions dim1 on dim1.name = :dname1 and dim1.value = :dvalue1 and defdims"
+            + ".dimension_set_id = dim1.dimension_set_id";
 
     Map<String, String> dimsMap = new HashMap<>();
     dimsMap.put("foo", "bar");
     dimsMap.put("biz", "baz");
 
-    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON);
+    String s = MetricQueries.buildJoinClauseFor(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON);
     assertEquals(expectedResult, s);
   }
 
-  public void metricQueriesBuildDimensionAndClauseTest2() {
+  public void metricQueriesBuildJoinClauseForTest2() {
     String expectedResult = "";
     Map<String, String> dimsMap = new HashMap<>();
-    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap,TABLE_TO_JOIN_DIMENSIONS_ON));
+    assertEquals(expectedResult, MetricQueries.buildJoinClauseFor(dimsMap,TABLE_TO_JOIN_DIMENSIONS_ON));
   }
 
-  public void metricQueriesBuildDimensionAndClauseForTest3() {
+  public void metricQueriesBuildJoinClauseForTest3() {
     String expectedResult = "";
     Map<String, String> dimsMap = null;
-    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON));
+    assertEquals(expectedResult, MetricQueries.buildJoinClauseFor(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON));
   }
 }
