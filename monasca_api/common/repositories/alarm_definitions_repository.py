@@ -50,7 +50,7 @@ class AlarmDefinitionsRepository(object):
         pass
 
     @abc.abstractmethod
-    def get_alarm_definitions(self, tenant_id, name, dimensions, sort_by,
+    def get_alarm_definitions(self, tenant_id, name, dimensions, severity, sort_by,
                               offset, limit):
         pass
 
