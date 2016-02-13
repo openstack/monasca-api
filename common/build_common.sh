@@ -4,6 +4,7 @@ ME=`whoami`
 echo "Running as user: $ME"
 MVN=$1
 VERSION=$2
+BRANCH=$3
 
 check_user() {
     ME=$1
@@ -22,7 +23,7 @@ fi
 
 # This should only be done on the stack forge system
 if [ "${BUILD_COMMON}" = "true" ]; then
-   git clone https://git.openstack.org/openstack/monasca-common
+   git clone -b ${BRANCH} https://git.openstack.org/openstack/monasca-common
    cd monasca-common
    ${MVN} clean
    ${MVN} install
