@@ -2297,11 +2297,11 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
     "links": [
         {
             "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/alarms?name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+            "href": "http://192.168.10.4:8080/v2.0/alarms?metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&state=UNDETERMINED"
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8080/v2.0/alarms?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+            "href": "http://192.168.10.4:8080/v2.0/alarms?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&state=UNDETERMINED"
         }
     ],
     "elements": [
@@ -2403,7 +2403,7 @@ Returns a JSON object containing the following fields:
        "links": [
            {
                "rel": "self",
-               "href": "http://192.168.10.4:8080/v2.0/alarms/count?name=cpu.system_perc&dimensions=hostname%3Adevstack&group_by=state,lifecycle_state"
+               "href": "http://192.168.10.4:8080/v2.0/alarms/count?metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&group_by=state,lifecycle_state"
            }
        ],
        "columns": ["count", "state", "lifecycle_state"],
