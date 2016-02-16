@@ -109,7 +109,7 @@ class TestAlarms(base.BaseMonascaTest):
 
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
-        self._waiting_for_alarms(1, alarm_def_id)
+        self._wait_for_alarms(1, alarm_def_id)
 
         query_dimensions = [key + ':' + value for key, value in metric['dimensions'].items()]
         query_parms="?metric_dimensions=" + ','.join(query_dimensions)
@@ -235,6 +235,62 @@ class TestAlarms(base.BaseMonascaTest):
         len3 = len(response_body3['elements'])
         self.assertEqual(200, resp.status)
         self.assertEqual(len0, len1 + len2 + len3)
+
+    @test.attr(type="gate")
+    def test_list_alarms_by_severity(self):
+        metric_name = data_utils.rand_name("severity-metric")
+        alarm_defs = []
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='LOW'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='MEDIUM'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='HIGH'
+        ))
+        alarm_defs.append(helpers.create_alarm_definition(
+            name=data_utils.rand_name("alarm-severity"),
+            expression=metric_name + " > 12",
+            severity='CRITICAL'
+        ))
+
+        alarm_def_ids = []
+        for definition in alarm_defs:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            self.assertEqual(201, resp.status)
+            alarm_def_ids.append(response_body['id'])
+
+        metric = helpers.create_metric(name=metric_name,
+                                       value=14)
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        for def_id in alarm_def_ids:
+            self._wait_for_alarms(1, def_id)
+
+        query_parms = '?severity=LOW'
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self.assertEqual(200, resp.status)
+        for alarm in response_body['elements']:
+            self.assertEqual('LOW', alarm['alarm_definition']['severity'])
+
+        query_parms = '?severity=HIGH'
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self.assertEqual(200, resp.status)
+        for alarm in response_body['elements']:
+            self.assertEqual('HIGH', alarm['alarm_definition']['severity'])
+
+        query_parms = '?severity=CRITICAL'
+        resp, response_body = self.monasca_client.list_alarms(query_parms)
+        self.assertEqual(200, resp.status)
+        for alarm in response_body['elements']:
+            self.assertEqual('CRITICAL', alarm['alarm_definition']['severity'])
 
     @test.attr(type="gate")
     def test_list_alarms_by_lifecycle_state(self):
@@ -408,7 +464,7 @@ class TestAlarms(base.BaseMonascaTest):
             metric_2['timestamp'] = int(time.time() * 1000)
             resp, response_body = self.monasca_client.create_metrics([metric_1, metric_2])
             self.assertEqual(204, resp.status)
-        self._waiting_for_alarms(3, alarm_def_id)
+        self._wait_for_alarms(3, alarm_def_id)
 
         resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id)
         self._verify_list_alarms_elements(resp, response_body,
@@ -677,7 +733,7 @@ class TestAlarms(base.BaseMonascaTest):
                         'hostname': 'devstack'})
         self.monasca_client.create_metrics(metric1)
         self.monasca_client.create_metrics(metric2)
-        self._waiting_for_alarms(num, alarm_definition_id)
+        self._wait_for_alarms(num, alarm_definition_id)
 
     def _create_metrics_for_match_by_sub_expressions(self, num,
                                                      alarm_definition_id):
@@ -701,7 +757,7 @@ class TestAlarms(base.BaseMonascaTest):
                         'hostname': 'devstack'})
         self.monasca_client.create_metrics(metric3)
         self.monasca_client.create_metrics(metric4)
-        self._waiting_for_alarms(num, alarm_definition_id)
+        self._wait_for_alarms(num, alarm_definition_id)
 
     def _create_metrics_for_match_by_sub_expressions_list(self, num,
                                                           alarm_definition_id):
@@ -730,9 +786,9 @@ class TestAlarms(base.BaseMonascaTest):
         self.monasca_client.create_metrics(metric2)
         self.monasca_client.create_metrics(metric3)
         self.monasca_client.create_metrics(metric4)
-        self._waiting_for_alarms(num, alarm_definition_id)
+        self._wait_for_alarms(num, alarm_definition_id)
 
-    def _waiting_for_alarms(self, num, alarm_definition_id):
+    def _wait_for_alarms(self, num, alarm_definition_id):
         query_param = '?alarm_definition_id=' + str(alarm_definition_id)
         for i in xrange(constants.MAX_RETRIES):
             time.sleep(constants.RETRY_WAIT_SECS)
