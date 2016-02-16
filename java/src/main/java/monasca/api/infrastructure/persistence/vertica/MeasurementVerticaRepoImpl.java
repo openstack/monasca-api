@@ -16,7 +16,6 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -147,7 +146,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
       }
 
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
       List<Map<String, Object>> rows = query.list();
 

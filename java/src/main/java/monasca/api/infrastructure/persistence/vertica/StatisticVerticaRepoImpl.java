@@ -16,9 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 
-import org.apache.commons.codec.binary.Hex;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -223,7 +221,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     }
 
-    DimensionQueries.bindDimensionsToQuery(query, dimensions);
+    MetricQueries.bindDimensionsToQuery(query, dimensions);
 
     List<Map<String, Object>> rows = query.list();
 
