@@ -1312,11 +1312,11 @@ function install_monasca_keystone_client {
 
     if [[ ${SERVICE_HOST} ]]; then
 
-        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST}
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py ${SERVICE_HOST} ${OS_USERNAME} ${OS_PASSWORD} ${OS_PROJECT_NAME}
 
     else
 
-        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py "127.0.0.1"
+        sudo /opt/monasca/bin/python /usr/local/bin/create_monasca_service.py "127.0.0.1" ${OS_USERNAME} ${OS_PASSWORD} ${OS_PROJECT_NAME}
 
     fi
 
