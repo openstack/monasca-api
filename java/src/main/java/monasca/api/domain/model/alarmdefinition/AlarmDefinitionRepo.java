@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
 import monasca.api.domain.exception.EntityNotFoundException;
@@ -48,7 +49,7 @@ public interface AlarmDefinitionRepo {
    * Returns alarms for the given criteria.
    */
   List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                             List<String> sortBy, String offset, int limit);
+                             AlarmSeverity severity, List<String> sortBy, String offset, int limit);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmDefId}

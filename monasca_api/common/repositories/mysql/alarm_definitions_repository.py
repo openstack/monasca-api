@@ -76,7 +76,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             raise exceptions.DoesNotExistException
 
     @mysql_repository.mysql_try_catch_block
-    def get_alarm_definitions(self, tenant_id, name, dimensions,
+    def get_alarm_definitions(self, tenant_id, name, dimensions, severity,
                               sort_by, offset, limit):
 
         parms = [tenant_id]
@@ -88,6 +88,10 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
         if name:
             where_clause += " and ad.name = %s "
             parms.append(name.encode('utf8'))
+
+        if severity:
+            parms.append(severity.encode('utf8'))
+            where_clause += " and ad.severity = %s "
 
         if sort_by is not None:
             order_by_clause = " order by " + ','.join(sort_by)

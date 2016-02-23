@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -51,29 +51,38 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
       // Outer join needed in case there are no dimensions for a definition.
       + "LEFT OUTER JOIN MonMetrics.Dimensions dims ON dims.dimension_set_id = defDims"
-      + ".dimension_set_id WHERE def.id = defDims.definition_id "
-      + "and def.tenant_id = :tenantId "
+      + ".dimension_set_id "
+      + "WHERE def.id = defDims.definition_id "
+      + "AND defDims.id IN (%s) "
+      + "ORDER BY defDims.id ASC ";
+
+  private static final String
+      METRIC_DEFINITIONS_SUB_SELECT =
+      "SELECT defDimsSub.id "
+      + "FROM  MonMetrics.Definitions defSub, MonMetrics.DefinitionDimensions defDimsSub"
+      + "%s " // Dimensions inner join goes here if dimensions specified.
+      + "WHERE defDimsSub.definition_id = defSub.id "
+      + "AND defSub.tenant_id = :tenantId "
       + "%s " // Name goes here.
       + "%s " // Offset goes here.
-      + "%s " // Dimensions and clause goes here
       + "%s " // Optional timestamp qualifier goes here
-      + "ORDER BY defDims.id ASC %s"; // Limit goes here.
+      + "ORDER BY defdimsSub.id ASC %s"; // Limit goes here.
 
   private static final String
       FIND_METRIC_NAMES_SQL =
       "SELECT distinct def.id, def.name "
       + "FROM MonMetrics.Definitions def "
-      + "WHERE def.id IN (%s) " // Subselect goes here
+      + "WHERE def.id IN (%s) "
       + "ORDER BY def.id ASC ";
 
   private static final String
       METRIC_NAMES_SUB_SELECT =
       "SELECT defSub.id "
-      + "FROM  MonMetrics.Definitions defSub, MonMetrics.DefinitionDimensions defDimsSub "
+      + "FROM  MonMetrics.Definitions defSub, MonMetrics.DefinitionDimensions defDimsSub"
+      + "%s " // Dimensions inner join goes here if dimensions specified.
       + "WHERE defDimsSub.definition_id = defSub.id "
       + "AND defSub.tenant_id = :tenantId "
       + "%s " // Offset goes here.
-      + "%s " // Dimensions and clause goes here
       + "ORDER BY defSub.id ASC %s"; // Limit goes here.
 
   private static final String
@@ -149,11 +158,11 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
     // Can't bind limit in a nested sub query. So, just tack on as String.
     String limitPart = " limit " + Integer.toString(limit + 1);
 
-    String defSubSelect =
+    String
+        defSubSelect =
         String.format(METRIC_NAMES_SUB_SELECT,
-                      offsetPart,
-                      MetricQueries.buildDimensionAndClause(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
-                      limitPart);
+                      MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
+                      offsetPart, limitPart);
 
     String sql = String.format(FIND_METRIC_NAMES_SQL, defSubSelect);
 
@@ -253,7 +262,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     if (name != null && !name.isEmpty()) {
 
-      namePart = " and def.name = :name ";
+      namePart = " and defSub.name = :name ";
 
     }
 
@@ -261,24 +270,27 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      offsetPart = " and defDims.id > :offset ";
+      offsetPart = " and defdimsSub.id > :offset ";
 
     }
 
     // Can't bind limit in a nested sub query. So, just tack on as String.
     String limitPart = " limit " + Integer.toString(limit + 1);
 
+
+
     try (Handle h = db.open()) {
 
       // If startTime/endTime is specified, create the 'IN' select statement
       String timeInClause = createTimeInClause(h, startTime, endTime, tenantId, name, dimensions);
 
-      String sql =
-          String.format(FIND_METRIC_DEFS_SQL,
-                        namePart, offsetPart,
-                        MetricQueries.buildDimensionAndClause(dimensions, "defDims"),
-                        timeInClause,
-                        limitPart);
+      String
+          defSubSelect =
+          String.format(METRIC_DEFINITIONS_SUB_SELECT,
+                        MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
+                        namePart, offsetPart, timeInClause, limitPart);
+
+      String sql = String.format(FIND_METRIC_DEFS_SQL, defSubSelect);
 
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
@@ -311,7 +323,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
       }
 
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
 
@@ -340,7 +352,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
     }
 
     String defDimSql = String.format(DEFDIM_IDS_SELECT, namePart,
-    MetricQueries.buildDimensionAndClause(dimensions, "defDims"));
+    MetricQueries.buildJoinClauseFor(dimensions, "defDims"));
 
     Query<Map<String, Object>> query = dbHandle.createQuery(defDimSql).bind("tenantId", tenantId);
 

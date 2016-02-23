@@ -133,16 +133,17 @@ def main(argv):
              {'username': 'monasca-agent', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-agent'},
              {'username': 'demo', 'project': 'demo', 'password': 'secretadmin', 'role': 'monasca-user'}]
 
-    url = 'http://127.0.0.1:35357/v2.0'
+    service_host = argv[0]
+    url = 'http://' + service_host + ':35357/v2.0'
 
     token = None
 
     cacert = None
 
     if not token:
-        username = 'admin'
-        password = 'secretadmin'
-        tenant_name = 'admin'
+        username = argv[1]
+        password = argv[2]
+        tenant_name = argv[3]
         token = get_token(url, cacert, username, password, tenant_name)
 
     key = client.Client(token=token, endpoint=url, cacert=cacert)
@@ -161,7 +162,6 @@ def main(argv):
     if not add_user_roles(key, users):
         return 1
 
-    service_host = argv[0]
     monasca_url = 'http://' + service_host + ':8070/v2.0'
 
     if not add_service_endpoint(key, 'monasca', 'Monasca monitoring service', 'monitoring', monasca_url, 'RegionOne'):

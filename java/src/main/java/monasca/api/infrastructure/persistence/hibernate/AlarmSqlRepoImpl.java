@@ -150,12 +150,17 @@ public class AlarmSqlRepoImpl
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
-                          String lifecycleState, String link, DateTime stateUpdatedStart,
-                          List<String> sortBy,
+                          AlarmSeverity severity, String lifecycleState, String link,
+                          DateTime stateUpdatedStart, List<String> sortBy,
                           String offset, int limit, boolean enforceLimit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering");
     if (sortBy != null && !sortBy.isEmpty()) {
-      throw Exceptions.unprocessableEntity("Sort_by is not implemented for the hibernate database type");
+      throw Exceptions.unprocessableEntity(
+          "Sort_by is not implemented for the hibernate database type");
+    }
+    if (severity != null) {
+      throw Exceptions.unprocessableEntity(
+          "Severity filter is not implemented for the hibernate database type");
     }
 
     List<Alarm> alarms = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
@@ -534,8 +539,9 @@ public class AlarmSqlRepoImpl
   @Override
   public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
                                    Map<String, String> metricDimensions, AlarmState state,
-                                   String lifecycleState, String link, DateTime stateUpdatedStart,
-                                   List<String> groupBy, String offset, int limit) {
+                                   AlarmSeverity severity, String lifecycleState, String link,
+                                   DateTime stateUpdatedStart, List<String> groupBy,
+                                   String offset, int limit) {
     // Not Implemented
     return null;
   }

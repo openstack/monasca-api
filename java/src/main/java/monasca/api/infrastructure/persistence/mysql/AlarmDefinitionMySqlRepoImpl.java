@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
+ * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -37,6 +37,7 @@ import com.google.common.collect.Iterables;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.common.model.alarm.AggregateFunction;
 import monasca.common.model.alarm.AlarmOperator;
+import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
@@ -139,7 +140,8 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
   @SuppressWarnings("unchecked")
   @Override
   public List<AlarmDefinition> find(String tenantId, String name,
-      Map<String, String> dimensions, List<String> sortBy, String offset, int limit) {
+      Map<String, String> dimensions, AlarmSeverity severity,
+      List<String> sortBy, String offset, int limit) {
 
 
     try (Handle h = db.open()) {
@@ -163,6 +165,10 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
 
       if (name != null) {
         sbWhere.append(" and ad.name = :name");
+      }
+
+      if (severity != null) {
+        sbWhere.append(" and ad.severity = :severity");
       }
 
       String orderByPart = "";
@@ -197,13 +203,17 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         q.bind("name", name);
       }
 
+      if (severity != null) {
+        q.bind("severity", severity.name());
+      }
+
       if (limit > 0) {
         q.bind("limit", limit + 1);
       }
 
       q.registerMapper(new AlarmDefinitionMapper());
       q = q.mapTo(AlarmDefinition.class);
-      DimensionQueries.bindDimensionsToQuery(q, dimensions);
+      SubAlarmDefinitionQueries.bindDimensionsToQuery(q, dimensions);
       List<AlarmDefinition> resultSet = (List<AlarmDefinition>) q.list();
       return resultSet;
     }

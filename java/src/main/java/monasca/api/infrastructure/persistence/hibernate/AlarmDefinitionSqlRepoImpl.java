@@ -227,10 +227,17 @@ public class AlarmDefinitionSqlRepoImpl
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions, List<String> sortBy, String offset, int limit) {
+  public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
+                                    AlarmSeverity severity, List<String> sortBy,
+                                    String offset, int limit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering...");
     if (sortBy != null && !sortBy.isEmpty()) {
-      throw Exceptions.unprocessableEntity("Sort_by is not implemented for the hibernate database type");
+      throw Exceptions.unprocessableEntity(
+          "Sort_by is not implemented for the hibernate database type");
+    }
+    if (severity != null) {
+      throw Exceptions.unprocessableEntity(
+          "Severity is not implemented for the hibernate database type");
     }
 
     Session session = null;
@@ -244,7 +251,7 @@ public class AlarmDefinitionSqlRepoImpl
             + "ad.severity, ad.match_by, ad.actions_enabled, ad.created_at, ad.updated_at, ad.deleted_at "
             + "FROM alarm_definition AS ad LEFT OUTER JOIN sub_alarm_definition AS sad ON ad.id = sad.alarm_definition_id "
             + "LEFT OUTER JOIN sub_alarm_definition_dimension AS dim ON sad.id = dim.sub_alarm_definition_id %1$s "
-            + "WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s %3$s) AS t "
+            + "WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s ORDER BY ad.id %3$s) AS t "
             + "LEFT OUTER JOIN alarm_action AS aa ON t.id = aa.alarm_definition_id ORDER BY t.id, t.created_at";
 
     StringBuilder sbWhere = new StringBuilder();
@@ -253,7 +260,7 @@ public class AlarmDefinitionSqlRepoImpl
       sbWhere.append(" and ad.name = :name");
     }
 
-    if (offset != null) {
+    if (offset != null && !offset.equals("0")) {
       sbWhere.append(" and ad.id > :offset");
     }
 
@@ -276,7 +283,7 @@ public class AlarmDefinitionSqlRepoImpl
         qAlarmDefinition.setString("name", name);
       }
 
-      if (offset != null) {
+      if (offset != null && !offset.equals("0")) {
         qAlarmDefinition.setString("offset", offset);
       }
 

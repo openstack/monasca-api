@@ -54,6 +54,7 @@ import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
 import monasca.api.resource.exception.Exceptions;
+import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 
 /**
@@ -71,7 +72,8 @@ public class AlarmResource {
                                                                      "lifecycle_state",
                                                                      "metric_name", "dimension_name",
                                                                      "dimension_value");
-  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id", "state",
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("alarm_id", "alarm_definition_id",
+                                                                    "alarm_definition_name", "state",
                                                                     "severity", "lifecycle_state", "link",
                                                                     "state_updated_timestamp", "updated_timestamp",
                                                                     "created_timestamp");
@@ -174,6 +176,7 @@ public class AlarmResource {
       @QueryParam("metric_name") String metricName,
       @QueryParam("metric_dimensions") String metricDimensionsStr,
       @QueryParam("state") AlarmState state,
+      @QueryParam("severity") AlarmSeverity severity,
       @QueryParam("lifecycle_state") String lifecycleState,
       @QueryParam("link") String link,
       @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
@@ -197,7 +200,7 @@ public class AlarmResource {
 
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
-                                         lifecycleState, link, stateUpdatedStart, sortByList,
+                                         severity, lifecycleState, link, stateUpdatedStart, sortByList,
                                          offset, paging_limit, true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(
@@ -254,6 +257,7 @@ public class AlarmResource {
                          @QueryParam("metric_name") String metricName,
                          @QueryParam("metric_dimensions") String metricDimensionsStr,
                          @QueryParam("state") AlarmState state,
+                         @QueryParam("severity") AlarmSeverity severity,
                          @QueryParam("lifecycle_state") String lifecycleState,
                          @QueryParam("link") String link,
                          @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
@@ -281,6 +285,7 @@ public class AlarmResource {
                                                     metricName,
                                                     metricDimensions,
                                                     state,
+                                                    severity,
                                                     lifecycleState,
                                                     link,
                                                     stateUpdatedStart,

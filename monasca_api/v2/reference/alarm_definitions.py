@@ -85,6 +85,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             tenant_id = helpers.get_tenant_id(req)
             name = helpers.get_query_name(req)
             dimensions = helpers.get_query_dimensions(req)
+            severity = helpers.get_query_param(req, "severity")
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, basestring):
@@ -104,7 +105,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                        'Offset value {} must be an integer'.format(offset))
             limit = helpers.get_limit(req)
 
-            result = self._alarm_definition_list(tenant_id, name, dimensions,
+            result = self._alarm_definition_list(tenant_id, name, dimensions, severity,
                                                  req.uri, sort_by, offset, limit)
 
             res.body = helpers.dumpit_utf8(result)
@@ -219,6 +220,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         definitions = self._alarm_definitions_repo.get_alarm_definitions(tenant_id=tenant_id,
                                                                          name=name,
                                                                          dimensions=None,
+                                                                         severity=None,
                                                                          sort_by=None,
                                                                          offset=None,
                                                                          limit=0)
@@ -297,12 +299,12 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                alarm_metric_rows, sub_alarm_rows, None, None)
 
     @resource.resource_try_catch_block
-    def _alarm_definition_list(self, tenant_id, name, dimensions, req_uri, sort_by,
+    def _alarm_definition_list(self, tenant_id, name, dimensions, severity, req_uri, sort_by,
                                offset, limit):
 
         alarm_definition_rows = (
             self._alarm_definitions_repo.get_alarm_definitions(tenant_id, name,
-                                                               dimensions, sort_by,
+                                                               dimensions, severity, sort_by,
                                                                offset, limit))
 
         result = []

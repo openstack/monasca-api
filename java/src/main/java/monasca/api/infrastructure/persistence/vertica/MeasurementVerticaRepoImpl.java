@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -16,7 +16,6 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,12 +54,12 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       "select def.name, mes.definition_dimensions_id, defdims.dimension_set_id, defdims.definition_id, "
       + "mes.time_stamp, mes.value, mes.value_meta "
       + "from MonMetrics.Measurements mes, MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
+      + "%s "
       + "where mes.definition_dimensions_id = defdims.id "
       + "and def.id = defdims.definition_id "
       + "and def.tenant_id = :tenantId "
       + "and mes.time_stamp >= :startTime "
-      + "%s " // metric name here
-      + "%s " // dimension and clause here
+      + "%s "
       + "order by mes.time_stamp ASC "
       + "limit :limit";
 
@@ -114,8 +113,8 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
       String sql =
           String.format(FIND_BY_METRIC_DEF_SQL,
-              sb,
-              MetricQueries.buildDimensionAndClause(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON));
+                        MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
+                        sb);
 
       Query<Map<String, Object>> query =
           h.createQuery(sql)
@@ -147,7 +146,7 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
       }
 
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
       List<Map<String, Object>> rows = query.list();
 

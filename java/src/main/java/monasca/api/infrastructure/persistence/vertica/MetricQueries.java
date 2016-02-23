@@ -14,11 +14,17 @@
 
 package monasca.api.infrastructure.persistence.vertica;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Hex;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.Query;
 
 import monasca.common.persistence.SqlQueries;
 
@@ -28,32 +34,48 @@ import monasca.common.persistence.SqlQueries;
 final class MetricQueries {
   private MetricQueries() {}
 
-  static String buildDimensionAndClause(Map<String, String> dimensions, String tableToJoinName) {
+  static String buildJoinClauseFor(Map<String, String> dimensions, String tableToJoinName) {
 
     StringBuilder sb = null;
 
-    if (dimensions != null && dimensions.size() > 0) {
+    if (dimensions != null) {
 
-      int numDims = dimensions.size();
       sb = new StringBuilder();
-      sb.append(" and " + tableToJoinName + ".dimension_set_id in ")
-        .append("(select dimension_set_id from MonMetrics.Dimensions where ");
 
-      for (int i = 0; i < numDims; i++) {
-        sb.append("name = :dname")
-          .append(i)
-          .append(" and value = :dvalue")
-          .append(i);
-        if (i != (numDims - 1)) {
-           sb.append(" or ");
-        }
+      for (int i = 0; i < dimensions.size(); i++) {
+
+        sb
+            .append(" inner join MonMetrics.Dimensions dim")
+            .append(i)
+            .append(" on dim")
+            .append(i)
+            .append(".name = :dname")
+            .append(i)
+            .append(" and dim")
+            .append(i)
+            .append(".value = " + ":dvalue")
+            .append(i)
+            .append(" and " + tableToJoinName + ".dimension_set_id = dim")
+            .append(i)
+            .append(".dimension_set_id");
       }
-      sb.append(" group by dimension_set_id ")
-        .append(" having count(*) = " + numDims +") ");
     }
 
     return sb == null ? "" : sb.toString();
+
   }
+
+  static void bindDimensionsToQuery(Query<?> query, Map<String, String> dimensions) {
+    if (dimensions != null) {
+      int i = 0;
+      for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
+        Map.Entry<String, String> entry = it.next();
+        query.bind("dname" + i, entry.getKey());
+        query.bind("dvalue" + i, entry.getValue());
+      }
+    }
+  }
+
 
   static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
 

@@ -23,6 +23,7 @@ import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.infrastructure.persistence.PersistUtils;
+import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
 import monasca.common.model.alarm.AlarmSubExpression;
 import monasca.common.model.metric.MetricDefinition;
@@ -135,8 +136,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   @Override
   public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
                           Map<String, String> metricDimensions, AlarmState state,
-                          String lifecycleState, String link, DateTime stateUpdatedStart,
-                          List<String> sortBy, String offset, int limit, boolean enforceLimit) {
+                          AlarmSeverity severity, String lifecycleState, String link,
+                          DateTime stateUpdatedStart, List<String> sortBy,
+                          String offset, int limit, boolean enforceLimit) {
 
     StringBuilder
         sbWhere =
@@ -181,6 +183,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       sbWhere.append(" and a.state = :state");
     }
 
+    if (severity != null) {
+      sbWhere.append(" and ad.severity = :severity");
+    }
+
     if (lifecycleState != null) {
       sbWhere.append(" and a.lifecycle_state = :lifecycleState");
     }
@@ -193,18 +199,29 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
     }
 
-    StringBuilder sortByClause = new StringBuilder();
+    StringBuilder orderClause = new StringBuilder();
+
     if (sortBy != null && !sortBy.isEmpty()) {
-      sortByClause.append(" order by ");
-      sortByClause.append(COMMA_JOINER.join(sortBy));
+      // Convert friendly names to column names
+      replaceFieldName(sortBy, "alarm_id", "a.id");
+      replaceFieldName(sortBy, "alarm_definition_id", "ad.id");
+      replaceFieldName(sortBy, "alarm_definition_name", "ad.name");
+      replaceFieldName(sortBy, "created_timestamp", "a.created_at");
+      replaceFieldName(sortBy, "updated_timestamp", "a.updated_at");
+      replaceFieldName(sortBy, "state_updated_timestamp", "a.state_updated_at");
+
+      orderClause.append(" order by ");
+      orderClause.append(COMMA_JOINER.join(sortBy));
       // if alarm_id is not in the list, add it
-      if (sortByClause.indexOf("alarm_id") == -1) {
-        sortByClause.append(",alarm_id ASC");
+      if (orderClause.indexOf("a.id") == -1) {
+        orderClause.append(",a.id ASC");
       }
-      sortByClause.append(' ');
+      orderClause.append(' ');
     } else {
-      sortByClause.append(" order by alarm_id ASC ");
+      orderClause.append(" order by a.id ASC ");
     }
+
+    sbWhere.append(orderClause);
 
     if (enforceLimit && limit > 0) {
       sbWhere.append(" limit :limit");
@@ -218,7 +235,7 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
     sbWhere.append(")");
 
-    String sql = String.format(FIND_ALARMS_SQL, sbWhere, sortByClause);
+    String sql = String.format(FIND_ALARMS_SQL, sbWhere, orderClause);
 
     try (Handle h = db.open()) {
 
@@ -234,6 +251,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       if (state != null) {
         q.bind("state", state.name());
+      }
+
+      if (severity != null) {
+        q.bind("severity", severity.name());
       }
 
       if (lifecycleState != null) {
@@ -258,6 +279,15 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       return createAlarms(tenantId, rows);
 
+    }
+  }
+
+  private void replaceFieldName(List<String> list, String oldString, String newString) {
+    for (int i = 0; i < list.size(); i++) {
+      String listElement = list.get(i);
+      if (listElement.contains(oldString)) {
+        list.set(i, listElement.replace(oldString, newString));
+      }
     }
   }
 
@@ -432,8 +462,9 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   @Override
   public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
                                    Map<String, String> metricDimensions, AlarmState state,
-                                   String lifecycleState, String link, DateTime stateUpdatedStart,
-                                   List<String> groupBy, String offset, int limit) {
+                                   AlarmSeverity severity, String lifecycleState, String link,
+                                   DateTime stateUpdatedStart, List<String> groupBy,
+                                   String offset, int limit) {
     final String SELECT_CLAUSE = "SELECT count(*) as count%1$s "
                                  + " FROM alarm AS a "
                                  + " INNER JOIN alarm_definition as ad on ad.id = a.alarm_definition_id ";
@@ -513,6 +544,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       queryBuilder.append(" AND a.state = :state");
     }
 
+    if (severity != null) {
+      queryBuilder.append(" AND ad.severity = :severity");
+    }
+
     if (lifecycleState != null) {
       queryBuilder.append(" AND a.lifecycle_state = :lifecycleState");
     }
@@ -561,6 +596,10 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
 
       if (state != null) {
         q.bind("state", state.name());
+      }
+
+      if (severity != null) {
+        q.bind("severity", severity.name());
       }
 
       if (lifecycleState != null) {

@@ -347,7 +347,7 @@ A metric is uniquely identified by a name and set of dimensions.
 Defines the name of a metric. A name is of type string(255). The name may include any characters except the following: `> < = { } ( ) , ' " \ ; &`. Note that JSON does allow control characters (such as `\n`), however these should not be used in metric names.
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). Dimension keys may not begin with '_' (underscore). The dimension key and value strings may include any characters except the following: `> < = { } ( ) , ' " \ ; &`. Note that JSON does allow control characters (such as `\n`), however these should not be used in dimension keys or values.
+A dictionary of (key, value) pairs. The key and value are of type string(255). Dimension keys may not begin with '_' (underscore). The dimension key and value strings may include any characters except the following: `> < = { } ( ) , ' " \ ; &`. Note that JSON does allow control characters (such as `\n`), however these should not be used in dimension keys or values. Dimension keys and values must not be empty.
 
 ### Text Representation
 In this document, metrics will be represented in the form `name{name=value,name=value}` where name is the metric name and the name=value pairs in the curly braces are the dimensions. For example, `cpu.idle_perc{service=monitoring,hostname=mini-mon}` represents a metric with the name "cpu.idle_perc" and the dimensions "service=monitoring" and "hostname=mini-mon".
@@ -2297,11 +2297,11 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
     "links": [
         {
             "rel": "self",
-            "href": "http://192.168.10.4:8080/v2.0/alarms?name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+            "href": "http://192.168.10.4:8080/v2.0/alarms?metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&state=UNDETERMINED"
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8080/v2.0/alarms?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&name=cpu.system_perc&dimensions=hostname%3Adevstack&state=UNDETERMINED"
+            "href": "http://192.168.10.4:8080/v2.0/alarms?offset=f9935bcc-9641-4cbf-8224-0993a947ea83&metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&state=UNDETERMINED"
         }
     ],
     "elements": [
@@ -2403,7 +2403,7 @@ Returns a JSON object containing the following fields:
        "links": [
            {
                "rel": "self",
-               "href": "http://192.168.10.4:8080/v2.0/alarms/count?name=cpu.system_perc&dimensions=hostname%3Adevstack&group_by=state,lifecycle_state"
+               "href": "http://192.168.10.4:8080/v2.0/alarms/count?metric_name=cpu.system_perc&metric_dimensions=hostname%3Adevstack&group_by=state,lifecycle_state"
            }
        ],
        "columns": ["count", "state", "lifecycle_state"],

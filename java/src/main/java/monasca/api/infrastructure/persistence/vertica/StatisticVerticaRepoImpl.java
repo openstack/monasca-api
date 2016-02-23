@@ -16,9 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.exception.MultipleMetricsException;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 
-import org.apache.commons.codec.binary.Hex;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -52,9 +50,9 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       "select defdims.id, def.name, d.name as dname, d.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
       + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = defdims.dimension_set_id "
+      + "%s "
       + "where def.id = defdims.definition_id and def.tenant_id = :tenantId "
-      + "%s " // metric name here
-      + "%s " // dimension and clause here
+      + "%s "
       + "order by defdims.id ASC";
 
   private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defdims";
@@ -208,8 +206,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     String sql =
         String
             .format(FIND_BY_METRIC_DEF_SQL,
-                    sb,
-                    MetricQueries.buildDimensionAndClause(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON));
+                    MetricQueries.buildJoinClauseFor(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON),
+                    sb);
 
     Query<Map<String, Object>> query =
         h.createQuery(sql)
@@ -223,7 +221,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     }
 
-    DimensionQueries.bindDimensionsToQuery(query, dimensions);
+    MetricQueries.bindDimensionsToQuery(query, dimensions);
 
     List<Map<String, Object>> rows = query.list();
 

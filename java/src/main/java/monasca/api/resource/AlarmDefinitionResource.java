@@ -52,6 +52,7 @@ import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
 import monasca.common.model.alarm.AlarmExpression;
+import monasca.common.model.alarm.AlarmSeverity;
 
 /**
  * Alarm definition resource implementation.
@@ -96,6 +97,7 @@ public class AlarmDefinitionResource {
   public Object list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
+      @QueryParam("severity") AlarmSeverity severity,
       @QueryParam("sort_by") String sortByStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit) throws UnsupportedEncodingException {
@@ -112,6 +114,7 @@ public class AlarmDefinitionResource {
     final List<AlarmDefinition> resources = repo.find(tenantId,
                                                       name,
                                                       dimensions,
+                                                      severity,
                                                       sortByList,
                                                       offset,
                                                       paging_limit
