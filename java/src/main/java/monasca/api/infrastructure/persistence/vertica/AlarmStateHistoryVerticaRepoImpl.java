@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
   private final Utils utils;
   private final PersistUtils persistUtils;
 
-  private final SimpleDateFormat simpleDateFormat;
+  private final ThreadLocal<SimpleDateFormat> simpleDateFormatter;
 
   @Inject
   public AlarmStateHistoryVerticaRepoImpl(
@@ -96,10 +95,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
     this.vertica = vertica;
     this.utils = utils;
     this.persistUtils = persistUtils;
-
-    simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT-0"));
-
+    this.simpleDateFormatter = new ThreadLocal<>();
   }
 
   @Override
@@ -134,7 +130,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       if (offset != null && !offset.isEmpty()) {
 
         // Timestamp will not work in this query for some unknown reason.
-        verticaQuery.bind("offset", simpleDateFormat.format(new Date(Long.valueOf(offset))));
+        verticaQuery.bind("offset", formatDateFromMillis(Long.valueOf(offset)));
 
       }
 
@@ -147,6 +143,14 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
       return alarmStateHistoryList;
     }
 
+  }
+
+  private String formatDateFromMillis(final long millis) {
+    if (simpleDateFormatter.get() == null) {
+      simpleDateFormatter.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
+      simpleDateFormatter.get().setTimeZone(TimeZone.getTimeZone("GMT-0"));
+    }
+    return simpleDateFormatter.get().format(new Date(millis));
   }
 
   @Override
@@ -221,7 +225,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
         logger.debug("binding startime: {}", startTime);
 
         // Timestamp will not work in this query for some unknown reason.
-        verticaQuery.bind("startTime", simpleDateFormat.format(new Date(startTime.getMillis())));
+        verticaQuery.bind("startTime", formatDateFromMillis(startTime.getMillis()));
 
       }
 
@@ -230,7 +234,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
         logger.debug("binding endtime: {}", endTime);
 
         // Timestamp will not work in this query for some unknown reason.
-        verticaQuery.bind("endTime", simpleDateFormat.format(new Date(endTime.getMillis())));
+        verticaQuery.bind("endTime", formatDateFromMillis(endTime.getMillis()));
 
       }
 
@@ -239,7 +243,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
         logger.debug("binding offset: {}", offset);
 
         // Timestamp will not work in this query for some unknown reason.
-        String timeStamp = simpleDateFormat.format(new Date(Long.valueOf(offset)));
+        String timeStamp = formatDateFromMillis(Long.valueOf(offset));
 
         verticaQuery.bind("offset", timeStamp);
 
@@ -284,7 +288,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
     List<MetricDefinition> metricDefinitionList;
     try {
 
-      metricDefinitionList = this.objectMapper.readValue((String) row.get("metrics"), METRICS_TYPE);
+      metricDefinitionList = objectMapper.readValue((String) row.get("metrics"), METRICS_TYPE);
 
     } catch (IOException e) {
 
@@ -303,7 +307,7 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
     List<AlarmTransitionSubAlarm> subAlarmList;
     try {
 
-      subAlarmList = this.objectMapper.readValue((String) row.get("sub_alarms"), SUB_ALARMS_TYPE);
+      subAlarmList = objectMapper.readValue((String) row.get("sub_alarms"), SUB_ALARMS_TYPE);
 
     } catch (IOException e) {
 
