@@ -317,7 +317,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         result = []
         if not alarm_rows:
-            return helpers.paginate(result, req_uri, limit)
+            return helpers.paginate_alarming(result, req_uri, limit)
 
         # Forward declaration
         alarm = {}
@@ -365,7 +365,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         result.append(alarm)
 
-        return helpers.paginate(result, req_uri, limit)
+        return helpers.paginate_alarming(result, req_uri, limit)
 
 
 class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):

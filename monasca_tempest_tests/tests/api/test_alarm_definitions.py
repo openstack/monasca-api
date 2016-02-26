@@ -462,6 +462,13 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                 self.assertEqual(limit, len(new_elements))
                 self.assertEqual(elements[offset], new_elements[0])
                 self.assertEqual(elements[offset+limit-1], new_elements[-1])
+                links = response_body['links']
+                for link in links:
+                    if link['rel'] == 'next':
+                        next_offset = helpers.get_query_param(link['href'], 'offset')
+                        next_limit = helpers.get_query_param(link['href'], 'limit')
+                        self.assertEqual(str(offset + limit), next_offset)
+                        self.assertEqual(str(limit), next_limit)
 
     # Get
 

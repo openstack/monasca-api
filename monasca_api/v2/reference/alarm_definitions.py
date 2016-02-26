@@ -337,7 +337,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             helpers.add_links_to_resource(ad, req_uri)
             result.append(ad)
 
-        result = helpers.paginate(result, req_uri, limit)
+        result = helpers.paginate_alarming(result, req_uri, limit)
 
         return result
 

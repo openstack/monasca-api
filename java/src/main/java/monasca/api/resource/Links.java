@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Preconditions;
@@ -215,9 +216,15 @@ public final class Links {
 
       if (elements.size() > limit) {
 
-        String offset = String.valueOf(limit);
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        int offset = 0;
+        if (queryParams.containsKey("offset")) {
+          offset = Integer.parseInt(queryParams.get("offset").get(0));
+        }
 
-        paged.links.add(getNextLink(offset, uriInfo));
+        String nextOffset = String.valueOf(limit + offset);
+
+        paged.links.add(getNextLink(nextOffset, uriInfo));
 
         // Truncate the list. Normally this will just truncate one extra element.
         elements = elements.subList(0, limit);
