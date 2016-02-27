@@ -53,6 +53,7 @@ import javax.inject.Named;
 public class AlarmMySqlRepoImpl implements AlarmRepo {
 
   private static final Joiner COMMA_JOINER = Joiner.on(',');
+  private static final Splitter SPACE_SPLITTER = Splitter.on(' ');
   private static final Logger logger = LoggerFactory.getLogger(AlarmMySqlRepoImpl.class);
 
   private final DBI db;
@@ -285,7 +286,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
   private void replaceFieldName(List<String> list, String oldString, String newString) {
     for (int i = 0; i < list.size(); i++) {
       String listElement = list.get(i);
-      if (listElement.contains(oldString)) {
+      String columnName = SPACE_SPLITTER.splitToList(listElement).get(0);
+      if (columnName.equals(oldString)) {
         list.set(i, listElement.replace(oldString, newString));
       }
     }
