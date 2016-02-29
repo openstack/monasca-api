@@ -35,7 +35,7 @@ class TestAlarms(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_alarms(self):
         alarm_definition_ids, expected_metric \
-             = self._create_alarms_for_test_alarms(num=1)
+            = self._create_alarms_for_test_alarms(num=1)
         resp, response_body = self.monasca_client.list_alarms()
         self.assertEqual(200, resp.status)
         for element in response_body['elements']:
@@ -496,6 +496,12 @@ class TestAlarms(base.BaseMonascaTest):
         elements = response_body['elements']
         self.assertEqual(2, len(elements))
         self.assertEqual(full_elements[1]['id'], elements[0]['id'])
+
+        resp, response_body = self.monasca_client.list_alarms('?alarm_definition_id=' + alarm_def_id +
+                                                              '&sort_by=state_updated_timestamp&offset=1')
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(2, len(elements))
 
     @test.attr(type="gate")
     def test_list_alarms_invalid_sort_by(self):

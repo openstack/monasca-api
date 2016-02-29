@@ -22,3 +22,4 @@ sphinxcontrib-pecanwsme>=0.8
 testrepository>=0.0.18
 testscenarios>=0.4
 testtools>=0.9.34
+tempest-lib

@@ -1,5 +1,6 @@
 #
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -714,7 +715,6 @@ function install_monasca_api_python {
     echo_summary "Install Monasca monasca_api_python"
 
     sudo apt-get -y install python-dev
-    sudo apt-get -y install python-mysqldb
     sudo apt-get -y install libmysqlclient-dev
 
     sudo mkdir -p /opt/monasca-api
@@ -726,6 +726,7 @@ function install_monasca_api_python {
     PIP_VIRTUAL_ENV=/opt/monasca-api
 
     pip_install gunicorn
+    pip_install PyMySQL
 
     (cd "${MONASCA_BASE}"/monasca-api ; sudo python setup.py sdist)
 

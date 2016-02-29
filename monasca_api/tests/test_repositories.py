@@ -15,6 +15,7 @@
 import unittest
 
 from mock import patch
+
 import monasca_api.common.repositories.influxdb.metrics_repository as influxdb_repo
 
 from oslo_config import cfg

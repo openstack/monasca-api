@@ -13,8 +13,9 @@
 # under the License.
 
 from datetime import datetime
-from oslo_log import log
 from time import time
+
+from oslo_log import log
 
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
@@ -325,23 +326,23 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         if 'sort_by' in query_parms:
             # Convert friendly names to column names
-            self._replace_field_name(query_parms['sort_by'], 'alarm_id', 'a.id')
-            self._replace_field_name(query_parms['sort_by'], 'alarm_definition_id', 'ad.id')
-            self._replace_field_name(query_parms['sort_by'], 'alarm_definition_name', 'ad.name')
-            # check this here to avoid conflict with updated_timestamp
-            self._replace_field_name(query_parms['sort_by'], 'state_updated_timestamp', 'a.state_updated_at')
-            self._replace_field_name(query_parms['sort_by'], 'updated_timestamp', 'a.updated_at')
-            self._replace_field_name(query_parms['sort_by'], 'created_timestamp', 'a.created_at')
-            # use custom ordering instead of alphanumeric
-            self._replace_field_name(query_parms['sort_by'], 'severity',
-                                     'FIELD(severity, "LOW", "MEDIUM", "HIGH", "CRITICAL")')
-            self._replace_field_name(query_parms['sort_by'], 'state',
-                                     'FIELD(state, "OK", "UNDETERMINED", "ALARM")')
-            order_by_clause = " order by " + ','.join(query_parms['sort_by'])
-            if 'a.id' not in query_parms['sort_by']:
-                order_by_clause += ",a.id "
-            else:
-                order_by_clause += " "
+            columns_mapper = {'alarm_id': 'a.id',
+                              'alarm_definition_id': 'ad.id',
+                              'alarm_definition_name': 'ad.name',
+                              # check this here to avoid conflict with updated_timestamp
+                              'state_updated_timestamp': 'a.state_updated_at',
+                              'updated_timestamp': 'a.updated_at',
+                              'created_timestamp': 'a.created_at',
+                              # use custom ordering instead of alphanumeric
+                              'severity': 'FIELD(severity, "LOW", "MEDIUM", "HIGH", "CRITICAL")',
+                              'state': 'FIELD(state, "OK", "UNDETERMINED", "ALARM")'}
+
+            order_columns, received_cols = self._remap_columns(query_parms['sort_by'], columns_mapper)
+
+            if not received_cols.get('alarm_id', False):
+                order_columns.append('a.id')
+
+            order_by_clause = " order by {} ".format(','.join(order_columns))
         else:
             order_by_clause = " order by a.id "
 
@@ -362,12 +363,21 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
 
         return self._execute_query(query, parms)
 
-    @staticmethod
-    def _replace_field_name(item_list, old_name, new_name):
-        for index, item in enumerate(item_list):
-            if old_name in item:
-                item_list[index] = item.replace(old_name, new_name)
-                return
+    def _remap_columns(self, columns, columns_mapper):
+        received_cols = {}
+        order_columns = []
+        for col in columns:
+            col_values = col.split()
+            col_name = col_values[0]
+            order_column = columns_mapper.get(col_name, col_name)
+            if len(col_values) > 1:
+                mode = col_values[1]
+                order_column = "{} {}".format(order_column, mode)
+
+            order_columns.append(order_column)
+            received_cols[col_name] = True
+
+        return order_columns, received_cols
 
     @mysql_repository.mysql_try_catch_block
     def get_alarms_count(self, tenant_id, query_parms, offset, limit):

@@ -41,6 +41,8 @@ import monasca.api.resource.exception.Exceptions;
 public final class Validation {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults().limit(2);
+  private static final Splitter SPACE_SPLITTER = Splitter.on(' ').omitEmptyStrings().trimResults();
+  private static final Joiner SPACE_JOINER = Joiner.on(' ');
   private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat
       .dateOptionalTimeParser().withZoneUTC();
   private static final List<String> VALID_STATISTICS = Arrays.asList("avg", "min", "max", "sum",
@@ -228,10 +230,9 @@ public final class Validation {
   public static List<String> parseAndValidateSortBy(String sortBy, final List<String> allowed_sort_by) {
     List<String> sortByList = new ArrayList<>();
     if (sortBy != null && !sortBy.isEmpty()) {
-      List<String> fieldList = Lists
-          .newArrayList(Splitter.on(',').omitEmptyStrings().trimResults().split(sortBy));
+      List<String> fieldList = COMMA_SPLITTER.omitEmptyStrings().trimResults().splitToList(sortBy);
       for (String sortByField: fieldList) {
-        List<String> field = Lists.newArrayList(Splitter.on(' ').omitEmptyStrings().trimResults().split(sortByField));
+        List<String> field = Lists.newArrayList(SPACE_SPLITTER.split(sortByField.toLowerCase()));
         if (field.size() > 2) {
           throw Exceptions.unprocessableEntity(String.format("Invalid sort_by format %s", sortByField));
         }
@@ -239,9 +240,9 @@ public final class Validation {
           throw Exceptions.unprocessableEntity(String.format("Sort_by field %s must be one of %s", field.get(0), allowed_sort_by));
         }
         if (field.size() > 1 && !field.get(1).equals("desc") && !field.get(1).equals("asc")) {
-          throw Exceptions.unprocessableEntity(String.format("Sort_by value %s must be 'asc' or 'desc'", field.get(1)));
+          throw Exceptions.unprocessableEntity(String.format("Sort_by order %s must be 'asc' or 'desc'", field.get(1)));
         }
-        sortByList.add(Joiner.on(' ').join(field));
+        sortByList.add(SPACE_JOINER.join(field));
       }
     }
     return sortByList;
