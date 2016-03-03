@@ -72,18 +72,19 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       FIND_METRIC_NAMES_SQL =
       "SELECT distinct def.id, def.name "
       + "FROM MonMetrics.Definitions def "
-      + "WHERE def.id IN (%s) "
+      + "WHERE def.id IN (%s) " // Subselect goes here
       + "ORDER BY def.id ASC ";
 
   private static final String
       METRIC_NAMES_SUB_SELECT =
-      "SELECT defSub.id "
+      "SELECT distinct MAX(defSub.id) as max_id " // The aggregation function gives us one id per name
       + "FROM  MonMetrics.Definitions defSub, MonMetrics.DefinitionDimensions defDimsSub"
       + "%s " // Dimensions inner join goes here if dimensions specified.
       + "WHERE defDimsSub.definition_id = defSub.id "
       + "AND defSub.tenant_id = :tenantId "
       + "%s " // Offset goes here.
-      + "ORDER BY defSub.id ASC %s"; // Limit goes here.
+      + "GROUP BY defSub.name " // This is to reduce the (id, name) sets to only include unique names
+      + "ORDER BY max_id ASC %s"; // Limit goes here.
 
   private static final String
       DEFDIM_IDS_SELECT =
