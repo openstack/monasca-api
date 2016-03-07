@@ -66,7 +66,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "%s " // Name goes here.
       + "%s " // Offset goes here.
       + "%s " // Optional timestamp qualifier goes here
-      + "ORDER BY defdimsSub.id ASC %s"; // Limit goes here.
+      + "ORDER BY defDimsSub.id ASC %s"; // Limit goes here.
 
   private static final String
       FIND_METRIC_NAMES_SQL =
@@ -89,16 +89,15 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       DEFDIM_IDS_SELECT =
       "SELECT defDims.id "
       + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
+      + "%s "  // Dimensions innor join goes here
       + "WHERE defDims.definition_id = def.id "
       + "AND def.tenant_id = :tenantId "
-      + "%s "  // Name and clause here
-      + "%s;"; // Dimensions and clause goes here
+      + "%s;";  // Name and clause here
 
   private static final String
       MEASUREMENT_AND_CLAUSE =
-      "AND defDims.id IN ("
-      + "SELECT definition_dimensions_id FROM "
-      + "MonMetrics.Measurements "
+      "AND defDimsSub.id IN ("
+      + "SELECT definition_dimensions_id FROM MonMetrics.Measurements "
       + "WHERE to_hex(definition_dimensions_id) "
       + "%s "    // List of definition dimension ids here
       + "%s ) "; // start or start and end time here
@@ -351,12 +350,13 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       namePart = "AND def.name = :name ";
     }
 
-    String defDimSql = String.format(DEFDIM_IDS_SELECT, namePart,
-    MetricQueries.buildJoinClauseFor(dimensions, "defDims"));
+    String defDimSql = String.format(DEFDIM_IDS_SELECT,
+      MetricQueries.buildJoinClauseFor(dimensions, "defDims"),
+      namePart);
 
     Query<Map<String, Object>> query = dbHandle.createQuery(defDimSql).bind("tenantId", tenantId);
 
-    DimensionQueries.bindDimensionsToQuery(query, dimensions);
+    MetricQueries.bindDimensionsToQuery(query, dimensions);
 
     if (metricName != null && !metricName.isEmpty()) {
       query.bind("name", metricName);
