@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -15,7 +15,6 @@ package monasca.api.infrastructure.persistence.vertica;
 
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
-import monasca.api.infrastructure.persistence.DimensionQueries;
 import monasca.api.resource.exception.Exceptions;
 import monasca.common.model.metric.MetricDefinition;
 
@@ -185,7 +184,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
       }
 
-      DimensionQueries.bindDimensionsToQuery(query, dimensions);
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
       return query.list();
 
