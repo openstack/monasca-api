@@ -356,18 +356,30 @@ class TestAlarms(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_alarms_by_offset_limit(self):
-        definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=2)
+        definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
         resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
         self._verify_list_alarms_elements(resp, response_body,
-                                          expect_num_elements=2)
+                                          expect_num_elements=3)
         elements = response_body['elements']
         second_element = elements[1]
-        query_parms = '?metric_name=' + expected_metric['name'] + '&offset=1&limit=1'
+        offset = 1
+        limit = 1
+        query_parms = '?metric_name=' + expected_metric['name'] + \
+                      '&offset=' + str(offset) + '&limit=' + str(limit)
         resp, response_body1 = self.monasca_client.list_alarms(query_parms)
         elements = response_body1['elements']
         self.assertEqual(1, len(elements))
         self.assertEqual(elements[0]['id'], second_element['id'])
         self.assertEqual(elements[0], second_element)
+        links = response_body1['links']
+        next_offset = None
+        next_limit = None
+        for link in links:
+            if link['rel'] == 'next':
+                next_offset = helpers.get_query_param(link['href'], 'offset')
+                next_limit = helpers.get_query_param(link['href'], 'limit')
+        self.assertEqual(str(offset + limit), next_offset)
+        self.assertEqual(str(limit), next_limit)
 
     @test.attr(type="gate")
     def test_get_alarm(self):
