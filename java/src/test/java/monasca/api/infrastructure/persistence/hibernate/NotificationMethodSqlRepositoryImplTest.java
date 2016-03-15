@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ws.rs.WebApplicationException;
+
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
@@ -103,12 +105,12 @@ public class NotificationMethodSqlRepositoryImplTest {
 
   @Test(groups = "orm")
   public void shouldFind() {
-    List<NotificationMethod> nms1 = repo.find("444", null, 1);
+    List<NotificationMethod> nms1 = repo.find("444", null, null, 1);
 
     assertEquals(nms1, Arrays.asList(new NotificationMethod("123", "MyEmail", NotificationMethodType.EMAIL, "a@b"), new NotificationMethod("124",
         "OtherEmail", NotificationMethodType.EMAIL, "a@b")));
 
-    List<NotificationMethod> nms2 = repo.find("444", "123", 1);
+    List<NotificationMethod> nms2 = repo.find("444", null, "123", 1);
 
     assertEquals(nms2, Collections.singletonList(new NotificationMethod("124", "OtherEmail", NotificationMethodType.EMAIL, "a@b")));
   }
@@ -152,5 +154,10 @@ public class NotificationMethodSqlRepositoryImplTest {
   public void shouldNotUpdateDuplicateWithSameName() {
 
     repo.update("444", "124", "MyEmail", NotificationMethodType.EMAIL, "abc");
+  }
+
+  @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
+  public void shouldFindThrowException() {
+    repo.find("444", Arrays.asList("name", "address"), null, 1);
   }
 }

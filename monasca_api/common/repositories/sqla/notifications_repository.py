@@ -23,7 +23,7 @@ from monasca_api.common.repositories import notifications_repository as nr
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, insert, delete
-from sqlalchemy import select, bindparam, func, and_
+from sqlalchemy import select, bindparam, func, and_, literal_column
 
 LOG = log.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
         return notification_id
 
     @sql_repository.sql_try_catch_block
-    def list_notifications(self, tenant_id, offset, limit):
+    def list_notifications(self, tenant_id, sort_by, offset, limit):
 
         rows = []
 
@@ -124,11 +124,20 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
             parms = {'b_tenant_id': tenant_id}
 
+            if sort_by is not None:
+                order_columns = [literal_column(col) for col in sort_by]
+                if 'id' not in sort_by:
+                    order_columns.append(nm.c.id)
+            else:
+                order_columns = [nm.c.id]
+
             if offset:
                 select_nm_query = (select_nm_query
                                    .where(nm.c.id > bindparam('b_offset')))
 
                 parms['b_offset'] = offset.encode('utf8')
+
+            select_nm_query = select_nm_query.order_by(*order_columns)
 
             select_nm_query = (select_nm_query
                                .order_by(nm.c.id)

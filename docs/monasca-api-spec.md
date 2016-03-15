@@ -1427,6 +1427,8 @@ None.
 #### Query Parameters
 * offset (string, optional)
 * limit (integer, optional)
+* sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'id'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'address desc'
+Allowed fields for sort_by are: 'id', 'name', 'type', 'address', 'created_at', 'updated_at'
 
 #### Request Body
 None.

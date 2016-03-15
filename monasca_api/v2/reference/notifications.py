@@ -22,6 +22,7 @@ from monasca_api.common.repositories import exceptions
 from monasca_api.v2.common.schemas import (
     notifications_request_body_schema as schemas_notifications)
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
+from monasca_api.v2.common import validation
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
 
@@ -121,10 +122,10 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         return helpers.add_links_to_resource(response, uri)
 
     @resource.resource_try_catch_block
-    def _list_notifications(self, tenant_id, uri, offset, limit):
+    def _list_notifications(self, tenant_id, uri, sort_by, offset, limit):
 
-        rows = self._notifications_repo.list_notifications(tenant_id, offset,
-                                                           limit)
+        rows = self._notifications_repo.list_notifications(tenant_id, sort_by,
+                                                           offset, limit)
 
         result = [self._build_notification_result(row,
                                                   uri) for row in rows]
@@ -173,10 +174,20 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         if notification_method_id is None:
             helpers.validate_authorization(req, self._default_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
+            sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
+            if sort_by is not None:
+                if isinstance(sort_by, basestring):
+                    sort_by = sort_by.split(',')
+
+                allowed_sort_by = {'id', 'name', 'type', 'address',
+                                   'updated_at', 'created_at'}
+
+                validation.validate_sort_by(sort_by, allowed_sort_by)
+
             offset = helpers.get_query_param(req, 'offset')
             limit = helpers.get_limit(req)
-            result = self._list_notifications(tenant_id, req.uri, offset,
-                                              limit)
+            result = self._list_notifications(tenant_id, req.uri, sort_by,
+                                              offset, limit)
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
         else:

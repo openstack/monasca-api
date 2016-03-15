@@ -27,7 +27,7 @@ class NotificationsRepository(object):
         return
 
     @abc.abstractmethod
-    def list_notifications(self, tenant_id, offset, limit):
+    def list_notifications(self, tenant_id, sort_by, offset, limit):
         return
 
     @abc.abstractmethod
