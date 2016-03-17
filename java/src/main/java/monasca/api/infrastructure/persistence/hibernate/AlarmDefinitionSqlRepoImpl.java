@@ -544,7 +544,7 @@ public class AlarmDefinitionSqlRepoImpl
         SubAlarmDefinitionDb subAlarmDefinitionDb = session.get(SubAlarmDefinitionDb.class, subAlarmDefinitionId);
         subAlarmDefinitionDb.setOperator(sa.getOperator().name());
         subAlarmDefinitionDb.setThreshold(sa.getThreshold());
-        subAlarmDefinitionDb.setUpdatedAt(new DateTime());
+        subAlarmDefinitionDb.setUpdatedAt(this.getUTCNow());
         session.saveOrUpdate(subAlarmDefinitionDb);
       }
   }

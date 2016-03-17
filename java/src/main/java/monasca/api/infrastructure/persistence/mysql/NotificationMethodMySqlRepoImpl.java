@@ -171,7 +171,8 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
 
       if (h
           .update(
-              "update notification_method set name = ?, type = ?, address = ? where tenant_id = ? and id = ?",
+              "update notification_method set name = ?, type = ?, address = ?, updated_at = NOW() "
+              + "where tenant_id = ? and id = ?",
               name, type.name(), address, tenantId, notificationMethodId) == 0)
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
