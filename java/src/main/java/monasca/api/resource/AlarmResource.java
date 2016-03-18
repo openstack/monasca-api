@@ -149,6 +149,8 @@ public class AlarmResource {
 
     DateTime endTime = Validation.parseAndValidateDate(endTimeStr, "end_time", false);
 
+    Validation.parseAndValidateDate(offset, "offset", false);
+
     if (startTime != null) {
       Validation.validateTimes(startTime, endTime);
     }
