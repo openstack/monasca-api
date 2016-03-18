@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
- * 
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -30,7 +30,7 @@ public class MetricQueriesTest {
     String expectedResult =
         " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
         + "where name = :dname0 and value = :dvalue0 or name = :dname1 and value = :dvalue1 "
-        + "group by dimension_set_id  having count(*) = 2 order by dimension_set_id limit 2)";
+        + "group by dimension_set_id having count(*) = 2 order by dimension_set_id limit 2)";
 
     Map<String, String> dimsMap = new HashMap<>();
     dimsMap.put("foo", "bar");
@@ -50,5 +50,33 @@ public class MetricQueriesTest {
     String expectedResult = "";
     Map<String, String> dimsMap = null;
     assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 0));
+  }
+
+  public void metricQueriesBuildDimensionAndClauseTest4() {
+    String expectedResult =
+        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
+        + "where name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1 ) "
+        + "group by dimension_set_id having count(*) = 1 order by dimension_set_id limit 2)";
+
+    Map<String, String> dimsMap = new HashMap<>();
+    dimsMap.put("foo", "bar|baz");
+
+    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 1);
+    assertEquals(expectedResult, s);
+  }
+
+  public void metricQueriesBuildDimensionAndClauseTest5() {
+    String expectedResult =
+        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
+        + "where name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1 ) "
+        + "or name = :dname1 and ( value = :dvalue1_0 or value = :dvalue1_1 ) "
+        + "group by dimension_set_id having count(*) = 2 order by dimension_set_id limit 2)";
+
+    Map<String, String> dimsMap = new HashMap<>();
+    dimsMap.put("foo", "bar|baz");
+    dimsMap.put("biz", "baz|baf");
+
+    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 1);
+    assertEquals(expectedResult, s);
   }
 }
