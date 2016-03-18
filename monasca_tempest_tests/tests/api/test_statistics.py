@@ -37,25 +37,26 @@ class TestStatistics(base.BaseMonascaTest):
         super(TestStatistics, cls).resource_setup()
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
-        value = data_utils.rand_name('value')
+        value1 = data_utils.rand_name('value1')
+        value2 = data_utils.rand_name('value2')
         cls._test_name = name
         cls._test_key = key
-        cls._test_value = value
+        cls._test_value1 = value1
         cls._start_timestamp = int(time.time() * 1000)
         metrics = [
-            helpers.create_metric(name=cls._test_name,
-                                  dimensions={cls._test_key: cls._test_value},
+            helpers.create_metric(name=name,
+                                  dimensions={key: value1},
                                   timestamp=cls._start_timestamp,
                                   value=metric_value1),
-            helpers.create_metric(name=cls._test_name,
-                                  dimensions={cls._test_key: cls._test_value},
+            helpers.create_metric(name=name,
+                                  dimensions={key: value2},
                                   timestamp=cls._start_timestamp + 1000,
                                   value=metric_value2)
         ]
         cls.monasca_client.create_metrics(metrics)
         start_time_iso = helpers.timestamp_to_iso(cls._start_timestamp)
         query_param = '?name=' + str(name) + '&start_time=' + \
-                      start_time_iso + '&end_time=' + \
+                      start_time_iso + '&merge_metrics=true' + '&end_time=' + \
                       helpers.timestamp_to_iso(cls._start_timestamp + 1000 * 2)
         start_time_iso = helpers.timestamp_to_iso(cls._start_timestamp)
         cls._start_time_iso = start_time_iso
@@ -86,7 +87,7 @@ class TestStatistics(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_statistics(self):
         query_parms = '?name=' + str(self._test_name) + \
-                      '&statistics=avg,min,max,sum,count' + '&start_time=' + \
+                      '&statistics=avg,sum,min,max,count' + '&start_time=' + \
                       str(self._start_time_iso) + '&end_time=' + \
                       str(self._end_time_iso) + '&merge_metrics=true' + \
                       '&period=100000'
@@ -98,9 +99,10 @@ class TestStatistics(base.BaseMonascaTest):
         self._verify_element(element)
         column = element['columns']
         num_statistics_method = 5
-        self._verify_column(column, num_statistics_method)
         statistics = element['statistics'][0]
-        self._verify_statistics(statistics, metric_value1, metric_value2)
+        self._verify_column_and_statistics(
+            column, num_statistics_method, statistics, metric_value1,
+            metric_value2)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
@@ -141,12 +143,12 @@ class TestStatistics(base.BaseMonascaTest):
                       '&start_time=' + str(self._start_time_iso) + \
                       '&end_time=' + str(self._end_time_iso) + \
                       '&dimensions=' + str(self._test_key) + ':' + \
-                      str(self._test_value) + '&period=100000'
+                      str(self._test_value1) + '&period=100000'
         resp, response_body = self.monasca_client.list_statistics(
             query_parms)
         self.assertEqual(200, resp.status)
         dimensions = response_body['elements'][0]['dimensions']
-        self.assertEqual(dimensions[self._test_key], self._test_value)
+        self.assertEqual(dimensions[self._test_key], self._test_value1)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
@@ -182,15 +184,15 @@ class TestStatistics(base.BaseMonascaTest):
                                   dimensions={'key1': 'value-1',
                                               'key2': 'value-1'},
                                   value=1),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 500,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 1000,
                                   dimensions={'key1': 'value-2',
                                               'key2': 'value-2'},
                                   value=2),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 1000,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 2000,
                                   dimensions={'key1': 'value-3',
                                               'key2': 'value-3'},
                                   value=3),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 1500,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 3000,
                                   dimensions={'key1': 'value-4',
                                               'key2': 'value-4'},
                                   value=4)
@@ -317,14 +319,6 @@ class TestStatistics(base.BaseMonascaTest):
         statistic_result_type = type(statistic[0][1])
         self.assertEqual(statistic_result_type, float)
 
-    def _verify_statistics(self, statistics, num1, num2):
-        self.assertTrue(type(statistics) is list)
-        self.assertEqual(statistics[1], (num1 + num2) / 2)
-        self.assertEqual(statistics[2], min(num1, num2))
-        self.assertEqual(statistics[3], max(num1, num2))
-        self.assertEqual(statistics[4], num1 + num2)
-        self.assertEqual(statistics[5], 2)
-
     def _verify_element(self, element):
         self.assertTrue(set(['id', 'name', 'dimensions', 'columns',
                              'statistics']) == set(element))
@@ -337,15 +331,23 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertTrue(type(element['statistics']) is list)
         self.assertEqual(element['name'], self._test_name)
 
-    def _verify_column(self, column, num_statistics_method):
+    def _verify_column_and_statistics(
+            self, column, num_statistics_method, statistics, num1, num2):
         self.assertTrue(type(column) is list)
+        self.assertTrue(type(statistics) is list)
         self.assertEqual(len(column), num_statistics_method + 1)
         self.assertEqual(column[0], 'timestamp')
-        self.assertEqual(column[1], 'avg')
-        self.assertEqual(column[2], 'min')
-        self.assertEqual(column[3], 'max')
-        self.assertEqual(column[4], 'sum')
-        self.assertEqual(column[5], 'count')
+        for i, method in enumerate(column):
+            if method == 'avg':
+                self.assertAlmostEqual(statistics[i], (num1 + num2) / 2)
+            elif method == 'max':
+                self.assertEqual(statistics[i], max(num1, num2))
+            elif method == 'min':
+                self.assertEqual(statistics[i], min(num1, num2))
+            elif method == 'sum':
+                self.assertAlmostEqual(statistics[i], num1 + num2)
+            elif method == 'count':
+                self.assertEqual(statistics[i], 2)
 
     def _check_timeout(self, timer, max_retries, elements,
                        expect_num_elements):
