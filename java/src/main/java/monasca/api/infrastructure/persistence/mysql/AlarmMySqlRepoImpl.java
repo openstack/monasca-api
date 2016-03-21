@@ -210,6 +210,8 @@ public class AlarmMySqlRepoImpl implements AlarmRepo {
       replaceFieldName(sortBy, "created_timestamp", "a.created_at");
       replaceFieldName(sortBy, "updated_timestamp", "a.updated_at");
       replaceFieldName(sortBy, "state_updated_timestamp", "a.state_updated_at");
+      replaceFieldName(sortBy, "state", "FIELD(state, \"OK\", \"UNDETERMINED\", \"ALARM\")");
+      replaceFieldName(sortBy, "severity", "FIELD(severity, \"LOW\", \"MEDIUM\", \"HIGH\", \"CRITICAL\")");
 
       orderClause.append(" order by ");
       orderClause.append(COMMA_JOINER.join(sortBy));
