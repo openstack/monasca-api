@@ -533,12 +533,12 @@ class MetricsRepository(metrics_repository.MetricsRepository):
 
             time_clause = ''
             if start_timestamp:
-                time_clause += " and time > " + str(int(start_timestamp *
-                                                        1000000)) + "u "
+                time_clause += " and time >= " + str(int(start_timestamp *
+                                                         1000000)) + "u "
 
             if end_timestamp:
-                time_clause += " and time < " + str(int(end_timestamp *
-                                                        1000000)) + "u "
+                time_clause += " and time <= " + str(int(end_timestamp *
+                                                         1000000)) + "u "
 
             offset_clause = self._build_offset_clause(offset, limit)
 
