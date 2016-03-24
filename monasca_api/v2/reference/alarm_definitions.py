@@ -89,7 +89,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, basestring):
-                    sort_by = [sort_by]
+                    sort_by = sort_by.split(',')
 
                 allowed_sort_by = {'id', 'name', 'severity',
                                    'updated_at', 'created_at'}

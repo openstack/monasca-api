@@ -94,7 +94,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
             where_clause += " and ad.severity = %s "
 
         if sort_by is not None:
-            order_by_clause = " order by " + ','.join(sort_by)
+            order_by_clause = " order by ad." + ",ad.".join(sort_by)
             if 'id' not in sort_by:
                 order_by_clause += ",ad.id "
             else:

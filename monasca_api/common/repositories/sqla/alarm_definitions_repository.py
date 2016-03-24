@@ -319,7 +319,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
             order_columns = []
             if sort_by is not None:
-                order_columns = [literal_column(col) for col in sort_by]
+                order_columns = [literal_column('ad.' + col) for col in sort_by]
                 if 'id' not in sort_by:
                     order_columns.append(ad.c.id)
             else:
