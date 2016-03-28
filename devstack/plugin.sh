@@ -1613,19 +1613,17 @@ function install_monasca_horizon_ui {
 
     echo_summary "Install Monasca Horizon UI"
 
-    sudo mkdir -p /opt/monasca-horizon-ui || true
+    sudo git clone https://git.openstack.org/openstack/monasca-ui.git "${MONASCA_BASE}"/monasca-ui
 
-    sudo chown $STACK_USER:monasca /opt/monasca-horizon-ui
+    sudo pip install python-monascaclient
 
-    (cd /opt/monasca-horizon-ui ; virtualenv .)
+    sudo ln -sf "${MONASCA_BASE}"/monasca-ui/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
-    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
+    sudo ln -sf "${MONASCA_BASE}"/monasca-ui/monitoring "${MONASCA_BASE}"/horizon/monitoring
 
-    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
+    sudo python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
 
-    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
-
-    sudo PYTHONPATH=/opt/monasca-horizon-ui/lib/python2.7/site-packages python "${MONASCA_BASE}"/horizon/manage.py compress --force
+    sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
 
     sudo service apache2 restart
 
@@ -1639,7 +1637,7 @@ function clean_monasca_horizon_ui {
 
     sudo rm -f "${MONASCA_BASE}"/horizon/monitoring
 
-    sudo rm -rf /opt/monasca-horizon-ui
+    sudo rm -rf "${MONASCA_BASE}"/monasca-ui 
 
 }
 
