@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -129,8 +129,8 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
       if (offset != null && !offset.isEmpty()) {
 
-        // Timestamp will not work in this query for some unknown reason.
-        verticaQuery.bind("offset", formatDateFromMillis(Long.valueOf(offset)));
+        DateTime offset_dt = new DateTime(offset);
+        verticaQuery.bind("offset", formatDateFromMillis(offset_dt.getMillis()));
 
       }
 
@@ -242,11 +242,9 @@ public class AlarmStateHistoryVerticaRepoImpl implements AlarmStateHistoryRepo {
 
         logger.debug("binding offset: {}", offset);
 
-        // Timestamp will not work in this query for some unknown reason.
-        String timeStamp = formatDateFromMillis(Long.valueOf(offset));
-
-        verticaQuery.bind("offset", timeStamp);
-
+        DateTime offset_dt = new DateTime(offset);
+        verticaQuery.bind("offset", formatDateFromMillis(offset_dt.getMillis()));
+        
       }
 
       DimensionQueries.bindDimensionsToQuery(verticaQuery, dimensions);
