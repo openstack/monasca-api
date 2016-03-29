@@ -210,6 +210,10 @@ function unstack_monasca {
     sudo stop zookeeper || true
 
     sudo /etc/init.d/influxdb stop || true
+
+    sudo service verticad stop || true
+
+    sudo service vertica_agent stop || true
 }
 
 function clean_monasca {
@@ -499,7 +503,7 @@ function install_monasca_vertica {
 
     echo_summary "Install Monasca Vertica"
 
-    sudo mkdir -p /opt/monasca_download_dir || true
+    # sudo mkdir -p /opt/monasca_download_dir || true
 
     sudo apt-get -y install dialog
 
@@ -563,6 +567,17 @@ function clean_monasca_vertica {
 
     echo_summary "Clean Monasca Vertica"
 
+    sudo rm -rf /opt/vertica
+
+    sudo dpkg --purge vertica
+
+    sudo userdel dbadmin
+
+    sudo groupdel verticadba
+
+    sudo rm -rf /home/dbadmin
+
+    sudo apt-get -y purge dialog
 }
 
 function install_cli_creds {
