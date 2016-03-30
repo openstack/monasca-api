@@ -131,6 +131,8 @@ def main(argv):
     """ Get token if needed and then call methods to add tenants, users and roles """
     users = [{'username': 'mini-mon', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-user'},
              {'username': 'monasca-agent', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-agent'},
+             {'username': 'mini-mon', 'project': 'mini-mon', 'password': 'password', 'role': 'admin'},
+             {'username': 'admin', 'project': 'admin', 'password': 'secretadmin', 'role': 'monasca-user'},
              {'username': 'demo', 'project': 'demo', 'password': 'secretadmin', 'role': 'monasca-user'}]
 
     service_host = argv[0]

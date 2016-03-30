@@ -170,6 +170,8 @@ function extra_monasca {
 
         install_monasca_horizon_ui
 
+        install_monasca_grafana
+
     fi
 
     install_monasca_smoke_test
@@ -227,6 +229,8 @@ function clean_monasca {
     if is_service_enabled horizon; then
 
         clean_monasca_horizon_ui
+
+        clean_monasca_grafana
 
     fi
 
@@ -1636,6 +1640,16 @@ function install_monasca_horizon_ui {
 
     sudo ln -sf "${MONASCA_BASE}"/monasca-ui/monitoring "${MONASCA_BASE}"/horizon/monitoring
 
+    if [[ ${SERVICE_HOST} ]]; then
+
+        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': \"http:\/\/${SERVICE_HOST}:3000\", }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
+
+    else
+
+        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': 'http://localhost:3000', }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
+
+    fi
+
     sudo python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
 
     sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
@@ -1652,7 +1666,78 @@ function clean_monasca_horizon_ui {
 
     sudo rm -f "${MONASCA_BASE}"/horizon/monitoring
 
-    sudo rm -rf "${MONASCA_BASE}"/monasca-ui 
+    sudo rm -rf "${MONASCA_BASE}"/monasca-ui
+
+}
+
+function install_monasca_grafana {
+
+    echo_summary "Install Grafana"
+
+    sudo apt-get install -y wget nodejs nodejs-legacy npm
+
+    cd "${MONASCA_BASE}"
+    wget https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.5.2.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+
+    git clone https://github.com/twc-openstack/grafana-plugins.git
+    cd grafana-plugins
+    git checkout v2.6.0
+    cd "${MONASCA_BASE}"
+    git clone https://github.com/twc-openstack/grafana.git
+    cd grafana
+    git checkout v2.6.0-keystone
+    cd "${MONASCA_BASE}"
+
+    mkdir grafana-build
+    cd grafana-build
+    export GOPATH=`pwd`
+    go get -d github.com/grafana/grafana/...
+    cd $GOPATH/src/github.com/grafana
+    sudo rm -r grafana
+    cp -r "${MONASCA_BASE}"/grafana .
+    cd grafana
+    cp -r "${MONASCA_BASE}"/grafana-plugins/datasources/monasca ./public/app/plugins/datasource/
+    cp "${MONASCA_BASE}"/monasca-ui/grafana-dashboards/* ./public/dashboards/
+
+    go run build.go setup
+    $GOPATH/bin/godep restore
+    go run build.go build
+    npm config set unsafe-perm true
+    sudo npm install
+    sudo npm install -g grunt-cli
+    grunt --force
+    cd "${MONASCA_BASE}"
+    sudo rm -r grafana-plugins
+    sudo rm -r grafana
+    rm go1.5.2.linux-amd64.tar.gz
+
+    sudo useradd grafana
+    sudo mkdir /etc/grafana
+    sudo mkdir /var/lib/grafana
+    sudo mkdir /var/log/grafana
+    sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
+
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana.ini /etc/grafana/grafana.ini
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana-server /etc/init.d/grafana-server
+    sudo sed -i "s#/usr/sbin#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana/grafana/bin#g" /etc/init.d/grafana-server
+    sudo sed -i "s#/usr/share#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana#g" /etc/init.d/grafana-server
+
+    sudo service grafana-server start
+}
+
+function clean_monasca_grafana {
+
+    sudo rm -f "${MONASCA_BASE}"/grafana-build
+
+    sudo rm /etc/init.d/grafana-server
+
+    sudo rm -r /etc/grafana
+
+    sudo rm -r /var/lib/grafana
+
+    sudo rm -r /var/log/grafana
 
 }
 
