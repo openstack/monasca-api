@@ -42,6 +42,7 @@ public final class Validation {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Splitter COLON_SPLITTER = Splitter.on(':').omitEmptyStrings().trimResults().limit(2);
   private static final Splitter SPACE_SPLITTER = Splitter.on(' ').omitEmptyStrings().trimResults();
+  private static final Splitter VERTICAL_BAR_SPLITTER = Splitter.on('|').omitEmptyStrings().trimResults();
   private static final Joiner SPACE_JOINER = Joiner.on(' ');
   private static final DateTimeFormatter ISO_8601_FORMATTER = ISODateTimeFormat
       .dateOptionalTimeParser().withZoneUTC();
@@ -95,10 +96,21 @@ public final class Validation {
     Map<String, String> dimensions = new HashMap<String, String>();
     for (String dimensionStr : COMMA_SPLITTER.split(dimensionsStr)) {
       String[] dimensionArr = Iterables.toArray(COLON_SPLITTER.split(dimensionStr), String.class);
-      if (dimensionArr.length == 2)
-        dimensions.put(dimensionArr[0], dimensionArr[1]);
-      if (dimensionArr.length == 1)
+      if (dimensionArr.length == 1) {
+        DimensionValidation.validateName(dimensionArr[0]);
         dimensions.put(dimensionArr[0], "");
+      } else if (dimensionArr.length > 1) {
+        DimensionValidation.validateName(dimensionArr[0]);
+        if (dimensionArr[1].contains("|")) {
+          List<String> dimensionValueArr = VERTICAL_BAR_SPLITTER.splitToList(dimensionArr[1]);
+          for (String dimensionValue : dimensionValueArr) {
+            DimensionValidation.validateValue(dimensionValue, dimensionArr[0]);
+          }
+        } else {
+          DimensionValidation.validateValue(dimensionArr[1], dimensionArr[0]);
+        }
+        dimensions.put(dimensionArr[0], dimensionArr[1]);
+      }
     }
 
     //DimensionValidation.validate(dimensions);

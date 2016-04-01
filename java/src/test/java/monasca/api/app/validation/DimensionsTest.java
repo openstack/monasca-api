@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
 @Test
@@ -51,5 +52,50 @@ public class DimensionsTest {
         put("abc", null);
       }
     });
+  }
+
+  public void shouldValidateKey() {
+    DimensionValidation.validateName("this.is_a.valid-key");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateKeyWithEmptyKey() {
+    DimensionValidation.validateName("");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateKeyWithLongKey() {
+    String key = StringUtils.repeat("A", 256);
+    DimensionValidation.validateName(key);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateKeyWithStartingUnderscore() {
+    DimensionValidation.validateName("_key");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateKeyWithInvalidCharKey() {
+    DimensionValidation.validateName("this{}that");
+  }
+
+  public void shouldValidateValue() {
+    DimensionValidation.validateValue("this.is_a.valid-value", "valid_name");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateValueWithEmptyValue() {
+    DimensionValidation.validateValue("", "valid_name");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateValueWithLongValue() {
+    String value = StringUtils.repeat("A", 256);
+    DimensionValidation.validateValue(value, "valid_name");
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldErrorOnValidateValueWithInvalidCharValue() {
+    DimensionValidation.validateValue("this{}that", "valid_name");
   }
 }

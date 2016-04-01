@@ -330,9 +330,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                         if '|' in parsed_dimension[1]:
                             values = parsed_dimension[1].encode('utf8').split('|')
                             sub_values_cond = []
-                            for j, value in values:
+                            for j, value in enumerate(values):
                                 sub_md_value = "b_md_value_{}_{}".format(i, j)
-                                sub_values_cond.append = (md.c.value == bindparam(sub_md_value))
+                                sub_values_cond.append(md.c.value == bindparam(sub_md_value))
                                 parms[sub_md_value] = value
                             values_cond = or_(*sub_values_cond)
                             values_cond_flag = True

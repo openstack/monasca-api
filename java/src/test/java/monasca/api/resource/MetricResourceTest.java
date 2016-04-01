@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -221,7 +221,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
             valueMeta));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Dimension blah cannot have an empty value");
+        "Dimension 'blah' cannot have an empty value");
   }
 
   public void shouldErrorOnCreateWithMissingDimensionValue() {
@@ -235,7 +235,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
             valueMeta));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
-        "Dimension flavor_id cannot have an empty value");
+        "Dimension 'flavor_id' cannot have an empty value");
   }
 
   public void shouldErrorOnCreateWithTooLongDimensionName() {
@@ -257,7 +257,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         .matches(
             "unprocessable_entity",
             422,
-            "Dimension name 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc must be 255 characters or less");
+            "Dimension name '012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc' must be 255 characters or less");
   }
 
   public void shouldErrorOnCreateWithTooLongDimensionValue() {
@@ -279,7 +279,7 @@ public class MetricResourceTest extends AbstractMonApiResourceTest {
         .matches(
             "unprocessable_entity",
             422,
-            "Dimension value 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc must be 255 characters or less");
+            "Dimension 'abc' value '012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abc' must be 255 characters or less");
   }
 
   public void shouldErrorOnCreateWithHighTimestamp() {

@@ -68,6 +68,10 @@ class TestDimensionValidation(unittest.TestCase):
                    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
         self.assertRaises(AssertionError, validation.dimension_key, dim_key)
 
+    def test_key_starts_with_underscore(self):
+        dim_key = '_key'
+        self.assertRaises(AssertionError, validation.dimension_key, dim_key)
+
     def test_invalid_chars_key(self):
         for c in invalid_chars:
             dim_key = "this{}that".format(c)
