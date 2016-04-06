@@ -179,6 +179,7 @@ public class NotificationMethodSqlRepoImpl
       db.setName(name);
       db.setType(AlarmNotificationMethodType.valueOf(type.name()));
       db.setAddress(address);
+      db.setUpdatedAt(this.getUTCNow());
 
       session.save(db);
       tx.commit();

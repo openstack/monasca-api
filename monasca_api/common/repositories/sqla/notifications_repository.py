@@ -72,7 +72,6 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                      name=bindparam('b_name'),
                                      type=bindparam('b_type'),
                                      address=bindparam('b_address'),
-                                     created_at=bindparam('b_created_at'),
                                      updated_at=bindparam('b_updated_at')))
 
         self._select_nm_id_query = (select([nm])
@@ -188,7 +187,6 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                   b_name=name.encode('utf8'),
                                   b_type=notification_type.encode('utf8'),
                                   b_address=address.encode('utf8'),
-                                  b_created_at=now,
                                   b_updated_at=now)
 
             if cursor.rowcount < 1:

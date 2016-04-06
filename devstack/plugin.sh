@@ -48,6 +48,9 @@ set -o errexit
 export MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
 export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
+# Set default metrics DB to InfluxDB
+export MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
+
 # Determine if we are running in devstack-gate or devstack.
 if [[ $DEST ]]; then
 
@@ -67,6 +70,8 @@ function pre_install_monasca {
 
 function install_monasca {
 
+    install_git
+
     update_maven
 
     install_monasca_virtual_env
@@ -77,15 +82,27 @@ function install_monasca {
 
     install_kafka
 
-    install_influxdb
+    if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
+
+        install_monasca_influxdb
+
+    elif [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        install_monasca_vertica
+
+    else
+
+        echo "Found invalid value for variable MONASCA_METRICS_DB: $MONASCA_METRICS_DB"
+        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\" and \"vertica\""
+        die "Please set MONASCA_METRICS_DB to either \"influxdb'' or \"vertica\""
+
+    fi
 
     install_cli_creds
 
     install_schema
 
     install_maven
-
-    install_git
 
     install_monasca_common
 
@@ -153,6 +170,8 @@ function extra_monasca {
 
         install_monasca_horizon_ui
 
+        install_monasca_grafana
+
     fi
 
     install_monasca_smoke_test
@@ -193,6 +212,10 @@ function unstack_monasca {
     sudo stop zookeeper || true
 
     sudo /etc/init.d/influxdb stop || true
+
+    sudo service verticad stop || true
+
+    sudo service vertica_agent stop || true
 }
 
 function clean_monasca {
@@ -206,6 +229,8 @@ function clean_monasca {
     if is_service_enabled horizon; then
 
         clean_monasca_horizon_ui
+
+        clean_monasca_grafana
 
     fi
 
@@ -261,7 +286,21 @@ function clean_monasca {
 
     clean_cli_creds
 
-    clean_influxdb
+    if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
+
+        clean_monasca_influxdb
+
+    elif [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        clean_monasca_vertica
+
+    else
+
+        echo "Found invalid value for variable MONASCA_METRICS_DB: $MONASCA_METRICS_DB"
+        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\" and \"vertica\""
+        die "Please set MONASCA_METRICS_DB to either \"influxdb'' or \"vertica\""
+
+    fi
 
     clean_kafka
 
@@ -435,7 +474,7 @@ function clean_kafka {
 
 }
 
-function install_influxdb {
+function install_monasca_influxdb {
 
     echo_summary "Install Monasca Influxdb"
 
@@ -464,7 +503,38 @@ function install_influxdb {
 
 }
 
-function clean_influxdb {
+function install_monasca_vertica {
+
+    echo_summary "Install Monasca Vertica"
+
+    # sudo mkdir -p /opt/monasca_download_dir || true
+
+    sudo apt-get -y install dialog
+
+    sudo dpkg --skip-same-version -i /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb
+
+    # Download Vertica JDBC driver
+    # sudo curl https://my.vertica.com/client_drivers/7.2.x/${VERTICA_VERSION}/vertica-jdbc-{VERTICA_VERSION}.jar -o /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar
+
+    sudo /opt/vertica/sbin/install_vertica --hosts "127.0.0.1" --deb /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb --dba-user-password password --license CE --accept-eula --failure-threshold NONE
+
+    sudo su dbadmin -c '/opt/vertica/bin/admintools -t create_db -s "127.0.0.1" -d mon -p password'
+
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_BASE}"/monasca-api/devstack/files/vertica/mon_metrics.sql
+
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_BASE}"/monasca-api/devstack/files/vertica/mon_alarms.sql
+
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_BASE}"/monasca-api/devstack/files/vertica/roles.sql
+
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_BASE}"/monasca-api/devstack/files/vertica/users.sql
+
+    # Copy Vertica JDBC driver to /opt/monasca
+    # sudo cp /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
+    sudo cp /vagrant_home/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
+
+}
+
+function clean_monasca_influxdb {
 
     echo_summary "Clean Monasca Influxdb"
 
@@ -497,6 +567,23 @@ function clean_influxdb {
     sudo rm -f /etc/init.d/influxdb
 }
 
+function clean_monasca_vertica {
+
+    echo_summary "Clean Monasca Vertica"
+
+    sudo rm -rf /opt/vertica
+
+    sudo dpkg --purge vertica
+
+    sudo userdel dbadmin
+
+    sudo groupdel verticadba
+
+    sudo rm -rf /home/dbadmin
+
+    sudo apt-get -y purge dialog
+}
+
 function install_cli_creds {
 
     echo_summary "Install Monasca CLI Creds"
@@ -525,13 +612,17 @@ function install_schema {
 
     sudo chmod 0755 /opt/monasca/sqls
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/influxdb_setup.py /opt/monasca/influxdb_setup.py
+    if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
 
-    sudo chmod 0750 /opt/monasca/influxdb_setup.py
+        sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/influxdb_setup.py /opt/monasca/influxdb_setup.py
 
-    sudo chown root:root /opt/monasca/influxdb_setup.py
+        sudo chmod 0750 /opt/monasca/influxdb_setup.py
 
-    sudo /opt/monasca/influxdb_setup.py
+        sudo chown root:root /opt/monasca/influxdb_setup.py
+
+        sudo /opt/monasca/influxdb_setup.py
+
+    fi
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/mon_mysql.sql /opt/monasca/sqls/mon.sql
 
@@ -663,6 +754,13 @@ function install_monasca_api_java {
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-api/monasca-api.conf /etc/init/monasca-api.conf
 
+    if [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        # Add the Vertica JDBC to the class path.
+        sudo sed -i "s/-cp \/opt\/monasca\/monasca-api.jar/-cp \/opt\/monasca\/monasca-api.jar:\/opt\/monasca\/vertica-jdbc-${VERTICA_VERSION}.jar/g" /etc/init/monasca-api.conf
+
+    fi
+
     sudo chown root:root /etc/init/monasca-api.conf
 
     sudo chmod 0744 /etc/init/monasca-api.conf
@@ -687,14 +785,26 @@ function install_monasca_api_java {
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-api/api-config.yml /etc/monasca/api-config.yml
 
+    if [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        # Switch databaseType from influxdb to vertica
+        sudo sed -i "s/databaseType: \"influxdb\"/databaseType: \"vertica\"/g" /etc/monasca/api-config.yml
+
+    fi
+
     sudo chown mon-api:root /etc/monasca/api-config.yml
 
     sudo chmod 0640 /etc/monasca/api-config.yml
 
     if [[ ${SERVICE_HOST} ]]; then
 
-        # set influxdb ip address
-        sudo sed -i "s/url: \"http:\/\/127\.0\.0\.1:8086\"/url: \"http:\/\/${SERVICE_HOST}:8086\"/g" /etc/monasca/api-config.yml
+        if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
+
+            # set influxdb ip address
+            sudo sed -i "s/url: \"http:\/\/127\.0\.0\.1:8086\"/url: \"http:\/\/${SERVICE_HOST}:8086\"/g" /etc/monasca/api-config.yml
+
+        fi
+
         # set kafka ip address
         sudo sed -i "s/127\.0\.0\.1:9092/${SERVICE_HOST}:9092/g" /etc/monasca/api-config.yml
         # set zookeeper ip address
@@ -882,6 +992,13 @@ function install_monasca_persister_java {
 
     sudo chmod 0640 /etc/monasca/persister-config.yml
 
+    if [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        # Switch databaseType from influxdb to vertica
+        sudo sed -i "s/databaseType: influxdb/databaseType: vertica/g" /etc/monasca/persister-config.yml
+
+    fi
+
     if [[ ${SERVICE_HOST} ]]; then
 
         # set zookeeper ip address
@@ -894,6 +1011,13 @@ function install_monasca_persister_java {
     fi
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-persister/monasca-persister.conf /etc/init/monasca-persister.conf
+
+    if [[ "${MONASCA_METRICS_DB,,}" == 'vertica' ]]; then
+
+        # Add the Vertica JDBC to the class path.
+        sudo sed -i "s/-cp \/opt\/monasca\/monasca-persister.jar/-cp \/opt\/monasca\/monasca-persister.jar:\/opt\/monasca\/vertica-jdbc-${VERTICA_VERSION}.jar/g" /etc/init/monasca-persister.conf
+
+    fi
 
     sudo chown root:root /etc/init/monasca-persister.conf
 
@@ -1508,19 +1632,27 @@ function install_monasca_horizon_ui {
 
     echo_summary "Install Monasca Horizon UI"
 
-    sudo mkdir -p /opt/monasca-horizon-ui || true
+    sudo git clone https://git.openstack.org/openstack/monasca-ui.git "${MONASCA_BASE}"/monasca-ui
 
-    sudo chown $STACK_USER:monasca /opt/monasca-horizon-ui
+    sudo pip install python-monascaclient
 
-    (cd /opt/monasca-horizon-ui ; virtualenv .)
+    sudo ln -sf "${MONASCA_BASE}"/monasca-ui/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
-    (cd /opt/monasca-horizon-ui ; sudo -H ./bin/pip install monasca-ui)
+    sudo ln -sf "${MONASCA_BASE}"/monasca-ui/monitoring "${MONASCA_BASE}"/horizon/monitoring
 
-    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
+    if [[ ${SERVICE_HOST} ]]; then
 
-    sudo ln -sf /opt/monasca-horizon-ui/lib/python2.7/site-packages/monitoring/static/monitoring "${MONASCA_BASE}"/horizon/monitoring
+        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': \"http:\/\/${SERVICE_HOST}:3000\", }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
 
-    sudo PYTHONPATH=/opt/monasca-horizon-ui/lib/python2.7/site-packages python "${MONASCA_BASE}"/horizon/manage.py compress --force
+    else
+
+        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': 'http://localhost:3000', }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
+
+    fi
+
+    sudo python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
+
+    sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
 
     sudo service apache2 restart
 
@@ -1534,7 +1666,78 @@ function clean_monasca_horizon_ui {
 
     sudo rm -f "${MONASCA_BASE}"/horizon/monitoring
 
-    sudo rm -rf /opt/monasca-horizon-ui
+    sudo rm -rf "${MONASCA_BASE}"/monasca-ui
+
+}
+
+function install_monasca_grafana {
+
+    echo_summary "Install Grafana"
+
+    sudo apt-get install -y wget nodejs nodejs-legacy npm
+
+    cd "${MONASCA_BASE}"
+    wget https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.5.2.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+
+    git clone https://github.com/twc-openstack/grafana-plugins.git
+    cd grafana-plugins
+    git checkout v2.6.0
+    cd "${MONASCA_BASE}"
+    git clone https://github.com/twc-openstack/grafana.git
+    cd grafana
+    git checkout v2.6.0-keystone
+    cd "${MONASCA_BASE}"
+
+    mkdir grafana-build
+    cd grafana-build
+    export GOPATH=`pwd`
+    go get -d github.com/grafana/grafana/...
+    cd $GOPATH/src/github.com/grafana
+    sudo rm -r grafana
+    cp -r "${MONASCA_BASE}"/grafana .
+    cd grafana
+    cp -r "${MONASCA_BASE}"/grafana-plugins/datasources/monasca ./public/app/plugins/datasource/
+    cp "${MONASCA_BASE}"/monasca-ui/grafana-dashboards/* ./public/dashboards/
+
+    go run build.go setup
+    $GOPATH/bin/godep restore
+    go run build.go build
+    npm config set unsafe-perm true
+    sudo npm install
+    sudo npm install -g grunt-cli
+    grunt --force
+    cd "${MONASCA_BASE}"
+    sudo rm -r grafana-plugins
+    sudo rm -r grafana
+    rm go1.5.2.linux-amd64.tar.gz
+
+    sudo useradd grafana
+    sudo mkdir /etc/grafana
+    sudo mkdir /var/lib/grafana
+    sudo mkdir /var/log/grafana
+    sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
+
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana.ini /etc/grafana/grafana.ini
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana-server /etc/init.d/grafana-server
+    sudo sed -i "s#/usr/sbin#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana/grafana/bin#g" /etc/init.d/grafana-server
+    sudo sed -i "s#/usr/share#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana#g" /etc/init.d/grafana-server
+
+    sudo service grafana-server start
+}
+
+function clean_monasca_grafana {
+
+    sudo rm -f "${MONASCA_BASE}"/grafana-build
+
+    sudo rm /etc/init.d/grafana-server
+
+    sudo rm -r /etc/grafana
+
+    sudo rm -r /var/lib/grafana
+
+    sudo rm -r /var/log/grafana
 
 }
 

@@ -18,7 +18,7 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
 from tempest import test
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 
 
 GROUP_BY_ALLOWED_PARAMS = {'alarm_definition_id', 'name', 'state', 'severity',

@@ -14,6 +14,8 @@
 import datetime
 import time
 
+import six.moves.urllib.parse as urlparse
+
 from tempest.common.utils import data_utils
 
 NUM_ALARM_DEFINITIONS = 2
@@ -112,3 +114,13 @@ def timestamp_to_iso_millis(timestamp):
     time_iso_microsecond = time_utc.strftime(".%f")
     time_iso_millisecond = time_iso_base + time_iso_microsecond[0:4] + 'Z'
     return time_iso_millisecond
+
+
+def get_query_param(uri, query_param_name):
+    query_param_val = None
+    parsed_uri = urlparse.urlparse(uri)
+    for query_param in parsed_uri.query.split('&'):
+        parsed_query_name, parsed_query_val = query_param.split('=', 1)
+        if query_param_name == parsed_query_name:
+            query_param_val = parsed_query_val
+    return query_param_val

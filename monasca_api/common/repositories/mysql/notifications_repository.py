@@ -169,12 +169,11 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
                 set name = %s,
                     type = %s,
                     address = %s,
-                    created_at = %s,
                     updated_at = %s
                  where tenant_id = %s and id = %s"""
 
             parms = [name.encode('utf8'), type.encode('utf8'), address.encode(
-                'utf8'), now, now, tenant_id, id]
+                'utf8'), now, tenant_id, id]
 
             cursor.execute(query, parms)
 

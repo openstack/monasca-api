@@ -12,14 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
 from tempest import test
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 
 NUM_ALARM_DEFINITIONS = 2
 
@@ -462,6 +460,13 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                 self.assertEqual(limit, len(new_elements))
                 self.assertEqual(elements[offset], new_elements[0])
                 self.assertEqual(elements[offset+limit-1], new_elements[-1])
+                links = response_body['links']
+                for link in links:
+                    if link['rel'] == 'next':
+                        next_offset = helpers.get_query_param(link['href'], 'offset')
+                        next_limit = helpers.get_query_param(link['href'], 'limit')
+                        self.assertEqual(str(offset + limit), next_offset)
+                        self.assertEqual(str(limit), next_limit)
 
     # Get
 
