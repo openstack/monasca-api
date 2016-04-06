@@ -14,12 +14,12 @@
 
 import datetime
 
+from monasca_common.repositories.mysql import mysql_repository
 from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import notifications_repository as nr
-from monasca_common.repositories.mysql import mysql_repository
 
 LOG = log.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         return notification_id
 
     @mysql_repository.mysql_try_catch_block
-    def list_notifications(self, tenant_id, offset, limit):
+    def list_notifications(self, tenant_id, sort_by, offset, limit):
 
         query = """
             select *
@@ -88,7 +88,16 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
             query += " and id > %s "
             parms.append(offset.encode('utf8'))
 
-        query += " order by id limit %s "
+        if sort_by:
+            query += " order by " + ','.join(sort_by)
+            if 'id' not in sort_by:
+                query += ",id "
+            else:
+                query += " "
+        else:
+            query += " order by id "
+
+        query += " limit %s "
         parms.append(limit + 1)
 
         rows = self._execute_query(query, parms)

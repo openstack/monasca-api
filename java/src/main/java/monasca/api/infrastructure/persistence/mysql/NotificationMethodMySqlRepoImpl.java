@@ -26,6 +26,8 @@ import org.skife.jdbi.v2.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
@@ -40,6 +42,7 @@ import monasca.common.persistence.BeanMapper;
 public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
   private static final Logger LOG = LoggerFactory
       .getLogger(NotificationMethodMySqlRepoImpl.class);
+  private static final Joiner COMMA_JOINER = Joiner.on(',');
   private final DBI db;
   private final PersistUtils persistUtils;
 
@@ -103,18 +106,29 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
   }
 
   @Override
-  public List<NotificationMethod> find(String tenantId, String offset, int limit) {
+  public List<NotificationMethod> find(String tenantId, List<String> sortBy, String offset,
+                                       int limit) {
 
     try (Handle h = db.open()) {
 
       String rawQuery =
           "  SELECT nm.id, nm.tenant_id, nm.name, nm.type, nm.address, nm.created_at, nm.updated_at "
           + "FROM notification_method as nm "
-          + "WHERE tenant_id = :tenantId %1$s order by nm.id asc %2$s";
+          + "WHERE tenant_id = :tenantId %1$s %2$s %3$s";
 
       String offsetPart = "";
       if (offset != null) {
         offsetPart = "and nm.id > :offset";
+      }
+
+      String orderByPart = "";
+      if (sortBy != null && !sortBy.isEmpty()) {
+        orderByPart = " order by " + COMMA_JOINER.join(sortBy);
+        if (!orderByPart.contains("id")) {
+          orderByPart = orderByPart + ",id";
+        }
+      } else {
+        orderByPart = " order by id ";
       }
 
       String limitPart = "";
@@ -122,7 +136,7 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
         limitPart = " limit :limit";
       }
 
-      String query = String.format(rawQuery, offsetPart, limitPart);
+      String query = String.format(rawQuery, offsetPart, orderByPart, limitPart);
 
       Query<?> q = h.createQuery(query);
 

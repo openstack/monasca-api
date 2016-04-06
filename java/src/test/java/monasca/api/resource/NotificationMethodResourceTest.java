@@ -61,7 +61,8 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     when(repo.create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString()))
         .thenReturn(notificationMethodPagerduty);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
-    when(repo.find(eq("abc"), anyString(), anyInt())).thenReturn(Arrays.asList(notificationMethod));
+    when(repo.find(eq("abc"), (List<String>) anyList(), anyString(), anyInt()))
+        .thenReturn(Arrays.asList(notificationMethod));
 
     addResources(new NotificationMethodResource(repo, new PersistUtils()));
   }
@@ -216,7 +217,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
 
     List<NotificationMethod> notificationMethods = Arrays.asList(nm);
     assertEquals(notificationMethods, Arrays.asList(notificationMethod));
-    verify(repo).find(eq("abc"), anyString(), anyInt());
+    verify(repo).find(eq("abc"), (List<String>) anyList(), anyString(), anyInt());
   }
 
   public void shouldGet() {
@@ -258,7 +259,8 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   }
 
   public void should500OnInternalException() {
-    doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(), anyInt());
+    doThrow(new RuntimeException("")).when(repo).find(anyString(), (List<String>) anyList(),
+                                                      anyString(), anyInt());
 
     try {
       client().resource("/v2.0/notification-methods").header("X-Tenant-Id", "abc")

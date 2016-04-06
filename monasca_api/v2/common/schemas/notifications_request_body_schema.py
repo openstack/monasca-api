@@ -12,9 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six.moves.urllib.parse as urlparse
-
 from oslo_log import log
+import six.moves.urllib.parse as urlparse
 from validate_email import validate_email
 import voluptuous
 

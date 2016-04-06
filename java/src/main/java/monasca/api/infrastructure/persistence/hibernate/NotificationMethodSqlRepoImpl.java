@@ -34,6 +34,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
+import monasca.api.resource.exception.Exceptions;
 import monasca.common.hibernate.db.NotificationMethodDb;
 import monasca.common.model.alarm.AlarmNotificationMethodType;
 
@@ -199,7 +200,13 @@ public class NotificationMethodSqlRepoImpl
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<NotificationMethod> find(String tenantId, String offset, int limit) {
+  public List<NotificationMethod> find(String tenantId, List<String> sortBy, String offset,
+                                       int limit) {
+    if (sortBy != null && !sortBy.isEmpty()) {
+      throw Exceptions.unprocessableEntity(
+          "Sort_by is not implemented for the hibernate database type");
+    }
+
     Session session = null;
     List<NotificationMethodDb> resultList;
     List<NotificationMethod> notificationList = Lists.newArrayList();

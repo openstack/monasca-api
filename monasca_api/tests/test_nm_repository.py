@@ -152,9 +152,9 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
         self.assertEqual(nm['address'], 'a@b')
 
     def test_should_find(self):
-        nms = self.repo.list_notifications('444', None, 1)
+        nms = self.repo.list_notifications('444', None, None, 1)
         self.assertEqual(nms, self.default_nms)
-        nms = self.repo.list_notifications('444', 'z', 1)
+        nms = self.repo.list_notifications('444', None, 'z', 1)
         self.assertEqual(nms, [])
 
     def test_update(self):

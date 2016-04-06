@@ -17,6 +17,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import monasca.api.app.command.CreateNotificationMethodCommand;
+import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
@@ -48,6 +50,9 @@ import monasca.api.infrastructure.persistence.PersistUtils;
 public class NotificationMethodResource {
   private final NotificationMethodRepo repo;
   private final PersistUtils persistUtils;
+  private final static List<String> ALLOWED_SORT_BY = Arrays.asList("id", "name", "type",
+                                                                    "address", "updated_at",
+                                                                    "created_at");
 
   @Inject
   public NotificationMethodResource(NotificationMethodRepo repo, PersistUtils persistUtils) {
@@ -74,11 +79,15 @@ public class NotificationMethodResource {
   @Timed
   @Produces(MediaType.APPLICATION_JSON)
   public Object list(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
+                     @QueryParam("sort_by") String sortByStr,
                      @QueryParam("offset") String offset,
                      @QueryParam("limit") String limit) throws UnsupportedEncodingException {
 
+    List<String> sortByList = Validation.parseAndValidateSortBy(sortByStr, ALLOWED_SORT_BY);
+
     final int paging_limit = this.persistUtils.getLimit(limit);
-    final List<NotificationMethod> resources = repo.find(tenantId, offset, paging_limit);
+    final List<NotificationMethod> resources = repo.find(tenantId, sortByList, offset,
+                                                         paging_limit);
     return Links.paginate(paging_limit,
                           Links.hydrate(resources, uriInfo),
                           uriInfo);
