@@ -1674,7 +1674,10 @@ function install_monasca_grafana {
 
     echo_summary "Install Grafana"
 
-    sudo apt-get install -y wget nodejs nodejs-legacy npm
+    sudo apt-get install -y wget
+
+    curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+    sudo apt-get install -y nodejs
 
     cd "${MONASCA_BASE}"
     wget https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz
