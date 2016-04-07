@@ -12,6 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
+import six.moves.urllib.parse as urlparse
+
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
@@ -390,38 +394,122 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     @test.attr(type='gate')
     def test_list_alarm_definitions_sort_by(self):
-        alarm_definitions = []
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 01',
-            expression='test_metric_01 > 1',
-            severity='HIGH'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 04',
-            expression='test_metric_04 > 1',
-            severity='LOW'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 02',
-            expression='test_metric_02 > 1',
-            severity='CRITICAL'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 03',
-            expression='test_metric_03 > 1',
-            severity='MEDIUM'
-        ))
-        for definition in alarm_definitions:
-            self.monasca_client.create_alarm_definitions(definition)
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        expression = 'avg(cpu_utilization{' + str(key) + '=' + str(value) + \
+                     '}) >= 1000'
 
-        resp, response_body = self.monasca_client.list_alarm_definitions('?sort_by=severity')
+        alarm_definitions = [helpers.create_alarm_definition(
+            name='alarm def sort by 01',
+            expression=expression,
+            severity='HIGH'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 04',
+            expression=expression,
+            severity='LOW'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 02',
+            expression=expression,
+            severity='CRITICAL'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 03',
+            expression=expression,
+            severity='MEDIUM'
+        )]
+        for definition in alarm_definitions:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            definition['id'] = response_body['id']
+            time.sleep(1)
+
+        sort_params1 = ['id', 'name', 'severity']
+        for sort_by in sort_params1:
+            alarmdefs_sort_by = sorted(alarm_definitions, key=lambda
+                definition: definition[sort_by])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by)
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by[i][sort_by], element[sort_by])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' asc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by[i][sort_by], element[sort_by])
+
+            alarmdefs_sort_by_reverse = sorted(alarm_definitions, key=lambda
+                definition: definition[sort_by], reverse=True)
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' desc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by_reverse[i][sort_by], element[sort_by])
+
+        sort_params2 = ['created_at', 'updated_at']
+        for sort_by in sort_params2:
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by)
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[i]['id'], element['id'])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' asc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[i]['id'], element['id'])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' desc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[-i-1]['id'], element['id'])
+
+    @test.attr(type='gate')
+    def test_list_alarm_definitions_multiple_sort_by(self):
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        expression = 'avg(cpu_utilization{' + str(key) + '=' + str(value) + \
+                     '}) >= 1000'
+
+        alarm_definitions = [helpers.create_alarm_definition(
+            name='alarm def sort by 11',
+            expression=expression,
+            severity='MEDIUM'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 14',
+            expression=expression,
+            severity='MEDIUM'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 12',
+            expression=expression,
+            severity='LOW'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 13',
+            expression=expression,
+            severity='MEDIUM'
+        )]
+        for definition in alarm_definitions:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            definition['id'] = response_body['id']
+
+        resp, response_body = self.monasca_client.list_alarm_definitions(
+            '?dimensions=' + str(key) + ':' + str(value) +
+            '&sort_by=' + urlparse.quote('severity asc,name desc,id'))
         self.assertEqual(200, resp.status)
 
-        prev_severity = 'CRITICAL'
-        for alarm_definition in response_body['elements']:
-            assert prev_severity <= alarm_definition['severity'],\
-                "Severity {} came after {}".format(alarm_definition['severity'], prev_severity)
-            prev_severity = alarm_definition['severity']
+        expected_order = [2, 1, 3, 0]
+
+        for i, element in enumerate(response_body['elements']):
+            self.assertEqual(alarm_definitions[expected_order[i]]['id'], element['id'])
 
     @test.attr(type='gate')
     @test.attr(type=['negative'])
