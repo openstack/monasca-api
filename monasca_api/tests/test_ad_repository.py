@@ -83,6 +83,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                                      threshold=bindparam('threshold'),
                                      period=bindparam('period'),
                                      periods=bindparam('periods'),
+                                     is_deterministic=bindparam('is_deterministic'),
                                      created_at=bindparam('created_at'),
                                      updated_at=bindparam('updated_at')))
 
@@ -152,6 +153,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                               'threshold': 10,
                               'period': 60,
                               'periods': 1,
+                              'is_deterministic': False,
                               'created_at': datetime.datetime.now(),
                               'updated_at': datetime.datetime.now()},
                              {'id': '222',
@@ -162,6 +164,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                               'threshold': 20,
                               'period': 60,
                               'periods': 1,
+                              'is_deterministic': False,
                               'created_at': datetime.datetime.now(),
                               'updated_at': datetime.datetime.now()},
                              {'id': '223',
@@ -172,6 +175,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                               'threshold': 100,
                               'period': 60,
                               'periods': 1,
+                              'is_deterministic': False,
                               'created_at': datetime.datetime.now(),
                               'updated_at': datetime.datetime.now()},
                              ]
@@ -317,6 +321,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                      'operator': 'GT',
                      'period': 60,
                      'periods': 1,
+                     'is_deterministic': False,
                      'threshold': 20.0},
                     {'alarm_definition_id': '234',
                      'dimensions': None,
@@ -326,6 +331,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                      'operator': 'LT',
                      'period': 60,
                      'periods': 1,
+                     'is_deterministic': False,
                      'threshold': 100.0}]
 
         self.assertEqual(len(sub_alarms), len(expected))
@@ -477,6 +483,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                      'operator': 'GT',
                      'period': 60,
                      'periods': 1,
+                     'is_deterministic': False,
                      'threshold': 10.0}]
 
         self.assertEqual(len(sub_alarms), len(expected))
@@ -497,6 +504,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                      'operator': 'GT',
                      'period': 60,
                      'periods': 1,
+                     'is_deterministic': False,
                      'threshold': 20.0},
                     {'alarm_definition_id': '234',
                      'dimensions': None,
@@ -506,6 +514,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                      'operator': 'LT',
                      'period': 60,
                      'periods': 1,
+                     'is_deterministic': False,
                      'threshold': 100.0}]
 
         self.assertEqual(len(sub_alarms), len(expected))

@@ -268,10 +268,11 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                                        threshold,
                                        period,
                                        periods,
+                                       is_deterministic,
                                        created_at,
                                        updated_at)
                                         values(%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                                        %s)""",
+                                        %s, %s)""",
                                (
                                    sub_alarm_definition_id,
                                    alarm_definition_id,
@@ -281,7 +282,10 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                                    sub_expr.normalized_operator.encode('utf8'),
                                    sub_expr.threshold.encode('utf8'),
                                    sub_expr.period.encode('utf8'),
-                                   sub_expr.periods.encode('utf8'), now, now))
+                                   sub_expr.periods.encode('utf8'),
+                                   sub_expr.deterministic,
+                                   now,
+                                   now))
 
                 for dimension in sub_expr.dimensions_as_list:
                     parsed_dimension = dimension.split('=')
@@ -463,13 +467,17 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                 update sub_alarm_definition
                 set operator = %s,
                 threshold = %s,
-                updated_at = %s
+                is_deterministic = %s,
+                updated_at = %s,
                 where id = %s"""
 
             for sub_alarm_definition_id, sub_alarm_def in (
                     changed_sub_alarm_defs_by_id.iteritems()):
-                parms = [sub_alarm_def.operator, sub_alarm_def.threshold,
-                         now, sub_alarm_definition_id]
+                parms = [sub_alarm_def.operator,
+                         sub_alarm_def.threshold,
+                         sub_alarm_def.deterministic,
+                         now,
+                         sub_alarm_definition_id]
                 cursor.execute(query, parms)
 
             # Insert new sub alarm definitions
@@ -483,9 +491,10 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                    threshold,
                    period,
                    periods,
+                   is_deterministic,
                    created_at,
                    updated_at)
-                values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
             sub_query = """
                 insert into sub_alarm_definition_dimension(
@@ -503,6 +512,7 @@ class AlarmDefinitionsRepository(mysql_repository.MySQLRepository,
                          str(sub_alarm_def.threshold).encode('utf8'),
                          str(sub_alarm_def.period).encode('utf8'),
                          str(sub_alarm_def.periods).encode('utf8'),
+                         sub_alarm_def.deterministic,
                          now,
                          now]
 

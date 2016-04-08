@@ -451,13 +451,24 @@ public class AlarmDefinitionSqlRepoImpl
         double threshold = subAlarmDef.getThreshold();
         int period = subAlarmDef.getPeriod();
         int periods = subAlarmDef.getPeriods();
+        boolean isDeterministic = subAlarmDef.isDeterministic();
         Map<String, String> dimensions = Collections.emptyMap();
 
         if (subAlarmDefDimensionMapExpression.containsKey(id)) {
           dimensions = subAlarmDefDimensionMapExpression.get(id);
         }
 
-        subExpressions.put(id, new AlarmSubExpression(function, new MetricDefinition(metricName, dimensions), operator, threshold, period, periods));
+        subExpressions.put(id,
+            new AlarmSubExpression(
+                function,
+                new MetricDefinition(metricName, dimensions),
+                operator,
+                threshold,
+                period,
+                periods,
+                isDeterministic
+            )
+        );
       }
 
       return subExpressions;
@@ -545,6 +556,7 @@ public class AlarmDefinitionSqlRepoImpl
         subAlarmDefinitionDb.setOperator(sa.getOperator().name());
         subAlarmDefinitionDb.setThreshold(sa.getThreshold());
         subAlarmDefinitionDb.setUpdatedAt(this.getUTCNow());
+        subAlarmDefinitionDb.setDeterministic(sa.isDeterministic());
         session.saveOrUpdate(subAlarmDefinitionDb);
       }
   }
@@ -580,6 +592,7 @@ public class AlarmDefinitionSqlRepoImpl
     alarmDefinitionDb.setMatchBy(matchBy == null || Iterables.isEmpty(matchBy) ? null : COMMA_JOINER.join(matchBy));
     alarmDefinitionDb.setSeverity(AlarmSeverity.valueOf(severity));
     alarmDefinitionDb.setActionsEnabled(actionsEnabled);
+    alarmDefinitionDb.setUpdatedAt(this.getUTCNow());
 
     session.saveOrUpdate(alarmDefinitionDb);
 
@@ -715,7 +728,7 @@ public class AlarmDefinitionSqlRepoImpl
 
         // Persist sub-alarm
         final DateTime now = this.getUTCNow();
-        SubAlarmDefinitionDb subAlarmDefinitionDb = new SubAlarmDefinitionDb(
+        final SubAlarmDefinitionDb subAlarmDefinitionDb = new SubAlarmDefinitionDb(
             subAlarmId,
             alarmDefinition,
             subExpr.getFunction().name(),
@@ -725,7 +738,8 @@ public class AlarmDefinitionSqlRepoImpl
             subExpr.getPeriod(),
             subExpr.getPeriods(),
             now,
-            now
+            now,
+            subExpr.isDeterministic()
         );
         session.save(subAlarmDefinitionDb);
 

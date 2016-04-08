@@ -739,6 +739,64 @@ class TestAlarms(base.BaseMonascaTest):
                 if i != j:
                     self.assertNotEqual(dimensions[i], dimensions[j])
 
+    @test.attr(type="gate")
+    def test_verify_deterministic_alarm(self):
+        metric_name = data_utils.rand_name('log.fancy')
+        metric_dimensions = {'service': 'monitoring',
+                             'hostname': 'mini-mon'}
+
+        name = data_utils.rand_name('alarm_definition')
+        expression = ('count(%s{service=monitoring},deterministic) > 10'
+                      % metric_name)
+        match_by = ['hostname', 'device']
+        description = 'deterministic'
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name, description=description,
+            expression=expression, match_by=match_by)
+
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition)
+
+        alarm_definition_id = response_body['id']
+        query_param = '?alarm_definition_id=' + str(alarm_definition_id)
+
+        # 1. ensure alarm was not created
+        resp, response_body = self.monasca_client.list_alarms(query_param)
+        self._verify_list_alarms_elements(resp, response_body, 0)
+
+        # 2. put some metrics here to create it, should be in ok
+        metrics_count = 5
+        for it in range(0, metrics_count):
+            metric = helpers.create_metric(name=metric_name,
+                                           value=1.0,
+                                           dimensions=metric_dimensions)
+            self.monasca_client.create_metrics(metric)
+
+        self._wait_for_alarms(1, alarm_definition_id)
+
+        resp, response_body = self.monasca_client.list_alarms(query_param)
+        self._verify_list_alarms_elements(resp, response_body, 1)
+        element = response_body['elements'][0]
+
+        self.assertEqual('OK', element['state'])
+
+        # 3. exceed threshold
+        metrics_count = 20
+        for it in range(0, metrics_count):
+            metric = helpers.create_metric(name=metric_name,
+                                           value=1.0,
+                                           dimensions=metric_dimensions)
+            self.monasca_client.create_metrics(metric)
+
+        self._wait_for_alarms(1, alarm_definition_id)
+
+        resp, response_body = self.monasca_client.list_alarms(query_param)
+        self._verify_list_alarms_elements(resp, response_body, 1)
+        element = response_body['elements'][0]
+
+        self.assertEqual('ALARM', element['state'])
+
     def _verify_list_alarms_elements(self, resp, response_body,
                                      expect_num_elements):
         self.assertEqual(200, resp.status)

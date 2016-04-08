@@ -138,7 +138,7 @@ cfg.CONF.register_opts(mysql_opts, mysql_group)
 
 sql_opts = [cfg.StrOpt('url', default=None), cfg.StrOpt('host', default=None),
             cfg.StrOpt('username', default=None), cfg.StrOpt('password', default=None),
-            cfg.StrOpt('drivername', default=None), cfg.PortOpt('port', default=None),
+            cfg.StrOpt('drivername', default=None), cfg.IntOpt('port', default=None),
             cfg.StrOpt('database', default=None), cfg.StrOpt('query', default=None)]
 sql_group = cfg.OptGroup(name='database', title='sql')
 
