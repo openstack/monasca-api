@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -47,17 +47,31 @@ final class MetricQueries {
       sb.append(" and " + tableToJoinName + ".dimension_set_id in ")
         .append("(select dimension_set_id from MonMetrics.Dimensions where ");
 
-      for (int i = 0; i < numDims; i++) {
-        sb.append("name = :dname")
-          .append(i)
-          .append(" and value = :dvalue")
-          .append(i);
-        if (i != (numDims - 1)) {
-           sb.append(" or ");
+      int i = 0;
+      for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
+        Map.Entry<String, String> entry = it.next();
+        sb.append("name = :dname").append(i);
+        String dim_value = entry.getValue();
+        if (!Strings.isNullOrEmpty(dim_value)) {
+          List<String> values = Splitter.on('|').splitToList(dim_value);
+          if (values.size() > 1) {
+            sb.append(" and ( ");
+            for (int j = 0; j < values.size(); j++) {
+              sb.append("value = :dvalue").append(i).append('_').append(j);
+              if (j < values.size() - 1) {
+                sb.append(" or ");
+              }
+            }
+            sb.append(" )");
+          } else {
+            sb.append(" and value = :dvalue").append(i);
+          }
+        }
+        if (it.hasNext()) {
+          sb.append(" or ");
         }
       }
-
-      sb.append(" group by dimension_set_id ")
+      sb.append(" group by dimension_set_id")
         .append(" having count(*) = " + numDims +" ");
 
       //
@@ -81,7 +95,17 @@ final class MetricQueries {
       for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
         Map.Entry<String, String> entry = it.next();
         query.bind("dname" + i, entry.getKey());
-        query.bind("dvalue" + i, entry.getValue());
+        if (!Strings.isNullOrEmpty(entry.getValue())) {
+          List<String> values = Splitter.on('|').splitToList(entry.getValue());
+          if (values.size() > 1) {
+            for (int j = 0; j < values.size(); j++) {
+              query.bind("dvalue" + i + '_' + j, values.get(j));
+            }
+          }
+          else {
+            query.bind("dvalue" + i, entry.getValue());
+          }
+        }
       }
     }
   }
