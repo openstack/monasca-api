@@ -2261,7 +2261,7 @@ None.
 * offset (integer, optional)
 * limit (integer, optional)
 * sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'alarm_id'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
-Allowed fields for sort_by are: 'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link', 'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'
+Allowed fields for sort_by are: 'alarm_id', 'alarm_definition_id', 'alarm_definition_name', 'state', 'severity', 'lifecycle_state', 'link', 'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'
 
 #### Request Body
 None.
