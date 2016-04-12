@@ -240,7 +240,7 @@ class MonascaClient(rest_client.RestClient):
         for key, value in kwargs.iteritems():
             request_body[key] = value
 
-        resp, response_body = self.patch(uri, json.dumps(request_body))
+        resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 
     def patch_alarm(self, id, state=None, lifecycle_state=None, link=None,
