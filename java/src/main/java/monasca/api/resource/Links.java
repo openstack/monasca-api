@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hewlett Packard Enterprise Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -160,7 +160,7 @@ public final class Links {
    * @param uriInfo
    * @return
    */
-  public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
+  public static Paged paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
@@ -362,7 +362,7 @@ public final class Links {
 
     Link selfLink = new Link();
     selfLink.rel = "self";
-    selfLink.href = uriInfo.getRequestUri().toString();
+    selfLink.href = prefixForHttps(uriInfo.getRequestUri().toString());
     return selfLink;
   }
 
@@ -373,8 +373,8 @@ public final class Links {
     nextLink.rel = "next";
 
     // Create a new URL with the new offset.
-    nextLink.href = uriInfo.getAbsolutePath().toString()
-                    + "?offset=" + URLEncoder.encode(offset, "UTF-8");
+    nextLink.href = prefixForHttps(uriInfo.getAbsolutePath().toString()
+                    + "?offset=" + URLEncoder.encode(offset, "UTF-8"));
 
     // Add the query parms back to the URL without the original offset.
     for (String parmKey : uriInfo.getQueryParameters().keySet()) {
