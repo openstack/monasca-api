@@ -539,6 +539,24 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(204, resp.status)
 
     @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_update_notification_method_with_no_address(self):
+        name = data_utils.rand_name('notification-')
+        notification = helpers.create_notification(name=name)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification)
+        id = response_body['id']
+        self.assertEqual(201, resp.status)
+        self.assertRaises(
+            (exceptions.BadRequest, exceptions.UnprocessableEntity),
+            self.monasca_client.update_notification_method_with_no_address, id,
+            name="test_update_notification_method_name",
+            type=response_body['type'])
+        resp, response_body = \
+            self.monasca_client.delete_notification_method(id)
+        self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
     def test_create_and_delete_notification_method(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
