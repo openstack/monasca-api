@@ -1368,7 +1368,7 @@ function install_monasca_thresh {
 
     sudo cp -f "${MONASCA_BASE}"/monasca-thresh/thresh/target/monasca-thresh-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-thresh.jar
 
-    sudo useradd --system -g monasca mon-thresh
+    sudo useradd --system -g monasca mon-thresh || true
 
     sudo mkdir -p /etc/monasca || true
 
@@ -1632,7 +1632,11 @@ function install_monasca_horizon_ui {
 
     echo_summary "Install Monasca Horizon UI"
 
-    sudo git clone https://git.openstack.org/openstack/monasca-ui.git "${MONASCA_BASE}"/monasca-ui
+    if [ ! -e "${MONASCA_BASE}"/monasca-ui ]; then
+
+        sudo git clone https://git.openstack.org/openstack/monasca-ui.git "${MONASCA_BASE}"/monasca-ui
+
+    fi
 
     sudo pip install python-monascaclient
 
@@ -1684,16 +1688,20 @@ function install_monasca_grafana {
     sudo tar -C /usr/local -xzf go1.5.2.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
 
-    git clone https://github.com/twc-openstack/grafana-plugins.git
+    if [ ! -e grafana-plugins ]; then
+        git clone https://github.com/twc-openstack/grafana-plugins.git
+    fi
     cd grafana-plugins
     git checkout v2.6.0
     cd "${MONASCA_BASE}"
-    git clone https://github.com/twc-openstack/grafana.git
+    if [ ! -e grafana ]; then
+        git clone https://github.com/twc-openstack/grafana.git
+    fi
     cd grafana
     git checkout v2.6.0-keystone
     cd "${MONASCA_BASE}"
 
-    mkdir grafana-build
+    mkdir grafana-build || true
     cd grafana-build
     export GOPATH=`pwd`
     go get -d github.com/grafana/grafana/...
@@ -1716,10 +1724,10 @@ function install_monasca_grafana {
     sudo rm -r grafana
     rm go1.5.2.linux-amd64.tar.gz
 
-    sudo useradd grafana
-    sudo mkdir /etc/grafana
-    sudo mkdir /var/lib/grafana
-    sudo mkdir /var/log/grafana
+    sudo useradd grafana || true
+    sudo mkdir /etc/grafana || true
+    sudo mkdir /var/lib/grafana || true
+    sudo mkdir /var/log/grafana || true
     sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana.ini /etc/grafana/grafana.ini
