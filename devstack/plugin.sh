@@ -1491,6 +1491,8 @@ function install_monasca_agent {
 
     (cd /opt/monasca-agent ; ./bin/pip install psutil==3.0.1)
 
+    (cd /opt/monasca-agent ; ./bin/pip install kafka-python==0.9.2)
+
     unset PIP_VIRTUAL_ENV
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
