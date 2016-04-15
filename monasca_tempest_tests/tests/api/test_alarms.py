@@ -80,8 +80,8 @@ class TestAlarms(base.BaseMonascaTest):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
         for key in expected_metric['dimensions']:
-         value = expected_metric['dimensions'][key]
-         query_parms = '?metric_dimensions=' + key + ':' + value
+            value = expected_metric['dimensions'][key]
+            query_parms = '?metric_dimensions=' + key + ':' + value
         resp, response_body = self.monasca_client.list_alarms(query_parms)
         self._verify_list_alarms_elements(resp, response_body,
                                           expect_num_elements=1)
@@ -90,6 +90,22 @@ class TestAlarms(base.BaseMonascaTest):
         self._verify_metric_in_alarm(metric, expected_metric)
         self.assertEqual(alarm_definition_ids[0],
                          element['alarm_definition']['id'])
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarms_by_metric_dimensions_key_exceeds_max_length(self):
+        key = 'x' * (constants.MAX_ALARM_METRIC_DIMENSIONS_KEY_LENGTH + 1)
+        query_parms = '?metric_dimensions=' + key
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarms, query_parms)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarms_by_metric_dimensions_value_exceeds_max_length(self):
+        value = 'x' * (constants.MAX_ALARM_METRIC_DIMENSIONS_VALUE_LENGTH + 1)
+        query_parms = '?metric_dimensions=key:' + value
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarms, query_parms)
 
     @test.attr(type="gate")
     def test_list_alarms_by_multiple_metric_dimensions(self):
@@ -196,7 +212,7 @@ class TestAlarms(base.BaseMonascaTest):
             resp, response_body = self.monasca_client.list_alarms('?metric_name=' + metric_name)
             self.assertEqual(200, resp.status)
             if len(response_body['elements']) >= 3:
-                return
+                break
             time.sleep(constants.RETRY_WAIT_SECS)
             if i >= constants.MAX_RETRIES - 1:
                 self.fail("Timeout creating alarms, required 3 but found {}".format(

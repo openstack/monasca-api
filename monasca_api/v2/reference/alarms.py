@@ -165,12 +165,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         try:
             assert isinstance(dimensions, list)
             for dimension in dimensions:
-                name_value = dimension.split('=')
+                name_value = dimension.split(':')
                 validation.dimension_key(name_value[0])
-                if len(name_value) > 1 and '|' in name_value[1]:
-                    values = name_value[1].split('|')
-                    for value in values:
-                        validation.dimension_value(value)
+                if len(name_value) > 1:
+                    if '|' in name_value[1]:
+                        values = name_value[1].split('|')
+                        for value in values:
+                            validation.dimension_value(value)
+                    else:
+                        validation.dimension_value(name_value[1])
         except Exception as e:
             raise HTTPUnprocessableEntityError("Unprocessable Entity", e.message)
 
