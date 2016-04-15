@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -78,7 +78,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
             else:
                 self._validate_single_metric(metrics)
         except Exception as ex:
-            LOG.debug(ex)
+            LOG.exception(ex)
             raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
     def _validate_single_metric(self, metric):
@@ -89,9 +89,10 @@ class Metrics(metrics_api_v2.MetricsV2API):
             for dimension_key in metric['dimensions']:
                 validation.dimension_key(dimension_key)
                 validation.dimension_value(metric['dimensions'][dimension_key])
+        if "value_meta" in metric:
+                validation.validate_value_meta(metric['value_meta'])
 
     def _send_metrics(self, metrics):
-
         try:
             self._message_queue.send_message_batch(metrics)
         except message_queue_exceptions.MessageQueueException as ex:

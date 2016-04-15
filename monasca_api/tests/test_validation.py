@@ -1,6 +1,5 @@
-# Copyright 2015 Hewlett-Packard
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -97,6 +96,44 @@ class TestDimensionValidation(unittest.TestCase):
         for c in invalid_chars:
             dim_value = "this{}that".format(c)
             self.assertRaises(AssertionError, validation.dimension_value, dim_value)
+
+
+class TestValueMetaValidation(unittest.TestCase):
+    def test_valid_name(self):
+        value_meta_name = "this.is_a.valid-name"
+        value_meta = {value_meta_name: 'value_meta_value'}
+        validation.validate_value_meta(value_meta)
+        self.assertTrue(True)
+
+    def test_nonstring_name(self):
+        value_meta_name = 123456
+        value_meta = {value_meta_name: 'value_meta_value'}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_long_name(self):
+        value_meta_name = "x" * 256
+        value_meta = {value_meta_name: 'value_meta_value'}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_valid_value(self):
+        value_meta_value = "this.is_a.valid-value"
+        value_meta = {'value_meta_name': value_meta_value}
+        validation.validate_value_meta(value_meta)
+        self.assertTrue(True)
+
+    def test_nonstring_value(self):
+        value_meta_value = 123456
+        value_meta = {'value_meta_name': value_meta_value}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_long_value_meta(self):
+        value_meta_value = "x" * 2048
+        value_meta = {'value_meta_name': value_meta_value}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
 
 
 class TestRoleValidation(unittest.TestCase):
