@@ -28,55 +28,55 @@ public class MetricQueriesTest {
 
   public void metricQueriesBuildDimensionAndClauseTest1() {
     String expectedResult =
-        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
-        + "where name = :dname0 and value = :dvalue0 or name = :dname1 and value = :dvalue1 "
-        + "group by dimension_set_id having count(*) = 2 order by dimension_set_id limit 2)";
+        " and defdims.dimension_set_id in ( SELECT dimension_set_id FROM MonMetrics.Dimensions WHERE"
+        + " ((name = :dname0 and value = :dvalue0) or (name = :dname1 and value = :dvalue1))"
+        + " GROUP BY dimension_set_id HAVING count(*) = 2) ";
 
     Map<String, String> dimsMap = new HashMap<>();
     dimsMap.put("foo", "bar");
     dimsMap.put("biz", "baz");
 
-    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 1);
+    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON);
     assertEquals(expectedResult, s);
   }
 
   public void metricQueriesBuildDimensionAndClauseTest2() {
     String expectedResult = "";
     Map<String, String> dimsMap = new HashMap<>();
-    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap,TABLE_TO_JOIN_DIMENSIONS_ON, 0));
+    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON));
   }
 
   public void metricQueriesBuildDimensionAndClauseForTest3() {
     String expectedResult = "";
     Map<String, String> dimsMap = null;
-    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 0));
+    assertEquals(expectedResult, MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON));
   }
 
   public void metricQueriesBuildDimensionAndClauseTest4() {
     String expectedResult =
-        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
-        + "where name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1 ) "
-        + "group by dimension_set_id having count(*) = 1 order by dimension_set_id limit 2)";
+        " and defdims.dimension_set_id in ( SELECT dimension_set_id FROM MonMetrics.Dimensions WHERE"
+        + " ((name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1)))"
+        + " GROUP BY dimension_set_id HAVING count(*) = 1) ";
 
     Map<String, String> dimsMap = new HashMap<>();
     dimsMap.put("foo", "bar|baz");
 
-    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 1);
+    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON);
     assertEquals(expectedResult, s);
   }
 
   public void metricQueriesBuildDimensionAndClauseTest5() {
     String expectedResult =
-        " and defdims.dimension_set_id in (select dimension_set_id from MonMetrics.Dimensions "
-        + "where name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1 ) "
-        + "or name = :dname1 and ( value = :dvalue1_0 or value = :dvalue1_1 ) "
-        + "group by dimension_set_id having count(*) = 2 order by dimension_set_id limit 2)";
+        " and defdims.dimension_set_id in ( SELECT dimension_set_id FROM MonMetrics.Dimensions WHERE"
+        + " ((name = :dname0 and ( value = :dvalue0_0 or value = :dvalue0_1))"
+        + " or (name = :dname1 and ( value = :dvalue1_0 or value = :dvalue1_1)))"
+        + " GROUP BY dimension_set_id HAVING count(*) = 2) ";
 
     Map<String, String> dimsMap = new HashMap<>();
     dimsMap.put("foo", "bar|baz");
     dimsMap.put("biz", "baz|baf");
 
-    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON, 1);
+    String s = MetricQueries.buildDimensionAndClause(dimsMap, TABLE_TO_JOIN_DIMENSIONS_ON);
     assertEquals(expectedResult, s);
   }
 }

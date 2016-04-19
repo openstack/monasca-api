@@ -50,12 +50,9 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       "select defdims.id, def.name, d.name as dname, d.value as dvalue "
       + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
       + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = defdims.dimension_set_id "
-      + "where def.id = defdims.definition_id and def.tenant_id = :tenantId "
-      + "%s " // metric name here
-      + "%s " // dimension and clause here
+      + "where def.id = defdims.definition_id "
+      + "and defdims.id in (%s) "
       + "order by defdims.id ASC";
-
-  private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defdims";
 
   private final DBI db;
 
@@ -195,19 +192,9 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     List<byte[]> bytes = new ArrayList<>();
 
-    StringBuilder sb = new StringBuilder();
-
-    if (name != null && !name.isEmpty()) {
-
-      sb.append(" and def.name = :name");
-
-    }
-
-    String sql =
-        String
-            .format(FIND_BY_METRIC_DEF_SQL,
-                    sb,
-                    MetricQueries.buildDimensionAndClause(dimensions, TABLE_TO_JOIN_DIMENSIONS_ON, 0));
+    String sql = String.format(
+        FIND_BY_METRIC_DEF_SQL,
+        MetricQueries.buildMetricDefinitionSubSql(name, dimensions));
 
     Query<Map<String, Object>> query =
         h.createQuery(sql)
