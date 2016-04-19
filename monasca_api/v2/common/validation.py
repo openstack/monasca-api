@@ -85,6 +85,9 @@ def validate_sort_by(sort_by_list, allowed_sort_by):
 
 
 def validate_value_meta(value_meta):
+    if not value_meta:
+        return
+
     value_meta_string = json.dumps(value_meta)
     # entries
     assert len(value_meta) <= VALUE_META_MAX_NUMBER, "ValueMeta entries must be {} or less".format(
