@@ -184,10 +184,10 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
 
-        old_state, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
+        old_alarm, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
                                                             new_state,
                                                             lifecycle_state, link)
-
+        old_state = old_alarm['state']
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
 
@@ -195,7 +195,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         self._send_alarm_event(u'alarm-updated', tenant_id,
                                alarm_definition_id, alarm_metric_rows,
-                               sub_alarm_rows, state_info)
+                               sub_alarm_rows, link, lifecycle_state, state_info)
 
         if old_state != new_state:
             try:
@@ -211,6 +211,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                     alarm_definition_row,
                                                     alarm_metric_rows,
                                                     old_state, new_state,
+                                                    link, lifecycle_state,
                                                     time_ms)
 
     @resource.resource_try_catch_block
