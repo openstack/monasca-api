@@ -724,6 +724,27 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                                    None, notification_id)
         self._delete_notification(notification_id)
 
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_patch_alarm_definition_with_invalid_actions(self):
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
+        # Patch alarm definition
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          alarm_actions=['bad_notification_id'])
+
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          ok_actions=['bad_notification_id'])
+
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          undetermined_actions=['bad_notification_id'])
+
     # Delete
 
     @test.attr(type="gate")
