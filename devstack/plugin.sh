@@ -121,28 +121,31 @@ function install_monasca {
         die "Please set MONASCA_API_IMPLEMENTATION_LANG to either \"java'' or \"python\""
 
     fi
+    if is_service_enabled monasca-persister; then
+        if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
-    if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
+            install_monasca_persister_java
 
-        install_monasca_persister_java
+        elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
 
-    elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
+            install_monasca_persister_python
 
-        install_monasca_persister_python
+        else
 
-    else
+            echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
+            echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
+            die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
-        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
-        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
-
+        fi
+    fi
+    if is_service_enabled monasca-notification; then
+        install_monasca_notification
     fi
 
-    install_monasca_notification
-
-    install_storm
-
-    install_monasca_thresh
+    if is_service_enabled monasca-thresh; then
+        install_storm
+        install_monasca_thresh
+    fi
 
 }
 
@@ -173,15 +176,16 @@ function extra_monasca {
         install_monasca_grafana
 
     fi
-
-    install_monasca_smoke_test
+    if is_service_enabled monasca-smoke-test; then
+        install_monasca_smoke_test
+    fi
 
     if [[ -n ${SCREEN_LOGDIR} ]]; then
         sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log
 
-        sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log
+        sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
 
-        sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log
+        sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log || true
 
         sudo ln -sf /var/log/monasca/agent/statsd.log ${SCREEN_LOGDIR}/screen-monasca-agent-statsd.log
         sudo ln -sf /var/log/monasca/agent/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-agent-supervisor.log
@@ -240,26 +244,32 @@ function clean_monasca {
 
     clean_monasca_keystone_client
 
-    clean_monasca_thresh
+    if is_service_enabled monasca-thresh; then
+        clean_monasca_thresh
+        clean_storm
+    fi
 
-    clean_storm
 
-    clean_monasca_notification
+    if is_service_enabled monasca-notification; then
+        clean_monasca_notification
+    fi
 
-    if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
+    if is_service_enabled monasca-persister; then
+        if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
-        clean_monasca_persister_java
+            clean_monasca_persister_java
 
-    elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
+        elif [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'python' ]]; then
 
-        clean_monasca_persister_python
+            clean_monasca_persister_python
 
-    else
+        else
 
-        echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
-        echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
-        die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
+            echo "Found invalid value for varible MONASCA_PERSISTER_IMPLEMENTATION_LANG: $MONASCA_PERSISTER_IMPLEMENTATION_LANG"
+            echo "Valid values for MONASCA_PERSISTER_IMPLEMENTATION_LANG are \"java\" and \"python\""
+            die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
+        fi
     fi
 
     if [[ "${MONASCA_API_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
@@ -305,8 +315,6 @@ function clean_monasca {
     clean_kafka
 
     clean_zookeeper
-
-    clean_storm
 
     clean_openjdk_7_jdk
 
