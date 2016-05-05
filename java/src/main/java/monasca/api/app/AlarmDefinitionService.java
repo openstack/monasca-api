@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -411,6 +411,7 @@ public class AlarmDefinitionService {
     if (!actions.isEmpty())
       for (String action : actions)
         if (!notificationMethodRepo.exists(tenantId, action))
-          throw new InvalidEntityException("No notification method exists for action %s", action);
+            throw monasca.api.resource.exception.Exceptions.unprocessableEntity(
+            "No notification method exists for action %s", action);
   }
 }
