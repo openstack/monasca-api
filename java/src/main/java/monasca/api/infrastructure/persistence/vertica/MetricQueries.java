@@ -17,22 +17,32 @@ package monasca.api.infrastructure.persistence.vertica;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.codec.binary.Hex;
-import org.skife.jdbi.v2.Handle;
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.Query;
-
-import monasca.common.persistence.SqlQueries;
 
 /**
  * Vertica utilities for building metric queries.
  */
 final class MetricQueries {
-  private static Splitter BAR_SPLITTER = Splitter.on('|').omitEmptyStrings().trimResults();
+  static final Splitter BAR_SPLITTER = Splitter.on('|').omitEmptyStrings().trimResults();
+  static final char OFFSET_SEPARATOR = '_';
+  static final Splitter offsetSplitter = Splitter.on(OFFSET_SEPARATOR).omitEmptyStrings().trimResults();
+
+  static final String FIND_METRIC_DEFS_SQL =
+      "SELECT TO_HEX(defDims.id) as defDimsId, def.name, dims.name as dName, dims.value AS dValue "
+      + "FROM MonMetrics.Definitions def "
+      + "JOIN MonMetrics.DefinitionDimensions defDims ON def.id = defDims.definition_id "
+      // Outer join needed in case there are no dimensions for a definition.
+      + "LEFT OUTER JOIN MonMetrics.Dimensions dims ON dims.dimension_set_id = defDims"
+      + ".dimension_set_id "
+      + "WHERE defDims.id in (%s) "
+      + "ORDER BY defDims.id ASC";
 
   static final String METRIC_DEF_SUB_SQL =
       "SELECT defDimsSub.id "
@@ -119,7 +129,7 @@ final class MetricQueries {
         Map.Entry<String, String> entry = it.next();
         query.bind("dname" + i, entry.getKey());
         if (!Strings.isNullOrEmpty(entry.getValue())) {
-          List<String> values = Splitter.on('|').splitToList(entry.getValue());
+          List<String> values = BAR_SPLITTER.splitToList(entry.getValue());
           if (values.size() > 1) {
             for (int j = 0; j < values.size(); j++) {
               query.bind("dvalue" + i + '_' + j, values.get(j));
@@ -133,36 +143,37 @@ final class MetricQueries {
     }
   }
 
-
-  static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
-
-    return SqlQueries.keyValuesFor(handle,
-                                   "select name, value from MonMetrics.Dimensions as d "
-                                   + "join MonMetrics.DefinitionDimensions as dd "
-                                   + "on d.dimension_set_id = dd.dimension_set_id "
-                                   + "where" + " dd.id = ?", dimensionSetId);
-  }
-
-  static String createDefDimIdInClause(Set<byte[]> defDimIdSet) {
+  static String createDefDimIdInClause(Set<String> defDimIdSet) {
 
     StringBuilder sb = new StringBuilder("IN ");
 
     sb.append("(");
 
     boolean first = true;
-    for (byte[] defDimId : defDimIdSet) {
+    for (String defDimId : defDimIdSet) {
 
       if (first) {
         first = false;
       } else {
         sb.append(",");
       }
-
-      sb.append("'" + Hex.encodeHexString(defDimId) + "'");
+      sb.append("'").append(defDimId).append("'");
     }
 
     sb.append(") ");
 
     return sb.toString();
+  }
+
+  static void bindOffsetToQuery(Query<Map<String, Object>> query, String offset) {
+    List<String> offsets =  offsetSplitter.splitToList(offset);
+    if (offsets.size() > 1) {
+      query.bind("offset_id", offsets.get(0));
+      query.bind("offset_timestamp",
+                 new Timestamp(DateTime.parse(offsets.get(1)).getMillis()));
+    } else {
+      query.bind("offset_timestamp",
+                 new Timestamp(DateTime.parse(offsets.get(0)).getMillis()));
+    }
   }
 }

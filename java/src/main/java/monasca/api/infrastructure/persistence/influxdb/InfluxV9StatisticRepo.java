@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -67,16 +67,16 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
   public List<Statistics> find(String tenantId, String name, Map<String, String> dimensions,
                                DateTime startTime, @Nullable DateTime endTime,
                                List<String> statistics, int period, String offset, int limit,
-                               Boolean mergeMetricsFlag) throws Exception {
+                               Boolean mergeMetricsFlag, String groupBy) throws Exception {
 
     String q = buildQuery(tenantId, name, dimensions, startTime, endTime,
-                   statistics, period, offset, limit, mergeMetricsFlag);
+                   statistics, period, offset, limit, mergeMetricsFlag, groupBy);
 
     String r = this.influxV9RepoReader.read(q);
 
     Series series = this.objectMapper.readValue(r, Series.class);
 
-    List<Statistics> statisticsList = statisticslist(series);
+    List<Statistics> statisticsList = statisticslist(series, offset, limit);
 
     logger.debug("Found {} metric definitions matching query", statisticsList.size());
 
@@ -86,7 +86,8 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
 
   private String buildQuery(String tenantId, String name, Map<String, String> dimensions,
                             DateTime startTime, DateTime endTime, List<String> statistics,
-                            int period, String offset, int limit, Boolean mergeMetricsFlag)
+                            int period, String offset, int limit, Boolean mergeMetricsFlag,
+                            String groupBy)
       throws Exception {
 
     String q;
@@ -94,7 +95,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
     if (Boolean.TRUE.equals(mergeMetricsFlag)) {
 
       q = String.format("select %1$s %2$s "
-                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s",
+                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s",
                         funcPart(statistics),
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
@@ -102,19 +103,20 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
                         this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.timeOffsetPart(offset),
                         this.influxV9Utils.periodPart(period),
                         this.influxV9Utils.limitPart(limit));
 
     } else {
 
-      if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
+      if (!"*".equals(groupBy) &&
+          !this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
         throw new MultipleMetricsException(name, dimensions);
+
       }
 
       q = String.format("select %1$s %2$s "
-                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s slimit 1",
+                        + "where %3$s %4$s %5$s %6$s %7$s %8$s",
                         funcPart(statistics),
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
@@ -122,9 +124,7 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
                         this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.timeOffsetPart(offset),
-                        this.influxV9Utils.periodPartWithGroupBy(period),
-                        this.influxV9Utils.limitPart(limit));
+                        this.influxV9Utils.periodPartWithGroupBy(period));
     }
 
     logger.debug("Statistics query: {}", q);
@@ -132,23 +132,57 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
     return q;
   }
 
-  private List<Statistics> statisticslist(Series series) {
+  private List<Statistics> statisticslist(Series series, String offsetStr, int limit) {
+
+    int offsetId = 0;
+    String offsetTimestamp = "1970-01-01T00:00:00.000Z";
+
+    if (offsetStr != null) {
+      List<String> offsets = influxV9Utils.parseMultiOffset(offsetStr);
+      if (offsets.size() > 1) {
+        offsetId = Integer.parseInt(offsets.get(0));
+        offsetTimestamp = offsets.get(1);
+      } else {
+        offsetId = 0;
+        offsetTimestamp = offsets.get(0);
+      }
+    }
 
     List<Statistics> statisticsList = new LinkedList<>();
 
     if (!series.isEmpty()) {
 
+      int remaining_limit = limit;
+      int index = 0;
       for (Serie serie : series.getSeries()) {
+        if (index < offsetId || remaining_limit <= 0) {
+          index++;
+          continue;
+        }
 
         Statistics statistics = new Statistics(serie.getName(),
                                                this.influxV9Utils.filterPrivateTags(serie.getTags()),
                                                Arrays.asList(translateNames(serie.getColumns())));
+        statistics.setId(Integer.toString(index));
 
-        for (Object[] values : serie.getValues()) {
-          statistics.addStatistics(buildValsList(values));
+
+        for (Object[] valueObjects : serie.getValues()) {
+          if (remaining_limit <= 0) {
+            break;
+          }
+
+          List<Object> values = buildValsList(valueObjects);
+
+          if (((String) values.get(0)).compareTo(offsetTimestamp) > 0 || index > offsetId) {
+            statistics.addStatistics(values);
+            remaining_limit--;
+          }
         }
 
-        statisticsList.add(statistics);
+        if (statistics.getStatistics().size() > 0) {
+          statisticsList.add(statistics);
+        }
+        index++;
 
       }
 

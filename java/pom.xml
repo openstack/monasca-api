@@ -298,14 +298,6 @@
                     <threadCount>4</threadCount>
                 </configuration>
                 <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>

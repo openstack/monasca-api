@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014,2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -79,7 +79,8 @@ public class StatisticResource {
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit,
       @QueryParam("tenant_id") String crossTenantId,
-      @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
+      @QueryParam("merge_metrics") String mergeMetricsFlag,
+      @QueryParam("group_by") String groupBy) throws Exception {
 
     // Validate query parameters
     Validation.validateNotNullOrEmpty(name, "name");
@@ -95,6 +96,7 @@ public class StatisticResource {
             .parseAndValidateDimensions(dimensionsStr);
     MetricNameValidation.validate(name, true);
     Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
+    Validation.validateMetricsGroupBy(groupBy);
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 
@@ -102,7 +104,7 @@ public class StatisticResource {
                                     repo.find(queryTenantId, name, dimensions, startTime, endTime,
                                               statistics, period, offset,
                                               this.persistUtils.getLimit(limit),
-                                              mergeMetricsFlagBool),
+                                              mergeMetricsFlagBool, groupBy),
                                     uriInfo);
   }
 

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,14 +44,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
   public static final DateTimeFormatter DATETIME_FORMATTER =
       ISODateTimeFormat.dateTime().withZoneUTC();
-
-  private static final String FIND_BY_METRIC_DEF_SQL =
-      "select defdims.id, def.name, d.name as dname, d.value as dvalue "
-      + "from MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defdims "
-      + "left outer join MonMetrics.Dimensions d on d.dimension_set_id = defdims.dimension_set_id "
-      + "where def.id = defdims.definition_id "
-      + "and defdims.id in (%s) "
-      + "order by defdims.id ASC";
 
   private final DBI db;
 
@@ -74,7 +65,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       int period,
       String offset,
       int limit,
-      Boolean mergeMetricsFlag) throws MultipleMetricsException {
+      Boolean mergeMetricsFlag,
+      String groupBy) throws MultipleMetricsException {
 
     List<Statistics> statisticsList = new ArrayList<>();
 
@@ -83,7 +75,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     try (Handle h = db.open()) {
 
-      Map<byte[], Statistics> byteMap = findDefIds(h, tenantId, name, dimensions);
+      Map<String, Statistics> byteMap = findDefIds(h, tenantId, name, dimensions);
 
       if (byteMap.isEmpty()) {
 
@@ -91,7 +83,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       }
 
-      if (!Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
+      if (!"*".equals(groupBy) && !Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
 
         throw new MultipleMetricsException(name, dimensions);
 
@@ -99,7 +91,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       List<List<Object>> statisticsListList = new ArrayList<>();
 
-      String sql = createQuery(byteMap.keySet(), period, startTime, endTime, offset, statisticsCols);
+      String sql = createQuery(byteMap.keySet(), period, startTime, endTime, offset, statisticsCols,
+                               groupBy, mergeMetricsFlag);
 
       logger.debug("vertica sql: {}", sql);
 
@@ -112,34 +105,62 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       if (offset != null && !offset.isEmpty()) {
         logger.debug("binding offset: {}", offset);
-        query.bind("offset", new Timestamp(DateTime.parse(offset).getMillis()));
+
+        MetricQueries.bindOffsetToQuery(query, offset);
       }
 
       List<Map<String, Object>> rows = query.list();
 
-      for (Map<String, Object> row : rows) {
+      if ("*".equals(groupBy)) {
 
-        List<Object> statisticsRow = parseRow(row);
+        for (Map<String, Object> row : rows) {
 
-        statisticsListList.add(statisticsRow);
+          List<Object> statisticsRow = parseRow(row);
 
+          String defDimsId = (String) row.get("id");
+
+          byteMap.get(defDimsId).addStatistics(statisticsRow);
+
+        }
+
+        for (Map.Entry<String, Statistics> entry : byteMap.entrySet()) {
+
+          Statistics statistics = entry.getValue();
+
+          statistics.setColumns(statisticsColumns);
+
+          if (statistics.getStatistics().size() > 0) {
+            statisticsList.add(statistics);
+          }
+
+        }
+
+      } else {
+
+        for (Map<String, Object> row : rows) {
+
+          List<Object> statisticsRow = parseRow(row);
+
+          statisticsListList.add(statisticsRow);
+
+        }
+
+        // Just use the first entry in the byteMap to get the def name and dimensions.
+        Statistics statistics = byteMap.entrySet().iterator().next().getValue();
+
+        statistics.setColumns(statisticsColumns);
+
+        if (Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
+
+          // Wipe out the dimensions.
+          statistics.setDimensions(new HashMap<String, String>());
+
+        }
+
+        statistics.setStatistics(statisticsListList);
+
+        statisticsList.add(statistics);
       }
-
-      // Just use the first entry in the byteMap to get the def name and dimensions.
-      Statistics statistics = byteMap.entrySet().iterator().next().getValue();
-
-      statistics.setColumns(statisticsColumns);
-
-      if (Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
-
-        // Wipe out the dimensions.
-        statistics.setDimensions(new HashMap<String, String>());
-
-      }
-
-      statistics.setStatistics(statisticsListList);
-
-      statisticsList.add(statistics);
 
     }
 
@@ -180,20 +201,18 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     if (sum != null) {
       statisticsRow.add(sum);
     }
-    return statisticsRow;
 
+    return statisticsRow;
   }
 
-  private Map<byte[], Statistics> findDefIds(
+  private Map<String, Statistics> findDefIds(
       Handle h,
       String tenantId,
       String name,
       Map<String, String> dimensions) {
 
-    List<byte[]> bytes = new ArrayList<>();
-
     String sql = String.format(
-        FIND_BY_METRIC_DEF_SQL,
+        MetricQueries.FIND_METRIC_DEFS_SQL,
         MetricQueries.buildMetricDefinitionSubSql(name, dimensions));
 
     Query<Map<String, Object>> query =
@@ -212,23 +231,23 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     List<Map<String, Object>> rows = query.list();
 
-    Map<byte[], Statistics> byteIdMap = new HashMap<>();
+    Map<String, Statistics> byteIdMap = new HashMap<>();
 
-    byte[] currentDefDimId = null;
+    String currentDefDimId = null;
 
     Map<String, String> dims = null;
 
     for (Map<String, Object> row : rows) {
 
-      byte[] defDimId = (byte[]) row.get("id");
+      String defDimId = (String) row.get("defDimsId");
 
       String defName = (String) row.get("name");
 
-      String dimName = (String) row.get("dname");
+      String dimName = (String) row.get("dName");
 
-      String dimValue = (String) row.get("dvalue");
+      String dimValue = (String) row.get("dValue");
 
-      if (defDimId == null || !Arrays.equals(currentDefDimId, defDimId)) {
+      if (defDimId == null || !defDimId.equals(currentDefDimId)) {
 
         currentDefDimId = defDimId;
 
@@ -237,6 +256,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
         dims.put(dimName, dimValue);
 
         Statistics statistics = new Statistics();
+
+        statistics.setId(defDimId);
 
         statistics.setName(defName);
 
@@ -250,8 +271,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       }
     }
-
-    bytes.add(currentDefDimId);
 
     return byteIdMap;
   }
@@ -270,30 +289,44 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
   }
 
   private String createQuery(
-      Set<byte[]> defDimIdSet,
+      Set<String> defDimIdSet,
       int period,
       DateTime startTime,
       DateTime endTime,
       String offset,
-      List<String> statistics) {
+      List<String> statistics,
+      String groupBy,
+      Boolean mergeMetricsFlag) {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append("SELECT " + createColumnsStr(statistics));
+    sb.append("SELECT ");
+    if (groupBy != null && !groupBy.isEmpty()) {
+      sb.append(" to_hex(definition_dimensions_id) AS id, ");
+    }
+    sb.append(createColumnsStr(statistics));
 
     if (period >= 1) {
-      sb.append("Time_slice(time_stamp, " + period);
-      sb.append(", 'SECOND', 'END') AS time_interval");
+      sb.append("Time_slice(time_stamp, ").append(period);
+      sb.append(", 'SECOND', 'START') AS time_interval");
     }
 
     sb.append(" FROM MonMetrics.Measurements ");
     String inClause = MetricQueries.createDefDimIdInClause(defDimIdSet);
-    sb.append("WHERE to_hex(definition_dimensions_id) " + inClause);
-    sb.append(createWhereClause(startTime, endTime, offset));
+    sb.append("WHERE to_hex(definition_dimensions_id) ").append(inClause);
+    sb.append(createWhereClause(startTime, endTime, offset, mergeMetricsFlag));
 
     if (period >= 1) {
-      sb.append("group by Time_slice(time_stamp, " + period);
-      sb.append(", 'SECOND', 'END') order by time_interval");
+      sb.append(" group by ");
+      if (groupBy != null && !groupBy.isEmpty()) {
+        sb.append("definition_dimensions_id,");
+      }
+      sb.append("time_interval ");
+      sb.append(" order by ");
+      if (groupBy != null && !groupBy.isEmpty()) {
+        sb.append("to_hex(definition_dimensions_id),");
+      }
+      sb.append("time_interval ");
     }
 
     sb.append(" limit :limit");
@@ -304,7 +337,8 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
   private String createWhereClause(
       DateTime startTime,
       DateTime endTime,
-      String offset) {
+      String offset,
+      Boolean mergeMetricsFlag) {
 
     String s = "";
 
@@ -316,7 +350,12 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      s += " and time_stamp > :offset ";
+      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+        s += " AND (TO_HEX(definition_dimensions_id) > :offset_id "
+             + "OR (TO_HEX(definition_dimensions_id) = :offset_id AND time_stamp > :offset_timestamp)) ";
+      } else {
+        s += " AND time_stamp > :offset_timestamp ";
+      }
 
     }
 

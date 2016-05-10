@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -49,6 +49,8 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
   private final InfluxV9MetricDefinitionRepo influxV9MetricDefinitionRepo;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
+
+
   @Inject
   public InfluxV9MeasurementRepo(ApiConfig config,
                                  InfluxV9RepoReader influxV9RepoReader,
@@ -65,18 +67,18 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
   @Override
   public List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
                                  DateTime startTime, @Nullable DateTime endTime,
-                                 @Nullable String offset, int limit, Boolean mergeMetricsFlag)
+                                 @Nullable String offset, int limit, Boolean mergeMetricsFlag,
+                                 String groupBy)
       throws Exception {
 
     String q = buildQuery(tenantId, name, dimensions, startTime, endTime,
-                          offset, limit, mergeMetricsFlag);
-
+                          offset, limit, mergeMetricsFlag, groupBy);
 
     String r = this.influxV9RepoReader.read(q);
 
     Series series = this.objectMapper.readValue(r, Series.class);
 
-    List<Measurements> measurementsList = measurementsList(series);
+    List<Measurements> measurementsList = measurementsList(series, offset, limit);
 
     logger.debug("Found {} metrics matching query", measurementsList.size());
 
@@ -85,42 +87,39 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
 
   private String buildQuery(String tenantId, String name, Map<String, String> dimensions,
                             DateTime startTime, DateTime endTime, String offset, int limit,
-                            Boolean mergeMetricsFlag) throws Exception {
+                            Boolean mergeMetricsFlag, String groupBy) throws Exception {
 
     String q;
     if (Boolean.TRUE.equals(mergeMetricsFlag)) {
 
       // The time column is automatically included in the results before all other columns.
       q = String.format("select value, value_meta %1$s "
-                        + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s",
+                        + "where %2$s %3$s %4$s %5$s %6$s",
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
                         this.influxV9Utils.privateRegionPart(this.region),
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.timeOffsetPart(offset),
-                        this.influxV9Utils.limitPart(limit));
+                        this.influxV9Utils.endTimePart(endTime));
 
     } else {
 
-      if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
+      if (!"*".equals(groupBy) &&
+          !this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
         throw new MultipleMetricsException(name, dimensions);
 
       }
       // The time column is automatically included in the results before all other columns.
       q = String.format("select value, value_meta %1$s "
-                        + "where %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s slimit 1",
+                        + "where %2$s %3$s %4$s %5$s %6$s %7$s", //slimit 1
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
                         this.influxV9Utils.privateRegionPart(this.region),
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
                         this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.timeOffsetPart(offset),
-                        this.influxV9Utils.groupByPart(),
-                        this.influxV9Utils.limitPart(limit));
+                        this.influxV9Utils.groupByPart());
     }
 
     logger.debug("Measurements query: {}", q);
@@ -128,24 +127,55 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
     return q;
   }
 
-  private List<Measurements> measurementsList(Series series) {
+  private List<Measurements> measurementsList(Series series, String offsetStr, int limit) {
     List<Measurements> measurementsList = new LinkedList<>();
 
     if (!series.isEmpty()) {
 
+      int offsetId = 0;
+      String offsetTimestamp = "1970-01-01T00:00:00.000Z";
+
+      if (offsetStr != null) {
+        List<String> offsets = influxV9Utils.parseMultiOffset(offsetStr);
+        if (offsets.size() > 1) {
+          offsetId = Integer.parseInt(offsets.get(0));
+          offsetTimestamp = offsets.get(1);
+        } else {
+          offsetId = 0;
+          offsetTimestamp = offsets.get(0);
+        }
+      }
+
+      int remaining_limit = limit;
+      int index = 0;
       for (Serie serie : series.getSeries()) {
+        if (index < offsetId || remaining_limit <= 0) {
+          index++;
+          continue;
+        }
 
         Measurements measurements =
             new Measurements(serie.getName(),
                              influxV9Utils.filterPrivateTags(serie.getTags()));
+        measurements.setId(Integer.toString(index));
 
         for (String[] values : serie.getValues()) {
+          if (remaining_limit <= 0) {
+            break;
+          }
+
           final String timestamp = influxV9Utils.threeDigitMillisTimestamp(values[0]);
-          measurements.addMeasurement(
-              new Object[]{timestamp, Double.parseDouble(values[1]), getValueMeta(values)});
+          if (timestamp.compareTo(offsetTimestamp) > 0 || index > offsetId) {
+            measurements.addMeasurement(
+                new Object[]{timestamp, Double.parseDouble(values[1]), getValueMeta(values)});
+            remaining_limit--;
+          }
         }
 
-        measurementsList.add(measurements);
+        if (measurements.getMeasurements().size() > 0) {
+          measurementsList.add(measurements);
+        }
+        index++;
       }
     }
 
