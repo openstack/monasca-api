@@ -189,6 +189,13 @@ public final class Validation {
     }
   }
 
+  public static void validateMetricsGroupBy(String groupBy) {
+
+    if (!Strings.isNullOrEmpty(groupBy) && !"*".equals(groupBy)) {
+      throw Exceptions.unprocessableEntity("Invalid group_by", "Group_by must be '*' if specified");
+    }
+  }
+
   public static void validateLifecycleState(String lifecycleState) {
     if (lifecycleState != null) {
       if (lifecycleState.length() > 50) {

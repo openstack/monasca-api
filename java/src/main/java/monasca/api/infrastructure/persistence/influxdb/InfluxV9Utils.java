@@ -31,6 +31,10 @@ import monasca.common.util.Conversions;
 public class InfluxV9Utils {
   private static final Pattern sqlUnsafePattern = Pattern.compile("^.*('|;|\")+.*$");
 
+  static final String OFFSET_SEPARATOR = "_";
+  static final Splitter
+      offsetSplitter = Splitter.on(OFFSET_SEPARATOR).omitEmptyStrings().trimResults();
+
   public InfluxV9Utils() {
   }
 
@@ -282,5 +286,9 @@ public class InfluxV9Utils {
       timestamp = origTimestamp.substring(0, 19) + '.' + millisecond_3d + 'Z';
     }
     return timestamp;
+  }
+
+  public List<String> parseMultiOffset(String offsetStr) {
+    return offsetSplitter.splitToList(offsetStr);
   }
 }

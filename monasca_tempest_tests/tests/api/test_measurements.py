@@ -194,6 +194,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertRaises(exceptions.BadRequest,
                           self.monasca_client.list_measurements, query_parms)
 
+
     @test.attr(type="gate")
     def test_list_measurements_with_offset_limit(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
@@ -209,20 +210,34 @@ class TestMeasurements(base.BaseMonascaTest):
         self._verify_list_measurements_meas_len(measurements=measurements,
                                                 test_len=4)
 
-        for measurement_index in xrange(len(measurements) - 2):
+        for measurement_index in xrange(1, len(measurements) - 3):
             max_limit = len(measurements) - measurement_index
 
+            # Get first offset from api
+            query_parms = '?name=' + str(self._names_list[1]) + \
+                          '&merge_metrics=true&start_time=' + measurements[measurement_index - 1][0] + \
+                          '&end_time=' + self._end_time + \
+                          '&limit=1'
+            resp, response_body = self.monasca_client.list_measurements(query_parms)
+            for link in response_body['links']:
+                if link['rel'] == 'next':
+                    next_link = link['href']
+            if not next_link:
+                self.fail("No next link returned with query parameters: {}".formet(query_parms))
+            offset = helpers.get_query_param(next_link, "offset")
+
+            first_index = measurement_index + 1
+
             for limit in xrange(1, max_limit):
-                first_index = measurement_index + 1
                 last_index = measurement_index + limit + 1
                 expected_measurements = measurements[first_index:last_index]
 
-                offset_timestamp = measurements[measurement_index][0]
                 query_parms = '?name=' + str(self._names_list[1]) + \
                               '&merge_metrics=true&start_time=' + \
                               self._start_time + '&end_time=' + \
-                              self._end_time + '&offset=' + \
-                              str(offset_timestamp) + '&limit=' + str(limit)
+                              self._end_time + '&limit=' + str(limit) + \
+                              '&offset=' + str(offset)
+
                 resp, response_body = self.monasca_client.list_measurements(
                     query_parms)
                 self._verify_list_measurements(resp, response_body)

@@ -13,6 +13,7 @@
 # under the License.
 
 import time
+import datetime
 
 from oslo_utils import timeutils
 
@@ -231,21 +232,34 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertEqual(4, len(elements))
         self.assertEqual(first_element, elements[0])
 
-        for index in xrange(1, 5):
-            max_limit = 5 - index
+        for index in xrange(1, 4):
+            max_limit = 4 - index
+
+            # Get first offset from api
+            query_parms = '?name=' + str(name) + \
+                          '&merge_metrics=true&start_time=' + elements[index - 1][0] + \
+                          '&end_time=' + end_time + \
+                          '&limit=1'
+            resp, response_body = self.monasca_client.list_measurements(query_parms)
+            for link in response_body['links']:
+                if link['rel'] == 'next':
+                    next_link = link['href']
+            if not next_link:
+                self.fail("No next link returned with query parameters: {}".formet(query_parms))
+            offset = helpers.get_query_param(next_link, "offset")
+            # python api returns exact timestamp, but the test needs a rounded number
+            offset_period_index = offset.find('.')
+            offset = offset[:offset_period_index] + 'Z'
 
             for limit in xrange(1, max_limit):
-                offset_timestamp = start_timestamp + (1000 * index)
-                offset = timeutils.iso8601_from_timestamp(offset_timestamp / 1000)
-
-                last_index = index + limit
-                expected_elements = elements[index:last_index]
+                expected_elements = [elem for elem in elements if elem[0] > offset]
+                expected_elements = expected_elements[:limit]
 
                 query_parms = '?name=' + name + '&merge_metrics=true' + \
-                                      '&statistics=avg' + '&start_time=' + \
-                                      str(start_time) + '&end_time=' + \
-                                      str(end_time) + '&period=1' + '&limit=' + \
-                                      str(limit) + '&offset=' + str(offset)
+                              '&statistics=avg' + '&start_time=' + \
+                              str(start_time) + '&end_time=' + \
+                              str(end_time) + '&period=1' + '&limit=' + \
+                              str(limit) + '&offset=' + str(offset)
                 resp, response_body = self.monasca_client.list_statistics(query_parms)
                 self.assertEqual(200, resp.status)
                 if not response_body['elements']:

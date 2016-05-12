@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014, 2016 Hewlett-Packard Development Company, L.P.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -88,7 +88,7 @@ public class MeasurementVerticaRepositoryImplTest {
   public void shouldFindWithoutDimensions() throws Exception {
     Collection<Measurements> measurements =
         repo.find("bob", "cpu_utilization", null, new DateTime(2014, 1, 1, 0, 0, 0), null, null, 1,
-                  false);
+                  false, null);
     assertEquals(measurements.size(), 3);
   }
 
@@ -99,12 +99,12 @@ public class MeasurementVerticaRepositoryImplTest {
 
     Collection<Measurements> measurements =
         repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null, null, 1,
-                  false);
+                  false, null);
     assertEquals(measurements.size(), 2);
 
     dims.put("flavor_id", "2");
     measurements = repo.find("bob", "cpu_utilization", dims, new DateTime(2014, 1, 1, 0, 0), null, null, 1,
-                             false);
+                             false, null);
     assertEquals(measurements.size(), 1);
   }
 }

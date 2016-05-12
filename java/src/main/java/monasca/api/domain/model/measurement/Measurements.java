@@ -30,7 +30,9 @@ public class Measurements extends AbstractEntity {
   private final String[] columns = COLUMNS;
   private List<Object[]> measurements;
 
-  public Measurements() {}
+  public Measurements() {
+    measurements = new LinkedList<>();
+  }
 
   public Measurements(String name, Map<String, String> dimensions, List<Object[]> measurements) {
     this.name = name;
