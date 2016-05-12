@@ -63,7 +63,8 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             end_timestamp=2,
             offset=None,
             limit=1,
-            merge_metrics_flag=True)
+            merge_metrics_flag=True,
+            group_by=None)
 
         self.assertEqual(len(result), 1)
         self.assertIsNone(result[0]['dimensions'])

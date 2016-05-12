@@ -241,8 +241,7 @@ class TestStatistics(base.BaseMonascaTest):
                       ('start_time', str(start_time)),
                       ('end_time', str(end_time)),
                       ('period', 1),
-                      ('limit', limit)
-                     ]
+                      ('limit', limit)]
             offset = None
             while True:
                 num_expected_elements = limit
@@ -270,7 +269,6 @@ class TestStatistics(base.BaseMonascaTest):
                     break
                 # Get the next set
                 offset = self._get_offset(response_body)
-
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])
