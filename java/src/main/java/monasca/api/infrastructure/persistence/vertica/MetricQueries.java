@@ -32,61 +32,84 @@ import monasca.common.persistence.SqlQueries;
  * Vertica utilities for building metric queries.
  */
 final class MetricQueries {
+  private static Splitter BAR_SPLITTER = Splitter.on('|').omitEmptyStrings().trimResults();
+
+  static final String METRIC_DEF_SUB_SQL =
+      "SELECT defDimsSub.id "
+      + "FROM MonMetrics.Definitions as defSub "
+      + "JOIN MonMetrics.DefinitionDimensions as defDimsSub ON defDimsSub.definition_id = defSub.id "
+      + "WHERE defSub.tenant_id = :tenantId "
+      + "%s " // metric name here
+      + "%s " // dimension and clause here
+      + "GROUP BY defDimsSub.id";
+
+  private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defDimsSub";
+
   private MetricQueries() {}
 
-  static String buildDimensionAndClause(Map<String, String> dimensions,
-                                        String tableToJoinName,
-                                        int limit) {
+  static String buildMetricDefinitionSubSql(String name, Map<String, String> dimensions) {
 
-    StringBuilder sb = null;
+    String namePart = "";
 
-    if (dimensions != null && dimensions.size() > 0) {
-
-      int numDims = dimensions.size();
-      sb = new StringBuilder();
-      sb.append(" and " + tableToJoinName + ".dimension_set_id in ")
-        .append("(select dimension_set_id from MonMetrics.Dimensions where ");
-
-      int i = 0;
-      for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
-        Map.Entry<String, String> entry = it.next();
-        sb.append("name = :dname").append(i);
-        String dim_value = entry.getValue();
-        if (!Strings.isNullOrEmpty(dim_value)) {
-          List<String> values = Splitter.on('|').splitToList(dim_value);
-          if (values.size() > 1) {
-            sb.append(" and ( ");
-            for (int j = 0; j < values.size(); j++) {
-              sb.append("value = :dvalue").append(i).append('_').append(j);
-              if (j < values.size() - 1) {
-                sb.append(" or ");
-              }
-            }
-            sb.append(" )");
-          } else {
-            sb.append(" and value = :dvalue").append(i);
-          }
-        }
-        if (it.hasNext()) {
-          sb.append(" or ");
-        }
-      }
-      sb.append(" group by dimension_set_id")
-        .append(" having count(*) = " + numDims +" ");
-
-      //
-      // Limit is non-deterministic here unless we also
-      // order by.
-      //
-      if (limit > 0) {
-        sb.append("order by dimension_set_id ")
-          .append("limit " + Integer.toString(limit + 1));
-      }
-
-      sb.append(")");
+    if (name != null && !name.isEmpty()) {
+      namePart = "AND defSub.name = :name ";
     }
 
-    return sb == null ? "" : sb.toString();
+    return String.format(METRIC_DEF_SUB_SQL,
+                         namePart,
+                         buildDimensionAndClause(dimensions,
+                                                 TABLE_TO_JOIN_DIMENSIONS_ON));
+  }
+
+  static String buildDimensionAndClause(Map<String, String> dimensions,
+                                        String tableToJoinName) {
+
+    if (dimensions == null || dimensions.isEmpty()) {
+      return "";
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(" and ").append(tableToJoinName).append(
+              ".dimension_set_id in ( "
+              + "SELECT dimension_set_id FROM MonMetrics.Dimensions WHERE (");
+
+    int i = 0;
+    for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
+      Map.Entry<String, String> entry = it.next();
+
+      sb.append("(name = :dname").append(i);
+
+      String dim_value = entry.getValue();
+      if (!Strings.isNullOrEmpty(dim_value)) {
+        List<String> values = BAR_SPLITTER.splitToList(dim_value);
+
+        if (values.size() > 1) {
+          sb.append(" and ( ");
+
+          for (int j = 0; j < values.size(); j++) {
+            sb.append("value = :dvalue").append(i).append('_').append(j);
+
+            if (j < values.size() - 1) {
+              sb.append(" or ");
+            }
+          }
+          sb.append(")");
+
+        } else {
+          sb.append(" and value = :dvalue").append(i);
+        }
+      }
+      sb.append(")");
+
+      if (it.hasNext()) {
+        sb.append(" or ");
+      }
+    }
+
+    sb.append(") GROUP BY dimension_set_id HAVING count(*) = ").append(dimensions.size()).append(") ");
+
+
+    return sb.toString();
   }
 
   static void bindDimensionsToQuery(Query<?> query, Map<String, String> dimensions) {
@@ -113,8 +136,11 @@ final class MetricQueries {
 
   static Map<String, String> dimensionsFor(Handle handle, byte[] dimensionSetId) {
 
-    return SqlQueries.keyValuesFor(handle, "select name, value from MonMetrics.Dimensions "
-        + "where" + " dimension_set_id = ?", dimensionSetId);
+    return SqlQueries.keyValuesFor(handle,
+                                   "select name, value from MonMetrics.Dimensions as d "
+                                   + "join MonMetrics.DefinitionDimensions as dd "
+                                   + "on d.dimension_set_id = dd.dimension_set_id "
+                                   + "where" + " dd.id = ?", dimensionSetId);
   }
 
   static String createDefDimIdInClause(Set<byte[]> defDimIdSet) {
