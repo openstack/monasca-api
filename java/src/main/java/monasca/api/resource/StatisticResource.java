@@ -100,12 +100,12 @@ public class StatisticResource {
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 
-    return Links.paginateStatistics(this.persistUtils.getLimit(limit),
-                                    repo.find(queryTenantId, name, dimensions, startTime, endTime,
-                                              statistics, period, offset,
-                                              this.persistUtils.getLimit(limit),
-                                              mergeMetricsFlagBool, groupBy),
-                                    uriInfo);
+    return Links.paginateMeasurements(this.persistUtils.getLimit(limit),
+                                      repo.find(queryTenantId, name, dimensions, startTime, endTime,
+                                                statistics, period, offset,
+                                                this.persistUtils.getLimit(limit),
+                                                mergeMetricsFlagBool, groupBy),
+                                      uriInfo);
   }
 
 }
