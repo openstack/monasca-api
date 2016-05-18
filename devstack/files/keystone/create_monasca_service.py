@@ -2,71 +2,75 @@
 # Copyright 2015 FUJITSU LIMITED
 
 from __future__ import print_function
-from keystoneclient.v2_0 import client
+from keystoneauth1 import session as ks_session
+from keystoneauth1.identity import v3
+from keystoneclient.v3 import client
 import sys
 
 
-def get_token(url, cacert, username, password, tenant_name):
-    if not username or not password:
-        print('If token is not given, keystone_admin and keystone_admin_password must be given', file=sys.stderr)
-        return False
-
-    if not tenant_name:
-        print('If token is not given, keystone_admin_project must be given', file=sys.stderr)
-        return False
-
+def _get_auth_plugin(auth_url, **kwargs):
     kwargs = {
-        'username': username,
-        'password': password,
-        'tenant_name': tenant_name,
-        'auth_url': url,
-        'cacert': cacert
+        'username': kwargs.get('username'),
+        'password': kwargs.get('password'),
+        'project_name': kwargs.get('project_name'),
+        'project_domain_id': kwargs.get('project_domain_id'),
+        'user_domain_id': kwargs.get('user_domain_id'),
     }
 
-    key = client.Client(**kwargs)
-    token = key.auth_token
-    return token
+    return v3.Password(auth_url=auth_url, **kwargs)
 
 
-def get_tenant(key, tenant_name):
-    """Get the tenant by name"""
-    for tenant in key.tenants.list():
-        if tenant.name == tenant_name:
-            return tenant
+def get_default_domain(ks_client):
+    """Get the default domain"""
+    for domain in ks_client.domains.list():
+        if domain.id == "default":
+            return domain
 
     return None
 
 
-def add_tenants(key, tenant_names):
-    """Add the given tenant_names if they don't already exist"""
-    for tenant_name in tenant_names:
-        if not get_tenant(key, tenant_name):
-            key.tenants.create(tenant_name=tenant_name, enabled=True)
-            print("Created tenant/project '{}'".format(tenant_name))
+def get_project(ks_client, project_name):
+    """Get the project by name"""
+    for project in ks_client.projects.list():
+        if project.name == project_name:
+            return project
+
+    return None
+
+
+def add_projects(ks_client, project_name):
+    """Add the given project_names if they don't already exist"""
+    default_domain = get_default_domain(ks_client)
+    for project_name in project_name:
+        if not get_project(ks_client, project_name):
+            ks_client.projects.create(name=project_name,
+                                      domain=default_domain,
+                                      enabled=True)
+            print("Created project '{}'".format(project_name))
 
     return True
 
 
-def get_user(key, user_name):
-    for user in key.users.list():
+def get_user(ks_client, user_name):
+    for user in ks_client.users.list():
         if user.name == user_name:
             return user
     return None
 
 
-def get_role(key, role_name):
-    for role in key.roles.list():
-        if role.name == role_name:
+def get_role(ks_client, role_name=None, role_id=None):
+    for role in ks_client.roles.list():
+        if role.name == role_name or role.id == role_id:
             return role
     return None
 
 
-def add_users(key, users):
+def add_users(ks_client, users):
     """Add the given users if they don't already exist"""
     for user in users:
-        if not get_user(key, user['username']):
-            tenant_name = user['project']
-            tenant = get_tenant(key, tenant_name)
+        if not get_user(ks_client, user['username']):
+            project_name = user['project']
+            project = get_project(ks_client, project_name)
 
             password = user['password']
             if 'email' in user:
@@ -74,52 +78,63 @@ def add_users(key, users):
             else:
                 email = None
 
-            key.users.create(name=user['username'], password=password,
-                             email=email, tenant_id=tenant.id)
+            ks_client.users.create(name=user['username'], password=password,
+                                   email=email, project_id=project.id)
             print("Created user '{}'".format(user['username']))
     return True
 
 
-def add_user_roles(key, users):
+def add_user_roles(ks_client, users):
     """Add the roles for the users if they don't already have them"""
     for user in users:
         if 'role' not in user:
             continue
         role_name = user['role']
-        keystone_user = get_user(key, user['username'])
-        tenant = get_tenant(key, user['project'])
-        for role in key.roles.roles_for_user(keystone_user, tenant=tenant):
+        keystone_user = get_user(ks_client, user['username'])
+        project = get_project(ks_client, user['project'])
+        for assignment in ks_client.role_assignments.list(user=keystone_user,
+                                                          project=project):
+            role = get_role(ks_client=ks_client, role_id=assignment.role['id'])
             if role.name == role_name:
                 return True
 
-        role = get_role(key, role_name)
+        role = get_role(ks_client=ks_client, role_name=role_name)
         if not role:
-            role = key.roles.create(role_name)
+            role = ks_client.roles.create(role_name)
             print("Created role '{}'".format(role_name))
 
-        key.roles.add_user_role(keystone_user, role, tenant)
-        print("Added role '{}' to user '{}'".format(role_name, user['username']))
+        ks_client.roles.grant(user=keystone_user, role=role, project=project)
+        print("Added role '{}' to user '{}'".format(role_name,
+                                                    user['username']))
     return True
 
-def add_service_endpoint(key, name, description, type, url, region):
-    """Add the Monasca service to the catalog with the specified endpoint, if it doesn't yet exist."""
-    service_names = {service.name: service.id for service in key.services.list()}
+
+def add_service_endpoint(ks_client, name, description, type, url, region,
+                         interface):
+    """Add the Monasca service to the catalog with the specified endpoint,
+    if it doesn't yet exist."""
+    service_names = {service.name: service
+                     for service in ks_client.services.list()}
     if name in service_names.keys():
-        service_id = service_names[name]
+        service = service_names[name]
     else:
-        service = key.services.create(name=name, service_type=type, description=description)
+        service = ks_client.services.create(name=name, type=type,
+                                            description=description)
         print("Created service '{}' of type '{}'".format(name, type))
-        service_id = service.id
 
-    for endpoint in key.endpoints.list():
-        if endpoint.service_id == service_id:
-            if endpoint.publicurl == url and endpoint.adminurl == url and endpoint.internalurl == url:
-                return True
+    for endpoint in ks_client.endpoints.list():
+        if endpoint.service_id == service.id:
+            if endpoint.url == url:
+                if endpoint.interface == interface:
+                    return True
             else:
-                key.endpoints.delete(endpoint.id)
+                ks_client.endpoints.delete(id=endpoint.id)
 
-    key.endpoints.create(region=region, service_id=service_id, publicurl=url, adminurl=url, internalurl=url)
-    print("Added service endpoint '{}' at '{}'".format(name, url))
+    ks_client.endpoints.create(region=region, service=service, url=url,
+                               interface=interface)
+
+    print("Added service endpoint '{}' at '{}' (interface: '{}') "
+          .format(name, url, interface))
     return True
 
 
@@ -128,45 +143,83 @@ def add_monasca_service():
 
 
 def main(argv):
-    """ Get token if needed and then call methods to add tenants, users and roles """
-    users = [{'username': 'mini-mon', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-user'},
-             {'username': 'monasca-agent', 'project': 'mini-mon', 'password': 'password', 'role': 'monasca-agent'},
-             {'username': 'mini-mon', 'project': 'mini-mon', 'password': 'password', 'role': 'admin'},
-             {'username': 'admin', 'project': 'admin', 'password': 'secretadmin', 'role': 'monasca-user'},
-             {'username': 'demo', 'project': 'demo', 'password': 'secretadmin', 'role': 'monasca-user'}]
+    """ Get credentials to create a keystoneauth Session to instantiate a
+     Keystone Client and then call methods to add users, projects and roles"""
+    users = [
+        {'username': 'mini-mon',
+         'project': 'mini-mon',
+         'password': 'password',
+         'role': 'monasca-user'},
+        {'username': 'monasca-agent',
+         'project': 'mini-mon',
+         'password': 'password',
+         'role': 'monasca-agent'},
+        {'username': 'mini-mon',
+         'project': 'mini-mon',
+         'password': 'password',
+         'role': 'admin'},
+        {'username': 'admin',
+         'project': 'admin',
+         'password': 'secretadmin',
+         'role': 'monasca-user'},
+        {'username': 'demo',
+         'project': 'demo',
+         'password': 'secretadmin',
+         'role': 'monasca-user'}
+    ]
 
     service_host = argv[0]
-    url = 'http://' + service_host + ':35357/v2.0'
+    url = 'http://' + service_host + ':35357/v3'
 
-    token = None
+    # FIXME(clenimar): to date, devstack doesn't set domain-related enviroment
+    # variables. That's why we need that little workaround when getting those
+    # from sys.argv.
+    kwargs = {
+        'username': argv[1],
+        'password': argv[2],
+        'project_name': argv[3],
+        'project_domain_id': argv[4] if len(argv) > 4 else 'default',
+        'user_domain_id': argv[5] if len(argv) > 5 else 'default'
+    }
 
-    cacert = None
+    auth_plugin = _get_auth_plugin(auth_url=url, **kwargs)
+    session = ks_session.Session(auth=auth_plugin)
+    ks_client = client.Client(session=session)
 
-    if not token:
-        username = argv[1]
-        password = argv[2]
-        tenant_name = argv[3]
-        token = get_token(url, cacert, username, password, tenant_name)
-
-    key = client.Client(token=token, endpoint=url, cacert=cacert)
-
-    tenants = []
+    projects = []
     for user in users:
-        if 'project' in user and user['project'] not in tenants:
-            tenants.append(user['project'])
+        if 'project' in user and user['project'] not in projects:
+            projects.append(user['project'])
 
-    if not add_tenants(key, tenants):
+    if not add_projects(ks_client, projects):
         return 1
 
-    if not add_users(key, users):
+    if not add_users(ks_client, users):
         return 1
 
-    if not add_user_roles(key, users):
+    if not add_user_roles(ks_client, users):
         return 1
 
     monasca_url = 'http://' + service_host + ':8070/v2.0'
 
-    if not add_service_endpoint(key, 'monasca', 'Monasca monitoring service', 'monitoring', monasca_url, 'RegionOne'):
+    endpoint_name = 'monasca'
+    endpoint_description = 'Monasca monitoring service'
+    endpoint_type = 'monitoring'
+    endpoint_region = 'RegionOne'
+
+    if not add_service_endpoint(ks_client, endpoint_name, endpoint_description,
+                                endpoint_type, monasca_url, endpoint_region,
+                                interface='public'):
+        return 1
+
+    if not add_service_endpoint(ks_client, endpoint_name, endpoint_description,
+                                endpoint_type, monasca_url, endpoint_region,
+                                interface='internal'):
+        return 1
+
+    if not add_service_endpoint(ks_client, endpoint_name, endpoint_description,
+                                endpoint_type, monasca_url, endpoint_region,
+                                interface='admin'):
         return 1
 
     return 0
