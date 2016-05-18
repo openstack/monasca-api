@@ -56,12 +56,12 @@ public class InfluxV9Utils {
     final StringBuilder sb = new StringBuilder();
 
     if (startTime != null) {
-      sb.append(String.format(" and time > " + "'" + ISODateTimeFormat.dateTime().print(startTime)
+      sb.append(String.format(" and time >= " + "'" + ISODateTimeFormat.dateTime().print(startTime)
               + "'"));
     }
 
     if (endTime != null) {
-      sb.append(String.format(" and time < " + "'" + ISODateTimeFormat.dateTime().print(endTime)
+      sb.append(String.format(" and time <= " + "'" + ISODateTimeFormat.dateTime().print(endTime)
               + "'"));
     }
 
