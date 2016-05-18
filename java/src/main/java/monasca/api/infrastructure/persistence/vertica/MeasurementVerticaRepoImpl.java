@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -205,9 +206,12 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
       }
 
       // clean up any empty measurements
-      for (Map.Entry<String, Measurements> entry : results.entrySet()) {
+      Iterator<Map.Entry<String, Measurements>> it = results.entrySet().iterator();
+      while (it.hasNext())
+      {
+        Map.Entry<String, Measurements> entry = it.next();
         if (entry.getValue().getMeasurements().size() == 0) {
-          results.remove(entry.getKey());
+          it.remove();
         }
       }
 
