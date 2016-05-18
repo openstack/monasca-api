@@ -347,6 +347,11 @@ public class AlarmSqlRepositoryImplTest {
 
   @Test(groups = "orm")
   public void shouldFind() {
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 1, true), alarm1, alarm2);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 2, true), alarm1, alarm2, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "1", 1, true), alarm2, compoundAlarm);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "2", 1, true), compoundAlarm, alarm3);
+    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "3", 1, true), alarm3);
 
     checkList(repo.find("Not a tenant id", null, null, null, null, null, null, null, null, null, null, 1, false));
 
@@ -389,8 +394,8 @@ public class AlarmSqlRepositoryImplTest {
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, null, 0, false));
 
-    //checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
-    //    compoundAlarm);
+//    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
+//        compoundAlarm);
 
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, null, 1, false),
         alarm1, alarm2, alarm3, compoundAlarm);
