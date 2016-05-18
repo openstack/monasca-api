@@ -88,8 +88,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                    .select_from(a_s.join(ad, a_s.c.alarm_definition_id == ad.c.id)))
 
         self.get_ad_query = (select([ad])
+                             .select_from(ad.join(a, ad.c.id == a.c.alarm_definition_id))
                              .where(ad.c.tenant_id == bindparam('b_tenant_id'))
-                             .where(ad.c.id == bindparam('b_id')))
+                             .where(a.c.id == bindparam('b_id')))
 
         self.get_am_query = (select([a_s.c.id.label('alarm_id'),
                                      mde.c.name,
