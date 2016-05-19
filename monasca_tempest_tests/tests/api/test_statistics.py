@@ -13,9 +13,8 @@
 # under the License.
 
 import time
-import datetime
 
-from oslo_utils import timeutils
+import six.moves.urllib.parse as urlparse
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
@@ -88,10 +87,10 @@ class TestStatistics(base.BaseMonascaTest):
     @test.attr(type="gate")
     def test_list_statistics(self):
         query_parms = '?name=' + str(self._test_name) + \
-                      '&statistics=avg,sum,min,max,count' + '&start_time=' + \
-                      str(self._start_time_iso) + '&end_time=' + \
-                      str(self._end_time_iso) + '&merge_metrics=true' + \
-                      '&period=100000'
+                      '&statistics=' + urlparse.quote('avg,sum,min,max,count') + \
+                      '&start_time=' + str(self._start_time_iso) + \
+                      '&end_time=' + str(self._end_time_iso) + \
+                      '&merge_metrics=true' + '&period=100000'
         resp, response_body = self.monasca_client.list_statistics(
             query_parms)
         self.assertEqual(200, resp.status)
