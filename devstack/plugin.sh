@@ -1304,11 +1304,11 @@ function install_storm {
 
     sudo ln -sf /var/log/storm /opt/storm/current/logs
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/cluster.xml /opt/storm/current/logback/cluster.xml
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/cluster.xml /opt/storm/current/log4j2/cluster.xml
 
-    sudo chown storm:storm /opt/storm/current/logback/cluster.xml
+    sudo chown storm:storm /opt/storm/current/log4j2/cluster.xml
 
-    sudo chmod 0644 /opt/storm/current/logback/cluster.xml
+    sudo chmod 0644 /opt/storm/current/log4j2/cluster.xml
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
@@ -1383,7 +1383,7 @@ function install_monasca_thresh {
 
     (cd "${MONASCA_BASE}"/monasca-thresh/thresh ; sudo mvn clean package -DskipTests)
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-thresh/thresh/target/monasca-thresh-1.1.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-thresh.jar
+    sudo cp -f "${MONASCA_BASE}"/monasca-thresh/thresh/target/monasca-thresh-2.0.0-SNAPSHOT-shaded.jar /opt/monasca/monasca-thresh.jar
 
     sudo useradd --system -g monasca mon-thresh || true
 
