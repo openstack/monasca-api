@@ -13,7 +13,6 @@ pastedeploy
 pbr
 python-dateutil
 six
-ujson>=1.33
 pyparsing
 voluptuous
 influxdb
