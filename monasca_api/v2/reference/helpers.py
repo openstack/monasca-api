@@ -257,7 +257,7 @@ def get_query_statistics(req):
             if isinstance(params['statistics'], list):
                 statistics.extend(params['statistics'])
             else:
-                statistics.append(params['statistics'])
+                statistics.extend(params['statistics'].split(','))
             statistics = [statistic.lower() for statistic in statistics]
             if not all(statistic in ['avg', 'min', 'max', 'count', 'sum'] for
                        statistic in statistics):
