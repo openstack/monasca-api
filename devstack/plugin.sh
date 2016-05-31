@@ -1726,7 +1726,7 @@ function install_monasca_grafana {
     $GOPATH/bin/godep restore
     go run build.go build
     npm config set unsafe-perm true
-    sudo npm install
+    npm install
     sudo npm install -g grunt-cli
     grunt --force
     cd "${MONASCA_BASE}"
