@@ -31,6 +31,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -174,10 +175,6 @@ public class AlarmSqlRepoImpl
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
     }
-    if (severities != null && !severities.isEmpty()) {
-      throw Exceptions.unprocessableEntity(
-          "Severity filter is not implemented for the hibernate database type");
-    }
 
     Preconditions.checkNotNull(tenantId, "TenantId is required");
 
@@ -192,6 +189,7 @@ public class AlarmSqlRepoImpl
           metricName,
           metricDimensions,
           state,
+          severities,
           lifecycleState,
           link,
           stateUpdatedStart,
@@ -221,6 +219,16 @@ public class AlarmSqlRepoImpl
 
             if (state != null) {
               query.setString("state", state.name());
+            }
+
+            if (CollectionUtils.isNotEmpty(severities)) {
+              if (severities.size() == 1) {
+                query.setString("severity", severities.get(0).name());
+              } else {
+                for (int it = 0; it < severities.size(); it++) {
+                  query.setString(String.format("severity_%d", it), severities.get(it).name());
+                }
+              }
             }
 
             if (link != null) {
@@ -271,6 +279,7 @@ public class AlarmSqlRepoImpl
                                        final String metricName,
                                        final Map<String, String> metricDimensions,
                                        final AlarmState state,
+                                       final List<AlarmSeverity> severities,
                                        final String lifecycleState,
                                        final String link,
                                        final DateTime stateUpdatedStart,
@@ -318,6 +327,21 @@ public class AlarmSqlRepoImpl
 
     if (state != null) {
       sbWhere.append(" and a.state = :state");
+    }
+
+    if (CollectionUtils.isNotEmpty(severities)) {
+      if (severities.size() == 1) {
+        sbWhere.append(" and ad.severity = :severity");
+      } else {
+        sbWhere.append(" and (");
+        for (int i = 0; i < severities.size(); i++) {
+          sbWhere.append("ad.severity = :severity_").append(i);
+          if (i < severities.size() - 1) {
+            sbWhere.append(" or ");
+          }
+        }
+        sbWhere.append(")");
+      }
     }
 
     if (lifecycleState != null) {

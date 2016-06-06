@@ -235,10 +235,6 @@ public class AlarmDefinitionSqlRepoImpl
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
     }
-    if (severities != null && !severities.isEmpty()) {
-      throw Exceptions.unprocessableEntity(
-          "Severity is not implemented for the hibernate database type");
-    }
 
     Session session = null;
     List<AlarmDefinition> resultSet = Lists.newArrayList();
@@ -258,6 +254,21 @@ public class AlarmDefinitionSqlRepoImpl
 
     if (name != null) {
       sbWhere.append(" and ad.name = :name");
+    }
+
+    if (CollectionUtils.isNotEmpty(severities)) {
+      if (severities.size() == 1) {
+        sbWhere.append(" and ad.severity = :severity");
+      } else {
+        sbWhere.append(" and (");
+        for (int i = 0; i < severities.size(); i++) {
+          sbWhere.append("ad.severity = :severity_").append(i);
+          if (i < severities.size() - 1) {
+            sbWhere.append(" or ");
+          }
+        }
+        sbWhere.append(")");
+      }
     }
 
     if (offset != null && !offset.equals("0")) {
@@ -281,6 +292,16 @@ public class AlarmDefinitionSqlRepoImpl
 
       if (name != null) {
         qAlarmDefinition.setString("name", name);
+      }
+
+      if (CollectionUtils.isNotEmpty(severities)) {
+        if (severities.size() == 1) {
+          qAlarmDefinition.setString("severity", severities.get(0).name());
+        } else {
+          for (int it = 0; it < severities.size(); it++) {
+            qAlarmDefinition.setString(String.format("severity_%d", it), severities.get(it).name());
+          }
+        }
       }
 
       if (offset != null && !offset.equals("0")) {
