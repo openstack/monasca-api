@@ -251,6 +251,7 @@ public class AlarmDefinitionSqlRepoImpl
             + "LEFT OUTER JOIN alarm_action AS aa ON t.id = aa.alarm_definition_id ORDER BY t.id, t.created_at";
 
     StringBuilder sbWhere = new StringBuilder();
+    StringBuilder limitOffset = new StringBuilder();
 
     if (name != null) {
       sbWhere.append(" and ad.name = :name");
@@ -271,16 +272,15 @@ public class AlarmDefinitionSqlRepoImpl
       }
     }
 
-    if (offset != null && !offset.equals("0")) {
-      sbWhere.append(" and ad.id > :offset");
-    }
-
-    String limitPart = "";
     if (limit > 0) {
-      limitPart = " limit :limit";
+      limitOffset.append(" limit :limit");
     }
 
-    String sql = String.format(query, SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere, limitPart);
+    if (offset != null) {
+      limitOffset.append(" offset :offset ");
+    }
+
+    String sql = String.format(query, SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere, limitOffset);
 
     try {
       session = sessionFactory.openSession();
@@ -288,6 +288,7 @@ public class AlarmDefinitionSqlRepoImpl
       final Query qAlarmDefinition = session
           .createSQLQuery(sql)
           .setString("tenantId", tenantId)
+          .setReadOnly(true)
           .setResultTransformer(ALARM_DEF_RESULT_TRANSFORMER);
 
       if (name != null) {
@@ -304,12 +305,12 @@ public class AlarmDefinitionSqlRepoImpl
         }
       }
 
-      if (offset != null && !offset.equals("0")) {
-        qAlarmDefinition.setString("offset", offset);
-      }
-
       if (limit > 0) {
         qAlarmDefinition.setInteger("limit", limit + 1);
+      }
+
+      if (offset != null) {
+        qAlarmDefinition.setInteger("offset", Integer.parseInt(offset));
       }
 
       this.bindDimensionsToQuery(qAlarmDefinition, dimensions);
