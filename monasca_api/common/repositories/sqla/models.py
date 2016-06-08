@@ -126,6 +126,7 @@ def create_sad_model(metadata=None):
                  Column('threshold', Float),
                  Column('period', Integer),
                  Column('periods', Integer),
+                 Column('is_deterministic', Boolean),
                  Column('created_at', DateTime),
                  Column('updated_at', DateTime))
 

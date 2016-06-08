@@ -32,6 +32,7 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
   private String name;
   private String description = "";
   private String expression;
+  private boolean deterministic;
   private Object expressionData;
   private List<String> matchBy;
   private String severity;
@@ -88,6 +89,9 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
         return false;
     } else if (!expressionData.equals(other.expressionData))
       return false;
+    if (this.deterministic != other.deterministic) {
+      return false;
+    }
     if (links == null) {
       if (other.links != null)
         return false;
@@ -174,6 +178,7 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
     result = prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + ((expression == null) ? 0 : expression.hashCode());
     result = prime * result + ((expressionData == null) ? 0 : expressionData.hashCode());
+    result = prime * result + Boolean.valueOf(this.deterministic).hashCode();
     result = prime * result + ((links == null) ? 0 : links.hashCode());
     result = prime * result + ((matchBy == null) ? 0 : matchBy.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -201,7 +206,10 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
 
   public void setExpression(String expression) {
     this.expression = expression;
-    setExpressionData(AlarmExpression.of(expression).getExpressionTree());
+
+    final AlarmExpression alarmExpression = AlarmExpression.of(expression);
+    this.setExpressionData(alarmExpression.getExpressionTree());
+    this.deterministic = alarmExpression.isDeterministic();
   }
 
   @JsonIgnore
@@ -237,6 +245,10 @@ public class AlarmDefinition extends AbstractEntity implements Linked {
 
   public void setUndeterminedActions(List<String> undeterminedActions) {
     this.undeterminedActions = undeterminedActions;
+  }
+
+  public boolean isDeterministic() {
+    return this.deterministic;
   }
 
   @Override

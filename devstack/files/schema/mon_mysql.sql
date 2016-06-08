@@ -1,5 +1,6 @@
 /*
 * (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+* Copyright 2016 FUJITSU LIMITED
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -156,6 +157,7 @@ CREATE TABLE `sub_alarm_definition` (
   `threshold` double NOT NULL,
   `period` int(11) NOT NULL,
   `periods` int(11) NOT NULL,
+  `is_deterministic` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),

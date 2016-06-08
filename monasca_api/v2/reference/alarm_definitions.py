@@ -263,13 +263,17 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         description = (alarm_definition_row['description'].decode('utf8')
                        if alarm_definition_row['description'] is not None else None)
 
+        expression = alarm_definition_row['expression'].decode('utf8')
+        is_deterministic = is_definition_deterministic(expression)
+
         result = {
             u'actions_enabled': alarm_definition_row['actions_enabled'] == 1,
             u'alarm_actions': alarm_actions_list,
             u'undetermined_actions': undetermined_actions_list,
             u'ok_actions': ok_actions_list,
             u'description': description,
-            u'expression': alarm_definition_row['expression'].decode('utf8'),
+            u'expression': expression,
+            u'deterministic': is_deterministic,
             u'id': alarm_definition_row['id'].decode('utf8'),
             u'match_by': match_by,
             u'name': alarm_definition_row['name'].decode('utf8'),
@@ -321,11 +325,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             undetermined_actions_list = get_comma_separated_str_as_list(
                 alarm_definition_row['undetermined_actions'])
 
+            expression = alarm_definition_row['expression']
+            is_deterministic = is_definition_deterministic(expression)
             ad = {u'id': alarm_definition_row['id'],
                   u'name': alarm_definition_row['name'],
                   u'description': alarm_definition_row['description'] if (
                       alarm_definition_row['description']) else u'',
                   u'expression': alarm_definition_row['expression'],
+                  u'deterministic': is_deterministic,
                   u'match_by': match_by,
                   u'severity': alarm_definition_row['severity'].upper(),
                   u'actions_enabled':
@@ -512,6 +519,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
              u'severity': severity, u'actions_enabled': u'true',
              u'undetermined_actions': undetermined_actions,
              u'expression': expression, u'id': alarm_definition_id,
+             u'deterministic': is_definition_deterministic(expression),
              u'name': name})
 
         return result
@@ -707,3 +715,27 @@ def get_comma_separated_str_as_list(comma_separated_str):
         return []
     else:
         return comma_separated_str.decode('utf8').split(',')
+
+
+def is_definition_deterministic(expression):
+    """Evaluates if found expression is deterministic or not.
+
+    In order to do that expression is parsed into sub expressions.
+    Each sub expression needs to be deterministic in order for
+    entity expression to be such.
+
+    Otherwise expression is non-deterministic.
+
+    :param str expression: expression to be evaluated
+    :return: true/false
+    :rtype: bool
+    """
+    expr_parser = (monasca_api.expression_parser
+                   .alarm_expr_parser.AlarmExprParser(expression))
+    sub_expressions = expr_parser.sub_expr_list
+
+    for sub_expr in sub_expressions:
+        if not sub_expr.deterministic:
+            return False
+
+    return True

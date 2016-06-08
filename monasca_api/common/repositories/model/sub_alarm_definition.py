@@ -48,6 +48,7 @@ class SubAlarmDefinition(object):
             self.periods = str(row['periods']).decode('utf8')
             # threshold comes from the DB as a float in 0.0 form.
             self.threshold = str(row['threshold']).decode('utf8')
+            self.deterministic = str(row['is_deterministic']) == '1'
 
         if sub_expr:
             # id is not used for compare or hash.
@@ -62,6 +63,7 @@ class SubAlarmDefinition(object):
             self.period = sub_expr.period
             self.periods = sub_expr.periods
             self.threshold = sub_expr.threshold
+            self.deterministic = sub_expr.deterministic
 
     def _init_dimensions(self, dimensions_str):
 
@@ -84,6 +86,9 @@ class SubAlarmDefinition(object):
 
         if self.dimensions_str:
             result += "{{{}}}".format(self.dimensions_str.encode('utf8'))
+
+        if self.deterministic:
+            result += ', deterministic'
 
         if self.period:
             result += ", {}".format(self.period.encode('utf8'))
@@ -111,6 +116,7 @@ class SubAlarmDefinition(object):
                 hash(self.operator) ^
                 hash(self.period) ^
                 hash(self.periods) ^
+                hash(self.deterministic) ^
                 # Convert to float to handle cases like 0.0 == 0
                 hash(float(self.threshold)))
 
@@ -130,12 +136,13 @@ class SubAlarmDefinition(object):
                 self.operator == other.operator and
                 self.period == other.period and
                 self.periods == other.periods and
+                self.deterministic == other.deterministic and
                 # Convert to float to handle cases like 0.0 == 0
                 float(self.threshold) == float(other.threshold))
 
     def same_key_fields(self, other):
 
-        # compare everything but operator and threshold
+        # compare everything but operator, threshold and deterministic
         return (self.metric_name == other.metric_name and
                 self.dimensions == other.dimensions and
                 self.function == other.function and

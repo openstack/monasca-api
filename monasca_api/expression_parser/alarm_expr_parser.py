@@ -17,6 +17,10 @@ import sys
 
 import pyparsing
 
+_DETERMINISTIC_ASSIGNMENT_LEN = 3
+_DETERMINISTIC_ASSIGNMENT_SHORT_LEN = 1
+_DETERMINISTIC_ASSIGNMENT_VALUE_INDEX = 2
+
 
 class SubExpr(object):
 
@@ -35,6 +39,7 @@ class SubExpr(object):
         self._threshold = tokens.threshold
         self._period = tokens.period
         self._periods = tokens.periods
+        self._deterministic = tokens.deterministic
         self._id = None
 
     @property
@@ -127,6 +132,10 @@ class SubExpr(object):
             return self._periods
         else:
             return u'1'
+
+    @property
+    def deterministic(self):
+        return True if self._deterministic else False
 
     @property
     def normalized_operator(self):
@@ -237,8 +246,16 @@ period = integer_number("period")
 threshold = decimal_number("threshold")
 periods = integer_number("periods")
 
-function_and_metric = (func + LPAREN + metric + pyparsing.Optional(
-    COMMA + period) + RPAREN)
+deterministic = (
+    pyparsing.CaselessLiteral('deterministic')
+)('deterministic')
+
+function_and_metric = (
+    func + LPAREN + metric +
+    pyparsing.Optional(COMMA + deterministic) +
+    pyparsing.Optional(COMMA + period) +
+    RPAREN
+)
 
 expression = pyparsing.Forward()
 
@@ -291,6 +308,10 @@ def main():
         "ntp.offset > 1 or ntp.offset < -5",
 
         "max(3test_metric5{it's this=that's it}) lt 5 times 3",
+
+        "count(log.error{test=1}, deterministic) > 1.0",
+
+        "count(log.error{test=1}, deterministic, 120) > 1.0"
     ]
 
     for expr in expr_list:
@@ -306,6 +327,10 @@ def main():
                 sub_expr.fmtd_sub_expr_str.encode('utf8')))
             print('sub_expr dimensions: {}'.format(
                 sub_expr.dimensions_str.encode('utf8')))
+            print('sub_expr deterministic: {}'.format(
+                sub_expr.deterministic))
+            print('sub_expr period: {}'.format(
+                sub_expr.period))
             print("")
         print("")
 

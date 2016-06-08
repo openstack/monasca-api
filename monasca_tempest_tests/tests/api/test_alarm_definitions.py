@@ -147,6 +147,69 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition)
         self._delete_notification(notification_id)
 
+    @test.attr(type='gate')
+    def test_create_deterministic_alarm_definition(self):
+        name = data_utils.rand_name('log.error')
+        expression = "count(log.error{},deterministic) > 0"
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=True)
+
+    @test.attr(type='gate')
+    def test_create_non_deterministic_alarm_definition_compound_mixed_expr(self):
+        name = data_utils.rand_name('log.error.and.disk.used_perc')
+        expression = ('max(disk.used_perc{hostname=node_1}) > 99.0 AND '
+                      'count(log.error{hostname=node_1},deterministic) > 0')
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=False)
+
+    @test.attr(type='gate')
+    def test_create_deterministic_alarm_definition_compound_expr(self):
+        name = data_utils.rand_name('log.error.nodes_1_2')
+        expression = ('count(log.error{hostname=node_2},deterministic) > 0 '
+                      'AND '
+                      'count(log.error{hostname=node_1},deterministic) > 0')
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=True)
+
     @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_create_alarm_definition_with_special_chars_in_expression(self):
@@ -815,6 +878,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                          res_body_create_alarm_def['match_by'])
         self.assertEqual(response_body['severity'],
                          res_body_create_alarm_def['severity'])
+        self.assertEqual(response_body['deterministic'],
+                         res_body_create_alarm_def['deterministic'])
 
     def _verify_element_set(self, element):
         self.assertTrue(set(['id',
@@ -822,6 +887,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                              'name',
                              'description',
                              'expression',
+                             'deterministic',
                              'match_by',
                              'severity',
                              'actions_enabled',
@@ -836,13 +902,18 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertTrue(set(['rel', 'href']) == set(link))
         self.assertEqual(link['rel'], u'self')
 
-    def _verify_create_alarm_definitions(self, resp, response_body,
-                                         alarm_definition):
+    def _verify_create_alarm_definitions(self,
+                                         resp,
+                                         response_body,
+                                         alarm_definition,
+                                         deterministic=False):
         self.assertEqual(201, resp.status)
         self.assertEqual(alarm_definition['name'], response_body['name'])
 
         self.assertEqual(alarm_definition['expression'],
                          str(response_body['expression']))
+        self.assertEqual(deterministic, bool(response_body['deterministic']))
+
         if 'description' in alarm_definition:
             self.assertEqual(alarm_definition['description'],
                              str(response_body['description']))

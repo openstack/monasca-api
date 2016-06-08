@@ -54,4 +54,9 @@ public class AlarmExpressionsTest {
   public void shouldThrowOnInvalidThreshold() throws Exception {
     AlarmValidation.validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes) > abc");
   }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void shouldThrowOnMalformedDeterministicKeyword() throws Exception {
+    AlarmValidation.validateNormalizeAndGet("avg(hpcs.compute.net_out_bytes,determ) > 1");
+  }
 }
