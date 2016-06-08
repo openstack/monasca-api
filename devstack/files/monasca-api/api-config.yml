@@ -29,6 +29,9 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
+validNotificationPeriods:
+  - 60
+
 kafka:
   brokerUris:
     - "127.0.0.1:9092"

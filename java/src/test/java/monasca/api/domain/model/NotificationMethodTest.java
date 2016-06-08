@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -31,7 +31,7 @@ public class NotificationMethodTest extends AbstractModelTest {
 
   public NotificationMethodTest() {
     notificationMethod =
-        new NotificationMethod("123", "MyEmail", NotificationMethodType.EMAIL, "a@b");
+        new NotificationMethod("123", "MyEmail", NotificationMethodType.EMAIL, "a@b", 0);
     notificationMethod.setLinks(Arrays.asList(new Link("self",
         "https://cloudsvc.example.com/v1.0")));
   }

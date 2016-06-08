@@ -10,6 +10,9 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
+validNotificationPeriods:
+  - 60
+
 databaseConfiguration:
 # vertica | influxdb
   #databaseType: influxdb

@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -31,7 +31,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         super(NotificationsRepository, self).__init__()
 
     def create_notification(self, tenant_id, name,
-                            notification_type, address):
+                            notification_type, address, period):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
@@ -58,15 +58,17 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
                   name,
                   type,
                   address,
+                  period,
                   created_at,
                   updated_at
-                ) values (%s, %s, %s, % s, %s, %s, %s)"""
+                ) values (%s, %s, %s, %s, %s, %s, %s, %s)"""
 
             parms = [notification_id,
                      tenant_id,
                      name.encode('utf8'),
                      notification_type.encode('utf8'),
                      address.encode('utf8'),
+                     period,
                      now,
                      now]
 
@@ -166,7 +168,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
 
     @mysql_repository.mysql_try_catch_block
     def update_notification(
-            self, id, tenant_id, name, type, address):
+            self, id, tenant_id, name, type, address, period):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
@@ -178,11 +180,12 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
                 set name = %s,
                     type = %s,
                     address = %s,
+                    period = %s,
                     updated_at = %s
                  where tenant_id = %s and id = %s"""
 
             parms = [name.encode('utf8'), type.encode('utf8'), address.encode(
-                'utf8'), now, tenant_id, id]
+                'utf8'), period, now, tenant_id, id]
 
             cursor.execute(query, parms)
 

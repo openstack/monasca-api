@@ -19,6 +19,7 @@ CREATE TABLE `notification_method` (
   `name` varchar(250) DEFAULT NULL,
   `type` varchar(20) NOT NULL,
   `address` varchar(512) DEFAULT NULL,
+  `period` int NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)

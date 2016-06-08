@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -23,7 +23,7 @@ class NotificationsRepository(object):
 
     @abc.abstractmethod
     def create_notification(self, tenant_id, name, notification_type,
-                            address):
+                            address, period):
         return
 
     @abc.abstractmethod
@@ -40,5 +40,5 @@ class NotificationsRepository(object):
 
     @abc.abstractmethod
     def update_notification(self, notification_id, tenant_id, name, notification_type,
-                            address):
+                            address, period):
         return

@@ -1,5 +1,6 @@
 # Copyright 2015 Cray
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -57,6 +58,7 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                                     name=bindparam('name'),
                                     type=bindparam('type'),
                                     address=bindparam('address'),
+                                    period=bindparam('period'),
                                     created_at=bindparam('created_at'),
                                     updated_at=bindparam('updated_at')))
 
@@ -80,6 +82,7 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                              'name': 'MyEmail',
                              'type': 'EMAIL',
                              'address': 'a@b',
+                             'period': 0,
                              'created_at': datetime.datetime.now(),
                              'updated_at': datetime.datetime.now()},
                             {'id': '124',
@@ -87,6 +90,7 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                              'name': 'OtherEmail',
                              'type': 'EMAIL',
                              'address': 'a@b',
+                             'period': 0,
                              'created_at': datetime.datetime.now(),
                              'updated_at': datetime.datetime.now()}]
 
@@ -125,7 +129,8 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
         nmA = self.repo.create_notification('555',
                                             'MyEmail',
                                             'EMAIL',
-                                            'a@b')
+                                            'a@b',
+                                            0)
         nmB = self.repo.list_notification('555', nmA)
 
         self.assertEqual(nmA, nmB['id'])
@@ -135,7 +140,8 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                           '555',
                           'MyEmail',
                           'EMAIL',
-                          'a@b')
+                          'a@b',
+                          0)
 
     def test_should_exists(self):
         from monasca_api.common.repositories import exceptions
@@ -159,7 +165,7 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
 
     def test_update(self):
         import copy
-        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc')
+        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc', 0)
         nm = self.repo.list_notification('444', '123')
         new_nm = copy.deepcopy(self.default_nms[0])
         new_nm['name'] = 'Foo'
@@ -175,7 +181,8 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                           'no really tenant',
                           '',
                           '',
-                          '')
+                          '',
+                          0)
 
     def test_should_delete(self):
         from monasca_api.common.repositories import exceptions
@@ -187,8 +194,8 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
 
     def test_should_update_duplicate_with_same_values(self):
         import copy
-        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc')
-        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc')
+        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc', 0)
+        self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc', 0)
         nm = self.repo.list_notification('444', '123')
         new_nm = copy.deepcopy(self.default_nms[0])
         new_nm['name'] = 'Foo'

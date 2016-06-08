@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -50,6 +50,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
   private DBI db;
   private NotificationMethod notificationMethod;
   private NotificationMethodRepo repo;
+  private ApiConfig config;
 
   @Override
   protected void setupResources() throws Exception {
@@ -59,9 +60,8 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
     handle
         .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('29387234', 'notification-method-test', 'MyEmaila', 'EMAIL', 'a@b', NOW(), NOW())");
     db.close(handle);
-
     repo = new NotificationMethodMySqlRepoImpl(db, new PersistUtils());
-    addResources(new NotificationMethodResource(repo, new PersistUtils()));
+    addResources(new NotificationMethodResource(config, repo, new PersistUtils()));
   }
 
   @BeforeTest
@@ -77,7 +77,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
 
     // Fixtures
     notificationMethod =
-        new NotificationMethod("123", "Joe's Email", NotificationMethodType.EMAIL, "a@b");
+        new NotificationMethod("123", "Joe's Email", NotificationMethodType.EMAIL, "a@b", 0);
   }
 
   public void shouldCreate() throws Exception {
@@ -89,7 +89,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
             .post(
                 ClientResponse.class,
                 new CreateNotificationMethodCommand(notificationMethod.getName(),
-                    notificationMethod.getType(), notificationMethod.getAddress()));
+                    notificationMethod.getType(), notificationMethod.getAddress(), "0"));
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
     String location = response.getHeaders().get("Location").get(0);
 
@@ -107,7 +107,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
             .header("X-Tenant-Id", TENANT_ID)
             .type(MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b"));
+                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b", "0"));
 
     assertEquals(response.getStatus(), 409);
   }
@@ -115,7 +115,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
   public void shouldDelete() {
     NotificationMethod newMethod =
         repo.create(TENANT_ID, notificationMethod.getName(), notificationMethod.getType(),
-            notificationMethod.getAddress());
+            notificationMethod.getAddress(), 0);
     assertNotNull(repo.findById(TENANT_ID, newMethod.getId()));
 
     ClientResponse response =
