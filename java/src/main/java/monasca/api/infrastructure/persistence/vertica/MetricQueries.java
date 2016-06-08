@@ -35,7 +35,7 @@ final class MetricQueries {
   static final Splitter offsetSplitter = Splitter.on(OFFSET_SEPARATOR).omitEmptyStrings().trimResults();
 
   static final String FIND_METRIC_DEFS_SQL =
-      "SELECT TO_HEX(defDims.id) as defDimsId, def.name, dims.name as dName, dims.value AS dValue "
+      "SELECT %s TO_HEX(defDims.id) as defDimsId, def.name, dims.name as dName, dims.value AS dValue "
       + "FROM MonMetrics.Definitions def "
       + "JOIN MonMetrics.DefinitionDimensions defDims ON def.id = defDims.definition_id "
       // Outer join needed in case there are no dimensions for a definition.

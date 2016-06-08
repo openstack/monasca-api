@@ -14,6 +14,7 @@
 
 package monasca.api.infrastructure.persistence.vertica;
 
+import monasca.api.ApiConfig;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.measurement.Measurements;
 
@@ -33,6 +34,7 @@ import static org.testng.Assert.assertEquals;
 
 @Test(groups = "database")
 public class MeasurementVerticaRepositoryImplTest {
+  private ApiConfig config;
   private DBI db;
   private Handle handle;
   private MeasurementRepo repo;
@@ -42,7 +44,8 @@ public class MeasurementVerticaRepositoryImplTest {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MeasurementVerticaRepoImpl(db);
+    config = new ApiConfig();
+    repo = new MeasurementVerticaRepoImpl(db, config);
   }
 
   @AfterClass

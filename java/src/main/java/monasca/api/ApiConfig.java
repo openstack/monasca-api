@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import monasca.common.hibernate.configuration.HibernateDbConfiguration;
 import monasca.common.messaging.kafka.KafkaConfiguration;
 import monasca.api.infrastructure.middleware.MiddlewareConfiguration;
+import monasca.api.infrastructure.persistence.vertica.VerticaDataSourceFactory;
 import monasca.common.configuration.DatabaseConfiguration;
 
 import monasca.common.configuration.InfluxDbConfiguration;
@@ -48,7 +49,7 @@ public class ApiConfig extends Configuration {
   public DataSourceFactory mysql;
   @Valid
   @NotNull
-  public DataSourceFactory vertica;
+  public VerticaDataSourceFactory vertica;
   @Valid
   @NotNull
   public KafkaConfiguration kafka;

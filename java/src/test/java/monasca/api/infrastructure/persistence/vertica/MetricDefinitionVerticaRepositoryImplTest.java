@@ -15,6 +15,7 @@
 package monasca.api.infrastructure.persistence.vertica;
 
 import monasca.common.model.metric.MetricDefinition;
+import monasca.api.ApiConfig;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 
 import org.joda.time.DateTime;
@@ -36,13 +37,15 @@ public class MetricDefinitionVerticaRepositoryImplTest {
   private DBI db;
   private Handle handle;
   private MetricDefinitionRepo repo;
+  private ApiConfig config;
 
   @BeforeClass
   protected void setupClass() throws Exception {
     Class.forName("com.vertica.jdbc.Driver");
     db = new DBI("jdbc:vertica://192.168.10.4/mon", "dbadmin", "password");
     handle = db.open();
-    repo = new MetricDefinitionVerticaRepoImpl(db);
+    config = new ApiConfig();
+    repo = new MetricDefinitionVerticaRepoImpl(db, config);
   }
 
   @AfterClass
