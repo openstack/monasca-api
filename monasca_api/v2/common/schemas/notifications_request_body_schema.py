@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,7 +15,12 @@
 from oslo_log import log
 import six.moves.urllib.parse as urlparse
 from validate_email import validate_email
-import voluptuous
+from voluptuous import All
+from voluptuous import Any
+from voluptuous import Length
+from voluptuous import Marker
+from voluptuous import Required
+from voluptuous import Schema
 
 from monasca_api.v2.common.schemas import exceptions
 
@@ -24,31 +29,38 @@ LOG = log.getLogger(__name__)
 schemes = ['http', 'https']
 
 notification_schema = {
-    voluptuous.Required('name'): voluptuous.Schema(
-        voluptuous.All(voluptuous.Any(str, unicode),
-                       voluptuous.Length(max=250))),
-    voluptuous.Required('type'): voluptuous.Schema(
-        voluptuous.Any("EMAIL", "email", "WEBHOOK", "webhook",
-                       "PAGERDUTY", "pagerduty")),
-    voluptuous.Required('address'): voluptuous.Schema(
-        voluptuous.All(voluptuous.Any(str, unicode),
-                       voluptuous.Length(max=512)))}
+    Required('name'): Schema(All(Any(str, unicode), Length(max=250))),
+    Required('type'): Schema(Any("EMAIL", "email", "WEBHOOK", "webhook", "PAGERDUTY", "pagerduty")),
+    Required('address'): Schema(All(Any(str, unicode), Length(max=512))),
+    Marker('period'): All(Any(int, str))}
 
-request_body_schema = voluptuous.Schema(voluptuous.Any(notification_schema))
+request_body_schema = Schema(Any(notification_schema))
 
 
-def validate(msg):
+def parse_and_validate(msg, valid_periods, require_all=False):
     try:
         request_body_schema(msg)
     except Exception as ex:
         LOG.debug(ex)
         raise exceptions.ValidationException(str(ex))
 
+    if 'period' not in msg:
+        if require_all:
+            raise exceptions.ValidationException("Period is required")
+        else:
+            msg['period'] = 0
+    else:
+        msg['period'] = _parse_and_validate_period(msg['period'], valid_periods)
+
     notification_type = str(msg['type']).upper()
+
     if notification_type == 'EMAIL':
         _validate_email(msg['address'])
     elif notification_type == 'WEBHOOK':
         _validate_url(msg['address'])
+
+    if notification_type != 'WEBHOOK' and msg['period'] != 0:
+        raise exceptions.ValidationException("Period can only be set with webhooks")
 
 
 def _validate_email(address):
@@ -70,3 +82,13 @@ def _validate_url(address):
     if parsed.scheme not in schemes:
         raise exceptions.ValidationException("Address {} scheme is not in {}"
                                              .format(address, schemes))
+
+
+def _parse_and_validate_period(period, valid_periods):
+    try:
+        period = int(period)
+    except Exception:
+        raise exceptions.ValidationException("Period {} must be a valid integer".format(period))
+    if period != 0 and period not in valid_periods:
+        raise exceptions.ValidationException("{} is not a valid period".format(period))
+    return period

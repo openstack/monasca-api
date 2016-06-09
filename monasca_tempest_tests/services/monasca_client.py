@@ -75,7 +75,8 @@ class MonascaClient(rest_client.RestClient):
     def create_notification_method(self,
                                    name=None,
                                    type=None,
-                                   address=None):
+                                   address=None,
+                                   period=None):
         uri = 'notification-methods'
         request_body = {}
         if name is not None:
@@ -84,6 +85,8 @@ class MonascaClient(rest_client.RestClient):
             request_body['type'] = type
         if address is not None:
             request_body['address'] = address
+        if period is not None:
+            request_body['period'] = period
         resp, response_body = self.post(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 
@@ -108,7 +111,8 @@ class MonascaClient(rest_client.RestClient):
                                    id,
                                    name=None,
                                    type=None,
-                                   address=None):
+                                   address=None,
+                                   period=None):
         uri = 'notification-methods/' + id
         request_body = {}
         if name is not None:
@@ -117,6 +121,8 @@ class MonascaClient(rest_client.RestClient):
             request_body['type'] = type
         if address is not None:
             request_body['address'] = address
+        if period is not None:
+            request_body['period'] = period
         resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 

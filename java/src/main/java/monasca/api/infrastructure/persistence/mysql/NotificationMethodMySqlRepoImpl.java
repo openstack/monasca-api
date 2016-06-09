@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -54,7 +54,7 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
 
   @Override
   public NotificationMethod create(String tenantId, String name,
-      NotificationMethodType type, String address) {
+      NotificationMethodType type, String address, int period) {
     try (Handle h = db.open()) {
       h.begin();
       if (getNotificationIdForTenantIdAndName(h,tenantId, name) != null)
@@ -63,11 +63,11 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
 
       String id = UUID.randomUUID().toString();
       h.insert(
-          "insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values (?, ?, ?, ?, ?, NOW(), NOW())",
-          id, tenantId, name, type.toString(), address);
+          "insert into notification_method (id, tenant_id, name, type, address, period, created_at, updated_at) values (?, ?, ?, ?, ?, ?, NOW(), NOW())",
+          id, tenantId, name, type.toString(), address, period);
       LOG.debug("Creating notification method {} for {}", name, tenantId);
       h.commit();
-      return new NotificationMethod(id, name, type, address);
+      return new NotificationMethod(id, name, type, address, period);
     }
   }
 
@@ -112,7 +112,7 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
     try (Handle h = db.open()) {
 
       String rawQuery =
-          "  SELECT nm.id, nm.tenant_id, nm.name, nm.type, nm.address, nm.created_at, nm.updated_at "
+          "  SELECT nm.id, nm.tenant_id, nm.name, nm.type, nm.address, nm.period, nm.created_at, nm.updated_at "
           + "FROM notification_method as nm "
           + "WHERE tenant_id = :tenantId %1$s %2$s %3$s";
 
@@ -174,7 +174,7 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
 
   @Override
   public NotificationMethod update(String tenantId, String notificationMethodId, String name,
-      NotificationMethodType type, String address) {
+      NotificationMethodType type, String address, int period) {
     try (Handle h = db.open()) {
       h.begin();
       String notificationID = getNotificationIdForTenantIdAndName(h,tenantId, name);
@@ -185,13 +185,13 @@ public class NotificationMethodMySqlRepoImpl implements NotificationMethodRepo {
 
       if (h
           .update(
-              "update notification_method set name = ?, type = ?, address = ?, updated_at = NOW() "
+              "update notification_method set name = ?, type = ?, address = ?, period = ?, updated_at = NOW() "
               + "where tenant_id = ? and id = ?",
-              name, type.name(), address, tenantId, notificationMethodId) == 0)
+              name, type.name(), address, period, tenantId, notificationMethodId) == 0)
         throw new EntityNotFoundException("No notification method exists for %s",
             notificationMethodId);
       h.commit();
-      return new NotificationMethod(notificationMethodId, name, type, address);
+      return new NotificationMethod(notificationMethodId, name, type, address, period);
     }
   }
 }

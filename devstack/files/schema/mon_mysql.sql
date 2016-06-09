@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+* (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 * Copyright 2016 FUJITSU LIMITED
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -142,6 +142,7 @@ CREATE TABLE `notification_method` (
   `name` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `period` int NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),

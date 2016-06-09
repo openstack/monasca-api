@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -24,14 +24,16 @@ public class NotificationMethod extends AbstractEntity implements Linked {
   private String name;
   private NotificationMethodType type;
   private String address;
+  private int period;
 
   public NotificationMethod() {}
 
-  public NotificationMethod(String id, String name, NotificationMethodType type, String address) {
+  public NotificationMethod(String id, String name, NotificationMethodType type, String address, int period) {
     this.id = id;
     this.name = name;
     this.type = type;
     this.address = address;
+    this.period = period;
   }
 
   @Override
@@ -52,6 +54,8 @@ public class NotificationMethod extends AbstractEntity implements Linked {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
+      return false;
+    if (period != other.period)
       return false;
     if (type != other.type)
       return false;
@@ -78,6 +82,10 @@ public class NotificationMethod extends AbstractEntity implements Linked {
     return type;
   }
 
+  public int getPeriod() {
+    return period;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -85,6 +93,7 @@ public class NotificationMethod extends AbstractEntity implements Linked {
     result = prime * result + ((address == null) ? 0 : address.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result = prime * result + period;
     return result;
   }
 
@@ -106,5 +115,9 @@ public class NotificationMethod extends AbstractEntity implements Linked {
 
   public void setType(NotificationMethodType type) {
     this.type = type;
+  }
+
+  public void setPeriod(int period) {
+    this.period = period;
   }
 }

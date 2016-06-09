@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -39,15 +39,16 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             cfg.CONF.security.default_authorized_roles)
         self._notifications_repo = simport.load(
             cfg.CONF.repositories.notifications_driver)()
+        self.valid_periods = cfg.CONF.valid_notification_periods
 
-    def _validate_notification(self, notification):
+    def _parse_and_validate_notification(self, notification, require_all=False):
         """Validates the notification
 
         :param notification: An event object.
         :raises falcon.HTTPBadRequest
         """
         try:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, self.valid_periods, require_all=require_all)
         except schemas_exceptions.ValidationException as ex:
             LOG.debug(ex)
             raise falcon.HTTPBadRequest('Bad Request', ex.message)
@@ -75,6 +76,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         name = notification['name']
         notification_type = notification['type'].upper()
         address = notification['address']
+        period = notification['period']
 
         self._validate_name_not_conflicting(tenant_id, name)
 
@@ -82,12 +84,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             tenant_id,
             name,
             notification_type,
-            address)
+            address,
+            period)
 
         return self._create_notification_response(notification_id,
                                                   name,
                                                   notification_type,
                                                   address,
+                                                  period,
                                                   uri)
 
     @resource.resource_try_catch_block
@@ -96,27 +100,31 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         name = notification['name']
         notification_type = notification['type'].upper()
         address = notification['address']
+        period = notification['period']
 
         self._validate_name_not_conflicting(tenant_id, name, expected_id=notification_id)
 
         self._notifications_repo.update_notification(notification_id, tenant_id, name,
                                                      notification_type,
-                                                     address)
+                                                     address,
+                                                     period)
 
         return self._create_notification_response(notification_id,
                                                   name,
                                                   notification_type,
                                                   address,
+                                                  period,
                                                   uri)
 
     def _create_notification_response(self, id, name, type,
-                                      address, uri):
+                                      address, period, uri):
 
         response = {
             'id': id,
             'name': name,
             'type': type,
-            'address': address
+            'address': address,
+            'period': period
         }
 
         return helpers.add_links_to_resource(response, uri)
@@ -147,7 +155,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             u'id': notification_row['id'],
             u'name': notification_row['name'],
             u'type': notification_row['type'],
-            u'address': notification_row['address']
+            u'address': notification_row['address'],
+            u'period': notification_row['period']
         }
 
         helpers.add_links_to_resource(result, uri)
@@ -164,7 +173,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
         notification = helpers.read_http_resource(req)
-        self._validate_notification(notification)
+        self._parse_and_validate_notification(notification)
         tenant_id = helpers.get_tenant_id(req)
         result = self._create_notification(tenant_id, notification, req.uri)
         res.body = helpers.dumpit_utf8(result)
@@ -210,7 +219,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
         notification = helpers.read_http_resource(req)
-        self._validate_notification(notification)
+        self._parse_and_validate_notification(notification, require_all=True)
         tenant_id = helpers.get_tenant_id(req)
         result = self._update_notification(notification_method_id, tenant_id,
                                            notification, req.uri)

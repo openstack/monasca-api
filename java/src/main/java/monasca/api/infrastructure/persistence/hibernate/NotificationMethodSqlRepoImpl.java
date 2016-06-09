@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 FUJITSU LIMITED
+ * (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -53,7 +54,7 @@ public class NotificationMethodSqlRepoImpl
 
   @Override
   public NotificationMethod create(String tenantId, String name, NotificationMethodType type,
-                                   String address) {
+                                   String address, int period) {
     Transaction tx = null;
     Session session = null;
     try {
@@ -73,6 +74,7 @@ public class NotificationMethodSqlRepoImpl
           name,
           AlarmNotificationMethodType.valueOf(type.name()),
           address,
+          period,
           now,
           now
       );
@@ -158,7 +160,7 @@ public class NotificationMethodSqlRepoImpl
 
   @Override
   public NotificationMethod update(String tenantId, String notificationMethodId, String name,
-                                   NotificationMethodType type, String address) {
+                                   NotificationMethodType type, String address, int period) {
     Session session = null;
     Transaction tx = null;
     try {
@@ -180,6 +182,7 @@ public class NotificationMethodSqlRepoImpl
       db.setName(name);
       db.setType(AlarmNotificationMethodType.valueOf(type.name()));
       db.setAddress(address);
+      db.setPeriod(period);
       db.setUpdatedAt(this.getUTCNow());
 
       session.save(db);
@@ -270,7 +273,8 @@ public class NotificationMethodSqlRepoImpl
         db.getId(),
         db.getName(),
         NotificationMethodType.valueOf(db.getType().name()),
-        db.getAddress()
+        db.getAddress(),
+        db.getPeriod()
     );
   }
 }
