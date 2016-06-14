@@ -153,7 +153,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
                                                             TABLE_TO_JOIN_DIMENSIONS_ON),
                       limitPart);
 
-    String sql = String.format(FIND_METRIC_NAMES_SQL, defSubSelect);
+    String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, defSubSelect);
 
     try (Handle h = db.open()) {
 
