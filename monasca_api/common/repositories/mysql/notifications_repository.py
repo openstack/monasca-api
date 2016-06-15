@@ -83,10 +83,6 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
 
         parms = [tenant_id]
 
-        if offset:
-            query += " and id > %s "
-            parms.append(offset.encode('utf8'))
-
         if sort_by:
             query += " order by " + ','.join(sort_by)
             if 'id' not in sort_by:
@@ -98,6 +94,9 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
 
         query += " limit %s "
         parms.append(limit + 1)
+
+        if offset:
+            query += ' offset {}'.format(offset)
 
         rows = self._execute_query(query, parms)
 

@@ -20,6 +20,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Query;
@@ -34,7 +35,6 @@ import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
-import monasca.api.resource.exception.Exceptions;
 import monasca.common.hibernate.db.NotificationMethodDb;
 import monasca.common.model.alarm.AlarmNotificationMethodType;
 
@@ -44,6 +44,7 @@ import monasca.common.model.alarm.AlarmNotificationMethodType;
 public class NotificationMethodSqlRepoImpl
     extends BaseSqlRepo
     implements NotificationMethodRepo {
+  private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final Logger LOG = LoggerFactory.getLogger(NotificationMethodSqlRepoImpl.class);
 
   @Inject
@@ -204,25 +205,33 @@ public class NotificationMethodSqlRepoImpl
   @SuppressWarnings("unchecked")
   public List<NotificationMethod> find(String tenantId, List<String> sortBy, String offset,
                                        int limit) {
-    if (sortBy != null && !sortBy.isEmpty()) {
-      throw Exceptions.unprocessableEntity(
-          "Sort_by is not implemented for the hibernate database type");
-    }
-
     Session session = null;
     List<NotificationMethodDb> resultList;
     List<NotificationMethod> notificationList = Lists.newArrayList();
-    final String rawQuery = "from NotificationMethodDb where tenant_id = :tenantId %1$s order by id";
+    final String rawQuery = "from NotificationMethodDb where tenant_id = :tenantId %1$s";
 
     try {
       session = sessionFactory.openSession();
 
-      final String offsetPart = offset != null ? String.format("and id > '%s'", offset) : "";
-      final String queryHql = String.format(rawQuery, offsetPart);
+      final StringBuilder orderByPart = new StringBuilder();
+      if (sortBy != null && !sortBy.isEmpty()) {
+        orderByPart.append(" order by ").append(COMMA_JOINER.join(sortBy));
+        if (!sortBy.contains("id")) {
+          orderByPart.append(",id");
+        }
+      } else {
+        orderByPart.append(" order by id ");
+      }
+
+      final String queryHql = String.format(rawQuery, orderByPart);
       final Query query = session.createQuery(queryHql).setString("tenantId", tenantId);
 
       if (limit > 0) {
         query.setMaxResults(limit + 1);
+      }
+
+      if (offset != null && !offset.isEmpty()) {
+        query.setFirstResult(Integer.parseInt(offset));
       }
 
       resultList = query.list();

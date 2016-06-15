@@ -494,15 +494,16 @@ class TestNotificationMethods(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.\
             list_notification_methods(query_parms)
         self.assertEqual(200, resp.status)
-        self.assertEqual(4, len(elements))
-        self.assertEqual(first_element, elements[0])
+        self.assertEqual(4, len(response_body['elements']))
+        self.assertEqual(first_element, response_body['elements'][0])
 
         timeout = time.time() + 60 * 1   # 1 minute timeout
         for limit in xrange(1, 5):
             next_element = elements[limit - 1]
+            offset = limit
             while True:
                 if time.time() < timeout:
-                    query_parms = '?offset=' + str(next_element['id']) + \
+                    query_parms = '?offset=' + str(offset) + \
                                   '&limit=' + str(limit)
                     resp, response_body = self.monasca_client.\
                         list_notification_methods(query_parms)
@@ -511,6 +512,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
                     if len(new_elements) > limit - 1:
                         self.assertEqual(limit, len(new_elements))
                         next_element = new_elements[limit - 1]
+                        offset += 1
                     elif 0 < len(new_elements) <= limit - 1:
                         self.assertEqual(last_element, new_elements[0])
                         break
