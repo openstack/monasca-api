@@ -97,7 +97,7 @@ public class AlarmDefinitionResource {
   public Object list(@Context UriInfo uriInfo,
       @HeaderParam("X-Tenant-Id") String tenantId, @QueryParam("name") String name,
       @QueryParam("dimensions") String dimensionsStr,
-      @QueryParam("severity") AlarmSeverity severity,
+      @QueryParam("severity") String severityStr,
       @QueryParam("sort_by") String sortByStr,
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit) throws UnsupportedEncodingException {
@@ -110,11 +110,13 @@ public class AlarmDefinitionResource {
       Validation.parseAndValidateNumber(offset, "offset");
     }
 
+    List<AlarmSeverity> severityList = Validation.parseAndValidateSeverity(severityStr);
+
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<AlarmDefinition> resources = repo.find(tenantId,
                                                       name,
                                                       dimensions,
-                                                      severity,
+                                                      severityList,
                                                       sortByList,
                                                       offset,
                                                       paging_limit

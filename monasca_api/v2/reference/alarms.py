@@ -121,7 +121,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 validation.validate_alarm_state(query_parms['state'])
 
             if 'severity' in query_parms:
-                validation.validate_alarm_definition_severity(query_parms['severity'])
+                validation.validate_severity_query(query_parms['severity'])
 
             if 'sort_by' in query_parms:
                 if isinstance(query_parms['sort_by'], basestring):
@@ -131,6 +131,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                    'state', 'severity', 'lifecycle_state', 'link',
                                    'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
                 validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
+
+            if 'state' in query_parms:
+                validation.validate_alarm_state(query_parms['state'])
+
+            if 'severity' in query_parms:
+                validation.validate_severity_query(query_parms['severity'])
 
             # ensure metric_dimensions is a list
             if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
@@ -396,7 +402,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             validation.validate_alarm_state(query_parms['state'])
 
         if 'severity' in query_parms:
-            validation.validate_alarm_definition_severity(query_parms['severity'])
+            validation.validate_severity_query(query_parms['severity'])
 
         if 'group_by' in query_parms:
             if not isinstance(query_parms['group_by'], list):

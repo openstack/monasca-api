@@ -178,7 +178,7 @@ public class AlarmResource {
       @QueryParam("metric_name") String metricName,
       @QueryParam("metric_dimensions") String metricDimensionsStr,
       @QueryParam("state") AlarmState state,
-      @QueryParam("severity") AlarmSeverity severity,
+      @QueryParam("severity") String severity,
       @QueryParam("lifecycle_state") String lifecycleState,
       @QueryParam("link") String link,
       @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
@@ -199,10 +199,11 @@ public class AlarmResource {
     if (!Strings.isNullOrEmpty(offset)) {
       Validation.parseAndValidateNumber(offset, "offset");
     }
+    List<AlarmSeverity> severityList = Validation.parseAndValidateSeverity(severity);
 
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<Alarm> alarms = repo.find(tenantId, alarmDefId, metricName, metricDimensions, state,
-                                         severity, lifecycleState, link, stateUpdatedStart, sortByList,
+                                         severityList, lifecycleState, link, stateUpdatedStart, sortByList,
                                          offset, paging_limit, true);
     for (final Alarm alarm : alarms) {
       Links.hydrate(
@@ -259,7 +260,7 @@ public class AlarmResource {
                          @QueryParam("metric_name") String metricName,
                          @QueryParam("metric_dimensions") String metricDimensionsStr,
                          @QueryParam("state") AlarmState state,
-                         @QueryParam("severity") AlarmSeverity severity,
+                         @QueryParam("severity") String severity,
                          @QueryParam("lifecycle_state") String lifecycleState,
                          @QueryParam("link") String link,
                          @QueryParam("state_updated_start_time") String stateUpdatedStartStr,
@@ -274,6 +275,7 @@ public class AlarmResource {
     DateTime stateUpdatedStart =
         Validation.parseAndValidateDate(stateUpdatedStartStr,
                                         "state_updated_start_time", false);
+    List<AlarmSeverity> severityList = Validation.parseAndValidateSeverity(severity);
     List<String> groupBy = (Strings.isNullOrEmpty(groupByStr)) ? null : parseAndValidateGroupBy(
         groupByStr);
 
@@ -287,7 +289,7 @@ public class AlarmResource {
                                                     metricName,
                                                     metricDimensions,
                                                     state,
-                                                    severity,
+                                                    severityList,
                                                     lifecycleState,
                                                     link,
                                                     stateUpdatedStart,

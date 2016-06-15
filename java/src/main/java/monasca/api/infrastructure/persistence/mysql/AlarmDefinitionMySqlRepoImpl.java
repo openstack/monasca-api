@@ -147,7 +147,7 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
   @SuppressWarnings("unchecked")
   @Override
   public List<AlarmDefinition> find(String tenantId, String name,
-      Map<String, String> dimensions, AlarmSeverity severity,
+      Map<String, String> dimensions, List<AlarmSeverity> severities,
       List<String> sortBy, String offset, int limit) {
 
 
@@ -174,9 +174,7 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         sbWhere.append(" and ad.name = :name");
       }
 
-      if (severity != null) {
-        sbWhere.append(" and ad.severity = :severity");
-      }
+      sbWhere.append(MySQLUtils.buildSeverityAndClause(severities));
 
       String orderByPart = "";
       if (sortBy != null && !sortBy.isEmpty()) {
@@ -210,9 +208,7 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         q.bind("name", name);
       }
 
-      if (severity != null) {
-        q.bind("severity", severity.name());
-      }
+      MySQLUtils.bindSeverityToQuery(q, severities);
 
       if (limit > 0) {
         q.bind("limit", limit + 1);

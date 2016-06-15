@@ -160,7 +160,7 @@ public class AlarmSqlRepoImpl
                           final String metricName,
                           final Map<String, String> metricDimensions,
                           final AlarmState state,
-                          final AlarmSeverity severity,
+                          final List<AlarmSeverity> severities,
                           final String lifecycleState,
                           final String link,
                           final DateTime stateUpdatedStart,
@@ -174,7 +174,7 @@ public class AlarmSqlRepoImpl
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
     }
-    if (severity != null) {
+    if (severities != null && !severities.isEmpty()) {
       throw Exceptions.unprocessableEntity(
           "Severity filter is not implemented for the hibernate database type");
     }
@@ -586,7 +586,7 @@ public class AlarmSqlRepoImpl
   @Override
   public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
                                    Map<String, String> metricDimensions, AlarmState state,
-                                   AlarmSeverity severity, String lifecycleState, String link,
+                                   List<AlarmSeverity> severities, String lifecycleState, String link,
                                    DateTime stateUpdatedStart, List<String> groupBy,
                                    String offset, int limit) {
     // Not Implemented

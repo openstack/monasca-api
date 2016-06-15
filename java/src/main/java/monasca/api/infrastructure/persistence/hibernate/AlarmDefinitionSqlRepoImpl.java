@@ -228,14 +228,14 @@ public class AlarmDefinitionSqlRepoImpl
   @Override
   @SuppressWarnings("unchecked")
   public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                                    AlarmSeverity severity, List<String> sortBy,
+                                    List<AlarmSeverity> severities, List<String> sortBy,
                                     String offset, int limit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering...");
     if (sortBy != null && !sortBy.isEmpty()) {
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
     }
-    if (severity != null) {
+    if (severities != null && !severities.isEmpty()) {
       throw Exceptions.unprocessableEntity(
           "Severity is not implemented for the hibernate database type");
     }

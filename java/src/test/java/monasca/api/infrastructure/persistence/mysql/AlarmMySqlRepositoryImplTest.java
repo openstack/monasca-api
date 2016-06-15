@@ -331,7 +331,7 @@ public class AlarmMySqlRepositoryImplTest {
     checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Arrays.asList("state desc","severity"), null, 1, false),
               compoundAlarm, alarm3, alarm2, alarm1);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, AlarmSeverity.HIGH, null, null, null, null, null, 1, false),
+    checkList(repo.find(TENANT_ID, null, null, null, null, Arrays.asList(AlarmSeverity.HIGH), null, null, null, null, null, 1, false),
               compoundAlarm);
   }
 

@@ -67,6 +67,12 @@ def validate_alarm_definition_severity(severity):
                                                                                   VALID_ALARM_DEFINITION_SEVERITIES))
 
 
+def validate_severity_query(severity_str):
+    severities = severity_str.split('|')
+    for severity in severities:
+        validate_alarm_definition_severity(severity)
+
+
 def validate_sort_by(sort_by_list, allowed_sort_by):
     for sort_by_field in sort_by_list:
         sort_by_values = sort_by_field.split()
@@ -105,3 +111,9 @@ def validate_value_meta(value_meta):
         # value
         assert isinstance(value_meta[name], (str, unicode)), "ValueMeta value must be a string"
         assert len(value_meta[name]) >= 1, "ValueMeta value cannot be empty"
+
+
+def validate_state_query(state_str):
+    if state_str not in VALID_ALARM_STATES:
+        raise HTTPUnprocessableEntityError("Unprocessable Entity",
+                                           "state {} must be one of 'ALARM','OK','UNDETERMINED'".format(state_str))
