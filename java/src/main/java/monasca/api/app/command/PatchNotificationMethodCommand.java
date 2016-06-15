@@ -13,37 +13,27 @@
  */
 package monasca.api.app.command;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+
+import javax.validation.constraints.Size;
 
 import monasca.api.app.validation.NotificationMethodValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 
-public class UpdateNotificationMethodCommand {
-    @NotEmpty
+public class PatchNotificationMethodCommand {
     @Size(min = 1, max = 250)
     public String name;
-    @NotNull
     public NotificationMethodType type;
-    @NotEmpty
     @Size(min = 1, max = 512)
     public String address;
-    @NotNull
     public String period;
     private int convertedPeriod = 0;
 
-    public UpdateNotificationMethodCommand() {}
-
-    public UpdateNotificationMethodCommand(String name, NotificationMethodType type, String address, String period) {
-        this.name = name;
-        this.type = type;
-        this.address = address;
-        this.setPeriod(period);
-    }
+    public PatchNotificationMethodCommand() {}
 
     @Override
     public boolean equals(Object obj) {
@@ -53,7 +43,7 @@ public class UpdateNotificationMethodCommand {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        UpdateNotificationMethodCommand other = (UpdateNotificationMethodCommand) obj;
+        PatchNotificationMethodCommand other = (PatchNotificationMethodCommand) obj;
         if (address == null) {
             if (other.address != null)
                 return false;
@@ -80,9 +70,15 @@ public class UpdateNotificationMethodCommand {
         NotificationMethodValidation.validate(type, address, convertedPeriod, validPeriods);
     }
 
+    @JsonProperty("period")
     public void setPeriod(String period){
         this.period = period;
         this.convertedPeriod = Validation.parseAndValidateNumber(period, "period");
+    }
+
+    @JsonIgnore
+    public void setPeriod(int period){
+        this.convertedPeriod = period;
     }
 
     public int getConvertedPeriod(){

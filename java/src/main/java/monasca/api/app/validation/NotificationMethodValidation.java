@@ -31,14 +31,13 @@ public class NotificationMethodValidation {
                                TEST_TLD_VALIDATOR,
                                UrlValidator.ALLOW_LOCAL_URLS | UrlValidator.ALLOW_2_SLASHES);
 
-    public static void validate(NotificationMethodType type, String address, String period,
+    public static void validate(NotificationMethodType type, String address, int period,
                                 List<Integer> validPeriods) {
-        int convertedPeriod = Validation.parseAndValidateNumber(period, "period");
         switch (type) {
             case EMAIL : {
                 if (!EmailValidator.getInstance(true).isValid(address))
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
-                if (convertedPeriod != 0)
+                if (period != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Email");
             } break;
             case WEBHOOK : {
@@ -46,12 +45,12 @@ public class NotificationMethodValidation {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
             } break;
             case PAGERDUTY : {
-                if (convertedPeriod != 0)
+                if (period != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Pagerduty");
             } break;
         }
-        if (convertedPeriod != 0 && !validPeriods.contains(convertedPeriod)){
-            throw Exceptions.unprocessableEntity("%d is not a valid period", convertedPeriod);
+        if (period != 0 && !validPeriods.contains(period)){
+            throw Exceptions.unprocessableEntity("%d is not a valid period", period);
         }
     }
 }

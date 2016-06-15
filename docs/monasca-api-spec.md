@@ -1707,6 +1707,77 @@ Returns a JSON notification method object with the following fields:
 ````
 ___
 
+## Patch Notification Method
+Patch the specified notification method.
+
+### PATCH /v2.0/notification-methods/{notification_method_id}
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Content-Type (string, required) - application/json
+* Accept (string) - application/json
+
+#### Path Parameters
+* notification_method_id (string, required) - ID of the notification method to update.
+
+#### Query Parameters
+None.
+
+#### Request Body
+* name (string(250), optional) - A descriptive name of the notifcation method.
+* type (string(100), optional) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
+* address (string(100), optional) - The email/url address to notify.
+* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
+
+#### Request Examples
+````
+PATCH /v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508 HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+
+{
+   "name":"New name of notification method",
+   "type":"EMAIL",
+   "address":"jane.doe@hp.com",
+   "period":0
+}
+````
+
+### Response
+
+#### Status Code
+* 200 - OK
+
+#### Response Body
+Returns a JSON notification method object with the following fields:
+
+* id (string) - ID of notification method
+* links ([link])
+* name (string) - Name of notification method
+* type (string) - Type of notification method
+* address (string) - Address of notification method
+* period (integer) - Period of notification method
+
+#### Response Examples
+````
+{
+   "id":"35cc6f1c-3a29-49fb-a6fc-d9d97d190508",
+   "links":[
+      {
+         "rel":"self",
+         "href":"http://192.168.10.4:8080/v2.0/notification-methods/35cc6f1c-3a29-49fb-a6fc-d9d97d190508"
+      }
+   ],
+   "name":"New name of notification method",
+   "type":"EMAIL",
+   "address":"jane.doe@hp.com",
+   "period":0
+}
+````
+___
+
 ## Delete Notification Method
 Delete the specified notification method.
 
