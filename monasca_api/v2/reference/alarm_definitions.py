@@ -15,10 +15,10 @@
 import re
 
 import falcon
+from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
 import pyparsing
-import simport
 
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions

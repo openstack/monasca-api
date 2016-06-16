@@ -17,10 +17,10 @@ import os
 from wsgiref import simple_server
 
 import falcon
+from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
 import paste.deploy
-import simport
 
 dispatcher_opts = [cfg.StrOpt('versions', default=None,
                               help='Versions'),
