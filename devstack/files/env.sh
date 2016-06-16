@@ -20,5 +20,7 @@
 . /opt/monasca/bin/activate
 export OS_USERNAME=mini-mon
 export OS_PASSWORD=password
+export OS_USER_DOMAIN_NAME=default
 export OS_PROJECT_NAME=mini-mon
+export OS_PROJECT_DOMAIN_NAME=default
 export OS_AUTH_URL=http://127.0.0.1:35357/v3/
