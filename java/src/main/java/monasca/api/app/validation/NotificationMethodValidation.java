@@ -17,6 +17,8 @@ import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.resource.exception.Exceptions;
 
 import org.apache.commons.validator.routines.RegexValidator;
+import org.apache.commons.validator.routines.UrlValidator;
+
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.AddressException;
 
@@ -43,7 +45,7 @@ public class NotificationMethodValidation {
                     }
                 } catch (AddressException e) {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
-                }   
+                }
             } break;
             case WEBHOOK : {
                 if (!URL_VALIDATOR.isValid(address))
