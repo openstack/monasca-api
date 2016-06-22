@@ -192,8 +192,12 @@ public class MeasurementVerticaRepoImpl implements MeasurementRepo {
 
         Measurements firstMeasurement = results.get(firstDefDimsId);
 
-        // clear dimensions
-        firstMeasurement.setDimensions(new HashMap<String, String>());
+        if (Boolean.TRUE.equals(mergeMetricsFlag) && defDimsIdSet.size() > 1) {
+
+          // Wipe out the dimensions.
+          firstMeasurement.setDimensions(new HashMap<String, String>());
+
+        }
 
         results.clear();
 
