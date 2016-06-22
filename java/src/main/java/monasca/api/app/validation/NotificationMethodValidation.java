@@ -46,6 +46,9 @@ public class NotificationMethodValidation {
                 } catch (AddressException e) {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
                 }
+                if (convertedPeriod != 0)
+                    throw Exceptions.unprocessableEntity("Period can not be non zero for Email");
+                }
             } break;
             case WEBHOOK : {
                 if (!URL_VALIDATOR.isValid(address))
