@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+ * (C) Copyright 2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -22,12 +22,11 @@ import javax.validation.constraints.Size;
 
 import monasca.api.app.validation.NotificationMethodValidation;
 import monasca.api.app.validation.Validation;
-import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 
 public class PatchNotificationMethodCommand {
     @Size(min = 1, max = 250)
     public String name;
-    public NotificationMethodType type;
+    public String type;
     @Size(min = 1, max = 512)
     public String address;
     public String period;
@@ -59,14 +58,17 @@ public class PatchNotificationMethodCommand {
                 return false;
         } else if (!period.equals(other.period))
             return false;
-        if (type != other.type)
+        if (type == null) {
+            if (other.type != null)
+               return false;
+          } else if (!type.equalsIgnoreCase(other.type))
             return false;
         if (convertedPeriod != other.convertedPeriod)
             return false;
         return true;
     }
 
-    public void validate(List<Integer> validPeriods) {
+    public void validate(List<Integer> validPeriods){
         NotificationMethodValidation.validate(type, address, convertedPeriod, validPeriods);
     }
 

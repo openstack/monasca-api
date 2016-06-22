@@ -1,11 +1,11 @@
 /*
- * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -23,7 +23,6 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
-import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.exception.ErrorMessages;
 
@@ -48,22 +47,26 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
   private NotificationMethodRepo repo;
   private ApiConfig config;
 
+  private static final String NOTIFICATION_METHOD_WEBHOOK = "WEBHOOK";
+  private static final String NOTIFICATION_METHOD_EMAIL   = "EMAIL";
+  private static final String NOTIFICATION_METHOD_PAGERDUTY   = "PAGERDUTY";
+
   @Override
   protected void setupResources() throws Exception {
     super.setupResources();
     notificationMethod =
-        new NotificationMethod("123", "Joe's Email", NotificationMethodType.EMAIL, "a@b", 0);
+        new NotificationMethod("123", "Joe's Email", NOTIFICATION_METHOD_EMAIL, "a@b", 0);
     notificationMethodWebhook =
-        new NotificationMethod("1234", "MyWh", NotificationMethodType.WEBHOOK, "http://localhost", 60);
+        new NotificationMethod("1234", "MyWh", NOTIFICATION_METHOD_WEBHOOK, "http://localhost", 60);
     notificationMethodPagerduty =
-        new NotificationMethod("12345", "MyPd", NotificationMethodType.PAGERDUTY, "nzH2LVRdMzun11HNC2oD", 0);
+        new NotificationMethod("12345", "MyPd", NOTIFICATION_METHOD_PAGERDUTY, "nzH2LVRdMzun11HNC2oD", 0);
 
     repo = mock(NotificationMethodRepo.class);
-    when(repo.create(eq("abc"), eq("MyEmail"), eq(NotificationMethodType.EMAIL), anyString(), eq(0)))
+    when(repo.create(eq("abc"), eq("MyEmail"), eq(NOTIFICATION_METHOD_EMAIL), anyString(), eq(0)))
         .thenReturn(notificationMethod);
-    when(repo.create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString(), anyInt()))
+    when(repo.create(eq("abc"), eq("MyWh"), eq(NOTIFICATION_METHOD_WEBHOOK), anyString(), anyInt()))
         .thenReturn(notificationMethodWebhook);
-    when(repo.create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString(), eq(0)))
+    when(repo.create(eq("abc"), eq("MyPd"), eq(NOTIFICATION_METHOD_PAGERDUTY), anyString(), eq(0)))
         .thenReturn(notificationMethodPagerduty);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(notificationMethod);
     when(repo.find(eq("abc"), (List<String>) anyList(), anyString(), anyInt()))
@@ -81,19 +84,19 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@a.com", "0"));
+                new CreateNotificationMethodCommand("MyEmail", NOTIFICATION_METHOD_EMAIL, "a@a.com", "0"));
 
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
     String location = response.getHeaders().get("Location").get(0);
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
     assertEquals(newNotificationMethod, notificationMethod);
-    verify(repo).create(eq("abc"), eq("MyEmail"), eq(NotificationMethodType.EMAIL), anyString(), eq(0));
+    verify(repo).create(eq("abc"), eq("MyEmail"), eq(NOTIFICATION_METHOD_EMAIL), anyString(), eq(0));
   }
 
   public void shouldUpdate() {
     when(
-        repo.update(eq("abc"), anyString(), anyString(), any(NotificationMethodType.class),
+        repo.update(eq("abc"), anyString(), anyString(), any(String.class),
             anyString(), eq(0))).thenReturn(notificationMethod);
     ClientResponse response =
         client()
@@ -101,10 +104,10 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .put(ClientResponse.class,
-                new CreateNotificationMethodCommand("Foo", NotificationMethodType.EMAIL, "a@a.com", "0"));
+                new CreateNotificationMethodCommand("Foo", NOTIFICATION_METHOD_EMAIL, "a@a.com", "0"));
 
     assertEquals(response.getStatus(), 200);
-    verify(repo).update(eq("abc"), eq("123"), eq("Foo"), eq(NotificationMethodType.EMAIL),
+    verify(repo).update(eq("abc"), eq("123"), eq("Foo"), eq(NOTIFICATION_METHOD_EMAIL),
         eq("a@a.com"), eq(0));
   }
 
@@ -129,7 +132,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@", "0"));
+                new CreateNotificationMethodCommand("MyEmail", NOTIFICATION_METHOD_EMAIL, "a@", "0"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Address a@ is not of correct format");
@@ -142,7 +145,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@f ,", "0"));
+                new CreateNotificationMethodCommand("MyEmail", NOTIFICATION_METHOD_EMAIL, "a@f ,", "0"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "Address a@f , is not of correct format");
@@ -155,7 +158,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "", "0"));
+                new CreateNotificationMethodCommand("MyEmail", NOTIFICATION_METHOD_EMAIL, "", "0"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[address may not be empty (was )");
@@ -173,7 +176,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                     "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
                         + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889"
                         + "01234567889012345678890123456788901234567889012345678890123456788901234567889012345678890123456788901234567889",
-                    NotificationMethodType.EMAIL, "a@b", "0"));
+                        NOTIFICATION_METHOD_EMAIL, "a@b", "0"));
 
     ErrorMessages.assertThat(response.getEntity(String.class)).matches("unprocessable_entity", 422,
         "[name size must be between 1 and 250");
@@ -189,7 +192,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                 ClientResponse.class,
                 new CreateNotificationMethodCommand(
                     "MyEmail",
-                    NotificationMethodType.EMAIL,
+                    NOTIFICATION_METHOD_EMAIL,
                     "abcdefghi@0123456789012345678901234567890"
                         + "12345678901234567890123456789012345678901234567890"
                         + "12345678901234567890123456789012345678901234567890"
@@ -215,11 +218,11 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                     .header("X-Tenant-Id", "abc")
                     .header("Content-Type", MediaType.APPLICATION_JSON)
                     .post(ClientResponse.class,
-                            new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@a.com", "60"));
+                            new CreateNotificationMethodCommand("MyEmail", NOTIFICATION_METHOD_EMAIL, "a@a.com", "60"));
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
-            "Period can not be non zero for Email");
+            "Period can not be non zero for EMAIL");
   }
 
   public void should422OnNonZeroPeriodForPagerduty() {
@@ -228,12 +231,12 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                     .header("X-Tenant-Id", "abc")
                     .header("Content-Type", MediaType.APPLICATION_JSON)
                     .post(ClientResponse.class,
-                            new CreateNotificationMethodCommand("MyPd", NotificationMethodType.PAGERDUTY,
+                            new CreateNotificationMethodCommand("MyPd", NOTIFICATION_METHOD_PAGERDUTY,
                                     "http://localhost", "60"));
 
     String e = response.getEntity(String.class);
     ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
-            "Period can not be non zero for Pagerduty");
+            "Period can not be non zero for PAGERDUTY");
   }
 
   public void should422OnInvalidPeriodForWebhook() {
@@ -242,7 +245,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                     .header("X-Tenant-Id", "abc")
                     .header("Content-Type", MediaType.APPLICATION_JSON)
                     .post(ClientResponse.class,
-                            new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
+                            new CreateNotificationMethodCommand("MyWh", NOTIFICATION_METHOD_WEBHOOK,
                                     "http://localhost", "5"));
 
     String e = response.getEntity(String.class);
@@ -261,7 +264,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     NotificationMethod
         nm =
         new NotificationMethod((String) lhm.get("id"), (String) lhm.get("name"),
-                               NotificationMethodType.fromJson((String) lhm.get("type")),
+                               (String) lhm.get("type"),
                                (String) lhm.get("address"), 0);
 
     List<NotificationMethod> notificationMethods = Arrays.asList(nm);
@@ -349,7 +352,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
+                new CreateNotificationMethodCommand("MyWh", NOTIFICATION_METHOD_WEBHOOK,
                     "http://localhost", "0"));
 
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
@@ -358,7 +361,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
     assertEquals(newNotificationMethod, notificationMethodWebhook);
-    verify(repo).create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString(), eq(0));
+    verify(repo).create(eq("abc"), eq("MyWh"), eq(NOTIFICATION_METHOD_WEBHOOK), anyString(), eq(0));
   }
 
   public void shouldCreateWebhookNotificationWithNonZeroPeriod() {
@@ -367,7 +370,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
                     .header("X-Tenant-Id", "abc")
                     .header("Content-Type", MediaType.APPLICATION_JSON)
                     .post(ClientResponse.class,
-                            new CreateNotificationMethodCommand("MyWh", NotificationMethodType.WEBHOOK,
+                            new CreateNotificationMethodCommand("MyWh", NOTIFICATION_METHOD_WEBHOOK,
                                     "http://localhost", "60"));
 
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
@@ -376,7 +379,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
     assertEquals(newNotificationMethod, notificationMethodWebhook);
-    verify(repo).create(eq("abc"), eq("MyWh"), eq(NotificationMethodType.WEBHOOK), anyString(), eq(60));
+    verify(repo).create(eq("abc"), eq("MyWh"), eq(NOTIFICATION_METHOD_WEBHOOK), anyString(), eq(60));
   }
 
   public void shouldCreatePagerdutyNotification() {
@@ -385,7 +388,7 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
             .header("X-Tenant-Id", "abc")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyPd", NotificationMethodType.PAGERDUTY,
+                new CreateNotificationMethodCommand("MyPd", NOTIFICATION_METHOD_PAGERDUTY,
                     "http://localhost", "0"));
 
     NotificationMethod newNotificationMethod = response.getEntity(NotificationMethod.class);
@@ -394,6 +397,6 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
     assertEquals(response.getStatus(), 201);
     assertEquals(location, "/v2.0/notification-methods/" + newNotificationMethod.getId());
     assertEquals(newNotificationMethod, notificationMethodPagerduty);
-    verify(repo).create(eq("abc"), eq("MyPd"), eq(NotificationMethodType.PAGERDUTY), anyString(), eq(0));
+    verify(repo).create(eq("abc"), eq("MyPd"), eq(NOTIFICATION_METHOD_PAGERDUTY), anyString(), eq(0));
   }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 FUJITSU LIMITED
+ * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -29,6 +30,7 @@ import monasca.common.hibernate.db.MetricDefinitionDb;
 import monasca.common.hibernate.db.MetricDefinitionDimensionsDb;
 import monasca.common.hibernate.db.MetricDimensionDb;
 import monasca.common.hibernate.db.NotificationMethodDb;
+import monasca.common.hibernate.db.NotificationMethodTypesDb;
 import monasca.common.hibernate.db.SubAlarmDb;
 import monasca.common.hibernate.db.SubAlarmDefinitionDb;
 import monasca.common.hibernate.db.SubAlarmDefinitionDimensionDb;
@@ -52,6 +54,7 @@ class HibernateUtil {
       configuration.addAnnotatedClass(SubAlarmDb.class);
       configuration.addAnnotatedClass(AlarmActionDb.class);
       configuration.addAnnotatedClass(NotificationMethodDb.class);
+      configuration.addAnnotatedClass(NotificationMethodTypesDb.class);
 
       configuration.setProperties(getHikariH2Properties());
 

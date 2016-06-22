@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -142,6 +142,13 @@ class MonascaClient(rest_client.RestClient):
         if period is not None:
             request_body['period'] = period
         resp, response_body = self.patch(uri, json.dumps(request_body))
+        return resp, json.loads(response_body)
+
+    def list_notification_method_types(self, query_params=None):
+        uri = 'notification-methods/types'
+        if query_params is not None:
+            uri = uri + query_params
+        resp, response_body = self.get(uri)
         return resp, json.loads(response_body)
 
     def create_alarm_definitions(self, alarm_definitions):

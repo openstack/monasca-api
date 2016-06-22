@@ -1,4 +1,4 @@
-# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -30,7 +30,7 @@ schemes = ['http', 'https']
 
 notification_schema = {
     Required('name'): Schema(All(Any(str, unicode), Length(max=250))),
-    Required('type'): Schema(Any("EMAIL", "email", "WEBHOOK", "webhook", "PAGERDUTY", "pagerduty")),
+    Required('type'): Schema(Any(str)),
     Required('address'): Schema(All(Any(str, unicode), Length(max=512))),
     Marker('period'): All(Any(int, str))}
 

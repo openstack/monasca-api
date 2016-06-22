@@ -1,11 +1,11 @@
 /*
- * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
- * 
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -37,7 +37,6 @@ import monasca.api.app.command.CreateNotificationMethodCommand;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
-import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.mysql.NotificationMethodMySqlRepoImpl;
 import monasca.api.resource.AbstractMonApiResourceTest;
@@ -77,7 +76,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
 
     // Fixtures
     notificationMethod =
-        new NotificationMethod("123", "Joe's Email", NotificationMethodType.EMAIL, "a@b", 0);
+        new NotificationMethod("123", "Joe's Email", "EMAIL", "a@b", 0);
   }
 
   public void shouldCreate() throws Exception {
@@ -107,7 +106,7 @@ public class NotificationMethodIntegrationTest extends AbstractMonApiResourceTes
             .header("X-Tenant-Id", TENANT_ID)
             .type(MediaType.APPLICATION_JSON)
             .post(ClientResponse.class,
-                new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@b", "0"));
+                new CreateNotificationMethodCommand("MyEmail", "EMAIL", "a@b", "0"));
 
     assertEquals(response.getStatus(), 409);
   }
