@@ -76,15 +76,22 @@ def is_in_role(req, authorized_roles):
 def validate_authorization(req, authorized_roles):
     """Validates whether one or more X-ROLES in the HTTP header is authorized.
 
+    If authorization fails, 401 is thrown with appropriate description.
+    Additionally response specifies 'WWW-Authenticate' header with 'Token'
+    value challenging the client to use different token (the one with
+    different set of roles).
+
     :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
     request header.
     :param authorized_roles: List of authorized roles to check against.
     :raises falcon.HTTPUnauthorized
     """
     str_roles = req.get_header('X-ROLES')
+    challenge = 'Token'
     if str_roles is None:
         raise falcon.HTTPUnauthorized('Forbidden',
-                                      'Tenant does not have any roles')
+                                      'Tenant does not have any roles',
+                                      challenge)
     roles = str_roles.lower().split(',')
     authorized_roles_lower = [r.lower() for r in authorized_roles]
     for role in roles:
@@ -92,7 +99,8 @@ def validate_authorization(req, authorized_roles):
             return
     raise falcon.HTTPUnauthorized('Forbidden',
                                   'Tenant ID is missing a required role to '
-                                  'access this service')
+                                  'access this service',
+                                  challenge)
 
 
 def get_tenant_id(req):
@@ -249,7 +257,7 @@ def get_query_statistics(req):
             if isinstance(params['statistics'], list):
                 statistics.extend(params['statistics'])
             else:
-                statistics.append(params['statistics'])
+                statistics.extend(params['statistics'].split(','))
             statistics = [statistic.lower() for statistic in statistics]
             if not all(statistic in ['avg', 'min', 'max', 'count', 'sum'] for
                        statistic in statistics):

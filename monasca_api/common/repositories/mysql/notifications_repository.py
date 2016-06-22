@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,12 +14,12 @@
 
 import datetime
 
+from monasca_common.repositories.mysql import mysql_repository
 from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import notifications_repository as nr
-from monasca_common.repositories.mysql import mysql_repository
 
 LOG = log.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         super(NotificationsRepository, self).__init__()
 
     def create_notification(self, tenant_id, name,
-                            notification_type, address):
+                            notification_type, address, period):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
@@ -58,15 +58,17 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
                   name,
                   type,
                   address,
+                  period,
                   created_at,
                   updated_at
-                ) values (%s, %s, %s, % s, %s, %s, %s)"""
+                ) values (%s, %s, %s, %s, %s, %s, %s, %s)"""
 
             parms = [notification_id,
                      tenant_id,
                      name.encode('utf8'),
                      notification_type.encode('utf8'),
                      address.encode('utf8'),
+                     period,
                      now,
                      now]
 
@@ -75,7 +77,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
         return notification_id
 
     @mysql_repository.mysql_try_catch_block
-    def list_notifications(self, tenant_id, offset, limit):
+    def list_notifications(self, tenant_id, sort_by, offset, limit):
 
         query = """
             select *
@@ -88,7 +90,16 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
             query += " and id > %s "
             parms.append(offset.encode('utf8'))
 
-        query += " order by id limit %s "
+        if sort_by:
+            query += " order by " + ','.join(sort_by)
+            if 'id' not in sort_by:
+                query += ",id "
+            else:
+                query += " "
+        else:
+            query += " order by id "
+
+        query += " limit %s "
         parms.append(limit + 1)
 
         rows = self._execute_query(query, parms)
@@ -157,7 +168,7 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
 
     @mysql_repository.mysql_try_catch_block
     def update_notification(
-            self, id, tenant_id, name, type, address):
+            self, id, tenant_id, name, type, address, period):
 
         cnxn, cursor = self._get_cnxn_cursor_tuple()
 
@@ -169,11 +180,12 @@ class NotificationsRepository(mysql_repository.MySQLRepository,
                 set name = %s,
                     type = %s,
                     address = %s,
+                    period = %s,
                     updated_at = %s
                  where tenant_id = %s and id = %s"""
 
             parms = [name.encode('utf8'), type.encode('utf8'), address.encode(
-                'utf8'), now, tenant_id, id]
+                'utf8'), period, now, tenant_id, id]
 
             cursor.execute(query, parms)
 

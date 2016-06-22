@@ -361,7 +361,7 @@ Optionally, a measurement may also contain extra data about the value which is k
 For an example of how value meta is used, imagine this metric: http_status{url: http://localhost:8080/healthcheck, hostname=devstack, service=object-storage}.  The measurements for this metric have a value of either 1 or 0 depending if the status check succeeded. If the check fails, it would be helpful to have the actual http status code and error message if possible. So instead of just a value, the measurement will be something like:
 {Timestamp=now(), value=1, value_meta{http_rc=500, error=“Error accessing MySQL”}}
 
-Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and has a maximum length of 2048 characters. The value can be an empty string. Whitespace is not trimmed from the values.
+Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and value meta (with key, value and '{"":""}' combined) has a maximum length of 2048 characters. The value can be an empty string. Whitespace is not trimmed from the values.
 
 ## Alarm Definitions and Alarms
 
@@ -481,6 +481,58 @@ The Alarms are evaluated and their state is set once per minute.
 
 Alarms contain three fields that may be edited via the API. These are the alarm state, lifecycle state, and the link. The alarm state is updated by Monasca as measurements are evaluated, and can be changed manually as necessary. The lifecycle state and link fields are not maintained or updated by Monasca, instead these are provided for storing information related to external tools.
 
+### Deterministic or non-deterministic alarms
+
+By default all alarm definitions are assumed to be **non-deterministic**.
+There are 3 possible states such alarms can transition to: *OK*, *ALARM*,
+*UNDETERMINED*. On the other hand, alarm definitions can be also
+**deterministic**. In that case alarm is allowed to transition only: *OK*
+and *ALARM* state.
+
+Following expression ```avg(cpu.user_perc{hostname=compute_node_1}) > 10``` means that potential
+alarm and transition to *ALARM* state is restricted to specific machine. If for some reason that
+host would crash and stay offline long enough, there would be no measurements received from it.
+In this case alarm will transition to *UNDETERMINED* state.
+
+On the other hand, some metrics are irregular and look more like events. One case is
+metric created only if something critical happens in the system.
+For example an error in log file or deadlock in database.
+If non-deterministic alarm definition would be created using expression ```count(log.error{component=mysql}) >= 1)```,
+that alarm could stay in *UNDETERMINED* state for most of its lifetime.
+However, from operator point of view, if there are no errors related to MySQL, everything works correctly.
+Answer to that situation is creating *deterministic* alarm definition
+using expression ```count(log.error{component=mysql}, deterministic) >= 1```.
+
+The deterministic alarm's main trait is preventing from transition to *UNDETERMINED* state.
+The alarm should be *OK* if no data is received. Also such alarms transition to *OK* immediately when created,
+rather than to *UNDETERMINED* state.
+
+Finally, it must be mentioned that alarm definition can be composed of multiple expressions and
+that *deterministic* is actually part of it. The entire alarm definition is considered *deterministic*
+only if all of its expressions are such. Otherwise the alarm is *non-deterministic*.
+
+For example:
+```
+avg(disk.space_used_perc{hostname=compute_node_1}) >= 99
+    and
+count(log.error{hostname=compute_node_1,component=kafka},deterministic) >= 1
+```
+potential alarm will transition to *ALARM* state if there is no usable disk space left and kafka starts to report errors regarding
+inability to save data to it. Second expression is *deterministic*, however entire alarm will be kept in *UNDETERMINED* state
+until such situation happens.
+
+On the other hand, expression like this:
+```
+avg(disk.space_used_perc{hostname=compute_node_1},deterministic) >= 99
+    and
+count(log.error{hostname=compute_node_1,component=kafka},deterministic) >= 1
+```
+makes entire alarm *deterministic*. In other words - *all parts of alarm's expression
+must be marked as deterministic in order for entire alarm to be considered such*.
+Having definition like one above, potential alarm will stay in *OK* state as long as there is enough
+disk space left at *compute_node_1* and there are no errors reported from *kafka* running
+at the same host.
+
 ## Alarm Definition Expressions
 The alarm definition expression syntax allows the creation of simple or complex alarm definitions to handle a wide variety of needs. Alarm expressions are evaluated every 60 seconds.
 
@@ -511,11 +563,16 @@ Each subexpression is made up of several parts with a couple of options:
 
 ````
 <sub_expression>
-    ::= <function> '(' <metric> [',' period] ')' <relational_operator> threshold_value ['times' periods]
+    ::= <function> '(' <metric> [',' deterministic] [',' period] ')' <relational_operator> threshold_value ['times' periods]
     | '(' expression ')'
 
 ````
-Period must be an integer multiple of 60.  The default period is 60 seconds.
+Period must be an integer multiple of 60. The default period is 60 seconds.
+
+Expression is by default **non-deterministic** (i.e. when expression does
+not contain *deterministic* keyword). If however **deterministic**
+option would be desired, it is enough to have *deterministic* keyword
+inside expression.
 
 The logical_operators are: `and` (also `&&`), `or` (also `||`).
 
@@ -601,6 +658,22 @@ In this example a compound alarm expression is evaluated involving two threshold
 
 ```
 avg(cpu.system_perc{hostname=hostname.domain.com}) > 90 or avg(disk_read_ops{hostname=hostname.domain.com, device=vda}, 120) > 1000
+```
+
+#### Deterministic alarm example
+In this example alarm is created with one expression which is deterministic
+
+```
+count(log.error{}, deterministic) > 1
+```
+
+#### Non-deterministic alarm with deterministic sub expressions
+In this example alarm's expression is composed of 3 parts where two of them
+are marked as **deterministic**. However entire expression is non-deterministic because
+of the 3rd expression.
+
+```
+count(log.error{}, deterministic) > 1 or count(log.warning{}, deterministic) > 1 and avg(cpu.user_perc{}) > 10
 ```
 
 ### Changing Alarm Definitions
@@ -881,7 +954,7 @@ Consists of a single metric object or an array of metric objects. A metric has t
 * dimensions ({string(255): string(255)}, optional) - A dictionary consisting of (key, value) pairs used to uniquely identify a metric.
 * timestamp (string, required) - The timestamp in milliseconds from the Epoch.
 * value (float, required) - Value of the metric. Values with base-10 exponents greater than 126 or less than -130 are truncated.
-* value_meta ({string(255): string(2048)}, optional) - A dictionary consisting of (key, value) pairs used to add information about the value.
+* value_meta ({string(255): string}(2048), optional) - A dictionary consisting of (key, value) pairs used to add information about the value. Value_meta key value combinations must be 2048 characters or less including '{"":""}' 7 characters total from every json string.
 
 The name and dimensions are used to uniquely identify a metric.
 
@@ -1059,7 +1132,7 @@ Operations for accessing measurements of metrics.
 ## List measurements
 Get measurements for metrics.
 
-Metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
+If `group_by` is not specified, metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
 
 If users do not wish to see measurements for a single metric, but would prefer to have measurements from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all meaurements for all metrics that satisfy the query parameters will be merged into a single list of measurements.
 
@@ -1081,6 +1154,7 @@ None.
 * offset (timestamp, optional)
 * limit (integer, optional)
 * merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of measurements.
+* group_by (string, optional) - list of columns to group the metrics to be returned. For now, the only valid value is '*'.
 
 #### Request Body
 None.
@@ -1229,7 +1303,7 @@ ___
 # Statistics
 Operations for calculating statistics of metrics.
 
-Metrics must be fully qualified with name and dimensions so that only statistics are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
+If `group_by` is not specified, then metrics must be fully qualified with name and dimensions so that only statistics are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
 
 If users do not wish to see statistics for a single metric, but would prefer to have statistics from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all statistics for all metrics that satisfy the query parameters will be merged into a single list of statistics.
 
@@ -1256,6 +1330,7 @@ None.
 * offset (timestamp, optional)
 * limit (integer, optional)
 * merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of statistics.
+* group_by (string, optional) - list of columns to group the metrics to be returned. For now, the only valid value is '*'.
 
 #### Request Body
 None.
@@ -1365,6 +1440,7 @@ None.
 * name (string(250), required) - A descriptive name of the notification method.
 * type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
 * address (string(100), required) - The email/url address to notify.
+* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ```
@@ -1394,6 +1470,7 @@ Returns a JSON notification method object with the following fields:
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
+* period (integer) - Period of notification method
 
 #### Response Examples
 ```
@@ -1407,7 +1484,8 @@ Returns a JSON notification method object with the following fields:
    ],
    "name":"Name of notification method",
    "type":"EMAIL",
-   "address":"john.doe@hp.com"
+   "address":"john.doe@hp.com",
+   "period":0
 }
 ```
 ___
@@ -1427,6 +1505,8 @@ None.
 #### Query Parameters
 * offset (string, optional)
 * limit (integer, optional)
+* sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'id'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'address desc'
+Allowed fields for sort_by are: 'id', 'name', 'type', 'address', 'created_at', 'updated_at'
 
 #### Request Body
 None.
@@ -1453,6 +1533,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of n
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
+* period (integer) - Period of notification method
 
 #### Response Examples
 ```
@@ -1478,7 +1559,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of n
             ],
             "name": "Name of notification method",
             "type": "EMAIL",
-            "address": "john.doe@hp.com"
+            "address": "john.doe@hp.com",
+            "period": 0
         },
         {
             "id": "c60ec47e-5038-4bf1-9f95-4046c6e9a759",
@@ -1489,8 +1571,9 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of n
                 }
             ],
             "name": "Name of notification method",
-            "type": "EMAIL",
-            "address": "jane.doe@hp.com"
+            "type": "WEBHOOK",
+            "address": "http://localhost:3333",
+            "period": 1
         }
     ]
 }
@@ -1533,6 +1616,7 @@ Returns a JSON notification method object with the following fields:
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
+* period (integer) - Period of notification method
 
 #### Response Examples
 ```
@@ -1546,7 +1630,8 @@ Returns a JSON notification method object with the following fields:
    ],
    "name":"Name of notification method",
    "type":"EMAIL",
-   "address":"john.doe@hp.com"
+   "address":"john.doe@hp.com",
+   "period": 0
 }
 ```
 ___
@@ -1571,6 +1656,7 @@ None.
 * name (string(250), required) - A descriptive name of the notifcation method.
 * type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
 * address (string(100), required) - The email/url address to notify.
+* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ````
@@ -1583,7 +1669,8 @@ Cache-Control: no-cache
 {
    "name":"New name of notification method",
    "type":"EMAIL",
-   "address":"jane.doe@hp.com"
+   "address":"jane.doe@hp.com",
+   "period":0
 }
 ````
 
@@ -1600,6 +1687,7 @@ Returns a JSON notification method object with the following fields:
 * name (string) - Name of notification method
 * type (string) - Type of notification method
 * address (string) - Address of notification method
+* period (integer) - Period of notification method
 
 #### Response Examples
 ````
@@ -1613,7 +1701,8 @@ Returns a JSON notification method object with the following fields:
    ],
    "name":"New name of notification method",
    "type":"EMAIL",
-   "address":"jane.doe@hp.com"
+   "address":"jane.doe@hp.com",
+   "period":0
 }
 ````
 ___
@@ -1711,6 +1800,34 @@ Cache-Control: no-cache
 }
 ```
 
+To create deterministic definition following request should be sent:
+```
+POST /v2.0/alarm-definitions HTTP/1.1
+Host: 192.168.10.4:8080
+Content-Type: application/json
+X-Auth-Token: 2b8882ba2ec44295bf300aecb2caa4f7
+Cache-Control: no-cache
+
+{
+   "name":"Average CPU percent greater than 10",
+   "description":"The average CPU percent is greater than 10",
+   "expression":"(avg(cpu.user_perc{hostname=devstack},deterministic) > 10)",
+   "match_by":[
+     "hostname"
+   ],
+   "severity":"LOW",
+   "ok_actions":[
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "alarm_actions":[
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ],
+   "undetermined_actions":[
+     "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
+   ]
+}
+```
+
 ### Response
 #### Status Code
 * 201 - Created
@@ -1723,6 +1840,7 @@ Returns a JSON object of alarm definition objects with the following fields:
 * name (string) - Name of alarm definition.
 * description (string) - Description of alarm definition.
 * expression (string) - The alarm definition expression.
+* deterministic (boolean) - Is the underlying expression deterministic ? **Read-only**, computed from *expression*
 * expression_data (JSON object) - The alarm definition expression as a JSON object.
 * match_by ([string]) - The metric dimensions to match to the alarm dimensions
 * severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
@@ -1744,6 +1862,7 @@ Returns a JSON object of alarm definition objects with the following fields:
    "name":"Average CPU percent greater than 10",
    "description":"The average CPU percent is greater than 10",
    "expression":"(avg(cpu.user_perc{hostname=devstack}) > 10)",
+   "deterministic": false,
    "expression_data":{
       "function":"AVG",
       "metric_name":"cpu.user_perc",
@@ -1786,6 +1905,7 @@ None.
 #### Query Parameters
 * name (string(255), optional) - Name of alarm to filter by.
 * dimensions (string, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * offset (integer, optional)
 * limit (integer, optional)
 * sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'id', 'created_at'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
@@ -1815,6 +1935,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * name (string) - Name of alarm definition.
 * description (string) - Description of alarm definition.
 * expression (string) - The alarm definition expression.
+* deterministic (boolean) - Is the underlying expression deterministic ? **Read-only**, computed from *expression*
 * expression_data (JSON object) - The alarm definition expression as a JSON object.
 * match_by ([string]) - The metric dimensions to use to create unique alarms
 * severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
@@ -1848,6 +1969,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             "name": "CPU percent greater than 10",
             "description": "Release the hounds",
             "expression": "(avg(cpu.user_perc{hostname=devstack}) > 10)",
+            "deterministic": false,
             "expression_data": {
                 "function": "AVG",
                 "metric_name": "cpu.user_perc",
@@ -1873,6 +1995,38 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
             "undetermined_actions": [
                 "c60ec47e-5038-4bf1-9f95-4046c6e9a759"
             ]
+        },
+        {
+            "id": "g9323232-6543-4cbf-1234-0993a947ea83",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://192.168.10.4:8080/v2.0/alarm-definitions/g9323232-6543-4cbf-1234-0993a947ea83"
+                }
+            ],
+            "name": "Log error count exceeds 1000",
+            "description": "Release the cats",
+            "expression": "(count(log.error{hostname=devstack}, deterministic) > 1000)",
+            "deterministic": true,
+            "expression_data": {
+                "function": "AVG",
+                "metric_name": "log.error",
+                "dimensions": {
+                    "hostname": "devstack"
+                },
+                "operator": "GT",
+                "threshold": 1000,
+                "period": 60,
+                "periods": 1
+            },
+            "match_by": [
+                "hostname"
+            ],
+            "severity": "CRITICAL",
+            "actions_enabled": true,
+            "alarm_actions": [],
+            "ok_actions": [],
+            "undetermined_actions": []
         }
     ]
 }
@@ -1909,6 +2063,7 @@ Returns a JSON alarm definition object with the following fields:
 * name (string) - Name of alarm definition.
 * description (string) - Description of alarm definition.
 * expression (string) - The alarm definition expression.
+* deterministic (boolean) - Is the underlying expression deterministic ? **Read-only**, computed from *expression*
 * expression_data (JSON object) - The alarm definition expression as a JSON object.
 * match_by ([string]) - The metric dimensions to use to create unique alarms
 * severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
@@ -1930,6 +2085,7 @@ Returns a JSON alarm definition object with the following fields:
     "name": "CPU percent greater than 10",
     "description": "Release the hounds",
     "expression": "(avg(cpu.user_perc{hostname=devstack}) > 10)",
+    "deterministic": false,
     "expression_data": {
         "function": "AVG",
         "metric_name": "cpu.user_perc",
@@ -2031,6 +2187,7 @@ Returns a JSON alarm definition object with the following parameters:
 * name (string) - Name of alarm definition.
 * description (string) - Description of alarm definition.
 * expression (string) - The alarm definition expression.
+* deterministic (boolean) - Is the underlying expression deterministic ? **Read-only**, computed from *expression*
 * expression_data (JSON object) - The alarm definition expression as a JSON object.
 * match_by ([string]) - The metric dimensions to use to create unique alarms
 * severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
@@ -2052,6 +2209,7 @@ Returns a JSON alarm definition object with the following parameters:
     "name": "CPU percent greater than 15",
     "description": "Release the hounds",
     "expression": "(avg(cpu.user_perc{hostname=devstack}) > 15)",
+    "deterministic": false,
     "expression_data": {
         "function": "AVG",
         "metric_name": "cpu.user_perc",
@@ -2082,7 +2240,7 @@ ___
 
 ## Patch Alarm Definition
 ### PATCH /v2.0/alarm-definitions/{alarm_definition_id}
-Update select parameters of the specified alarm definition, and enable/disable its actions.
+Update selected parameters of the specified alarm definition, and enable/disable its actions.
 
 #### Headers
 * X-Auth-Token (string, required) - Keystone auth token
@@ -2150,6 +2308,7 @@ Returns a JSON alarm definition object with the following fields:
 * name (string) - Name of alarm definition.
 * description (string) - Description of alarm definition.
 * expression (string) - The alarm definition expression.
+* deterministic (boolean) - Is the underlying expression deterministic ? **Read-only**, computed from *expression*
 * expression_data (JSON object) - The alarm definition expression as a JSON object.
 * match_by ([string]) - The metric dimensions to use to create unique alarms
 * severity (string) - The severity of an alarm definition. Either `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
@@ -2171,6 +2330,7 @@ Returns a JSON alarm definition object with the following fields:
     "name": "CPU percent greater than 15",
     "description": "Release the hounds",
     "expression": "(avg(cpu.user_perc{hostname=devstack}) > 15)",
+    "deterministic": false,
     "expression_data": {
         "function": "AVG",
         "metric_name": "cpu.user_perc",
@@ -2253,13 +2413,14 @@ None.
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
 * link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
 * offset (integer, optional)
 * limit (integer, optional)
 * sort_by (string, optional) - Comma separated list of fields to sort by, defaults to 'alarm_id'. Fields may be followed by 'asc' or 'desc' to set the direction, ex 'severity desc'
-Allowed fields for sort_by are: 'alarm_id', 'alarm_definition_id', 'state', 'severity', 'lifecycle_state', 'link', 'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'
+Allowed fields for sort_by are: 'alarm_id', 'alarm_definition_id', 'alarm_definition_name', 'state', 'severity', 'lifecycle_state', 'link', 'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'
 
 #### Request Body
 None.
@@ -2366,6 +2527,7 @@ None
 * metric_name (string(255), optional) - Name of metric to filter by.
 * metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
+* severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
 * link (string(512), optional) - Link to filter by.
 * state_updated_start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.
@@ -2457,7 +2619,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
-* sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
+* sub_alarms ({{string, string, string(255): string(255), string, string, string, string, boolean}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
 
 #### Response Examples
 ```
@@ -2501,7 +2663,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "GT",
                         "threshold": 15,
                         "period": 60,
-                        "periods": 1
+                        "periods": 1,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "OK",
                     "current_values": [
@@ -2538,7 +2701,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "GT",
                         "threshold": 10,
                         "period": 60,
-                        "periods": 3
+                        "periods": 3,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "OK",
                     "current_values": [
@@ -2577,7 +2741,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "GT",
                         "threshold": 10,
                         "period": 60,
-                        "periods": 3
+                        "periods": 3,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "ALARM",
                     "current_values": [
@@ -2924,7 +3089,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 * reason (string) - The reason for the state transition.
 * reason_data (string) - The reason for the state transition as a JSON object.
 * timestamp (string) - The time in ISO 8601 combined date and time format in UTC when the state transition occurred.
-* sub_alarms ({{string, string, string(255): string(255), string, string, string, string}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
+* sub_alarms ({{string, string, string(255): string(255), string, string, string, string, boolean}, string, [string]) - The sub-alarms stated of when the alarm state transition occurred.
 
 #### Response Examples
 ```
@@ -2966,7 +3131,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "LT",
                         "threshold": 10,
                         "period": 60,
-                        "periods": 3
+                        "periods": 3,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "ALARM",
                     "current_values": [
@@ -3003,7 +3169,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "LT",
                         "threshold": 10,
                         "period": 60,
-                        "periods": 3
+                        "periods": 3,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "OK",
                     "current_values": [
@@ -3040,7 +3207,8 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
                         "operator": "LT",
                         "threshold": 10,
                         "period": 60,
-                        "periods": 3
+                        "periods": 3,
+                        "deterministic": false
                     },
                     "sub_alarm_state": "ALARM",
                     "current_values": [
@@ -3091,4 +3259,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -22,7 +22,7 @@ import monasca.api.domain.exception.EntityNotFoundException;
  */
 public interface NotificationMethodRepo {
   NotificationMethod create(String tenantId, String name, NotificationMethodType type,
-      String address);
+      String address, int period);
 
   /**
    * @throws EntityNotFoundException if a notification method cannot be found for the
@@ -44,7 +44,7 @@ public interface NotificationMethodRepo {
    *         {@code notificationMethodId}
    */
   NotificationMethod update(String tenantId, String notificationMethodId, String name,
-      NotificationMethodType type, String address);
+      NotificationMethodType type, String address, int period);
 
-  List<NotificationMethod> find(String tenantId, String offset, int limit);
+  List<NotificationMethod> find(String tenantId, List<String> sortBy, String offset, int limit);
 }

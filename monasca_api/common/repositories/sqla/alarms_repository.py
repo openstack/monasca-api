@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -88,8 +89,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                    .select_from(a_s.join(ad, a_s.c.alarm_definition_id == ad.c.id)))
 
         self.get_ad_query = (select([ad])
+                             .select_from(ad.join(a, ad.c.id == a.c.alarm_definition_id))
                              .where(ad.c.tenant_id == bindparam('b_tenant_id'))
-                             .where(ad.c.id == bindparam('b_id')))
+                             .where(a.c.id == bindparam('b_id')))
 
         self.get_am_query = (select([a_s.c.id.label('alarm_id'),
                                      mde.c.name,
@@ -284,8 +286,11 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 parms['b_md_name'] = query_parms['metric_name'].encode('utf8')
 
             if 'severity' in query_parms:
-                query = query.where(ad.c.severity == bindparam('b_severity'))
-                parms['b_severity'] = query_parms['severity'].encode('utf8')
+                severities = query_parms['severity'].split('|')
+                query = query.where(
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                for i, s in enumerate(severities):
+                    parms['b_severity' + str(i)] = s.encode('utf8')
 
             if 'state' in query_parms:
                 query = query.where(a.c.state == bindparam('b_state'))
@@ -330,9 +335,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                         if '|' in parsed_dimension[1]:
                             values = parsed_dimension[1].encode('utf8').split('|')
                             sub_values_cond = []
-                            for j, value in values:
+                            for j, value in enumerate(values):
                                 sub_md_value = "b_md_value_{}_{}".format(i, j)
-                                sub_values_cond.append = (md.c.value == bindparam(sub_md_value))
+                                sub_values_cond.append(md.c.value == bindparam(sub_md_value))
                                 parms[sub_md_value] = value
                             values_cond = or_(*sub_values_cond)
                             values_cond_flag = True
@@ -492,8 +497,11 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(a.c.state == bindparam('b_state'))
 
             if 'severity' in query_parms:
-                query = query.where(ad.c.severity == bindparam('b_severity'))
-                parms['b_severity'] = query_parms['severity'].encode('utf8')
+                severities = query_parms['severity'].split('|')
+                query = query.where(
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                for i, s in enumerate(severities):
+                    parms['b_severity' + str(i)] = s.encode('utf8')
 
             if 'lifecycle_state' in query_parms:
                 parms['b_lifecycle_state'] = query_parms['lifecycle_state'].encode('utf8')

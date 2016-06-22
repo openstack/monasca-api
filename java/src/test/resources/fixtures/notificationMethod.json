@@ -1,1 +1,1 @@
-{"id":"123","links":[{"rel":"self","href":"https://cloudsvc.example.com/v1.0"}],"name":"MyEmail","type":"EMAIL","address":"a@b"}
+{"id":"123","links":[{"rel":"self","href":"https://cloudsvc.example.com/v1.0"}],"name":"MyEmail","type":"EMAIL","address":"a@b", "period":0}

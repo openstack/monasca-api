@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hewlett Packard Enterprise Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -160,7 +160,7 @@ public final class Links {
    * @param uriInfo
    * @return
    */
-  public static Object paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
+  public static Paged paginate(int limit, List<? extends AbstractEntity> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
@@ -258,37 +258,46 @@ public final class Links {
 
     if (elements != null && !elements.isEmpty()) {
 
-      Measurements m = elements.get(0);
+      int remaining_limit = limit;
 
-      if (m != null) {
+      for (int i = 0; i < elements.size(); i++) {
 
-        List<Object[]> l = m.getMeasurements();
+        Measurements m = elements.get(i);
 
-        if (l.size() > limit) {
+        if (m != null) {
 
-          String offset = (String) l.get(limit - 1)[0];
+          List<Object[]> l = m.getMeasurements();
 
-          m.setId(offset);
+          if (l.size() >= remaining_limit) {
 
-          paged.links.add(getNextLink(offset, uriInfo));
+            String offset = m.getId();
 
-          // Truncate the list. Normally this will just truncate one extra element.
-          l = l.subList(0, limit);
-          m.setMeasurements(l);
+            if (offset != null) {
+              offset += '_' + (String) l.get(remaining_limit - 1)[0];
+            } else {
+              offset = (String) l.get(remaining_limit - 1)[0];
+            }
+
+            paged.links.add(getNextLink(offset, uriInfo));
+
+            // Truncate the measurement list. Normally this will just truncate one extra element.
+            l = l.subList(0, remaining_limit);
+            m.setMeasurements(l);
+
+            // Truncate the elements list
+            elements = elements.subList(0, i + 1);
+
+          }  else {
+            remaining_limit -= l.size();
+          }
+
+          paged.elements = elements;
+
+        } else {
+
+          paged.elements = new ArrayList<>();
 
         }
-
-        // Check if there are any elements.
-        if (l.size() > 0) {
-          // Set the id to the last date in the list.
-          m.setId((String) l.get(l.size() - 1)[0]);
-        }
-        paged.elements = elements;
-
-      } else {
-
-        paged.elements = new ArrayList<>();
-
       }
 
     } else {
@@ -316,37 +325,46 @@ public final class Links {
 
     if (elements != null && !elements.isEmpty()) {
 
-      Statistics s = elements.get(0);
+      int remaining_limit = limit;
 
-      if (s != null) {
+      for (int i = 0; i < elements.size(); i++) {
 
-        List<List<Object>> l = s.getStatistics();
+        Statistics s = elements.get(i);
 
-        if (l.size() > limit) {
+        if (s != null) {
 
-          String offset = (String) l.get(limit - 1).get(0);
+          List<List<Object>> l = s.getStatistics();
 
-          s.setId(offset);
+          if (l.size() >= remaining_limit) {
 
-          paged.links.add(getNextLink(offset, uriInfo));
+            String offset = s.getId();
 
-          // Truncate the list. Normally this will just truncate one extra element.
-          l = l.subList(0, limit);
-          s.setStatistics(l);
+            if (offset != null) {
+              offset += '_' + (String) l.get(remaining_limit - 1).get(0);
+            } else {
+              offset = (String) l.get(remaining_limit - 1).get(0);
+            }
+
+            paged.links.add(getNextLink(offset, uriInfo));
+
+            // Truncate the measurement list. Normally this will just truncate one extra element.
+            l = l.subList(0, remaining_limit);
+            s.setStatistics(l);
+
+            // Truncate the elements list
+            elements = elements.subList(0, i + 1);
+
+          }  else {
+            remaining_limit -= l.size();
+          }
+
+          paged.elements = elements;
+
+        } else {
+
+          paged.elements = new ArrayList<>();
 
         }
-
-        // Check if there are any elements.
-        if (l.size() > 0) {
-          // Set the id to the last date in the list.
-          s.setId((String) l.get(l.size() - 1).get(0));
-        }
-        paged.elements = elements;
-
-      } else {
-
-        paged.elements = new ArrayList<>();
-
       }
 
     } else {
@@ -362,7 +380,7 @@ public final class Links {
 
     Link selfLink = new Link();
     selfLink.rel = "self";
-    selfLink.href = uriInfo.getRequestUri().toString();
+    selfLink.href = prefixForHttps(uriInfo.getRequestUri().toString());
     return selfLink;
   }
 
@@ -373,8 +391,8 @@ public final class Links {
     nextLink.rel = "next";
 
     // Create a new URL with the new offset.
-    nextLink.href = uriInfo.getAbsolutePath().toString()
-                    + "?offset=" + URLEncoder.encode(offset, "UTF-8");
+    nextLink.href = prefixForHttps(uriInfo.getAbsolutePath().toString()
+                    + "?offset=" + URLEncoder.encode(offset, "UTF-8"));
 
     // Add the query parms back to the URL without the original offset.
     for (String parmKey : uriInfo.getQueryParameters().keySet()) {

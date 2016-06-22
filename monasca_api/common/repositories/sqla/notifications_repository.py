@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -23,7 +23,7 @@ from monasca_api.common.repositories import notifications_repository as nr
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, insert, delete
-from sqlalchemy import select, bindparam, func, and_
+from sqlalchemy import select, bindparam, func, and_, literal_column
 
 LOG = log.getLogger(__name__)
 
@@ -58,6 +58,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                      name=bindparam('b_name'),
                                      type=bindparam('b_type'),
                                      address=bindparam('b_address'),
+                                     period=bindparam('b_period'),
                                      created_at=bindparam('b_created_at'),
                                      updated_at=bindparam('b_updated_at')))
 
@@ -72,6 +73,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                      name=bindparam('b_name'),
                                      type=bindparam('b_type'),
                                      address=bindparam('b_address'),
+                                     period=bindparam('b_period'),
                                      updated_at=bindparam('b_updated_at')))
 
         self._select_nm_id_query = (select([nm])
@@ -85,7 +87,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                                nm.c.name == bindparam('b_name'))))
 
     def create_notification(self, tenant_id, name,
-                            notification_type, address):
+                            notification_type, address, period):
 
         with self._db_engine.connect() as conn:
             row = conn.execute(self._select_nm_count_name_query,
@@ -105,13 +107,14 @@ class NotificationsRepository(sql_repository.SQLRepository,
                          b_name=name.encode('utf8'),
                          b_type=notification_type.encode('utf8'),
                          b_address=address.encode('utf8'),
+                         b_period=period,
                          b_created_at=now,
                          b_updated_at=now)
 
         return notification_id
 
     @sql_repository.sql_try_catch_block
-    def list_notifications(self, tenant_id, offset, limit):
+    def list_notifications(self, tenant_id, sort_by, offset, limit):
 
         rows = []
 
@@ -123,11 +126,20 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
             parms = {'b_tenant_id': tenant_id}
 
+            if sort_by is not None:
+                order_columns = [literal_column(col) for col in sort_by]
+                if 'id' not in sort_by:
+                    order_columns.append(nm.c.id)
+            else:
+                order_columns = [nm.c.id]
+
             if offset:
                 select_nm_query = (select_nm_query
                                    .where(nm.c.id > bindparam('b_offset')))
 
                 parms['b_offset'] = offset.encode('utf8')
+
+            select_nm_query = select_nm_query.order_by(*order_columns)
 
             select_nm_query = (select_nm_query
                                .order_by(nm.c.id)
@@ -177,7 +189,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                 b_name=name.encode('utf8')).fetchone()
 
     @sql_repository.sql_try_catch_block
-    def update_notification(self, notification_id, tenant_id, name, notification_type, address):
+    def update_notification(self, notification_id, tenant_id, name, notification_type, address, period):
         with self._db_engine.connect() as conn:
             now = datetime.datetime.utcnow()
 
@@ -187,6 +199,7 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                   b_name=name.encode('utf8'),
                                   b_type=notification_type.encode('utf8'),
                                   b_address=address.encode('utf8'),
+                                  b_period=period,
                                   b_updated_at=now)
 
             if cursor.rowcount < 1:

@@ -14,16 +14,20 @@ eventsTopic: events
 # If not set or set to any value less than or equal to 0, then defaults to 10,000.
 maxQueryLimit: 10000
 
+# Valid periods for notification
+validNotificationPeriods:
+  - 60
+
 kafka:
   brokerUris:
-    - 192.168.10.4:9092
+    - 192.168.10.6:9092
   zookeeperUris:
-    - 192.168.10.4:2181
+    - 192.168.10.6:2181
   healthCheckTopic: healthcheck
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://192.168.10.4:3306/mon?connectTimeout=5000&autoReconnect=true&useLegacyDatetimeCode=false
+  url: jdbc:mysql://192.168.10.6:3306/mon?connectTimeout=5000&autoReconnect=true&useLegacyDatetimeCode=false
   user: monapi
   password: password
   maxWaitForConnection: 1s
@@ -42,8 +46,7 @@ influxDB:
   maxHttpConnections: 100
   name: mon
   replicationFactor: 1
-  url: http://192.168.10.4:8086
-#  url: http://10.10.10.2:8086
+  url: http://192.168.10.6:8086
   user: mon_api
   password: password
 
@@ -51,7 +54,7 @@ influxDB:
 # As of 7/10 there is a bug in the monasca-api that requires this section even if databaseType is set to influxdb
 vertica:
   driverClass: com.vertica.jdbc.Driver
-  url: jdbc:vertica://localhost/mon
+  url: jdbc:vertica://192.168.10.6/mon
   user: dbadmin
   password: password
   maxWaitForConnection: 1s
@@ -59,12 +62,20 @@ vertica:
   minSize: 4
   maxSize: 32
   checkConnectionWhileIdle: false
+  #
+  # vertica database hint to be added to SELECT
+  # statements.  For example, the hint below is used
+  # to tell vertica that the query can be satisfied
+  # locally (replicated projection).
+  #
+  # dbHint: "/*+KV(01)*/"
+  dbHint: ""
 
 middleware:
   enabled: true
-  serverVIP: 192.168.10.5
+  serverVIP: 192.168.10.6
   serverPort: 5000
-  connTimeout: 500
+  connTimeout: 2000
   connSSLClientAuth: false
   connPoolMaxActive: 3
   connPoolMaxIdle: 3
@@ -76,13 +87,11 @@ middleware:
   agentAuthorizedRoles: [monasca-agent]
   adminAuthMethod: password
   adminUser: admin
-  adminPassword: admin
+  adminPassword: secretadmin
   adminProjectId:
-  adminProjectName:
+  adminProjectName: admin
   adminUserDomainId:
   adminUserDomainName:
-  adminUserProjectId:
-  adminUserProjectName:
   adminToken:
   timeToCacheToken: 600
   maxTokenCacheSize: 1048576

@@ -12,6 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
+import six.moves.urllib.parse as urlparse
+
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
@@ -143,6 +147,69 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition)
         self._delete_notification(notification_id)
 
+    @test.attr(type='gate')
+    def test_create_deterministic_alarm_definition(self):
+        name = data_utils.rand_name('log.error')
+        expression = "count(log.error{},deterministic) > 0"
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=True)
+
+    @test.attr(type='gate')
+    def test_create_non_deterministic_alarm_definition_compound_mixed_expr(self):
+        name = data_utils.rand_name('log.error.and.disk.used_perc')
+        expression = ('max(disk.used_perc{hostname=node_1}) > 99.0 AND '
+                      'count(log.error{hostname=node_1},deterministic) > 0')
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=False)
+
+    @test.attr(type='gate')
+    def test_create_deterministic_alarm_definition_compound_expr(self):
+        name = data_utils.rand_name('log.error.nodes_1_2')
+        expression = ('count(log.error{hostname=node_2},deterministic) > 0 '
+                      'AND '
+                      'count(log.error{hostname=node_1},deterministic) > 0')
+
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            match_by=['hostname'],
+            severity="MEDIUM"
+        )
+        resp, response_body = self.monasca_client.create_alarm_definitions(
+            alarm_definition
+        )
+        self._verify_create_alarm_definitions(resp,
+                                              response_body,
+                                              alarm_definition,
+                                              deterministic=True)
+
     @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_create_alarm_definition_with_special_chars_in_expression(self):
@@ -273,8 +340,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
         # Test list alarm definition response body
         elements = response_body['elements']
-        self._verify_list_get_alarm_definitions_elements(elements, 1,
-                                                         response_body_list[0])
+        self._verify_alarm_definitions_list(elements, response_body_list)
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
@@ -294,8 +360,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             query_parms)
         self._verify_list_alarm_definitions_response_body(resp, response_body)
         elements = response_body['elements']
-        self._verify_list_get_alarm_definitions_elements(
-            elements, 1, res_body_create_alarm_def)
+        self._verify_alarm_definitions_list(
+            elements, [res_body_create_alarm_def])
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
@@ -319,8 +385,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             list_alarm_definitions(query_parms)
         self._verify_list_alarm_definitions_response_body(resp, response_body)
         elements = response_body['elements']
-        self._verify_list_get_alarm_definitions_elements(
-            elements, 1, res_body_create_alarm_def)
+        self._verify_alarm_definitions_list(elements, [res_body_create_alarm_def])
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
@@ -337,7 +402,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             name=name,
             description="description",
             expression=expression)
-        resp, res_body_create_alarm_def = self.monasca_client.\
+        resp, res_body_create_alarm_def = self.monasca_client. \
             create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
 
@@ -348,8 +413,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self._verify_list_alarm_definitions_response_body(resp, response_body)
 
         elements = response_body['elements']
-        self._verify_list_get_alarm_definitions_elements(
-            elements, 1, res_body_create_alarm_def)
+        self._verify_alarm_definitions_list(elements, [res_body_create_alarm_def])
 
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
@@ -383,45 +447,196 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             list_alarm_definitions(query_param)
         self._verify_list_alarm_definitions_response_body(resp, response_body)
         elements = response_body['elements']
-        self._verify_list_get_alarm_definitions_elements(
-            elements, 1, res_body_create_alarm_def)
+        self._verify_alarm_definitions_list(elements, [res_body_create_alarm_def])
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarm_definitions_by_severity_invalid_severity(self):
+        query_parms = '?severity=false_severity'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarm_definitions, query_parms)
+
+    @test.attr(type="gate")
+    def test_list_alarm_definitions_with_multiple_severity(self):
+        name = data_utils.rand_name('alarm_definition')
+        expression = 'avg(cpu_utilization{alarm=severity}) >= 1000'
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            severity="LOW")
+        resp, res_body_create_alarm_def_low = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
+        self.assertEqual(201, resp.status)
+
+        name = data_utils.rand_name('alarm_definition')
+        expression = 'avg(cpu_utilization{alarm=severity}) >= 1000'
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            severity="MEDIUM")
+        resp, res_body_create_alarm_def_medium = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
+        self.assertEqual(201, resp.status)
+
+        name = data_utils.rand_name('alarm_definition')
+        expression = 'avg(cpu_utilization{alarm=severity}) >= 1000'
+        alarm_definition = helpers.create_alarm_definition(
+            name=name,
+            description="description",
+            expression=expression,
+            severity="HIGH")
+        resp, res_body_create_alarm_def = self.monasca_client.\
+            create_alarm_definitions(alarm_definition)
+        self.assertEqual(201, resp.status)
+
+
+        query_param = '?severity=MEDIUM|LOW&dimensions=alarm:severity&sort_by=severity'
+        resp, response_body = self.monasca_client.\
+            list_alarm_definitions(query_param)
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
+        elements = response_body['elements']
+        self._verify_alarm_definitions_list(elements, [res_body_create_alarm_def_low,
+                                                       res_body_create_alarm_def_medium])
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_list_alarm_definitions_by_severity_multiple_values_invalid_severity(self):
+        query_parms = '?severity=false_severity|MEDIUM'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarm_definitions, query_parms)
+
+        query_parms = '?severity=MEDIUM|false_severity'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarm_definitions, query_parms)
+
+        query_parms = '?severity=LOW|false_severity|HIGH'
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.list_alarm_definitions, query_parms)
+
     @test.attr(type='gate')
     def test_list_alarm_definitions_sort_by(self):
-        alarm_definitions = []
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 01',
-            expression='test_metric_01 > 1',
-            severity='HIGH'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 04',
-            expression='test_metric_04 > 1',
-            severity='LOW'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 02',
-            expression='test_metric_02 > 1',
-            severity='CRITICAL'
-        ))
-        alarm_definitions.append(helpers.create_alarm_definition(
-            name='alarm def sort by 03',
-            expression='test_metric_03 > 1',
-            severity='MEDIUM'
-        ))
-        for definition in alarm_definitions:
-            self.monasca_client.create_alarm_definitions(definition)
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        expression = 'avg(cpu_utilization{' + str(key) + '=' + str(value) + \
+                     '}) >= 1000'
 
-        resp, response_body = self.monasca_client.list_alarm_definitions('?sort_by=severity')
+        alarm_definitions = [helpers.create_alarm_definition(
+            name='alarm def sort by 01',
+            expression=expression,
+            severity='HIGH'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 04',
+            expression=expression,
+            severity='LOW'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 02',
+            expression=expression,
+            severity='CRITICAL'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 03',
+            expression=expression,
+            severity='MEDIUM'
+        )]
+        for definition in alarm_definitions:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            definition['id'] = response_body['id']
+            time.sleep(1)
+
+        sort_params1 = ['id', 'name', 'severity']
+        for sort_by in sort_params1:
+            alarmdefs_sort_by = sorted(alarm_definitions, key=lambda
+                definition: definition[sort_by])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by)
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by[i][sort_by], element[sort_by])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' asc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by[i][sort_by], element[sort_by])
+
+            alarmdefs_sort_by_reverse = sorted(alarm_definitions, key=lambda
+                definition: definition[sort_by], reverse=True)
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' desc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarmdefs_sort_by_reverse[i][sort_by], element[sort_by])
+
+        sort_params2 = ['created_at', 'updated_at']
+        for sort_by in sort_params2:
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by)
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[i]['id'], element['id'])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' asc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[i]['id'], element['id'])
+
+            resp, response_body = self.monasca_client.list_alarm_definitions(
+                '?dimensions=' + str(key) + ':' + str(value) +
+                '&sort_by=' + sort_by + urlparse.quote(' desc'))
+            self.assertEqual(200, resp.status)
+            for i, element in enumerate(response_body['elements']):
+                self.assertEqual(alarm_definitions[-i-1]['id'], element['id'])
+
+    @test.attr(type='gate')
+    def test_list_alarm_definitions_multiple_sort_by(self):
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        expression = 'avg(cpu_utilization{' + str(key) + '=' + str(value) + \
+                     '}) >= 1000'
+
+        alarm_definitions = [helpers.create_alarm_definition(
+            name='alarm def sort by 11',
+            expression=expression,
+            severity='MEDIUM'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 14',
+            expression=expression,
+            severity='MEDIUM'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 12',
+            expression=expression,
+            severity='LOW'
+        ), helpers.create_alarm_definition(
+            name='alarm def sort by 13',
+            expression=expression,
+            severity='MEDIUM'
+        )]
+        for definition in alarm_definitions:
+            resp, response_body = self.monasca_client.create_alarm_definitions(definition)
+            definition['id'] = response_body['id']
+
+        resp, response_body = self.monasca_client.list_alarm_definitions(
+            '?dimensions=' + str(key) + ':' + str(value) +
+            '&sort_by=' + urlparse.quote('severity asc,name desc,id'))
         self.assertEqual(200, resp.status)
 
-        prev_severity = 'CRITICAL'
-        for alarm_definition in response_body['elements']:
-            assert prev_severity <= alarm_definition['severity'],\
-                "Severity {} came after {}".format(alarm_definition['severity'], prev_severity)
-            prev_severity = alarm_definition['severity']
+        expected_order = [2, 1, 3, 0]
+
+        for i, element in enumerate(response_body['elements']):
+            self.assertEqual(alarm_definitions[expected_order[i]]['id'], element['id'])
 
     @test.attr(type='gate')
     @test.attr(type=['negative'])
@@ -478,8 +693,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             response_body_list[0]['id'])
         self.assertEqual(200, resp.status)
         self._verify_element_set(response_body)
-        self._verify_list_get_alarm_definitions_elements(response_body, 0,
-                                                         response_body_list[0])
+        self._verify_alarm_definitions_element(response_body,
+                                               response_body_list[0])
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
@@ -636,6 +851,27 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                                    None, notification_id)
         self._delete_notification(notification_id)
 
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_patch_alarm_definition_with_invalid_actions(self):
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
+        # Patch alarm definition
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          alarm_actions=['bad_notification_id'])
+
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          ok_actions=['bad_notification_id'])
+
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.monasca_client.patch_alarm_definition,
+                          id=response_body_list[0]['id'],
+                          undetermined_actions=['bad_notification_id'])
+
     # Delete
 
     @test.attr(type="gate")
@@ -681,16 +917,11 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertIsInstance(response_body, dict)
         self.assertTrue(set(['links', 'elements']) == set(response_body))
 
-    def _verify_list_get_alarm_definitions_elements(self, elements, num,
-                                                    res_body_create_alarm_def):
-        if num > 0:
-            self.assertEqual(len(elements), num)
-            for element in elements:
-                self._verify_alarm_definitions_element(
-                    element, res_body_create_alarm_def)
-        else:
-            self._verify_alarm_definitions_element(elements,
-                                                   res_body_create_alarm_def)
+    def _verify_alarm_definitions_list(self, observed, reference):
+        self.assertEqual(len(reference), len(observed))
+        for i in xrange(len(reference)):
+            self._verify_alarm_definitions_element(
+                reference[i], observed[i])
 
     def _verify_alarm_definitions_element(self, response_body,
                                           res_body_create_alarm_def):
@@ -706,6 +937,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                          res_body_create_alarm_def['match_by'])
         self.assertEqual(response_body['severity'],
                          res_body_create_alarm_def['severity'])
+        self.assertEqual(response_body['deterministic'],
+                         res_body_create_alarm_def['deterministic'])
 
     def _verify_element_set(self, element):
         self.assertTrue(set(['id',
@@ -713,6 +946,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                              'name',
                              'description',
                              'expression',
+                             'deterministic',
                              'match_by',
                              'severity',
                              'actions_enabled',
@@ -727,13 +961,18 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertTrue(set(['rel', 'href']) == set(link))
         self.assertEqual(link['rel'], u'self')
 
-    def _verify_create_alarm_definitions(self, resp, response_body,
-                                         alarm_definition):
+    def _verify_create_alarm_definitions(self,
+                                         resp,
+                                         response_body,
+                                         alarm_definition,
+                                         deterministic=False):
         self.assertEqual(201, resp.status)
         self.assertEqual(alarm_definition['name'], response_body['name'])
 
         self.assertEqual(alarm_definition['expression'],
                          str(response_body['expression']))
+        self.assertEqual(deterministic, bool(response_body['deterministic']))
+
         if 'description' in alarm_definition:
             self.assertEqual(alarm_definition['description'],
                              str(response_body['description']))

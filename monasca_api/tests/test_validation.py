@@ -1,6 +1,5 @@
-# Copyright 2015 Hewlett-Packard
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -68,6 +67,10 @@ class TestDimensionValidation(unittest.TestCase):
                    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
         self.assertRaises(AssertionError, validation.dimension_key, dim_key)
 
+    def test_key_starts_with_underscore(self):
+        dim_key = '_key'
+        self.assertRaises(AssertionError, validation.dimension_key, dim_key)
+
     def test_invalid_chars_key(self):
         for c in invalid_chars:
             dim_key = "this{}that".format(c)
@@ -93,6 +96,44 @@ class TestDimensionValidation(unittest.TestCase):
         for c in invalid_chars:
             dim_value = "this{}that".format(c)
             self.assertRaises(AssertionError, validation.dimension_value, dim_value)
+
+
+class TestValueMetaValidation(unittest.TestCase):
+    def test_valid_name(self):
+        value_meta_name = "this.is_a.valid-name"
+        value_meta = {value_meta_name: 'value_meta_value'}
+        validation.validate_value_meta(value_meta)
+        self.assertTrue(True)
+
+    def test_nonstring_name(self):
+        value_meta_name = 123456
+        value_meta = {value_meta_name: 'value_meta_value'}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_long_name(self):
+        value_meta_name = "x" * 256
+        value_meta = {value_meta_name: 'value_meta_value'}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_valid_value(self):
+        value_meta_value = "this.is_a.valid-value"
+        value_meta = {'value_meta_name': value_meta_value}
+        validation.validate_value_meta(value_meta)
+        self.assertTrue(True)
+
+    def test_nonstring_value(self):
+        value_meta_value = 123456
+        value_meta = {'value_meta_name': value_meta_value}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
+
+    def test_long_value_meta(self):
+        value_meta_value = "x" * 2048
+        value_meta = {'value_meta_name': value_meta_value}
+        self.assertRaises(AssertionError, validation.validate_value_meta,
+                          value_meta)
 
 
 class TestRoleValidation(unittest.TestCase):
@@ -204,58 +245,91 @@ class TestConvertTimeString(unittest.TestCase):
             ValueError,
             helpers._convert_time_string, date_time_string)
 
+valid_periods = [0, 60]
+
 
 class TestNotificationValidation(unittest.TestCase):
 
     def test_validation_for_email(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com"}
         try:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
 
-    def test_validation_exception_for_email(self):
+    def test_validation_exception_for_invalid_email_address(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
         self.assertEqual("Address name@domain. is not of correct format", ex.message)
+
+    def test_validation_exception_for_invalid_period_for_email(self):
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com", "period": "60"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        ex = ve.exception
+        self.assertEqual("Period can only be set with webhooks", ex.message)
 
     def test_validation_for_webhook(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
         try:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
+
+    def test_validation_for_webhook_non_zero_period(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com",
+                        "period": 60}
+        try:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
 
     def test_validation_exception_for_webhook_no_scheme(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com"}
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
         self.assertEqual("Address //somedomain.com does not have URL scheme", ex.message)
 
     def test_validation_exception_for_webhook_no_netloc(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://"}
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
         self.assertEqual("Address http:// does not have network location", ex.message)
 
     def test_validation_exception_for_webhook_invalid_scheme(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://somedomain.com"}
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
         self.assertEqual("Address ftp://somedomain.com scheme is not in ['http', 'https']", ex.message)
+
+    def test_validation_exception_for_webhook_invalid_period(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
+                        "period": "10"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        ex = ve.exception
+        self.assertEqual("10 is not a valid period", ex.message)
 
     def test_validation_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
                         "address": "nzH2LVRdMzun11HNC2oD"}
         try:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
+
+    def test_validation_exception_for_invalid_period_for_pagerduty(self):
+        notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
+                        "address": "nzH2LVRdMzun11HNC2oD", "period": 60}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        ex = ve.exception
+        self.assertEqual("Period can only be set with webhooks", ex.message)
 
     def test_validation_for_max_name_address(self):
         name = "A" * 250
@@ -264,7 +338,7 @@ class TestNotificationValidation(unittest.TestCase):
         self.assertEqual(512, len(address))
         notification = {"name": name, "type": "WEBHOOK", "address": address}
         try:
-            schemas_notifications.validate(notification)
+            schemas_notifications.parse_and_validate(notification, valid_periods)
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
 
@@ -274,7 +348,7 @@ class TestNotificationValidation(unittest.TestCase):
         notification = {"name": name, "type": "WEBHOOK", "address": "http://somedomain.com"}
         self.assertRaises(
             schemas_exceptions.ValidationException,
-            schemas_notifications.validate, notification)
+            schemas_notifications.parse_and_validate, notification, valid_periods)
 
     def test_validation_exception_for_exceeded_address_length(self):
         address = "http://" + "A" * 503 + ".io"
@@ -282,4 +356,27 @@ class TestNotificationValidation(unittest.TestCase):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": address}
         self.assertRaises(
             schemas_exceptions.ValidationException,
-            schemas_notifications.validate, notification)
+            schemas_notifications.parse_and_validate, notification, valid_periods)
+
+    def test_validation_exception_for_invalid_period_float(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
+                        "period": 1.2}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        ex = ve.exception
+        self.assertEqual("expected int for dictionary value @ data['period']", ex.message)
+
+    def test_validation_exception_for_invalid_period_non_int(self):
+        notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
+                        "period": "zero"}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        ex = ve.exception
+        self.assertEqual("Period zero must be a valid integer", ex.message)
+
+    def test_validation_exception_for_missing_period(self):
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
+        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
+            schemas_notifications.parse_and_validate(notification, valid_periods, require_all=True)
+        ex = ve.exception
+        self.assertEqual("Period is required", ex.message)

@@ -49,7 +49,8 @@ public interface AlarmDefinitionRepo {
    * Returns alarms for the given criteria.
    */
   List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                             AlarmSeverity severity, List<String> sortBy, String offset, int limit);
+                             List<AlarmSeverity> severities, List<String> sortBy, String offset,
+                             int limit);
 
   /**
    * @throws EntityNotFoundException if an alarm cannot be found for the {@code alarmDefId}

@@ -233,6 +233,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'actions_enabled': u'true',
             u'undetermined_actions': [],
             u'expression': u'test.metric > 10',
+            u'deterministic': False,
             u'id': u'00000001-0001-0001-0001-000000000001',
             u'severity': u'LOW',
         }
@@ -285,6 +286,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'actions_enabled': u'true',
             u'undetermined_actions': [],
             u'expression': u'test.metric > 10',
+            u'deterministic': False,
             u'id': u'00000001-0001-0001-0001-000000000001',
             u'severity': u'LOW',
         }
@@ -334,6 +336,7 @@ class TestAlarmDefinition(AlarmTestBase):
              u'name': u'Test Alarm',
              u'actions_enabled': True,
              u'undetermined_actions': [],
+             u'is_deterministic': False,
              u'expression': u'max(test.metric{hostname=host}) gte 1',
              u'id': u'00000001-0001-0001-0001-000000000001',
              u'severity': u'LOW'},
@@ -346,6 +349,7 @@ class TestAlarmDefinition(AlarmTestBase):
                      'operator': 'gte',
                      'threshold': 1,
                      'period': 60,
+                     'is_deterministic': False,
                      'periods': 1})},
              'changed': {},
              'new': {},
@@ -358,6 +362,7 @@ class TestAlarmDefinition(AlarmTestBase):
                       'operator': 'gte',
                       'threshold': 1,
                       'period': 60,
+                      'is_deterministic': False,
                       'periods': 1})}
              }
         )
@@ -374,6 +379,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm',
             u'actions_enabled': True,
             u'undetermined_actions': [],
+            u'deterministic': False,
             u'expression': u'max(test.metric{hostname=host}) gte 1',
             u'severity': u'LOW',
         }
@@ -386,6 +392,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm',
             u'actions_enabled': True,
             u'undetermined_actions': [],
+            u'deterministic': False,
             u'expression': u'max(test.metric{hostname=host}) gte 1',
             u'severity': u'LOW',
         }
@@ -411,6 +418,7 @@ class TestAlarmDefinition(AlarmTestBase):
              u'undetermined_actions': [],
              u'expression': u'max(test.metric{hostname=host}) gte 1',
              u'id': u'00000001-0001-0001-0001-000000000001',
+             u'is_deterministic': False,
              u'severity': u'LOW'},
             {'old': {'11111': sub_alarm_definition.SubAlarmDefinition(
                 row={'id': '11111',
@@ -421,7 +429,8 @@ class TestAlarmDefinition(AlarmTestBase):
                      'operator': 'gte',
                      'threshold': 1,
                      'period': 60,
-                     'periods': 1})},
+                     'periods': 1,
+                     'is_deterministic': False})},
              'changed': {},
              'new': {},
              'unchanged': {'11111': sub_alarm_definition.SubAlarmDefinition(
@@ -433,7 +442,8 @@ class TestAlarmDefinition(AlarmTestBase):
                       'operator': 'gte',
                       'threshold': 1,
                       'period': 60,
-                      'periods': 1})}
+                      'periods': 1,
+                      'is_deterministic': False})}
              }
         )
 
@@ -451,6 +461,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'undetermined_actions': [],
             u'expression': u'max(test.metric{hostname=host}) gte 1',
             u'severity': u'LOW',
+            u'deterministic': False
         }
 
         alarm_def = {
@@ -462,7 +473,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'actions_enabled': True,
             u'undetermined_actions': [],
             u'expression': u'max(test.metric{hostname=host}) gte 1',
-            u'severity': u'LOW',
+            u'severity': u'LOW'
         }
 
         result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
@@ -495,6 +506,7 @@ class TestAlarmDefinition(AlarmTestBase):
             'name': u'Test Alarm',
             'actions_enabled': 1,
             'undetermined_actions': None,
+            'deterministic': False,
             'expression': u'max(test.metric{hostname=host}) gte 1',
             'id': u'00000001-0001-0001-0001-000000000001',
             'severity': u'LOW'
@@ -508,6 +520,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm',
             u'actions_enabled': True,
             u'undetermined_actions': [],
+            u'deterministic': False,
             u'expression': u'max(test.metric{hostname=host}) gte 1',
             u'id': u'00000001-0001-0001-0001-000000000001',
             u'severity': u'LOW',
@@ -546,6 +559,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm',
             u'actions_enabled': True,
             u'undetermined_actions': [],
+            u'deterministic': False,
             u'expression': u'max(test.metric{hostname=host}) gte 1',
             u'id': u'00000001-0001-0001-0001-000000000001',
             u'severity': u'LOW',

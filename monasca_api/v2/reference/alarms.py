@@ -121,7 +121,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 validation.validate_alarm_state(query_parms['state'])
 
             if 'severity' in query_parms:
-                validation.validate_alarm_definition_severity(query_parms['severity'])
+                validation.validate_severity_query(query_parms['severity'])
 
             if 'sort_by' in query_parms:
                 if isinstance(query_parms['sort_by'], basestring):
@@ -131,6 +131,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                    'state', 'severity', 'lifecycle_state', 'link',
                                    'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
                 validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
+
+            if 'state' in query_parms:
+                validation.validate_alarm_state(query_parms['state'])
+
+            if 'severity' in query_parms:
+                validation.validate_severity_query(query_parms['severity'])
 
             # ensure metric_dimensions is a list
             if 'metric_dimensions' in query_parms and isinstance(query_parms['metric_dimensions'], str):
@@ -165,12 +171,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         try:
             assert isinstance(dimensions, list)
             for dimension in dimensions:
-                name_value = dimension.split('=')
+                name_value = dimension.split(':')
                 validation.dimension_key(name_value[0])
-                if len(name_value) > 1 and '|' in name_value[1]:
-                    values = name_value[1].split('|')
-                    for value in values:
-                        validation.dimension_value(value)
+                if len(name_value) > 1:
+                    if '|' in name_value[1]:
+                        values = name_value[1].split('|')
+                        for value in values:
+                            validation.dimension_value(value)
+                    else:
+                        validation.dimension_value(name_value[1])
         except Exception as e:
             raise HTTPUnprocessableEntityError("Unprocessable Entity", e.message)
 
@@ -181,10 +190,10 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
 
-        old_state, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
+        old_alarm, time_ms = self._alarms_repo.update_alarm(tenant_id, alarm_id,
                                                             new_state,
                                                             lifecycle_state, link)
-
+        old_state = old_alarm['state']
         # alarm_definition_id is the same for all rows.
         alarm_definition_id = sub_alarm_rows[0]['alarm_definition_id']
 
@@ -192,7 +201,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         self._send_alarm_event(u'alarm-updated', tenant_id,
                                alarm_definition_id, alarm_metric_rows,
-                               sub_alarm_rows, state_info)
+                               sub_alarm_rows, link, lifecycle_state, state_info)
 
         if old_state != new_state:
             try:
@@ -208,6 +217,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                     alarm_definition_row,
                                                     alarm_metric_rows,
                                                     old_state, new_state,
+                                                    link, lifecycle_state,
                                                     time_ms)
 
     @resource.resource_try_catch_block
@@ -392,7 +402,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             validation.validate_alarm_state(query_parms['state'])
 
         if 'severity' in query_parms:
-            validation.validate_alarm_definition_severity(query_parms['severity'])
+            validation.validate_severity_query(query_parms['severity'])
 
         if 'group_by' in query_parms:
             if not isinstance(query_parms['group_by'], list):

@@ -228,16 +228,12 @@ public class AlarmDefinitionSqlRepoImpl
   @Override
   @SuppressWarnings("unchecked")
   public List<AlarmDefinition> find(String tenantId, String name, Map<String, String> dimensions,
-                                    AlarmSeverity severity, List<String> sortBy,
+                                    List<AlarmSeverity> severities, List<String> sortBy,
                                     String offset, int limit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering...");
     if (sortBy != null && !sortBy.isEmpty()) {
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
-    }
-    if (severity != null) {
-      throw Exceptions.unprocessableEntity(
-          "Severity is not implemented for the hibernate database type");
     }
 
     Session session = null;
@@ -258,6 +254,21 @@ public class AlarmDefinitionSqlRepoImpl
 
     if (name != null) {
       sbWhere.append(" and ad.name = :name");
+    }
+
+    if (CollectionUtils.isNotEmpty(severities)) {
+      if (severities.size() == 1) {
+        sbWhere.append(" and ad.severity = :severity");
+      } else {
+        sbWhere.append(" and (");
+        for (int i = 0; i < severities.size(); i++) {
+          sbWhere.append("ad.severity = :severity_").append(i);
+          if (i < severities.size() - 1) {
+            sbWhere.append(" or ");
+          }
+        }
+        sbWhere.append(")");
+      }
     }
 
     if (offset != null && !offset.equals("0")) {
@@ -281,6 +292,16 @@ public class AlarmDefinitionSqlRepoImpl
 
       if (name != null) {
         qAlarmDefinition.setString("name", name);
+      }
+
+      if (CollectionUtils.isNotEmpty(severities)) {
+        if (severities.size() == 1) {
+          qAlarmDefinition.setString("severity", severities.get(0).name());
+        } else {
+          for (int it = 0; it < severities.size(); it++) {
+            qAlarmDefinition.setString(String.format("severity_%d", it), severities.get(it).name());
+          }
+        }
       }
 
       if (offset != null && !offset.equals("0")) {
@@ -451,13 +472,24 @@ public class AlarmDefinitionSqlRepoImpl
         double threshold = subAlarmDef.getThreshold();
         int period = subAlarmDef.getPeriod();
         int periods = subAlarmDef.getPeriods();
+        boolean isDeterministic = subAlarmDef.isDeterministic();
         Map<String, String> dimensions = Collections.emptyMap();
 
         if (subAlarmDefDimensionMapExpression.containsKey(id)) {
           dimensions = subAlarmDefDimensionMapExpression.get(id);
         }
 
-        subExpressions.put(id, new AlarmSubExpression(function, new MetricDefinition(metricName, dimensions), operator, threshold, period, periods));
+        subExpressions.put(id,
+            new AlarmSubExpression(
+                function,
+                new MetricDefinition(metricName, dimensions),
+                operator,
+                threshold,
+                period,
+                periods,
+                isDeterministic
+            )
+        );
       }
 
       return subExpressions;
@@ -545,6 +577,7 @@ public class AlarmDefinitionSqlRepoImpl
         subAlarmDefinitionDb.setOperator(sa.getOperator().name());
         subAlarmDefinitionDb.setThreshold(sa.getThreshold());
         subAlarmDefinitionDb.setUpdatedAt(this.getUTCNow());
+        subAlarmDefinitionDb.setDeterministic(sa.isDeterministic());
         session.saveOrUpdate(subAlarmDefinitionDb);
       }
   }
@@ -580,6 +613,7 @@ public class AlarmDefinitionSqlRepoImpl
     alarmDefinitionDb.setMatchBy(matchBy == null || Iterables.isEmpty(matchBy) ? null : COMMA_JOINER.join(matchBy));
     alarmDefinitionDb.setSeverity(AlarmSeverity.valueOf(severity));
     alarmDefinitionDb.setActionsEnabled(actionsEnabled);
+    alarmDefinitionDb.setUpdatedAt(this.getUTCNow());
 
     session.saveOrUpdate(alarmDefinitionDb);
 
@@ -715,7 +749,7 @@ public class AlarmDefinitionSqlRepoImpl
 
         // Persist sub-alarm
         final DateTime now = this.getUTCNow();
-        SubAlarmDefinitionDb subAlarmDefinitionDb = new SubAlarmDefinitionDb(
+        final SubAlarmDefinitionDb subAlarmDefinitionDb = new SubAlarmDefinitionDb(
             subAlarmId,
             alarmDefinition,
             subExpr.getFunction().name(),
@@ -725,7 +759,8 @@ public class AlarmDefinitionSqlRepoImpl
             subExpr.getPeriod(),
             subExpr.getPeriods(),
             now,
-            now
+            now,
+            subExpr.isDeterministic()
         );
         session.save(subAlarmDefinitionDb);
 

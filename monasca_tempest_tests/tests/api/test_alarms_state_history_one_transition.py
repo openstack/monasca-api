@@ -117,16 +117,16 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
             list_alarms_state_history()
         all_elements = all_response_body['elements']
 
-        if len(all_elements) < 2:
+        if len(all_elements) < 3:
             error_msg = "Failed test_list_alarms_state_history_with_" \
-                        "start_time: need 2 or more alarms state history " \
+                        "start_time: need 3 or more alarms state history " \
                         "to test."
             self.fail(error_msg)
 
-        # 2, query min(timestamp) < x
-        min_element, max_element = self._get_elements_with_min_max_timestamp(
-            all_elements)
-        start_time = min_element['timestamp']
+        # 2, query second(timestamp) <= x
+        min_element, second_element, max_element = \
+            self._get_elements_with_min_max_timestamp(all_elements)
+        start_time = second_element['timestamp']
         query_params = '?start_time=' + str(start_time)
         resp, selected_response_body = self.monasca_client.\
             list_alarms_state_history(query_params)
@@ -144,16 +144,16 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
             list_alarms_state_history()
         all_elements = all_response_body['elements']
 
-        if len(all_elements) < 2:
+        if len(all_elements) < 3:
             error_msg = "Failed test_list_alarms_state_history_with_" \
-                        "end_time: need 2 or more alarms state history " \
+                        "end_time: need 3 or more alarms state history " \
                         "to test."
             self.fail(error_msg)
 
-        # 2, query x < max(timestamp)
-        min_element, max_element = self._get_elements_with_min_max_timestamp(
-            all_elements)
-        end_time = max_element['timestamp']
+        # 2, query x <= second(timestamp)
+        min_element, second_element, max_element = \
+            self._get_elements_with_min_max_timestamp(all_elements)
+        end_time = second_element['timestamp']
         query_params = '?end_time=' + str(end_time)
         resp, selected_response_body = self.monasca_client.\
             list_alarms_state_history(query_params)
@@ -177,9 +177,9 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
                         "to test."
             self.fail(error_msg)
 
-        # 2, query min(timestamp) < x < max(timestamp)
-        min_element, max_element = self._get_elements_with_min_max_timestamp(
-            all_elements)
+        # 2, query min(timestamp) <= x <= max(timestamp)
+        min_element, second_element, max_element = \
+            self._get_elements_with_min_max_timestamp(all_elements)
         start_time = min_element['timestamp']
         end_time = max_element['timestamp']
         query_params = '?start_time=' + str(start_time) + '&end_time=' + \
@@ -189,10 +189,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
         selected_elements = selected_response_body['elements']
 
         # 3. compare #1 and #2
-        expected_elements = all_elements
-        expected_elements.remove(min_element)
-        expected_elements.remove(max_element)
-        self.assertEqual(expected_elements, selected_elements)
+        self.assertEqual(all_elements, selected_elements)
 
     @test.attr(type="gate")
     def test_list_alarms_state_history_with_offset_limit(self):
@@ -236,5 +233,6 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
         sorted_elements = sorted(elements, key=lambda element: timeutils.
                                  parse_isotime(element['timestamp']))
         min_element = sorted_elements[0]
+        second_element = sorted_elements[1]
         max_element = sorted_elements[-1]
-        return min_element, max_element
+        return min_element, second_element, max_element

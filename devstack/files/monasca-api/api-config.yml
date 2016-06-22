@@ -29,6 +29,9 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
+validNotificationPeriods:
+  - 60
+
 kafka:
   brokerUris:
     - "127.0.0.1:9092"
@@ -75,6 +78,14 @@ vertica:
   minSize: 4
   maxSize: 32
   checkConnectionWhileIdle: true
+  #
+  # vertica database hint to be added to SELECT
+  # statements.  For example, the hint below is used
+  # to tell vertica that the query can be satisfied
+  # locally (replicated projection).
+  #
+  # dbHint: "/*+KV(01)*/"
+  dbHint: ""
 
 middleware:
   enabled: true

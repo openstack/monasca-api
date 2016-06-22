@@ -15,18 +15,23 @@
 package monasca.api.infrastructure.persistence.hibernate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -149,175 +154,116 @@ public class AlarmSqlRepoImpl
 
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public List<Alarm> find(String tenantId, String alarmDefId, String metricName,
-                          Map<String, String> metricDimensions, AlarmState state,
-                          AlarmSeverity severity, String lifecycleState, String link,
-                          DateTime stateUpdatedStart, List<String> sortBy,
-                          String offset, int limit, boolean enforceLimit) {
+  public List<Alarm> find(final String tenantId,
+                          final String alarmDefId,
+                          final String metricName,
+                          final Map<String, String> metricDimensions,
+                          final AlarmState state,
+                          final List<AlarmSeverity> severities,
+                          final String lifecycleState,
+                          final String link,
+                          final DateTime stateUpdatedStart,
+                          final List<String> sortBy,
+                          final String offset,
+                          final int limit,
+                          final boolean enforceLimit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering");
+
     if (sortBy != null && !sortBy.isEmpty()) {
       throw Exceptions.unprocessableEntity(
           "Sort_by is not implemented for the hibernate database type");
     }
-    if (severity != null) {
-      throw Exceptions.unprocessableEntity(
-          "Severity filter is not implemented for the hibernate database type");
-    }
 
-    List<Alarm> alarms = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
-        lifecycleState, link, stateUpdatedStart, offset, (3 * limit / 2), enforceLimit);
+    Preconditions.checkNotNull(tenantId, "TenantId is required");
 
-    if (limit == 0 || !enforceLimit)
-      return alarms;
-
-    if (alarms.size() > limit) {
-      for (int i = alarms.size() - 1; i > limit; i--) {
-        alarms.remove(i);
-      }
-    } else if (alarms.size() > 0) {
-      while (alarms.size() < limit) {
-        List<Alarm> alarms2;
-        int diff = limit - alarms.size();
-        String offset2 = alarms.get(alarms.size() - 1).getId();
-        alarms2 = this.findInternal(tenantId, alarmDefId, metricName, metricDimensions, state,
-            lifecycleState, link, stateUpdatedStart, offset2, (2 * diff), enforceLimit);
-        if (alarms2.size() == 0)
-          break;
-        for (int i = 0; i < alarms2.size() && i < diff; i++)
-          alarms.add(alarms2.get(i));
-      }
-    }
-
-    return alarms;
-  }
-
-  private List<Alarm> findInternal(String tenantId, String alarmDefId, String metricName,
-                                   Map<String, String> metricDimensions, AlarmState state,
-                                   String lifecycleState, String link, DateTime stateUpdatedStart,
-                                   String offset, int limit, boolean enforceLimit) {
     Session session = null;
 
     List<Alarm> alarms = new LinkedList<>();
 
     try {
-      Query query;
-      session = sessionFactory.openSession();
-
-
-      StringBuilder
-          sbWhere =
-          new StringBuilder("(select a.id "
-                            + "from alarm as a, alarm_definition as ad "
-                            + "where ad.id = a.alarm_definition_id "
-                            + "  and ad.deleted_at is null "
-                            + "  and ad.tenant_id = :tenantId ");
-
-      if (alarmDefId != null) {
-        sbWhere.append(" and ad.id = :alarmDefId ");
-      }
-
-      if (metricName != null) {
-
-        sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
-                       + "inner join alarm_metric as am on am.alarm_id = a.id "
-                       + "inner join metric_definition_dimensions as mdd "
-                       + "  on mdd.id = am.metric_definition_dimensions_id "
-                       + "inner join (select distinct id from metric_definition "
-                       + "            where name = :metricName) as md "
-                       + "  on md.id = mdd.metric_definition_id ");
-
-        buildJoinClauseFor(metricDimensions, sbWhere);
-
-        sbWhere.append(")");
-
-      } else if (metricDimensions != null) {
-
-        sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
-                       + "inner join alarm_metric as am on am.alarm_id = a.id "
-                       + "inner join metric_definition_dimensions as mdd "
-                       + "  on mdd.id = am.metric_definition_dimensions_id ");
-
-        buildJoinClauseFor(metricDimensions, sbWhere);
-
-        sbWhere.append(")");
-
-      }
-
-      if (state != null) {
-        sbWhere.append(" and a.state = :state");
-      }
-
-      if (lifecycleState != null) {
-        sbWhere.append(" and a.lifecycle_state = :lifecycleState");
-      }
-
-      if (link != null) {
-        sbWhere.append(" and a.link = :link");
-      }
-
-      if (stateUpdatedStart != null) {
-        sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
-      }
-
-      if (offset != null) {
-        sbWhere.append(" and a.id > :offset");
-      }
-
-      sbWhere.append(" order by a.id ASC ");
-
-      if (enforceLimit && limit > 0) {
-        sbWhere.append(" limit :limit");
-      }
-
-      sbWhere.append(")");
-
-
-      String sql = String.format(FIND_ALARMS_SQL, sbWhere);
+      final Query query;
+      final String sql = String.format(FIND_ALARMS_SQL, this.getFindAlarmsSubQuery(
+          alarmDefId,
+          metricName,
+          metricDimensions,
+          state,
+          severities,
+          lifecycleState,
+          link,
+          stateUpdatedStart,
+          offset,
+          limit,
+          enforceLimit
+      ));
 
       try {
-        query = session.createSQLQuery(sql);
+        query = new Function<Session, Query>(){
+
+          @Nullable
+          @Override
+          public Query apply(@Nullable final Session input) {
+            assert input != null;
+            final Query query = input.createSQLQuery(sql);
+
+            query.setString("tenantId", tenantId);
+
+            if (alarmDefId != null) {
+              query.setString("alarmDefId", alarmDefId);
+            }
+
+            if (metricName != null) {
+              query.setString("metricName", metricName);
+            }
+
+            if (state != null) {
+              query.setString("state", state.name());
+            }
+
+            if (CollectionUtils.isNotEmpty(severities)) {
+              if (severities.size() == 1) {
+                query.setString("severity", severities.get(0).name());
+              } else {
+                for (int it = 0; it < severities.size(); it++) {
+                  query.setString(String.format("severity_%d", it), severities.get(it).name());
+                }
+              }
+            }
+
+            if (link != null) {
+              query.setString("link", link);
+            }
+
+            if (lifecycleState != null) {
+              query.setString("lifecycleState", lifecycleState);
+            }
+
+            if (stateUpdatedStart != null) {
+              query.setDate("stateUpdatedStart", stateUpdatedStart.toDateTime(DateTimeZone.UTC).toDate());
+            }
+
+            if (enforceLimit && limit > 0) {
+              query.setInteger("limit", limit + 1);
+            }
+
+            bindDimensionsToQuery(query, metricDimensions);
+
+            return query;
+          }
+
+        }.apply((session = sessionFactory.openSession()));
       } catch (Exception e) {
         logger.error("Failed to bind query {}, error is {}", sql, e.getMessage());
         throw new RuntimeException("Failed to bind query", e);
       }
 
-      query.setString("tenantId", tenantId);
-      if (alarmDefId != null) {
-        query.setString("alarmDefId", alarmDefId);
-      }
-
-      if (offset != null) {
-        query.setString("offset", offset);
-      }
-
-      if (metricName != null) {
-        query.setString("metricName", metricName);
-      }
-
-      if (state != null) {
-        query.setString("state", state.name());
-      }
-
-      if (link != null) {
-        query.setString("link", link);
-      }
-
-      if (lifecycleState != null) {
-        query.setString("lifecycleState", lifecycleState);
-      }
-
-      if (stateUpdatedStart != null) {
-        query.setDate("stateUpdatedStart", stateUpdatedStart.toDateTime(DateTimeZone.UTC).toDate());
-      }
-
-      if (enforceLimit && limit > 0) {
-        query.setInteger("limit", limit + 1);
-      }
-
-      bindDimensionsToQuery(query, metricDimensions);
-
       List<Object[]> alarmList = (List<Object[]>) query.list();
+
+      if(alarmList.isEmpty()){
+        return Collections.emptyList();
+      }
+
       alarms = createAlarms(alarmList);
 
     } finally {
@@ -326,6 +272,104 @@ public class AlarmSqlRepoImpl
       }
     }
     return alarms;
+
+  }
+
+  private String getFindAlarmsSubQuery(final String alarmDefId,
+                                       final String metricName,
+                                       final Map<String, String> metricDimensions,
+                                       final AlarmState state,
+                                       final List<AlarmSeverity> severities,
+                                       final String lifecycleState,
+                                       final String link,
+                                       final DateTime stateUpdatedStart,
+                                       final String offset,
+                                       final int limit,
+                                       final boolean enforceLimit) {
+    final StringBuilder
+        sbWhere =
+        new StringBuilder("(select distinct a.id "
+            + "from alarm as a, alarm_definition as ad "
+            + "where ad.id = a.alarm_definition_id "
+            + "  and ad.deleted_at is null "
+            + "  and ad.tenant_id = :tenantId ");
+
+    if (alarmDefId != null) {
+      sbWhere.append(" and ad.id = :alarmDefId ");
+    }
+
+    if (metricName != null) {
+
+      sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
+          + "inner join alarm_metric as am on am.alarm_id = a.id "
+          + "inner join metric_definition_dimensions as mdd "
+          + "  on mdd.id = am.metric_definition_dimensions_id "
+          + "inner join (select distinct id from metric_definition "
+          + "            where name = :metricName) as md "
+          + "  on md.id = mdd.metric_definition_id ");
+
+      buildJoinClauseFor(metricDimensions, sbWhere);
+
+      sbWhere.append(")");
+
+    } else if (metricDimensions != null) {
+
+      sbWhere.append(" and a.id in (select distinct a.id from alarm as a "
+          + "inner join alarm_metric as am on am.alarm_id = a.id "
+          + "inner join metric_definition_dimensions as mdd "
+          + "  on mdd.id = am.metric_definition_dimensions_id ");
+
+      buildJoinClauseFor(metricDimensions, sbWhere);
+
+      sbWhere.append(")");
+
+    }
+
+    if (state != null) {
+      sbWhere.append(" and a.state = :state");
+    }
+
+    if (CollectionUtils.isNotEmpty(severities)) {
+      if (severities.size() == 1) {
+        sbWhere.append(" and ad.severity = :severity");
+      } else {
+        sbWhere.append(" and (");
+        for (int i = 0; i < severities.size(); i++) {
+          sbWhere.append("ad.severity = :severity_").append(i);
+          if (i < severities.size() - 1) {
+            sbWhere.append(" or ");
+          }
+        }
+        sbWhere.append(")");
+      }
+    }
+
+    if (lifecycleState != null) {
+      sbWhere.append(" and a.lifecycle_state = :lifecycleState");
+    }
+
+    if (link != null) {
+      sbWhere.append(" and a.link = :link");
+    }
+
+    if (stateUpdatedStart != null) {
+      sbWhere.append(" and a.state_updated_at >= :stateUpdatedStart");
+    }
+
+    sbWhere.append(" order by a.id ASC ");
+
+    if (enforceLimit && limit > 0) {
+      sbWhere.append(" limit :limit");
+    }
+    if (offset != null) {
+      sbWhere.append(" offset ");
+      sbWhere.append(offset);
+      sbWhere.append(' ');
+    }
+
+    sbWhere.append(")");
+
+    return sbWhere.toString();
   }
 
   private List<Alarm> createAlarms(List<Object[]> alarmList) {
@@ -391,10 +435,7 @@ public class AlarmSqlRepoImpl
     return dimensionSetId;
   }
 
-  private void bindDimensionsToQuery(
-      Query query,
-      Map<String, String> dimensions) {
-
+  private void bindDimensionsToQuery(Query query, Map<String, String> dimensions) {
     if (dimensions != null) {
       int i = 0;
       for (Iterator<Map.Entry<String, String>> it = dimensions.entrySet().iterator(); it.hasNext(); i++) {
@@ -569,7 +610,7 @@ public class AlarmSqlRepoImpl
   @Override
   public AlarmCount getAlarmsCount(String tenantId, String alarmDefId, String metricName,
                                    Map<String, String> metricDimensions, AlarmState state,
-                                   AlarmSeverity severity, String lifecycleState, String link,
+                                   List<AlarmSeverity> severities, String lifecycleState, String link,
                                    DateTime stateUpdatedStart, List<String> groupBy,
                                    String offset, int limit) {
     // Not Implemented

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015 Robin Hood
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +75,7 @@ def create_nm_model(metadata=None):
                  Column('name', String(250)),
                  Column('type', String(20)),
                  Column('address', String(512)),
+                 Column('period', Integer),
                  Column('created_at', DateTime),
                  Column('updated_at', DateTime))
 
@@ -126,6 +128,7 @@ def create_sad_model(metadata=None):
                  Column('threshold', Float),
                  Column('period', Integer),
                  Column('periods', Integer),
+                 Column('is_deterministic', Boolean),
                  Column('created_at', DateTime),
                  Column('updated_at', DateTime))
 

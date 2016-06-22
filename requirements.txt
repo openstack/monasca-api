@@ -11,9 +11,7 @@ gunicorn>=19.1.0
 keystonemiddleware
 pastedeploy
 pbr
-python-dateutil
 six
-ujson>=1.33
 pyparsing
 voluptuous
 influxdb

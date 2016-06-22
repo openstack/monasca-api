@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2014, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -73,7 +73,8 @@ public class MeasurementResource {
       @QueryParam("offset") String offset,
       @QueryParam("limit") String limit,
       @QueryParam("tenant_id") String crossTenantId,
-      @QueryParam("merge_metrics") String mergeMetricsFlag) throws Exception {
+      @QueryParam("merge_metrics") String mergeMetricsFlag,
+      @QueryParam("group_by") String groupBy) throws Exception {
 
     // Validate query parameters
     DateTime startTime = Validation.parseAndValidateDate(startTimeStr, "start_time", true);
@@ -85,6 +86,7 @@ public class MeasurementResource {
               .parseAndValidateDimensions(dimensionsStr);
     MetricNameValidation.validate(name, true);
     Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
+    Validation.validateMetricsGroupBy(groupBy);
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 
@@ -96,7 +98,8 @@ public class MeasurementResource {
         endTime,
         offset,
         paging_limit,
-        mergeMetricsFlagBool
+        mergeMetricsFlagBool,
+        groupBy
     );
     return Links.paginateMeasurements(paging_limit, resources, uriInfo);
   }

@@ -16,6 +16,7 @@ package monasca.api.infrastructure.persistence.vertica;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
 import monasca.api.resource.exception.Exceptions;
+import monasca.api.ApiConfig;
 import monasca.common.model.metric.MetricDefinition;
 
 import org.apache.commons.codec.DecoderException;
@@ -44,50 +45,45 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       logger =
       LoggerFactory.getLogger(MetricDefinitionVerticaRepoImpl.class);
 
-  private static final String
-      FIND_METRIC_DEFS_SQL =
-      "SELECT defDims.id as defDimsId, def.name, dims.name as dName, dims.value AS dValue "
-      + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
-      // Outer join needed in case there are no dimensions for a definition.
-      + "LEFT OUTER JOIN MonMetrics.Dimensions dims ON dims.dimension_set_id = defDims"
-      + ".dimension_set_id WHERE def.id = defDims.definition_id "
-      + "and def.tenant_id = :tenantId "
-      + "%s " // Name goes here.
-      + "%s " // Offset goes here.
+  private static final String METRIC_DEF_SUB_QUERY =
+      "SELECT defDimsSub.id "
+      + "FROM MonMetrics.Definitions defSub "
+      + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON defSub.id = defDimsSub.definition_id "
+      + "WHERE defSub.tenant_id = :tenantId "
+      + "%s " // Name goes here
+      + "%s " // Offset goes here
       + "%s " // Dimensions and clause goes here
-      + "%s " // Optional timestamp qualifier goes here
-      + "ORDER BY defDims.id ASC";
+      + "%s " // Time qualifier goes here
+      + "GROUP BY defDimsSub.id "
+      + "ORDER BY defDimsSub.id ASC "
+      + "%s "; // limit goes here
 
-  private static final String
-      FIND_METRIC_NAMES_SQL =
-      "SELECT distinct def.id, def.name "
+  private static final String FIND_METRIC_NAMES_SQL =
+      "SELECT %s distinct def.id, def.name "
       + "FROM MonMetrics.Definitions def "
       + "WHERE def.id IN (%s) " // Subselect goes here
       + "ORDER BY def.id ASC ";
 
-  private static final String
-      METRIC_NAMES_SUB_SELECT =
+  private static final String METRIC_NAMES_SUB_SELECT =
       "SELECT distinct MAX(defSub.id) as max_id " // The aggregation function gives us one id per name
-      + "FROM  MonMetrics.Definitions defSub, MonMetrics.DefinitionDimensions defDimsSub "
-      + "WHERE defDimsSub.definition_id = defSub.id "
-      + "AND defSub.tenant_id = :tenantId "
+      + "FROM  MonMetrics.Definitions defSub "
+      + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON defDimsSub.definition_id = defSub.id "
+      + "WHERE defSub.tenant_id = :tenantId "
       + "%s " // Offset goes here.
       + "%s " // Dimensions and clause goes here
       + "GROUP BY defSub.name "   // This is to reduce the (id, name) sets to only include unique names
       + "ORDER BY max_id ASC %s"; // Limit goes here.
 
-  private static final String
-      DEFDIM_IDS_SELECT =
-      "SELECT defDims.id "
+  private static final String DEFDIM_IDS_SELECT =
+      "SELECT %s to_hex(defDims.id) AS id "
       + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
       + "WHERE defDims.definition_id = def.id "
       + "AND def.tenant_id = :tenantId "
       + "%s "   // Name clause here
       + "%s;";  // Dimensions and clause goes here
 
-  private static final String
-      MEASUREMENT_AND_CLAUSE =
-      "AND defDims.id IN ("
+  private static final String MEASUREMENT_AND_CLAUSE =
+      "AND defDimsSub.id IN ("
       + "SELECT definition_dimensions_id FROM MonMetrics.Measurements "
       + "WHERE to_hex(definition_dimensions_id) "
       + "%s "    // List of definition dimension ids here
@@ -97,11 +93,13 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
   private final DBI db;
 
+  private final String dbHint;
+
   @Inject
-  public MetricDefinitionVerticaRepoImpl(@Named("vertica") DBI db) {
-
+  public MetricDefinitionVerticaRepoImpl(@Named("vertica") DBI db, ApiConfig config)
+  {
     this.db = db;
-
+    this.dbHint = config.vertica.dbHint;
   }
 
   @Override
@@ -152,11 +150,10 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
         String.format(METRIC_NAMES_SUB_SELECT,
                       offsetPart,
                       MetricQueries.buildDimensionAndClause(dimensions,
-                                                            TABLE_TO_JOIN_DIMENSIONS_ON,
-                                                            0), // No limit on dim ids
+                                                            TABLE_TO_JOIN_DIMENSIONS_ON),
                       limitPart);
 
-    String sql = String.format(FIND_METRIC_NAMES_SQL, defSubSelect);
+    String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, defSubSelect);
 
     try (Handle h = db.open()) {
 
@@ -200,21 +197,21 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     List<MetricDefinition> metricDefs = new ArrayList<>(rows.size());
 
-    byte[] currentDefDimId = null;
+    String currentDefDimId = null;
 
     Map<String, String> dims = null;
 
     for (Map<String, Object> row : rows) {
 
-      byte[] defDimId = (byte[]) row.get("defdimsid");
+      String defDimId = (String) row.get("defDimsId");
 
       String metricName = (String) row.get("name");
 
-      String dimName = (String) row.get("dname");
+      String dimName = (String) row.get("dName");
 
-      String dimValue = (String) row.get("dvalue");
+      String dimValue = (String) row.get("dValue");
 
-      if (defDimId == null || !Arrays.equals(currentDefDimId, defDimId)) {
+      if (defDimId == null || !defDimId.equals(currentDefDimId)) {
 
         currentDefDimId = defDimId;
 
@@ -227,7 +224,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
         }
 
         MetricDefinition m = new MetricDefinition(metricName, dims);
-        m.setId(Hex.encodeHexString(defDimId));
+        m.setId(defDimId);
         metricDefs.add(m);
 
 
@@ -254,7 +251,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     if (name != null && !name.isEmpty()) {
 
-      namePart = " and def.name = :name ";
+      namePart = " and defSub.name = :name ";
 
     }
 
@@ -262,7 +259,15 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      offsetPart = " and defDims.id > :offset ";
+      offsetPart = " and defDimsSub.id > :offset ";
+
+    }
+
+    String limitPart = "";
+
+    if (limit > 0) {
+
+      limitPart = "limit " + Integer.toString(limit + 1);
 
     }
 
@@ -272,10 +277,16 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       String timeInClause = createTimeInClause(h, startTime, endTime, tenantId, name, dimensions);
 
       String sql =
-        String.format(FIND_METRIC_DEFS_SQL,
-                      namePart, offsetPart,
-                      MetricQueries.buildDimensionAndClause(dimensions, "defDims", limit),
-                      timeInClause);
+        String.format(MetricQueries.FIND_METRIC_DEFS_SQL,
+                      this.dbHint,
+                      String.format(METRIC_DEF_SUB_QUERY,
+                                    namePart,
+                                    offsetPart,
+                                    MetricQueries.buildDimensionAndClause(dimensions,
+                                                                          TABLE_TO_JOIN_DIMENSIONS_ON),
+                                    timeInClause,
+                                    limitPart)
+                      );
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
@@ -327,7 +338,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       return "";
     }
 
-    Set<byte[]> defDimIdSet = new HashSet<>();
+    Set<String> defDimIdSet = new HashSet<>();
 
     String namePart = "";
 
@@ -337,8 +348,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     String defDimSql = String.format(
         DEFDIM_IDS_SELECT,
+        this.dbHint,
         namePart,
-        MetricQueries.buildDimensionAndClause(dimensions, "defDims", 0));
+        MetricQueries.buildDimensionAndClause(dimensions, "defDims"));
 
     Query<Map<String, Object>> query = dbHandle.createQuery(defDimSql).bind("tenantId", tenantId);
 
@@ -351,7 +363,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
     List<Map<String, Object>> rows = query.list();
 
     for (Map<String, Object> row : rows) {
-      byte[] defDimId = (byte[]) row.get("id");
+      String defDimId = (String) row.get("id");
       defDimIdSet.add(defDimId);
     }
 

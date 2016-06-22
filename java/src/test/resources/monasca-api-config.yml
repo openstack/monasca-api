@@ -10,9 +10,11 @@ metricsTopic: metrics
 # Topic for publishing domain events to
 eventsTopic: events
 
+validNotificationPeriods:
+  - 60
+
 databaseConfiguration:
-# vertica | influxdb
-  #databaseType: influxdb
+  # vertica | influxdb
   databaseType: influxdb
 
 kafka:
@@ -44,6 +46,14 @@ mysql:
 #   minSize: 4
 #   maxSize: 32
 #   checkConnectionWhileIdle: false
+#   #
+#   # vertica database hint to be added to SELECT
+#   # statements.  For example, the hint below is used
+#   # to tell vertica that the query can be satisfied
+#   # locally (replicated projection).
+#   #
+#   # dbHint: "/*+KV(01)*/"
+#   dbHint: ""
 
 
 influxDB:

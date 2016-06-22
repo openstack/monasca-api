@@ -59,6 +59,7 @@ CREATE TABLE `sub_alarm_definition` (
   `threshold` double NOT NULL,
   `period` int(11) NOT NULL,
   `periods` int(11) NOT NULL,
+  `is_deterministic` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)

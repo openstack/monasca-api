@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -55,16 +55,16 @@ public final class AlarmValidation {
             .unprocessableEntity("Alarm definition cannot have Duplicate alarm notification methods");
       }
     }
-    if (okActions != null)
-      for (String action : okActions) {
+    if (okActions != null) {
+      for (String action : okActions)
         if (action.length() > 50)
           throw Exceptions
               .unprocessableEntity("Ok action %s must be 50 characters or less", action);
-        if (checkForDuplicateNotificationMethodsInAlarmDef(okActions)) {
-          throw Exceptions
-              .unprocessableEntity("Alarm definition cannot have Duplicate OK notification methods");
-        }
+      if (checkForDuplicateNotificationMethodsInAlarmDef(okActions)) {
+        throw Exceptions
+            .unprocessableEntity("Alarm definition cannot have Duplicate OK notification methods");
       }
+    }
     if (undeterminedActions != null) {
       for (String action : undeterminedActions)
         if (action.length() > 50)

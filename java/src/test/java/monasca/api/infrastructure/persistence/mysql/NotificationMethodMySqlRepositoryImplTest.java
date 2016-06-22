@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -67,8 +67,15 @@ public class NotificationMethodMySqlRepositoryImplTest {
     .execute("insert into notification_method (id, tenant_id, name, type, address, created_at, updated_at) values ('124', '444', 'OtherEmail', 'EMAIL', 'a@b', NOW(), NOW())");
   }
 
-  public void shouldCreate() {
-    NotificationMethod nmA = repo.create("555", "MyEmail", NotificationMethodType.EMAIL, "a@b");
+  public void shouldCreateEmail() {
+    NotificationMethod nmA = repo.create("555", "MyEmail", NotificationMethodType.EMAIL, "a@b", 0);
+    NotificationMethod nmB = repo.findById("555", nmA.getId());
+
+    assertEquals(nmA, nmB);
+  }
+
+  public void shouldCreateWebhookNonZeroPeriod() {
+    NotificationMethod nmA = repo.create("555", "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 60);
     NotificationMethod nmB = repo.findById("555", nmA.getId());
 
     assertEquals(nmA, nmB);
@@ -89,18 +96,26 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<NotificationMethod> nms = repo.find("444", null, 1);
+    List<NotificationMethod> nms = repo.find("444", null, null, 1);
 
     assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MyEmail",
-        NotificationMethodType.EMAIL, "a@b"),new NotificationMethod("124", "OtherEmail",
-                NotificationMethodType.EMAIL, "a@b")));
+        NotificationMethodType.EMAIL, "a@b", 0),new NotificationMethod("124", "OtherEmail",
+                NotificationMethodType.EMAIL, "a@b", 0)));
   }
 
   public void shouldUpdate() {
-    repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc");
+    repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc", 0);
     NotificationMethod nm = repo.findById("444", "123");
 
-    assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc"));
+    assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc", 0));
+  }
+
+  public void shouldUpdateWebhookWithNonZeroPeriod() {
+    NotificationMethod nmOriginal = repo.create("555", "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 0);
+    repo.update("555", nmOriginal.getId(), "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 60);
+    NotificationMethod nmUpdated = repo.findById("555", nmOriginal.getId());
+
+    assertEquals(nmUpdated.getPeriod(), 60);
   }
 
   public void shouldDeleteById() {
@@ -114,16 +129,16 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldUpdateDuplicateWithSameValues() {
-      repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc");
+      repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc", 0);
       NotificationMethod nm = repo.findById("444", "123");
 
-      assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc"));
+      assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc", 0));
     }
 
   @Test(expectedExceptions = EntityExistsException.class)
   public void shouldNotUpdateDuplicateWithSameName() {
 
-      repo.update("444", "124", "MyEmail", NotificationMethodType.EMAIL, "abc");
+      repo.update("444", "124", "MyEmail", NotificationMethodType.EMAIL, "abc", 0);
     }
 
 }

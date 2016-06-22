@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.inject.Named;
 
 import monasca.api.infrastructure.persistence.Utils;
+import monasca.common.model.alarm.AlarmSeverity;
 
 public class MySQLUtils
     extends Utils {
@@ -78,6 +79,29 @@ public class MySQLUtils
         query.bind("dname" + i, entry.getKey());
         query.bind("dvalue" + i, entry.getValue());
         i++;
+      }
+    }
+  }
+
+  public static String buildSeverityAndClause(List<AlarmSeverity> severities) {
+    StringBuilder sbWhere = new StringBuilder();
+    if (severities != null && !severities.isEmpty()) {
+      sbWhere.append(" and (");
+      for (int i = 0; i < severities.size(); i++) {
+        sbWhere.append("ad.severity = :severity").append(i);
+        if (i < severities.size() - 1) {
+          sbWhere.append(" or ");
+        }
+      }
+      sbWhere.append(") ");
+    }
+    return sbWhere.toString();
+  }
+
+  public static void bindSeverityToQuery(Query query, List<AlarmSeverity> severities) {
+    if (severities != null && !severities.isEmpty()) {
+      for (int i = 0; i < severities.size(); i++) {
+        query.bind("severity" + String.valueOf(i), severities.get(i).name());
       }
     }
   }

@@ -17,6 +17,7 @@ package monasca.api.resource;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -57,7 +58,9 @@ import com.sun.jersey.api.client.ClientResponse;
 @Test
 public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   private String expression;
+  private String detExpression;
   private AlarmDefinition alarm;
+  private AlarmDefinition detAlarm;
   private AlarmDefinition alarmItem;
   private AlarmDefinitionService service;
   private AlarmDefinitionRepo repo;
@@ -69,6 +72,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     super.setupResources();
 
     expression = "avg(disk_read_ops{service=hpcs.compute, instance_id=937}) >= 90";
+    detExpression = "count(log.error{service=test,instance_id=2},deterministic) >= 10 times 10";
     List<String> matchBy = Arrays.asList("service", "instance_id");
     alarmItem =
         new AlarmDefinition("123", "Disk Exceeds 1k Operations", null, "LOW", expression,
@@ -76,20 +80,30 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     alarmActions = new ArrayList<String>();
     alarmActions.add("29387234");
     alarmActions.add("77778687");
+
     alarm =
         new AlarmDefinition("123", "Disk Exceeds 1k Operations", null, "LOW", expression, matchBy,
             true, alarmActions, null, null);
+    detAlarm =
+        new AlarmDefinition("456", "log.error", null, "LOW", detExpression, matchBy,
+            true, alarmActions, null, null);
 
     service = mock(AlarmDefinitionService.class);
+
     when(
         service.create(eq("abc"), eq("Disk Exceeds 1k Operations"), any(String.class), eq("LOW"),
             eq(expression), eq(AlarmExpression.of(expression)), eq(matchBy), any(List.class),
             any(List.class), any(List.class))).thenReturn(alarm);
+    when(
+        service.create(eq("abc"), eq("log.error"), any(String.class), eq("LOW"),
+            eq(detExpression), eq(AlarmExpression.of(detExpression)), eq(matchBy), any(List.class),
+            any(List.class), any(List.class))).thenReturn(detAlarm);
 
     repo = mock(AlarmDefinitionRepo.class);
     when(repo.findById(eq("abc"), eq("123"))).thenReturn(alarm);
-    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()),
-                   (List<String>) anyList(), anyString(), anyInt())).thenReturn(
+    when(repo.findById(eq("abc"), eq("456"))).thenReturn(detAlarm);
+    when(repo.find(anyString(), anyString(), (Map<String, String>) anyMap(), anyListOf(
+        AlarmSeverity.class), (List<String>) anyList(), anyString(), anyInt())).thenReturn(
         Arrays.asList(alarmItem));
 
     addResources(new AlarmDefinitionResource(service, repo, new PersistUtils()));
@@ -110,6 +124,31 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
                            eq("LOW"), eq(expression), eq(AlarmExpression.of(expression)),
                            eq(Arrays.asList("service", "instance_id")), any(List.class),
                            any(List.class), any(List.class));
+  }
+
+  public void shouldCreateDeterministic() {
+    final CreateAlarmDefinitionCommand request = new CreateAlarmDefinitionCommand(
+        "log.error",
+        null,
+        detExpression,
+        Arrays.asList("service", "instance_id"),
+        "LOW",
+        alarmActions,
+        null,
+        null
+    );
+    final ClientResponse response = this.createResponseFor(request);
+
+    assertEquals(response.getStatus(), 201);
+    AlarmDefinition newAlarm = response.getEntity(AlarmDefinition.class);
+    String location = response.getHeaders().get("Location").get(0);
+    assertEquals(location, "/v2.0/alarm-definitions/" + newAlarm.getId());
+    assertEquals(newAlarm, detAlarm);
+
+    verify(service).create(eq("abc"), eq("log.error"), any(String.class),
+        eq("LOW"), eq(detExpression), eq(AlarmExpression.of(detExpression)),
+        eq(Arrays.asList("service", "instance_id")), any(List.class),
+        any(List.class), any(List.class));
   }
 
   public void shouldUpdate() {
@@ -279,7 +318,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
 
     assertEquals(alarms, Arrays.asList(alarmItem));
 
-    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()),
+    verify(repo).find(eq("abc"), anyString(), (Map<String, String>) anyMap(), anyListOf(AlarmSeverity.class),
                       (List<String>) anyList(),
                       anyString(), anyInt());
   }
@@ -312,7 +351,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
     List<AlarmDefinition> alarms = Arrays.asList(ad);
 
     assertEquals(alarms, Arrays.asList(alarmItem));
-    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), AlarmSeverity.fromString(anyString()), (List<String>) anyList(),
+    verify(repo).find(eq("abc"), eq("foo bar baz"), (Map<String, String>) anyMap(), anyListOf(AlarmSeverity.class), (List<String>) anyList(),
                       anyString(), anyInt());
   }
 
@@ -358,7 +397,7 @@ public class AlarmDefinitionResourceTest extends AbstractMonApiResourceTest {
   public void should500OnInternalException() {
     doThrow(new RuntimeException("")).when(repo).find(anyString(), anyString(),
 
-        (Map<String, String>) anyObject(), AlarmSeverity.fromString(anyString()), (List<String>) anyList(), anyString(), anyInt());
+        (Map<String, String>) anyObject(), anyListOf(AlarmSeverity.class), (List<String>) anyList(), anyString(), anyInt());
 
     try {
       client().resource("/v2.0/alarm-definitions").header("X-Tenant-Id", "abc").get(List.class);

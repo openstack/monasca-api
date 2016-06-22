@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,6 +25,7 @@ from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, delete, insert
 from sqlalchemy import select, text, bindparam, null, literal_column
+from sqlalchemy import or_
 
 
 LOG = log.getLogger(__name__)
@@ -187,6 +188,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                                              threshold=bindparam('b_threshold'),
                                                              period=bindparam('b_period'),
                                                              periods=bindparam('b_periods'),
+                                                             is_deterministic=bindparam('b_is_deterministic'),
                                                              created_at=bindparam('b_created_at'),
                                                              updated_at=bindparam('b_updated_at')))
 
@@ -209,6 +211,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                                                   .values(
                                                                       operator=bindparam('b_operator'),
                                                                       threshold=bindparam('b_threshold'),
+                                                                      is_deterministic=bindparam('b_is_deterministic'),
                                                                       updated_at=bindparam('b_updated_at')))
 
         b_ad_id = bindparam('b_alarm_definition_id'),
@@ -222,6 +225,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                                                       threshold=bindparam('b_threshold'),
                                                                       period=bindparam('b_period'),
                                                                       periods=bindparam('b_periods'),
+                                                                      is_deterministic=bindparam('b_is_deterministic'),
                                                                       created_at=bindparam('b_created_at'),
                                                                       updated_at=bindparam('b_updated_at')))
 
@@ -314,12 +318,15 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 parms['b_name'] = name.encode('utf8')
 
             if severity:
-                query = query.where(ad.c.severity == bindparam('b_severity'))
-                parms['b_severity'] = severity.encode('utf8')
+                severities = severity.split('|')
+                query = query.where(
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                for i, s in enumerate(severities):
+                    parms['b_severity' + str(i)] = s.encode('utf8')
 
             order_columns = []
             if sort_by is not None:
-                order_columns = [literal_column(col) for col in sort_by]
+                order_columns = [literal_column('ad.' + col) for col in sort_by]
                 if 'id' not in sort_by:
                     order_columns.append(ad.c.id)
             else:
@@ -426,6 +433,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                              b_threshold=sub_expr.threshold.encode('utf8'),
                              b_period=sub_expr.period.encode('utf8'),
                              b_periods=sub_expr.periods.encode('utf8'),
+                             b_is_deterministic=sub_expr.deterministic,
                              b_created_at=now,
                              b_updated_at=now)
 
@@ -574,6 +582,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                     changed_sub_alarm_defs_by_id.iteritems()):
                 parms.append({'b_operator': sub_alarm_def.operator,
                               'b_threshold': sub_alarm_def.threshold,
+                              'b_is_deterministic': sub_alarm_def.deterministic,
                               'b_updated_at': now,
                               'b_id': sub_alarm_definition_id})
             if len(parms) > 0:
@@ -590,6 +599,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 threshold = str(sub_alarm_def.threshold).encode('utf8')
                 period = str(sub_alarm_def.period).encode('utf8')
                 periods = str(sub_alarm_def.periods).encode('utf8')
+                is_deterministic = sub_alarm_def.is_deterministic
                 parms.append({'b_id': sub_alarm_def.id,
                               'b_alarm_definition_id': adi,
                               'b_function': function,
@@ -598,6 +608,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                               'b_threshold': threshold,
                               'b_period': period,
                               'b_periods': periods,
+                              'b_is_deterministic': is_deterministic,
                               'b_created_at': now,
                               'b_updated_at': now})
 
@@ -754,7 +765,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             row = conn.execute(self.select_nm_query,
                                b_id=action.encode('utf8')).fetchone()
             if row is None:
-                raise exceptions.RepositoryException(
+                raise exceptions.InvalidUpdateException(
                     "Non-existent notification id {} submitted for {} "
                     "notification action".format(action.encode('utf8'),
                                                  alarm_state.encode('utf8')))

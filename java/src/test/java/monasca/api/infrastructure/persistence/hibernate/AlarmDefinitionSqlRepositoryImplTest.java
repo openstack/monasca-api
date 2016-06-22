@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
@@ -92,7 +93,7 @@ public class AlarmDefinitionSqlRepositoryImplTest {
     final AlarmDefinitionDb alarmDefinition123 = new AlarmDefinitionDb()
         .setTenantId("bob")
         .setName("90% CPU")
-        .setSeverity(AlarmSeverity.LOW)
+        .setSeverity(AlarmSeverity.HIGH)
         .setExpression("avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10")
         .setMatchBy("flavor_id,image_id")
         .setActionsEnabled(true);
@@ -188,7 +189,7 @@ public class AlarmDefinitionSqlRepositoryImplTest {
     session.close();
 
     alarmDef_123 =
-        new AlarmDefinition("123", "90% CPU", null, "LOW", "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
+        new AlarmDefinition("123", "90% CPU", null, "HIGH", "avg(hpcs.compute{flavor_id=777, image_id=888, metric_name=cpu, device=1}) > 10",
             Arrays.asList("flavor_id", "image_id"), true, Arrays.asList("29387234", "77778687"), Collections.<String>emptyList(),
             Collections.<String>emptyList());
     alarmDef_234 =
@@ -377,4 +378,22 @@ public class AlarmDefinitionSqlRepositoryImplTest {
   public void shouldFindThrowException() {
     repo.find("bob", null, null, null, Arrays.asList("severity", "state"), null, 1);
   }
+
+  public void shouldFilterBySeverity() {
+    List<AlarmDefinition> alarmDefinitions = repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.HIGH), null, null, 1);
+    AlarmDefinition alarmDefinition;
+
+    assertEquals(1, alarmDefinitions.size());
+    alarmDefinition = alarmDefinitions.get(0);
+
+    assertEquals(this.alarmDef_123, alarmDefinition);
+
+    alarmDefinitions = repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.LOW), null, null, 1);
+
+    assertEquals(1, alarmDefinitions.size());
+    alarmDefinition = alarmDefinitions.get(0);
+
+    assertEquals(this.alarmDef_234, alarmDefinition);
+  }
+
 }
