@@ -58,7 +58,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.WebApplicationException;
 
 @Test(groups = "orm")
 public class AlarmDefinitionSqlRepositoryImplTest {
@@ -397,9 +396,16 @@ public class AlarmDefinitionSqlRepositoryImplTest {
 
   }
 
-  @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
-  public void shouldFindThrowException() {
-    repo.find("bob", null, null, null, Arrays.asList("severity", "state"), null, 1);
+  public void shouldSortBy() {
+    // null sorts by will sort by ID
+    this.checkList(repo.find("bob", null, null, null, null, null, 0),
+        this.alarmDef_123, this.alarmDef_234);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("severity"), null, 0),
+        this.alarmDef_123, this.alarmDef_234);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("state", "severity"), null, 0),
+        this.alarmDef_234, this.alarmDef_123);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("name", "state", "severity"), null, 0),
+        this.alarmDef_234, this.alarmDef_123);
   }
 
   public void shouldFilterBySeverity() {

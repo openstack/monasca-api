@@ -347,64 +347,59 @@ public class AlarmSqlRepositoryImplTest {
 
   @Test(groups = "orm")
   public void shouldFind() {
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 1, true), alarm1, alarm2);
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 2, true), alarm1, alarm2, compoundAlarm);
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "1", 1, true), alarm2, compoundAlarm);
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "2", 1, true), compoundAlarm, alarm3);
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "3", 1, true), alarm3);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 1, true), alarm1, alarm2);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 2, true), alarm1, alarm2, alarm3);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "1", 1, true), alarm2, alarm3);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "2", 1, true), alarm3, compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, "3", 1, true), compoundAlarm);
 
-    checkList(repo.find("Not a tenant id", null, null, null, null, null, null, null, null, null, null, 1, false));
+    checkUnsortedList(repo.find("Not a tenant id", null, null, null, null, null, null, null, null, null, null, 1, false));
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, null, null, null, null, null, 1, false), compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, null, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, null, null, null, null, null, 1, false), compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, null, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, "cpu.idle_perc", null, null, null, null, null, null, null, null, 1, false), alarm1, alarm2, alarm3, compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("flavor_id", "222").build(), null, null, null, null,
+    checkUnsortedList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("flavor_id", "222").build(), null, null, null, null,
         null, null, null, 1, false), alarm1, alarm3);
 
-    checkList(
+    checkUnsortedList(
         repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("service", "monitoring").put("hostname", "roland")
             .build(), null, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), alarm2, compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), alarm2, compoundAlarm);
 
-    checkList(
+    checkUnsortedList(
         repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", ImmutableMap.<String, String>builder()
             .put("service", "monitoring").build(), null, null, null, null, null, null, null, 1, false), alarm1, alarm2);
 
-    checkList(repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, null, null, null, null, null, 1, false), alarm1,
+    checkUnsortedList(repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", null, null, null, null, null, null, null, null, 1, false), alarm1,
         alarm2, alarm3);
 
-    checkList(
+    checkUnsortedList(
         repo.find(TENANT_ID, compoundAlarm.getAlarmDefinition().getId(), null, null, AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false),
         compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), compoundAlarm);
+    checkUnsortedList(repo.find(TENANT_ID, null, "cpu.sys_mem", null, AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("service", "monitoring").build(),
+    checkUnsortedList(repo.find(TENANT_ID, null, "cpu.idle_perc", ImmutableMap.<String, String>builder().put("service", "monitoring").build(),
         AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), alarm2, compoundAlarm);
 
-    checkList(
+    checkUnsortedList(
         repo.find(TENANT_ID, alarm1.getAlarmDefinition().getId(), "cpu.idle_perc", ImmutableMap.<String, String>builder()
             .put("service", "monitoring").build(), AlarmState.UNDETERMINED, null, null, null, null, null, null, 1, false), alarm2);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, null, 0, false));
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, DateTime.now(UTC_TIMEZONE), null, null, 0, false));
 
-//    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
+//    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-15T00:00:00Z"), null, 0, false),
 //        compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, null, 1, false),
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, ISO_8601_FORMATTER.parseDateTime("2015-03-14T00:00:00Z"), null, null, 1, false),
         alarm1, alarm2, alarm3, compoundAlarm);
 
-  }
-
-  @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
-  public void shouldFindThrowException() {
-    repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Arrays.asList("severity", "state"), null, 1, true);
   }
 
   @Test(groups = "orm")
@@ -465,28 +460,57 @@ public class AlarmSqlRepositoryImplTest {
     repo.update(TENANT_ID, "Not a valid alarm id", AlarmState.UNDETERMINED, null, null);
   }
 
+  @Test(groups = "orm")
   public void shouldFilterBySeverity() {
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.LOW), null, null, null, null, null, 1, false),
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.LOW), null, null, null, null, null, 1, false),
         alarm1, alarm2, alarm3);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.HIGH), null, null, null, null, null, 1, false),
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.HIGH), null, null, null, null, null, 1, false),
         compoundAlarm);
 
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.LOW, AlarmSeverity.HIGH), null, null, null, null, null, 1, false),
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.LOW, AlarmSeverity.HIGH), null, null, null, null, null, 1, false),
         alarm1, alarm2, compoundAlarm, alarm3);
 
     // no alarms for those severities
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.CRITICAL), null, null, null, null, null, 1, false));
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.MEDIUM), null, null, null, null, null, 1, false));
-    checkList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.CRITICAL, AlarmSeverity.MEDIUM), null, null, null, null, null, 1, false));
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.CRITICAL), null, null, null, null, null, 1, false));
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.MEDIUM), null, null, null, null, null, 1, false));
+    checkUnsortedList(repo.find(TENANT_ID, null, null, null, null, Lists.newArrayList(AlarmSeverity.CRITICAL, AlarmSeverity.MEDIUM), null, null, null, null, null, 1, false));
   }
 
-  private void checkList(List<Alarm> found, Alarm... expected) {
+  @Test(groups = "orm")
+  public void shouldSortBy() {
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("state", "severity"), null, 1, false),
+        alarm1, alarm2, compoundAlarm, alarm3);
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("state desc", "severity"), null, 1, false),
+        alarm3, alarm2, compoundAlarm, alarm1);
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("state desc", "severity asc"), null, 1, false),
+        alarm3, alarm2, compoundAlarm, alarm1);
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("state desc", "severity desc"), null, 1, false),
+        alarm3, compoundAlarm, alarm2, alarm1);
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("severity"), null, 1, false),
+        alarm1, alarm2, alarm3, compoundAlarm);
+    checkSortedList(repo.find(TENANT_ID, null, null, null, null, null, null, null, null, Lists.newArrayList("severity desc", "alarm_id desc"), null, 1, false),
+        compoundAlarm, alarm3, alarm2, alarm1);
+  }
+
+ 
+
+  private void checkUnsortedList(List<Alarm> found, Alarm... expected) {
+    this.checkUnsortedList(found, false, expected);
+  }
+
+  private void checkSortedList(List<Alarm> found, Alarm... expected) {
+    this.checkUnsortedList(found, true, expected);
+  }
+
+  private void checkUnsortedList(List<Alarm> found, boolean sorted, Alarm... expected) {
     assertEquals(found.size(), expected.length);
     Alarm actual;
+    int actualIndex;
 
-    for (final Alarm alarm : expected) {
+    for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
+      final Alarm alarm = expected[expectedIndex];
       final Optional<Alarm> alarmOptional = FluentIterable
           .from(found)
           .firstMatch(new Predicate<Alarm>() {
@@ -499,6 +523,10 @@ public class AlarmSqlRepositoryImplTest {
       assertTrue(alarmOptional.isPresent());
 
       actual = alarmOptional.get();
+      if (sorted) {
+        actualIndex = found.indexOf(actual);
+        assertEquals(expectedIndex, actualIndex);
+      }
       assertEquals(actual, alarm, String.format("%s not equal to %s", actual, alarm));
     }
 
