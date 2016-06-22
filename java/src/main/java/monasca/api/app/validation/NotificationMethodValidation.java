@@ -48,7 +48,6 @@ public class NotificationMethodValidation {
                 }
                 if (convertedPeriod != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Email");
-                }
             } break;
             case WEBHOOK : {
                 if (!URL_VALIDATOR.isValid(address))
