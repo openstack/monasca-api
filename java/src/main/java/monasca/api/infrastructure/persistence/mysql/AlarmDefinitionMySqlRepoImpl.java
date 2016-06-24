@@ -283,7 +283,7 @@ public class AlarmDefinitionMySqlRepoImpl implements AlarmDefinitionRepo {
         // Need to convert the results appropriately based on type.
         Integer period = Conversions.variantToInteger(row.get("period"));
         Integer periods = Conversions.variantToInteger(row.get("periods"));
-        Boolean isDeterministic = (Boolean) row.get("is_deterministic");
+        Boolean isDeterministic = Conversions.variantToBoolean(row.get("is_deterministic"));
         Map<String, String> dimensions =
             DimensionQueries.dimensionsFor((String) row.get("dimensions"));
 
