@@ -1487,6 +1487,16 @@ function install_monasca_agent {
     sudo apt-get -y install libxml2-dev
     sudo apt-get -y install libxslt1-dev
 
+    if [[ ! -d "${MONASCA_BASE}"/python-monascaclient ]]; then
+
+        sudo git clone https://git.openstack.org/openstack/python-monascaclient "${MONASCA_BASE}"/python-monascaclient
+
+    fi
+
+    (cd "${MONASCA_BASE}"/python-monascaclient ; sudo python setup.py sdist)
+
+    MONASCA_CLIENT_SRC_DIST=$(ls -td "${MONASCA_BASE}"/python-monascaclient/dist/python-monascaclient*.tar.gz | head -1)
+
     if [[ ! -d "${MONASCA_BASE}"/monasca-agent ]]; then
 
         sudo git clone https://git.openstack.org/openstack/monasca-agent "${MONASCA_BASE}"/monasca-agent
@@ -1508,6 +1518,8 @@ function install_monasca_agent {
     pip_install --pre --allow-all-external --allow-unverified simport simport
 
     pip_install $MONASCA_AGENT_SRC_DIST
+
+    (cd /opt/monasca-agent ; ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
 
     (cd /opt/monasca-agent ; ./bin/pip install psutil==3.0.1)
 
