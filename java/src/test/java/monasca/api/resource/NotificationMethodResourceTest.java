@@ -208,20 +208,6 @@ public class NotificationMethodResourceTest extends AbstractMonApiResourceTest {
         "[address size must be between 1 and 512");
   }
 
-  public void should422OnNonIntPeriod() {
-    ClientResponse response =
-            client()
-                    .resource("/v2.0/notification-methods")
-                    .header("X-Tenant-Id", "abc")
-                    .header("Content-Type", MediaType.APPLICATION_JSON)
-                    .post(ClientResponse.class,
-                            new CreateNotificationMethodCommand("MyEmail", NotificationMethodType.EMAIL, "a@a.com", "not a int"));
-
-    String e = response.getEntity(String.class);
-    ErrorMessages.assertThat(e).matches("unprocessable_entity", 422,
-            "period (not a int) must be valid number");
-  }
-
   public void should422OnNonZeroPeriodForEmail() {
     ClientResponse response =
             client()

@@ -126,6 +126,25 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 
+    def patch_notification_method(self,
+                                   id,
+                                   name=None,
+                                   type=None,
+                                   address=None,
+                                   period=None):
+        uri = 'notification-methods/' + id
+        request_body = {}
+        if name is not None:
+            request_body['name'] = name
+        if type is not None:
+            request_body['type'] = type
+        if address is not None:
+            request_body['address'] = address
+        if period is not None:
+            request_body['period'] = period
+        resp, response_body = self.patch(uri, json.dumps(request_body))
+        return resp, json.loads(response_body)
+
     def create_alarm_definitions(self, alarm_definitions):
         uri = 'alarm-definitions'
         request_body = json.dumps(alarm_definitions)

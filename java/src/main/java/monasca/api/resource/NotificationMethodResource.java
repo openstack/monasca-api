@@ -39,11 +39,15 @@ import javax.ws.rs.core.UriInfo;
 
 import monasca.api.ApiConfig;
 import monasca.api.app.command.CreateNotificationMethodCommand;
+import monasca.api.app.command.PatchNotificationMethodCommand;
 import monasca.api.app.command.UpdateNotificationMethodCommand;
+import monasca.api.app.validation.NotificationMethodValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
+import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.infrastructure.persistence.PersistUtils;
+import monasca.api.resource.annotation.PATCH;
 
 /**
  * Notification Method resource implementation.
@@ -74,11 +78,10 @@ public class NotificationMethodResource {
   public Response create(@Context UriInfo uriInfo, @HeaderParam("X-Tenant-Id") String tenantId,
       @Valid CreateNotificationMethodCommand command) {
     command.validate(this.validPeriods);
-    int period = Validation.parseAndValidateNumber(command.period, "period");
 
     NotificationMethod notificationMethod =
         Links.hydrate(repo.create(tenantId, command.name, command.type,
-                command.address, period), uriInfo,
+                command.address, command.getConvertedPeriod()), uriInfo,
             false);
     return Response.created(URI.create(notificationMethod.getId())).entity(notificationMethod)
         .build();
@@ -123,12 +126,38 @@ public class NotificationMethodResource {
       @PathParam("notification_method_id") String notificationMethodId,
       @Valid UpdateNotificationMethodCommand command) {
     command.validate(this.validPeriods);
-    int period = Validation.parseAndValidateNumber(command.period, "period");
 
     return Links.hydrate(
         repo.update(tenantId, notificationMethodId, command.name, command.type,
-                command.address, period),
+                command.address, command.getConvertedPeriod()),
         uriInfo, true);
+  }
+
+  @PATCH
+  @Timed
+  @Path("/{notification_method_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public NotificationMethod patch(@Context UriInfo uriInfo,
+                                  @HeaderParam("X-Tenant-Id") String tenantId,
+                                  @PathParam("notification_method_id") String notificationMethodId,
+                                  @Valid PatchNotificationMethodCommand command) {
+    NotificationMethod originalNotificationMethod = repo.findById(tenantId, notificationMethodId);
+    String name = command.name == null ? originalNotificationMethod.getName()
+            : command.name;
+    NotificationMethodType type = command.type == null ? originalNotificationMethod.getType()
+            : command.type;
+    String address = command.address == null ? originalNotificationMethod.getAddress()
+            : command.address;
+    int period = command.period == null ? originalNotificationMethod.getPeriod()
+            : command.getConvertedPeriod();
+
+    NotificationMethodValidation.validate(type, address, period, this.validPeriods);
+
+    return Links.hydrate(
+            repo.update(tenantId, notificationMethodId, name, type,
+                    address, period),
+            uriInfo, true);
   }
 
   @DELETE
