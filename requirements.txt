@@ -18,6 +18,5 @@ influxdb
 eventlet
 kafka-python>=0.9.5,<1.0.0
 simplejson
-validate_email>=1.3
 monasca-common>=0.0.2
 sqlalchemy
