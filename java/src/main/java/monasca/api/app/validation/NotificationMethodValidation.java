@@ -25,7 +25,8 @@ import java.util.List;
 public class NotificationMethodValidation {
     private static final String[] SCHEMES = {"http","https"};
     // Allow QA to use the TLD .test. This is valid according to RFC-2606
-    private static final RegexValidator TEST_TLD_VALIDATOR = new RegexValidator(".+\\.test$");
+    // The UrlValidator does not take the port off of the authority so have to handle that
+    private static final RegexValidator TEST_TLD_VALIDATOR = new RegexValidator(".+\\.test(:[0-9]+)?$");
     private static final UrlValidator URL_VALIDATOR =
               new UrlValidator(SCHEMES,
                                TEST_TLD_VALIDATOR,

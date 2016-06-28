@@ -77,6 +77,38 @@ class TestNotificationMethods(base.BaseMonascaTest):
         self.assertEqual(204, resp.status)
 
     @test.attr(type="gate")
+    def test_create_notification_method_webhook_test_tld(self):
+        name = data_utils.rand_name('notification-')
+        notification = helpers.create_notification(name=name,
+                                                   type='WEBHOOK',
+                                                   address='http://mytest.test/webhook',
+                                                   period=60)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification)
+        self.assertEqual(201, resp.status)
+        id = response_body['id']
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id)
+        self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
+    def test_create_notification_method_webhook_test_tld_and_port(self):
+        name = data_utils.rand_name('notification-')
+        notification = helpers.create_notification(name=name,
+                                                   type='WEBHOOK',
+                                                   address='http://mytest.test:4533/webhook',
+                                                   period=60)
+        resp, response_body = self.monasca_client.create_notifications(
+            notification)
+        self.assertEqual(201, resp.status)
+        id = response_body['id']
+
+        resp, response_body = self.monasca_client.\
+            delete_notification_method(id)
+        self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_create_notification_method_with_no_name(self):
         notification = helpers.create_notification(name=None)
