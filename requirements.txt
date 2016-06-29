@@ -7,7 +7,6 @@ oslo.utils
 python-keystoneclient
 
 falcon
-gunicorn>=19.1.0
 keystonemiddleware
 pastedeploy
 pbr
