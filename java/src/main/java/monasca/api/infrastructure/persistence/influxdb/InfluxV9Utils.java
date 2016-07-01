@@ -291,4 +291,20 @@ public class InfluxV9Utils {
   public List<String> parseMultiOffset(String offsetStr) {
     return offsetSplitter.splitToList(offsetStr);
   }
+
+  public Map<String, String> getDimensions(String[] vals, String[] cols) {
+    Map<String, String> dims = new HashMap<>();
+    for (int i = 0; i < cols.length; ++i) {
+
+      // Dimension names that start with underscore are reserved. I.e., _key, _region, _tenant_id.
+      // Influxdb inserts _key.
+      // Monasca Persister inserts _region and _tenant_id.
+      if (!cols[i].startsWith("_")) {
+        if (!vals[i].equalsIgnoreCase("null")) {
+          dims.put(cols[i], vals[i]);
+        }
+      }
+    }
+    return dims;
+  }
 }

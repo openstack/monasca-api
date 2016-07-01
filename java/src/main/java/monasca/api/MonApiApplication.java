@@ -38,6 +38,7 @@ import monasca.api.infrastructure.servlet.PreAuthenticationFilter;
 import monasca.api.infrastructure.servlet.RoleAuthorizationFilter;
 import monasca.api.resource.AlarmDefinitionResource;
 import monasca.api.resource.AlarmResource;
+import monasca.api.resource.DimensionResource;
 import monasca.api.resource.MeasurementResource;
 import monasca.api.resource.MetricResource;
 import monasca.api.resource.NotificationMethodResource;
@@ -107,6 +108,7 @@ public class MonApiApplication extends Application<ApiConfig> {
     environment.jersey().register(Injector.getInstance(VersionResource.class));
     environment.jersey().register(Injector.getInstance(AlarmDefinitionResource.class));
     environment.jersey().register(Injector.getInstance(AlarmResource.class));
+    environment.jersey().register(Injector.getInstance(DimensionResource.class));
     environment.jersey().register(Injector.getInstance(MetricResource.class));
     environment.jersey().register(Injector.getInstance(MeasurementResource.class));
     environment.jersey().register(Injector.getInstance(StatisticResource.class));

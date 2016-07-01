@@ -22,6 +22,7 @@ import monasca.api.ApiConfig;
 import monasca.api.domain.model.alarm.AlarmRepo;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.domain.model.alarmstatehistory.AlarmStateHistoryRepo;
+import monasca.api.domain.model.dimension.DimensionRepo;
 import monasca.api.domain.model.measurement.MeasurementRepo;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
@@ -29,6 +30,7 @@ import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.infrastructure.persistence.Utils;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9AlarmStateHistoryRepo;
+import monasca.api.infrastructure.persistence.influxdb.InfluxV9DimensionRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9MeasurementRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9MetricDefinitionRepo;
 import monasca.api.infrastructure.persistence.influxdb.InfluxV9RepoReader;
@@ -43,6 +45,7 @@ import monasca.api.infrastructure.persistence.hibernate.AlarmSqlRepoImpl;
 import monasca.api.infrastructure.persistence.hibernate.NotificationMethodSqlRepoImpl;
 import monasca.api.infrastructure.persistence.hibernate.AlarmHibernateUtils;
 import monasca.api.infrastructure.persistence.vertica.AlarmStateHistoryVerticaRepoImpl;
+import monasca.api.infrastructure.persistence.vertica.DimensionVerticaRepoImpl;
 import monasca.api.infrastructure.persistence.vertica.MeasurementVerticaRepoImpl;
 import monasca.api.infrastructure.persistence.vertica.MetricDefinitionVerticaRepoImpl;
 import monasca.api.infrastructure.persistence.vertica.StatisticVerticaRepoImpl;
@@ -84,6 +87,7 @@ public class InfrastructureModule extends AbstractModule {
     if (config.databaseConfiguration.getDatabaseType().trim().equalsIgnoreCase(VERTICA)) {
 
       bind(AlarmStateHistoryRepo.class).to(AlarmStateHistoryVerticaRepoImpl.class).in(Singleton.class);
+      bind(DimensionRepo.class).to(DimensionVerticaRepoImpl.class).in(Singleton.class);
       bind(MetricDefinitionRepo.class).to(MetricDefinitionVerticaRepoImpl.class).in(Singleton.class);
       bind(MeasurementRepo.class).to(MeasurementVerticaRepoImpl.class).in(Singleton.class);
       bind(StatisticRepo.class).to(StatisticVerticaRepoImpl.class).in(Singleton.class);
@@ -103,6 +107,7 @@ public class InfrastructureModule extends AbstractModule {
       bind(InfluxV9Utils.class).in(Singleton.class);
       bind(InfluxV9RepoReader.class).in(Singleton.class);
       bind(AlarmStateHistoryRepo.class).to(InfluxV9AlarmStateHistoryRepo.class).in(Singleton.class);
+      bind(DimensionRepo.class).to(InfluxV9DimensionRepo.class).in(Singleton.class);
       bind(MetricDefinitionRepo.class).to(InfluxV9MetricDefinitionRepo.class).in(Singleton.class);
       bind(MeasurementRepo.class).to(InfluxV9MeasurementRepo.class).in(Singleton.class);
       bind(StatisticRepo.class).to(InfluxV9StatisticRepo.class).in(Singleton.class);
