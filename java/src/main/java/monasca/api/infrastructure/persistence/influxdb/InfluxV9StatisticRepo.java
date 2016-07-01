@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 
 import monasca.api.ApiConfig;
 import monasca.api.domain.exception.MultipleMetricsException;
+import monasca.api.domain.model.measurement.Measurements;
 import monasca.api.domain.model.statistic.StatisticRepo;
 import monasca.api.domain.model.statistic.Statistics;
 
@@ -174,12 +175,12 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
           List<Object> values = buildValsList(valueObjects);
 
           if (((String) values.get(0)).compareTo(offsetTimestamp) > 0 || index > offsetId) {
-            statistics.addStatistics(values);
+            statistics.addMeasurement(values);
             remaining_limit--;
           }
         }
 
-        if (statistics.getStatistics().size() > 0) {
+        if (statistics.getMeasurements().size() > 0) {
           statisticsList.add(statistics);
         }
         index++;

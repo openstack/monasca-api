@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -71,40 +70,37 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       Boolean mergeMetricsFlag,
       String groupBy) throws MultipleMetricsException {
 
-    List<Statistics> statisticsList = new ArrayList<>();
+    Map<String, Statistics> statisticsMap = new HashMap<>();
 
     // Sort the column names so that they match the order of the statistics in the results.
     List<String> statisticsColumns = createColumnsList(statisticsCols);
 
     try (Handle h = db.open()) {
 
-      Map<String, Statistics> byteMap = findDefIds(h, tenantId, name, dimensions);
+      if (!"*".equals(groupBy) && !Boolean.TRUE.equals(mergeMetricsFlag)) {
 
-      if (byteMap.isEmpty()) {
-
-        return statisticsList;
+        MetricQueries.checkForMultipleDefinitions(h, tenantId, name, dimensions);
 
       }
 
-      if (!"*".equals(groupBy) && !Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
-
-        throw new MultipleMetricsException(name, dimensions);
-
-      }
-
-      List<List<Object>> statisticsListList = new ArrayList<>();
-
-      String sql = createQuery(byteMap.keySet(), period, startTime, endTime, offset, statisticsCols,
-                               groupBy, mergeMetricsFlag);
+      String sql = createQuery(name, dimensions, period, startTime, endTime, offset,
+                               statisticsCols, mergeMetricsFlag);
 
       logger.debug("vertica sql: {}", sql);
 
       Query<Map<String, Object>>
           query =
           h.createQuery(sql)
+              .bind("tenantId", tenantId)
               .bind("start_time", startTime)
               .bind("end_time", endTime)
               .bind("limit", limit + 1);
+
+      if (name != null && !name.isEmpty()) {
+        query.bind("name", name);
+      }
+
+      MetricQueries.bindDimensionsToQuery(query, dimensions);
 
       if (offset != null && !offset.isEmpty()) {
         logger.debug("binding offset: {}", offset);
@@ -114,7 +110,13 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       List<Map<String, Object>> rows = query.list();
 
+      if (rows.size() == 0) {
+        return new ArrayList<>();
+      }
+
       if ("*".equals(groupBy)) {
+
+        String currentDefId = null;
 
         for (Map<String, Object> row : rows) {
 
@@ -122,52 +124,56 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
           String defDimsId = (String) row.get("id");
 
-          byteMap.get(defDimsId).addStatistics(statisticsRow);
+          if (defDimsId != null && !defDimsId.equals(currentDefId)) {
+            Statistics newStats = new Statistics();
+            newStats.setColumns(statisticsColumns);
 
-        }
-
-        for (Map.Entry<String, Statistics> entry : byteMap.entrySet()) {
-
-          Statistics statistics = entry.getValue();
-
-          statistics.setColumns(statisticsColumns);
-
-          if (statistics.getStatistics().size() > 0) {
-            statisticsList.add(statistics);
+            statisticsMap.put(defDimsId, newStats);
+            currentDefId = defDimsId;
           }
 
+          statisticsMap.get(defDimsId).addMeasurement(statisticsRow);
+
         }
 
+        MetricQueries.addDefsToResults(statisticsMap, h, this.dbHint);
+
       } else {
+
+        Statistics statistics = new Statistics();
+
+        statistics.setId("");
+
+        statistics.setName(name);
+
+        statistics.setColumns(statisticsColumns);
+
+        String firstDefId = (String) rows.get(0).get("id");
 
         for (Map<String, Object> row : rows) {
 
           List<Object> statisticsRow = parseRow(row);
 
-          statisticsListList.add(statisticsRow);
+          statistics.addMeasurement(statisticsRow);
 
         }
 
-        // Just use the first entry in the byteMap to get the def name and dimensions.
-        Statistics statistics = byteMap.entrySet().iterator().next().getValue();
+        statisticsMap.put(firstDefId, statistics);
 
-        statistics.setColumns(statisticsColumns);
-
-        if (Boolean.TRUE.equals(mergeMetricsFlag) && byteMap.keySet().size() > 1) {
-
-          // Wipe out the dimensions.
-          statistics.setDimensions(new HashMap<String, String>());
-
+        if (!Boolean.TRUE.equals(mergeMetricsFlag)) {
+          statistics.setId(firstDefId);
+          MetricQueries.addDefsToResults(statisticsMap, h, this.dbHint);
+        } else {
+          if (dimensions == null) {
+            dimensions = new HashMap<>();
+          }
+          statistics.setDimensions(dimensions);
         }
-
-        statistics.setStatistics(statisticsListList);
-
-        statisticsList.add(statistics);
       }
 
     }
 
-    return statisticsList;
+    return new ArrayList<>(statisticsMap.values());
   }
 
   private List<Object> parseRow(Map<String, Object> row) {
@@ -208,77 +214,6 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     return statisticsRow;
   }
 
-  private Map<String, Statistics> findDefIds(
-      Handle h,
-      String tenantId,
-      String name,
-      Map<String, String> dimensions) {
-
-    String sql = String.format(
-        MetricQueries.FIND_METRIC_DEFS_SQL,
-        this.dbHint,
-        MetricQueries.buildMetricDefinitionSubSql(name, dimensions));
-
-    Query<Map<String, Object>> query =
-        h.createQuery(sql)
-            .bind("tenantId", tenantId);
-
-    if (name != null && !name.isEmpty()) {
-
-      logger.debug("binding name: {}", name);
-
-      query.bind("name", name);
-
-    }
-
-    MetricQueries.bindDimensionsToQuery(query, dimensions);
-
-    List<Map<String, Object>> rows = query.list();
-
-    Map<String, Statistics> byteIdMap = new HashMap<>();
-
-    String currentDefDimId = null;
-
-    Map<String, String> dims = null;
-
-    for (Map<String, Object> row : rows) {
-
-      String defDimId = (String) row.get("defDimsId");
-
-      String defName = (String) row.get("name");
-
-      String dimName = (String) row.get("dName");
-
-      String dimValue = (String) row.get("dValue");
-
-      if (defDimId == null || !defDimId.equals(currentDefDimId)) {
-
-        currentDefDimId = defDimId;
-
-        dims = new HashMap<>();
-
-        dims.put(dimName, dimValue);
-
-        Statistics statistics = new Statistics();
-
-        statistics.setId(defDimId);
-
-        statistics.setName(defName);
-
-        statistics.setDimensions(dims);
-
-        byteIdMap.put(currentDefDimId, statistics);
-
-      } else {
-
-        dims.put(dimName, dimValue);
-
-      }
-    }
-
-    return byteIdMap;
-  }
-
   List<String> createColumnsList(
       List<String> list) {
 
@@ -293,21 +228,19 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
   }
 
   private String createQuery(
-      Set<String> defDimIdSet,
+      String name,
+      Map<String, String> dimensions,
       int period,
       DateTime startTime,
       DateTime endTime,
       String offset,
       List<String> statistics,
-      String groupBy,
       Boolean mergeMetricsFlag) {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append("SELECT "  + this.dbHint + " ");
-    if (groupBy != null && !groupBy.isEmpty()) {
-      sb.append(" to_hex(definition_dimensions_id) AS id, ");
-    }
+    sb.append("SELECT ").append(this.dbHint).append(" ");
+    sb.append(" max(to_hex(definition_dimensions_id)) AS id, ");
     sb.append(createColumnsStr(statistics));
 
     if (period >= 1) {
@@ -316,18 +249,19 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
     }
 
     sb.append(" FROM MonMetrics.Measurements ");
-    String inClause = MetricQueries.createDefDimIdInClause(defDimIdSet);
-    sb.append("WHERE to_hex(definition_dimensions_id) ").append(inClause);
+    sb.append("WHERE TO_HEX(definition_dimensions_id) IN (")
+        .append(MetricQueries.buildMetricDefinitionSubSql(name, dimensions, null, null))
+        .append(") ");
     sb.append(createWhereClause(startTime, endTime, offset, mergeMetricsFlag));
 
     if (period >= 1) {
       sb.append(" group by ");
-      if (groupBy != null && !groupBy.isEmpty()) {
-        sb.append("definition_dimensions_id,");
+      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+        sb.append("definition_dimensions_id, ");
       }
       sb.append("time_interval ");
       sb.append(" order by ");
-      if (groupBy != null && !groupBy.isEmpty()) {
+      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
         sb.append("to_hex(definition_dimensions_id),");
       }
       sb.append("time_interval ");
