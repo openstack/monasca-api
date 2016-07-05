@@ -125,6 +125,9 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         alarm_def_id = response_body['id']
 
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
+
         resp, response_body = self.monasca_client.create_metrics(metric)
         self.assertEqual(204, resp.status)
         self._wait_for_alarms(1, alarm_def_id)
@@ -161,6 +164,9 @@ class TestAlarms(base.BaseMonascaTest):
         metrics = [metric_1, metric_2, metric_3]
         resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
         self.assertEqual(201, resp.status)
+
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
 
         for i in xrange(constants.MAX_RETRIES):
             resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
@@ -206,6 +212,8 @@ class TestAlarms(base.BaseMonascaTest):
         metrics = [metric_1, metric_2, metric_3]
         resp, response_body = self.monasca_client.create_alarm_definitions(alarm_def)
         self.assertEqual(201, resp.status)
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         for i in xrange(constants.MAX_RETRIES):
             resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
             self.assertEqual(204, resp.status)
@@ -285,6 +293,8 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(201, resp.status)
             alarm_def_ids.append(response_body['id'])
 
+        # Ensure the new Alarm Definitions get to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         metric = helpers.create_metric(name=metric_name,
                                        value=14)
         resp, response_body = self.monasca_client.create_metrics(metric)
@@ -348,6 +358,8 @@ class TestAlarms(base.BaseMonascaTest):
             self.assertEqual(201, resp.status)
             alarm_def_ids.append(response_body['id'])
 
+        # Ensure the new Alarm Definitions get to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         metric = helpers.create_metric(name=metric_name,
                                        value=14)
         resp, response_body = self.monasca_client.create_metrics(metric)
@@ -580,6 +592,8 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         alarm_def_id = response_body['id']
 
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         for i in xrange(3):
             hostname = data_utils.rand_name('host')
             metric_1['dimensions']['hostname'] = hostname
@@ -833,6 +847,9 @@ class TestAlarms(base.BaseMonascaTest):
         alarm_definition_id = response_body['id']
         query_param = '?alarm_definition_id=' + str(alarm_definition_id)
 
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
+
         # 1. ensure alarm was not created
         resp, response_body = self.monasca_client.list_alarms(query_param)
         self._verify_list_alarms_elements(resp, response_body, 0)
@@ -896,6 +913,8 @@ class TestAlarms(base.BaseMonascaTest):
             alarm_definition_ids.append(response_body['id'])
         expected_metric = helpers.create_metric(name=metric_name,
                                                 dimensions={key: value})
+        # Ensure the new Alarm Definitions get to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         # create some metrics
         for j in xrange(num):
             for i in xrange(constants.MAX_RETRIES):
@@ -911,6 +930,8 @@ class TestAlarms(base.BaseMonascaTest):
         return alarm_definition_ids, expected_metric
 
     def _create_metrics_for_match_by(self, num, alarm_definition_id):
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         metric1 = helpers.create_metric(
             name='cpu.idle_perc',
             dimensions={'service': 'monitoring',
@@ -925,6 +946,8 @@ class TestAlarms(base.BaseMonascaTest):
 
     def _create_metrics_for_match_by_sub_expressions(self, num,
                                                      alarm_definition_id):
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         metric1 = helpers.create_metric(
             name='cpu.idle_perc',
             dimensions={'service': 'monitoring',
@@ -949,6 +972,8 @@ class TestAlarms(base.BaseMonascaTest):
 
     def _create_metrics_for_match_by_sub_expressions_list(self, num,
                                                           alarm_definition_id):
+        # Ensure the new Alarm Definition gets to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         # create some metrics
         metric1 = helpers.create_metric(
             name='cpu.idle_perc',
