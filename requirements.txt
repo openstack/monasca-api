@@ -13,7 +13,7 @@ pbr
 six
 pyparsing
 voluptuous
-influxdb
+#influxdb
 eventlet
 kafka-python>=0.9.5,<1.0.0
 simplejson
