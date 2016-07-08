@@ -107,20 +107,12 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.get(uri)
         return resp, json.loads(response_body)
 
-    def update_notification_method(self,
-                                   id,
-                                   name=None,
-                                   type=None,
-                                   address=None,
-                                   period=None):
+    def update_notification_method(self, id, name, type, address, period=None):
         uri = 'notification-methods/' + id
         request_body = {}
-        if name is not None:
-            request_body['name'] = name
-        if type is not None:
-            request_body['type'] = type
-        if address is not None:
-            request_body['address'] = address
+        request_body['name'] = name
+        request_body['type'] = type
+        request_body['address'] = address
         if period is not None:
             request_body['period'] = period
         resp, response_body = self.put(uri, json.dumps(request_body))
@@ -168,35 +160,27 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def update_alarm_definition(self, id, name, expression, description=None,
-                                actions_enabled=None, match_by=None,
-                                severity=None, alarm_actions=None,
-                                ok_actions=None, undetermined_actions=None,
+    def update_alarm_definition(self, id, name, expression, description,
+                                actions_enabled, match_by,
+                                severity, alarm_actions,
+                                ok_actions, undetermined_actions,
                                 **kwargs):
         uri = 'alarm-definitions/' + id
         request_body = {}
         request_body['name'] = name
         request_body['expression'] = expression
-
-        if description is not None:
-            request_body['description'] = description
-        if actions_enabled is not None:
-            request_body['actions_enabled'] = actions_enabled
-        if match_by is not None:
-            request_body['match_by'] = match_by
-        if severity is not None:
-            request_body['severity'] = severity
-        if alarm_actions is not None:
-            request_body['alarm_actions'] = alarm_actions
-        if ok_actions is not None:
-            request_body['ok_actions'] = ok_actions
-        if undetermined_actions is not None:
-            request_body['undetermined_actions'] = undetermined_actions
+        request_body['description'] = description
+        request_body['actions_enabled'] = actions_enabled
+        request_body['match_by'] = match_by
+        request_body['severity'] = severity
+        request_body['alarm_actions'] = alarm_actions
+        request_body['ok_actions'] = ok_actions
+        request_body['undetermined_actions'] = undetermined_actions
 
         for key, value in kwargs.iteritems():
             request_body[key] = value
 
-        resp, response_body = self.patch(uri, json.dumps(request_body))
+        resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 
     def patch_alarm_definition(self,
@@ -304,4 +288,39 @@ class MonascaClient(rest_client.RestClient):
         if query_params is not None:
             uri = uri + query_params
         resp, response_body = self.get(uri)
+        return resp, json.loads(response_body)
+
+    # For Negative Tests
+    def update_alarm_definition_with_no_ok_actions(self, id, name,
+                                                   expression, description,
+                                                   actions_enabled, match_by,
+                                                   severity, alarm_actions,
+                                                   undetermined_actions,
+                                                   **kwargs):
+        uri = 'alarm-definitions/' + id
+        request_body = {}
+        request_body['name'] = name
+        request_body['expression'] = expression
+        request_body['description'] = description
+        request_body['actions_enabled'] = actions_enabled
+        request_body['match_by'] = match_by
+        request_body['severity'] = severity
+        request_body['alarm_actions'] = alarm_actions
+        request_body['undetermined_actions'] = undetermined_actions
+
+        for key, value in kwargs.iteritems():
+            request_body[key] = value
+
+        resp, response_body = self.put(uri, json.dumps(request_body))
+        return resp, json.loads(response_body)
+
+    def update_notification_method_with_no_address(self, id, name, type,
+                                                   period=None):
+        uri = 'notification-methods/' + id
+        request_body = {}
+        request_body['name'] = name
+        request_body['type'] = type
+        if period is not None:
+            request_body['period'] = period
+        resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)

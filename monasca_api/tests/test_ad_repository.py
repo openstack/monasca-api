@@ -1,5 +1,6 @@
 # Copyright 2015 Cray
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -433,8 +434,16 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                                                    [], [],
                                                    None, None,
                                                    True)
-        from monasca_api.common.repositories import exceptions
 
+        self.repo.update_or_patch_alarm_definition('bob', '234',
+                                                   None, None,
+                                                   None, False,
+                                                   None, None,
+                                                   None, None,
+                                                   match_by, None,
+                                                   False)
+
+        from monasca_api.common.repositories import exceptions
         self.assertRaises(exceptions.InvalidUpdateException,
                           self.repo.update_or_patch_alarm_definition,
                           'bob', '234',
@@ -444,6 +453,15 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                           None, None,
                           None, None,
                           False)
+
+        self.assertRaises(exceptions.InvalidUpdateException,
+                          self.repo.update_or_patch_alarm_definition,
+                          'bob', '234',
+                          '90% CPU', None,
+                          sub_expr_list, False,
+                          description, alarm_actions,
+                          None, None,
+                          'update_match_by', 'LOW')
 
         self.repo.delete_alarm_definition('bob', '234')
 
