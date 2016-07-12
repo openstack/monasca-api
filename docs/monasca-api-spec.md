@@ -1656,7 +1656,7 @@ None.
 * name (string(250), required) - A descriptive name of the notifcation method.
 * type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
 * address (string(100), required) - The email/url address to notify.
-* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
+* period (integer, required) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ````
