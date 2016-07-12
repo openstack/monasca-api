@@ -1523,11 +1523,9 @@ function install_monasca_agent {
 
     pip_install --pre --allow-all-external --allow-unverified simport simport
 
-    pip_install $MONASCA_AGENT_SRC_DIST
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
 
-    (cd /opt/monasca-agent ; ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
-
-    (cd /opt/monasca-agent ; ./bin/pip install psutil==3.0.1)
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
 
     (cd /opt/monasca-agent ; ./bin/pip install kafka-python==0.9.2)
 
