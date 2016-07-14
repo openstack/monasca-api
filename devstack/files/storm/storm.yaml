@@ -37,7 +37,7 @@ supervisor.childopts: -Xmx256m
 worker.childopts: -Xmx1280m -XX:+UseConcMarkSweepGC -Dcom.sun.management.jmxremote
 
 ### nimbus.* configs are for the master
-nimbus.host: "127.0.0.1"
+nimbus.seeds: ["127.0.0.1"]
 nimbus.thrift.port: 6627
 nimbus.childopts: -Xmx256m
 
