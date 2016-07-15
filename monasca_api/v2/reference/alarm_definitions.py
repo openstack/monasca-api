@@ -43,6 +43,9 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             self._region = cfg.CONF.region
             self._default_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles)
+            self._get_alarmdefs_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.read_only_authorized_roles)
             self._alarm_definitions_repo = simport.load(
                 cfg.CONF.repositories.alarm_definitions_driver)()
 
@@ -81,7 +84,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     def on_get(self, req, res, alarm_definition_id=None):
         if alarm_definition_id is None:
-            helpers.validate_authorization(req, self._default_authorized_roles)
+            helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
             name = helpers.get_query_name(req)
             dimensions = helpers.get_query_dimensions(req)
@@ -114,7 +117,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             res.status = falcon.HTTP_200
 
         else:
-            helpers.validate_authorization(req, self._default_authorized_roles)
+            helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
 
             result = self._alarm_definition_show(tenant_id,

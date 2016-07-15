@@ -42,6 +42,7 @@ For secure operation of the Monasca API, the API must be configured to use Keyst
 * keystore - The keystore holding the SSL Client certificate if connSSLClientAuth is true
 * keystorePassword - The password for the keystore
 * defaultAuthorizedRoles - An array of roles that authorize a user to access the complete Monasca API. User must have at least one of these roles. See below
+* readOnlyAuthorizedRoles - An array of roles that authorize a user to only GET (but not POST, PUT...) metrics.  See Keystone Roles below
 * agentAuthorizedRoles - An array of roles that authorize only the posting of metrics.  See Keystone Roles below
 * adminAuthMethod - "password" if the Monasca API should adminUser and adminPassword to login to the Keystone server to check the user's token, "token" if the Monasca API should use adminToken
 * adminUser - Admin user name
@@ -60,6 +61,8 @@ The Monasca API has two levels of access:
 The reason for the "Agent access" level is because the Monasca Agent must be configured to use a Keystone user. Since the user and password are configured onto the all of the systems running the Monasca Agent, this user is most in danger of being compromised. If this user is limited to only writing metrics, then the damage can be limited.
 
 To configure the user to have full access, the user must have a role that is listed in defaultAuthorizedRoles. To configure a user to have only "Agent access", the user must have a role in agentAuthorizedRoles and none of the roles in defaultAuthorizedRoles.
+
+If you want to give users the ability to only view data, configure one or more roles in the readOnlyAuthorizedRoles list.
 
 ## Design Overview
 

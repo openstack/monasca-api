@@ -105,6 +105,7 @@ middleware:
   connRetryTimes: 2
   connRetryInterval: 50
   defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user, admin]
+  readOnlyAuthorizedRoles: [monasca-read-only-user]
   agentAuthorizedRoles: [monasca-agent]
   adminAuthMethod: password
   adminUser: "admin"

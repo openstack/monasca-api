@@ -49,14 +49,26 @@ public class PostAuthenticationFilter implements Filter {
 
   private final List<String> defaultAuthorizedRoles = new ArrayList<String>();
   private final List<String> agentAuthorizedRoles = new ArrayList<String>();
+  private final List<String> readOnlyAuthorizedRoles = new ArrayList<String>();
 
   public PostAuthenticationFilter(List<String> defaultAuthorizedRoles,
-      List<String> agentAuthorizedRoles) {
+                                  List<String> agentAuthorizedRoles,
+                                  List<String> readOnlyAuthorizedRoles) {
     for (String defaultRole : defaultAuthorizedRoles) {
       this.defaultAuthorizedRoles.add(defaultRole.toLowerCase());
     }
     for (String agentRole : agentAuthorizedRoles) {
       this.agentAuthorizedRoles.add(agentRole.toLowerCase());
+    }
+
+    //
+    // Check for null here so we can support backward compatibility
+    // of not setting readOnlyAuthorizedRoles in the config file.
+    //
+    if (null != readOnlyAuthorizedRoles) {
+      for (String readOnlyRole : readOnlyAuthorizedRoles) {
+        this.readOnlyAuthorizedRoles.add(readOnlyRole.toLowerCase());
+      }
     }
   }
 
@@ -126,6 +138,8 @@ public class PostAuthenticationFilter implements Filter {
       return false;
 
     boolean agentUser = false;
+    boolean readOnlyUser = false;
+
     for (String role : rolesFromKeystone.toString().split(",")) {
       String lowerCaseRole = role.toLowerCase();
       if ((defaultAuthorizedRoles != null) && defaultAuthorizedRoles.contains(lowerCaseRole)) {
@@ -134,11 +148,20 @@ public class PostAuthenticationFilter implements Filter {
       if ((agentAuthorizedRoles != null) && agentAuthorizedRoles.contains(lowerCaseRole)) {
         agentUser = true;
       }
+      if ((readOnlyAuthorizedRoles != null) && readOnlyAuthorizedRoles.contains(lowerCaseRole)) {
+        readOnlyUser = true;
+      }
     }
+
     if (agentUser) {
       request.setAttribute(X_MONASCA_AGENT, true);
       return true;
     }
+
+    if (readOnlyUser && request.getMethod().equals("GET")) {
+      return true;
+    }
+
     return false;
   }
 

@@ -42,6 +42,9 @@ security_opts = [cfg.ListOpt('default_authorized_roles', default=['admin'],
                  cfg.ListOpt('agent_authorized_roles', default=['agent'],
                              help='Roles that are only allowed to POST to '
                                   'the API'),
+                 cfg.ListOpt('read_only_authorized_roles', default=['monasca-read-only-user'],
+                             help='Roles that are only allowed to GET from '
+                                  'the API'),
                  cfg.ListOpt('delegate_authorized_roles', default=['admin'],
                              help='Roles that are allowed to POST metrics on '
                                   'behalf of another tenant')]

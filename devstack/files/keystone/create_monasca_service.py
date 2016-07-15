@@ -165,7 +165,11 @@ def main(argv):
         {'username': 'demo',
          'project': 'demo',
          'password': 'secretadmin',
-         'role': 'monasca-user'}
+         'role': 'monasca-user'},
+        {'username': 'monasca-read-only-user',
+         'project': 'mini-mon',
+         'password': 'password',
+         'role': 'monasca-read-only-user'}
     ]
 
     service_host = argv[0]

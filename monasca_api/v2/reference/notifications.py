@@ -37,6 +37,9 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         self._region = cfg.CONF.region
         self._default_authorized_roles = (
             cfg.CONF.security.default_authorized_roles)
+        self._get_notifications_authorized_roles = (
+            cfg.CONF.security.default_authorized_roles +
+            cfg.CONF.security.read_only_authorized_roles)
         self._notifications_repo = simport.load(
             cfg.CONF.repositories.notifications_driver)()
         self._notification_method_type_repo = simport.load(
@@ -206,7 +209,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     def on_get(self, req, res, notification_method_id=None):
         if notification_method_id is None:
-            helpers.validate_authorization(req, self._default_authorized_roles)
+            helpers.validate_authorization(req,
+                                           self._get_notifications_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
@@ -226,7 +230,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             res.status = falcon.HTTP_200
         else:
             helpers.validate_authorization(req,
-                                           self._default_authorized_roles)
+                                           self._get_notifications_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
             result = self._list_notification(tenant_id,
                                              notification_method_id,

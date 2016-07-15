@@ -39,6 +39,9 @@ class Alarms(alarms_api_v2.AlarmsV2API,
             self._region = cfg.CONF.region
             self._default_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles)
+            self._get_alarms_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
 
@@ -112,7 +115,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         res.status = falcon.HTTP_204
 
     def on_get(self, req, res, alarm_id=None):
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, self._get_alarms_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
 
         if alarm_id is None:
@@ -384,8 +387,9 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         try:
             super(AlarmsCount, self).__init__()
             self._region = cfg.CONF.region
-            self._default_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles)
+            self._get_alarms_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
 
@@ -394,7 +398,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             raise exceptions.RepositoryException(ex)
 
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, self._get_alarms_authorized_roles)
         tenant_id = helpers.get_tenant_id(req)
         query_parms = falcon.uri.parse_query_string(req.query_string)
 
@@ -487,8 +491,9 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
         try:
             super(AlarmsStateHistory, self).__init__()
             self._region = cfg.CONF.region
-            self._default_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles)
+            self._get_alarms_authorized_roles = (
+                cfg.CONF.security.default_authorized_roles +
+                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
             self._metrics_repo = simport.load(
@@ -501,7 +506,7 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
     def on_get(self, req, res, alarm_id=None):
 
         if alarm_id is None:
-            helpers.validate_authorization(req, self._default_authorized_roles)
+            helpers.validate_authorization(req, self._get_alarms_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
             start_timestamp = helpers.get_query_starttime_timestamp(req, False)
             end_timestamp = helpers.get_query_endtime_timestamp(req, False)
@@ -517,7 +522,7 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
             res.status = falcon.HTTP_200
 
         else:
-            helpers.validate_authorization(req, self._default_authorized_roles)
+            helpers.validate_authorization(req, self._get_alarms_authorized_roles)
             tenant_id = helpers.get_tenant_id(req)
             offset = helpers.get_query_param(req, 'offset')
             limit = helpers.get_limit(req)

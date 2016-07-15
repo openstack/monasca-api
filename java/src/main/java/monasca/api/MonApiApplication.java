@@ -212,7 +212,8 @@ public class MonApiApplication extends Application<ApiConfig> {
           environment.servlets().addFilter(
               "post-auth",
               new PostAuthenticationFilter(config.middleware.defaultAuthorizedRoles,
-                  config.middleware.agentAuthorizedRoles));
+                                           config.middleware.agentAuthorizedRoles,
+                                           config.middleware.readOnlyAuthorizedRoles));
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/");
       postAuthenticationFilter.addMappingForUrlPatterns(null, true, "/v2.0/*");
 

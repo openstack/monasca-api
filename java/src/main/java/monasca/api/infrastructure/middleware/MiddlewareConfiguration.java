@@ -47,6 +47,8 @@ public class MiddlewareConfiguration {
   @JsonProperty
   public List<String> defaultAuthorizedRoles;
   @JsonProperty
+  public List<String> readOnlyAuthorizedRoles;
+  @JsonProperty
   public List<String> agentAuthorizedRoles;
   @JsonProperty
   public String delegateAuthorizedRole;
