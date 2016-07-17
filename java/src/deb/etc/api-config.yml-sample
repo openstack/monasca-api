@@ -99,7 +99,7 @@ middleware:
 server:
   applicationConnectors:
     - type: http
-      port: 8080
+      port: 8070
       maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
   requestLog:
    timeZone: UTC

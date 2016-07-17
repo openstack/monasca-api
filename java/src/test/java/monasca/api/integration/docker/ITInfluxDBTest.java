@@ -80,8 +80,8 @@ public class ITInfluxDBTest {
 
   private void runAPI() throws Exception {
 
-    if (!isPortFree(8080)) {
-      throw new Exception("port 8080 is not free. Unable to start instance" + " of monasca api");
+    if (!isPortFree(8070)) {
+      throw new Exception("port 8070 is not free. Unable to start instance" + " of monasca api");
     }
 
     String latestShadedJarFileName = getLatestShadedJarFileName();
@@ -97,7 +97,7 @@ public class ITInfluxDBTest {
 
     System.out.println("Started " + latestShadedJarFileName);
 
-    waitForPortReady("localhost", 8080);
+    waitForPortReady("localhost", 8070);
   }
 
   private String getLatestShadedJarFileName() {
