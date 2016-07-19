@@ -1591,7 +1591,7 @@ function clean_monasca_agent {
 
     sudo rm -rf /etc/monasca/agent
 
-    sudo rm -rf /opt/moansca-agent
+    sudo rm -rf /opt/monasca-agent
 
     sudo apt-get -y purge libxslt1-dev
     sudo apt-get -y purge libxml2-dev
