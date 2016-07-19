@@ -160,6 +160,17 @@ Document Version: v2.0
       - [Status Code](#status-code-8)
       - [Response Body](#response-body-10)
       - [Response Examples](#response-examples-9)
+  - [Patch Notification Method](#patch-notification-method)
+    - [PATCH /v2.0/notification-methods/{notification_method_id}](#put-v20notification-methodsnotification_method_id)
+      - [Headers](#headers-10)
+      - [Path Parameters](#path-parameters-10)
+      - [Query Parameters](#query-parameters-10)
+      - [Request Body](#request-body-10)
+      - [Request Examples](#request-examples-10)
+    - [Response](#response-10)
+      - [Status Code](#status-code-8)
+      - [Response Body](#response-body-10)
+      - [Response Examples](#response-examples-9)
   - [Delete Notification Method](#delete-notification-method)
     - [DELETE /v2.0/notification-methods/{notification_method_id}](#delete-v20notification-methodsnotification_method_id)
       - [Headers](#headers-11)
@@ -3316,7 +3327,7 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 ___
 
 # License
-Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+(C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
