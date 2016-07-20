@@ -656,11 +656,11 @@ The list of available statistical functions include the following.
 
 ```
 <function>
-  ::= 'min' | 'max' | 'sum' | 'count' | 'avg'
+  ::= 'min' | 'max' | 'sum' | 'count' | 'avg' | 'last'
 
 ```
 
-where 'avg' is the arithmetic average. Note, threshold values are always in the same units as the metric that they are being compared to.
+where 'avg' is the arithmetic average and last is the single most recent value of the metric. When using the last function, the values for 'period' and 'periods' will be ignored. Note, threshold values are always in the same units as the metric that they are being compared to.
 
 
 #### Simple Example
@@ -686,6 +686,7 @@ Functions work on all metric measurements during the period time frame.
 * sum (returns the sum of all the values)
 * count (returns the number of metric observations)
 * avg (returns the average of all the values)
+* last (returns the single most recent value, ignores values for 'period' and 'periods')
 
 The metric is a complex identifier that says the name and optional dimensions.
 
