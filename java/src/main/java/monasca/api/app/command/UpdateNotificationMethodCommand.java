@@ -42,6 +42,7 @@ public class UpdateNotificationMethodCommand {
         this.name = name;
         this.type = type;
         this.address = address;
+        period = period == null ? "0" : period;
         this.setPeriod(period);
     }
 
