@@ -72,6 +72,7 @@ public class PatchNotificationMethodCommand {
 
     @JsonProperty("period")
     public void setPeriod(String period){
+        period = period == null ? "0" : period;
         this.period = period;
         this.convertedPeriod = Validation.parseAndValidateNumber(period, "period");
     }
