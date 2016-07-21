@@ -64,7 +64,7 @@ Currently the monasca-vagrant environment is needed to run the tests. Instructio
 7. Install the monasca-api in your venv, which will also register
    the Monasca Tempest Plugin as, monasca_tests.
 
-   cd into the monasa-api root directory. Making sure that the tempest virtual env is still active,
+   cd into the monasca-api root directory. Making sure that the tempest virtual env is still active,
    run the following command.
 
     ```
@@ -91,7 +91,7 @@ The Monasca Tempest Tests can be run using a variety of methods including:
     ```
 
 2. Create a list of the Monasca Tempest Tests in a file:
-    
+
     ```
     testr list-tests monasca_tempest_tests > monasca_tempest_tests
 

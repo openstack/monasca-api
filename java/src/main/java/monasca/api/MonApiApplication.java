@@ -129,6 +129,7 @@ public class MonApiApplication extends Application<ApiConfig> {
         PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
     environment.getObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
     environment.getObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    environment.getObjectMapper().disable(DeserializationFeature.WRAP_EXCEPTIONS);
     SimpleModule module = new SimpleModule("SerializationModule");
     module.addSerializer(new SubAlarmExpressionSerializer());
     environment.getObjectMapper().registerModule(module);

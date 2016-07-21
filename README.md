@@ -21,7 +21,7 @@ Since this is all rather complex, that part of the build only works on StackForg
 
 Currently this build is executed on the bare-precise nodes in StackForge and they only have maven 2. So, this build must be kept compatible with Maven 2. If another monasca-common jar is added as a dependency to java/pom.xml, it must also be added to download/download.sh.
 
-Combining monasca-common, monasca-thresh, monasaca-api and monasca-persister into one build would vastly simplify the builds but that is a future task.`
+Combining monasca-common, monasca-thresh, monasca-api and monasca-persister into one build would vastly simplify the builds but that is a future task.`
 
 ## Usage
 
@@ -68,7 +68,7 @@ To configure the user to have full access, the user must have a role that is lis
 Requests flow through the following architectural layers from top to bottom:
 
 * Resource
-  * Serves as the entrypoint into the service. 
+  * Serves as the entrypoint into the service.
   * Responsible for handling web service requests, and performing structural request validation.
 * Application
   * Responsible for providing application level implementations for specific use cases.
@@ -77,7 +77,7 @@ Requests flow through the following architectural layers from top to bottom:
   * Responsible for upholding invariants and defining state transitions.
 * Infrastructure
   * Contains technology specific implementations of domain services.
-  
+
 ## Documentation
 
 * API Specification: [/docs/monasca-api-spec.md](/docs/monasca-api-spec.md).
@@ -115,7 +115,7 @@ To check if the code follows python coding style, run the following command
 from the root directory of this project
 
     tox -e pep8
-    
+
 To run all the unit test cases, run the following command from the root
 directory of this project
 
@@ -131,7 +131,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-    
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or

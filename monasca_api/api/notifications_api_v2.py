@@ -33,3 +33,6 @@ class NotificationsV2API(object):
 
     def on_put(self, req, res, notification_method_id):
         res.status = '501 Not Implemented'
+
+    def on_patch(self, req, res, notification_method_id):
+        res.status = '501 Not Implemented'

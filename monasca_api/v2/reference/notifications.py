@@ -13,9 +13,9 @@
 # under the License.
 
 import falcon
+from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
-import simport
 
 from monasca_api.api import notifications_api_v2
 from monasca_api.common.repositories import exceptions
@@ -169,6 +169,18 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         self._notifications_repo.delete_notification(tenant_id,
                                                      notification_id)
 
+    @resource.resource_try_catch_block
+    def _patch_get_notification(self, tenant_id, notification_id, notification):
+        original_notification = self._notifications_repo.list_notification(tenant_id, notification_id)
+        if 'name' not in notification:
+            notification['name'] = original_notification['name']
+        if 'type' not in notification:
+            notification['type'] = original_notification['type']
+        if 'address' not in notification:
+            notification['address'] = original_notification['address']
+        if 'period' not in notification:
+            notification['period'] = original_notification['period']
+
     def on_post(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -221,6 +233,18 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         notification = helpers.read_http_resource(req)
         self._parse_and_validate_notification(notification, require_all=True)
         tenant_id = helpers.get_tenant_id(req)
+        result = self._update_notification(notification_method_id, tenant_id,
+                                           notification, req.uri)
+        res.body = helpers.dumpit_utf8(result)
+        res.status = falcon.HTTP_200
+
+    def on_patch(self, req, res, notification_method_id):
+        helpers.validate_json_content_type(req)
+        helpers.validate_authorization(req, self._default_authorized_roles)
+        notification = helpers.read_http_resource(req)
+        tenant_id = helpers.get_tenant_id(req)
+        self._patch_get_notification(tenant_id, notification_method_id, notification)
+        self._parse_and_validate_notification(notification, require_all=True)
         result = self._update_notification(notification_method_id, tenant_id,
                                            notification, req.uri)
         res.body = helpers.dumpit_utf8(result)

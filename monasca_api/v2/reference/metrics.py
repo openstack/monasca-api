@@ -13,9 +13,9 @@
 # under the License.
 
 import falcon
+from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
-import simport
 
 from monasca_api.api import metrics_api_v2
 from monasca_api.common.messaging import (

@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import monasca_api.v2.common.validation as validation
 from oslo_log import log
 import six.moves.urllib.parse as urlparse
-from validate_email import validate_email
 from voluptuous import All
 from voluptuous import Any
 from voluptuous import Length
@@ -64,7 +64,7 @@ def parse_and_validate(msg, valid_periods, require_all=False):
 
 
 def _validate_email(address):
-    if not validate_email(address):
+    if not validation.validate_email_address(address):
         raise exceptions.ValidationException("Address {} is not of correct format".format(address))
 
 

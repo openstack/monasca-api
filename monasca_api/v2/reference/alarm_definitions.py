@@ -1,4 +1,4 @@
-# Copyright 2014,2016 Hewlett Packard Enterprise Development Company, L.P.
+# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,10 +15,10 @@
 import re
 
 import falcon
+from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
 import pyparsing
-import simport
 
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions

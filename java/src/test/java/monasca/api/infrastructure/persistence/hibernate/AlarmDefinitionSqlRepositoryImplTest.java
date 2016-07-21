@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import monasca.api.domain.exception.EntityNotFoundException;
@@ -34,9 +38,11 @@ import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.common.hibernate.db.AlarmActionDb;
 import monasca.common.hibernate.db.AlarmDefinitionDb;
+import monasca.common.hibernate.db.NotificationMethodDb;
 import monasca.common.hibernate.db.SubAlarmDefinitionDb;
 import monasca.common.hibernate.db.SubAlarmDefinitionDimensionDb;
 import monasca.common.model.alarm.AggregateFunction;
+import monasca.common.model.alarm.AlarmNotificationMethodType;
 import monasca.common.model.alarm.AlarmOperator;
 import monasca.common.model.alarm.AlarmSeverity;
 import monasca.common.model.alarm.AlarmState;
@@ -51,7 +57,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.WebApplicationException;
+import javax.annotation.Nullable;
 
 @Test(groups = "orm")
 public class AlarmDefinitionSqlRepositoryImplTest {
@@ -126,6 +132,22 @@ public class AlarmDefinitionSqlRepositoryImplTest {
     session.save(subAlarmDefinitionDimensionImageId888.setSubExpression(subAlarmDefinition111));
     session.save(subAlarmDefinitionDimensionFlavorMetricNameCpu.setSubExpression(subAlarmDefinition111));
     session.save(subAlarmDefinitionDimensionDevice1.setSubExpression(subAlarmDefinition111));
+
+    final NotificationMethodDb notificationMethodDb29387234 = new NotificationMethodDb()
+        .setAddress("root@localhost")
+        .setName("root2938723")
+        .setTenantId("bob")
+        .setType(AlarmNotificationMethodType.EMAIL)
+        .setPeriod(60);
+    final NotificationMethodDb notificationMethodDb77778687 = new NotificationMethodDb()
+        .setAddress("root@localhost")
+        .setName("root77778687")
+        .setTenantId("bob")
+        .setType(AlarmNotificationMethodType.EMAIL)
+        .setPeriod(60);
+
+    session.save(notificationMethodDb29387234.setId("29387234"));
+    session.save(notificationMethodDb77778687.setId("77778687"));
 
     final AlarmActionDb alarmAction29387234 = new AlarmActionDb()
         .setActionId("29387234")
@@ -374,26 +396,103 @@ public class AlarmDefinitionSqlRepositoryImplTest {
 
   }
 
-  @Test(groups = "orm", expectedExceptions = WebApplicationException.class)
-  public void shouldFindThrowException() {
-    repo.find("bob", null, null, null, Arrays.asList("severity", "state"), null, 1);
+  public void shouldSortBy() {
+    // null sorts by will sort by ID
+    this.checkList(repo.find("bob", null, null, null, null, null, 0),
+        this.alarmDef_123, this.alarmDef_234);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("severity"), null, 0),
+        this.alarmDef_123, this.alarmDef_234);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("state", "severity"), null, 0),
+        this.alarmDef_234, this.alarmDef_123);
+    this.checkList(repo.find("bob", null, null, null, Arrays.asList("name", "state", "severity"), null, 0),
+        this.alarmDef_234, this.alarmDef_123);
   }
 
   public void shouldFilterBySeverity() {
-    List<AlarmDefinition> alarmDefinitions = repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.HIGH), null, null, 1);
-    AlarmDefinition alarmDefinition;
+    checkList(repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.HIGH), null, null, 1),
+        this.alarmDef_123);
+    checkList(repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.LOW), null, null, 1),
+        this.alarmDef_234);
+    checkList(repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.HIGH, AlarmSeverity.LOW), null, null, 1),
+        this.alarmDef_123, this.alarmDef_234);
+  }
 
-    assertEquals(1, alarmDefinitions.size());
-    alarmDefinition = alarmDefinitions.get(0);
+  public void shouldFindWithOffset() {
+    // create more alarm definition for this test
+    final AlarmDefinition localAd1 = new AlarmDefinition("999", "60% CPU", null, "LOW",
+        "avg(hpcs.compute{flavor_id=888, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 100",
+        Arrays.asList("flavor_id", "image_id"), true, Arrays.asList("29387234", "77778687"), Collections.<String>emptyList(),
+        Collections.<String>emptyList());
+    final AlarmDefinition localAd2 = new AlarmDefinition("9999", "70% CPU", null, "LOW",
+        "avg(hpcs.compute{flavor_id=999, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 99",
+        Arrays.asList("flavor_id", "image_id"), true, Arrays.asList("29387234", "77778687"), Collections.<String>emptyList(),
+        Collections.<String>emptyList());
+    final AlarmDefinition localAd3 = new AlarmDefinition("99999", "80% CPU", null, "LOW",
+        "avg(hpcs.compute{flavor_id=1111, image_id=888, metric_name=mem}) > 20 and avg(hpcs.compute) < 88",
+        Arrays.asList("flavor_id", "image_id"), true, Arrays.asList("29387234", "77778687"), Collections.<String>emptyList(),
+        Collections.<String>emptyList());
 
-    assertEquals(this.alarmDef_123, alarmDefinition);
+    final Session session = sessionFactory.openSession();
+    session.beginTransaction();
 
-    alarmDefinitions = repo.find("bob", null, null, Lists.newArrayList(AlarmSeverity.LOW), null, null, 1);
+    for (final AlarmDefinition ad : Lists.newArrayList(localAd1, localAd2, localAd3)) {
+      final AlarmDefinitionDb adDb = new AlarmDefinitionDb()
+          .setTenantId("bob")
+          .setName(ad.getName())
+          .setSeverity(AlarmSeverity.valueOf(ad.getSeverity()))
+          .setExpression(ad.getExpression())
+          .setMatchBy(Joiner.on(",").join(ad.getMatchBy()))
+          .setActionsEnabled(ad.isActionsEnabled());
 
-    assertEquals(1, alarmDefinitions.size());
-    alarmDefinition = alarmDefinitions.get(0);
+      session.save(adDb.setId(ad.getId()));
 
-    assertEquals(this.alarmDef_234, alarmDefinition);
+      for (final String alarmActionId : ad.getAlarmActions()) {
+        session.save(new AlarmActionDb()
+            .setActionId(alarmActionId)
+            .setAlarmDefinition(adDb)
+            .setAlarmState(AlarmState.ALARM)
+        );
+      }
+    }
+    session.getTransaction().commit();
+    session.close();
+
+    // run tests
+    checkList(repo.find("bob", null, null, null, null, null, 1), this.alarmDef_123, this.alarmDef_234);
+    checkList(repo.find("bob", null, null, null, null, "1", 1), this.alarmDef_234, localAd1);
+    checkList(repo.find("bob", null, null, null, null, "2", 1), localAd1, localAd2);
+    checkList(repo.find("bob", null, null, null, null, "3", 1), localAd2, localAd3);
+    checkList(repo.find("bob", null, null, null, null, "4", 1), localAd3);
+    checkList(repo.find("bob", null, null, null, null, "5", 1));
+
+    checkList(repo.find("bob", null, null, null, null, null, 0),
+        this.alarmDef_123, this.alarmDef_234, localAd1, localAd2, localAd3);
+    checkList(repo.find("bob", null, null, null, null, null, 6),
+        this.alarmDef_123, this.alarmDef_234, localAd1, localAd2, localAd3);
+    checkList(repo.find("bob", null, null, null, null, "2", 3),
+        localAd1, localAd2, localAd3);
+  }
+
+  private void checkList(List<AlarmDefinition> found, AlarmDefinition... expected) {
+    assertEquals(found.size(), expected.length);
+    AlarmDefinition actual;
+
+    for (final AlarmDefinition alarmDefinition : expected) {
+      final Optional<AlarmDefinition> alarmOptional = FluentIterable
+          .from(found)
+          .firstMatch(new Predicate<AlarmDefinition>() {
+            @Override
+            public boolean apply(@Nullable final AlarmDefinition input) {
+              assert input != null;
+              return input.getId().equals(alarmDefinition.getId());
+            }
+          });
+      assertTrue(alarmOptional.isPresent());
+
+      actual = alarmOptional.get();
+      assertEquals(actual, alarmDefinition, String.format("%s not equal to %s", actual, alarmDefinition));
+    }
+
   }
 
 }

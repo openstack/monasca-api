@@ -258,11 +258,11 @@ class TestNotificationValidation(unittest.TestCase):
             self.fail("shouldn't happen")
 
     def test_validation_exception_for_invalid_email_address(self):
-        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
+        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@"}
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
             schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
-        self.assertEqual("Address name@domain. is not of correct format", ex.message)
+        self.assertEqual("Address name@ is not of correct format", ex.message)
 
     def test_validation_exception_for_invalid_period_for_email(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com", "period": "60"}

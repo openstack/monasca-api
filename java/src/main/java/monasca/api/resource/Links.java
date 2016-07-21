@@ -27,7 +27,6 @@ import monasca.api.ApiConfig;
 import monasca.api.domain.model.alarm.AlarmCount;
 import monasca.api.domain.model.common.Paged;
 import monasca.api.domain.model.measurement.Measurements;
-import monasca.api.domain.model.statistic.Statistics;
 import monasca.common.model.domain.common.AbstractEntity;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Linked;
@@ -242,7 +241,7 @@ public final class Links {
 
   }
 
-  public static Object paginateMeasurements(int limit, List<Measurements> elements, UriInfo uriInfo)
+  public static Object paginateMeasurements(int limit, List<? extends Measurements> elements, UriInfo uriInfo)
       throws UnsupportedEncodingException {
 
     // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
@@ -262,78 +261,11 @@ public final class Links {
 
       for (int i = 0; i < elements.size(); i++) {
 
-        Measurements m = elements.get(i);
-
-        if (m != null) {
-
-          List<Object[]> l = m.getMeasurements();
-
-          if (l.size() >= remaining_limit) {
-
-            String offset = m.getId();
-
-            if (offset != null) {
-              offset += '_' + (String) l.get(remaining_limit - 1)[0];
-            } else {
-              offset = (String) l.get(remaining_limit - 1)[0];
-            }
-
-            paged.links.add(getNextLink(offset, uriInfo));
-
-            // Truncate the measurement list. Normally this will just truncate one extra element.
-            l = l.subList(0, remaining_limit);
-            m.setMeasurements(l);
-
-            // Truncate the elements list
-            elements = elements.subList(0, i + 1);
-
-          }  else {
-            remaining_limit -= l.size();
-          }
-
-          paged.elements = elements;
-
-        } else {
-
-          paged.elements = new ArrayList<>();
-
-        }
-      }
-
-    } else {
-
-      paged.elements = new ArrayList<>();
-    }
-
-    return paged;
-
-  }
-
-  public static Object paginateStatistics(int limit, List<Statistics> elements, UriInfo uriInfo)
-      throws UnsupportedEncodingException {
-
-    // Check for paging turned off. Happens if maxQueryLimit is not set or is set to zero.
-    if (limit == 0) {
-      Paged paged = new Paged();
-      paged.elements = elements != null ? elements : new ArrayList<>();
-      return paged;
-    }
-
-    Paged paged = new Paged();
-
-    paged.links.add(getSelfLink(uriInfo));
-
-    if (elements != null && !elements.isEmpty()) {
-
-      int remaining_limit = limit;
-
-      for (int i = 0; i < elements.size(); i++) {
-
-        Statistics s = elements.get(i);
+        Measurements s = elements.get(i);
 
         if (s != null) {
 
-          List<List<Object>> l = s.getStatistics();
+          List<List<Object>> l = s.getMeasurements();
 
           if (l.size() >= remaining_limit) {
 
@@ -349,7 +281,7 @@ public final class Links {
 
             // Truncate the measurement list. Normally this will just truncate one extra element.
             l = l.subList(0, remaining_limit);
-            s.setStatistics(l);
+            s.setMeasurements(l);
 
             // Truncate the elements list
             elements = elements.subList(0, i + 1);
@@ -375,6 +307,8 @@ public final class Links {
     return paged;
 
   }
+
+
 
   private static Link getSelfLink(UriInfo uriInfo) {
 

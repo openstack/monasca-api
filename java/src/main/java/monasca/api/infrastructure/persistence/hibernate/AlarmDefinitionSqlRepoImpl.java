@@ -51,7 +51,6 @@ import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinition;
 import monasca.api.domain.model.alarmdefinition.AlarmDefinitionRepo;
 import monasca.api.infrastructure.persistence.SubAlarmDefinitionQueries;
-import monasca.api.resource.exception.Exceptions;
 import monasca.common.hibernate.db.AlarmActionDb;
 import monasca.common.hibernate.db.AlarmDb;
 import monasca.common.hibernate.db.AlarmDefinitionDb;
@@ -79,11 +78,20 @@ public class AlarmDefinitionSqlRepoImpl
   private static final String SEVERITY = "SEVERITY";
   private static final String MATCH_BY = "MATCH_BY";
   private static final String ACTIONS_ENABLED = "ACTIONS_ENABLED";
-  private static final String STATE = "STATES";
+  private static final String STATE = "STATE";
   private static final String NOTIFICATION_ID = "NOTIFICATIONIDS";
   private static final Joiner COMMA_JOINER = Joiner.on(',');
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
   private static final Logger logger = LoggerFactory.getLogger(AlarmDefinitionSqlRepoImpl.class);
+  private static final String FIND_ALARM_DEF_SQL = "SELECT t.id, t.tenant_id, t.name, "
+      + "t.description, t.expression, t.severity, t.match_by, "
+      + "t.actions_enabled, aa.alarm_state AS state, aa.action_id AS notificationIds "
+      + "FROM (SELECT distinct ad.id, ad.tenant_id, ad.name, ad.description, ad.expression, "
+      + "ad.severity, ad.match_by, ad.actions_enabled, ad.created_at, ad.updated_at, ad.deleted_at "
+      + "FROM alarm_definition AS ad LEFT OUTER JOIN sub_alarm_definition AS sad ON ad.id = sad.alarm_definition_id "
+      + "LEFT OUTER JOIN sub_alarm_definition_dimension AS dim ON sad.id = dim.sub_alarm_definition_id %1$s "
+      + "WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s ORDER BY ad.id %3$s) AS t "
+      + "LEFT OUTER JOIN alarm_action AS aa ON t.id = aa.alarm_definition_id %4$s";
 
   @Inject
   public AlarmDefinitionSqlRepoImpl(@Named("orm") SessionFactory sessionFactory) {
@@ -231,26 +239,13 @@ public class AlarmDefinitionSqlRepoImpl
                                     List<AlarmSeverity> severities, List<String> sortBy,
                                     String offset, int limit) {
     logger.trace(ORM_LOG_MARKER, "find(...) entering...");
-    if (sortBy != null && !sortBy.isEmpty()) {
-      throw Exceptions.unprocessableEntity(
-          "Sort_by is not implemented for the hibernate database type");
-    }
 
     Session session = null;
     List<AlarmDefinition> resultSet = Lists.newArrayList();
 
-    // TODO introduce criteria here, will make code significantly better
-    String query =
-        "  SELECT t.id, t.tenant_id, t.name, t.description, t.expression, t.severity, t.match_by, "
-            + "t.actions_enabled, aa.alarm_state AS states, aa.action_id AS notificationIds "
-            + "FROM (SELECT distinct ad.id, ad.tenant_id, ad.name, ad.description, ad.expression, "
-            + "ad.severity, ad.match_by, ad.actions_enabled, ad.created_at, ad.updated_at, ad.deleted_at "
-            + "FROM alarm_definition AS ad LEFT OUTER JOIN sub_alarm_definition AS sad ON ad.id = sad.alarm_definition_id "
-            + "LEFT OUTER JOIN sub_alarm_definition_dimension AS dim ON sad.id = dim.sub_alarm_definition_id %1$s "
-            + "WHERE ad.tenant_id = :tenantId AND ad.deleted_at IS NULL %2$s ORDER BY ad.id %3$s) AS t "
-            + "LEFT OUTER JOIN alarm_action AS aa ON t.id = aa.alarm_definition_id ORDER BY t.id, t.created_at";
-
-    StringBuilder sbWhere = new StringBuilder();
+    final StringBuilder sbWhere = new StringBuilder();
+    final StringBuilder limitOffset = new StringBuilder();
+    final StringBuilder orderByPart = new StringBuilder();
 
     if (name != null) {
       sbWhere.append(" and ad.name = :name");
@@ -271,16 +266,30 @@ public class AlarmDefinitionSqlRepoImpl
       }
     }
 
-    if (offset != null && !offset.equals("0")) {
-      sbWhere.append(" and ad.id > :offset");
-    }
-
-    String limitPart = "";
     if (limit > 0) {
-      limitPart = " limit :limit";
+      limitOffset.append(" limit :limit");
     }
 
-    String sql = String.format(query, SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions), sbWhere, limitPart);
+    if (offset != null) {
+      limitOffset.append(" offset :offset ");
+    }
+
+    if (sortBy != null && !sortBy.isEmpty()) {
+      orderByPart.append(" order by ").append(COMMA_JOINER.join(sortBy));
+      if (!sortBy.contains("id")) {
+        orderByPart.append(",id");
+      }
+    } else {
+      orderByPart.append(" order by id ");
+    }
+
+    final String sql = String.format(
+        FIND_ALARM_DEF_SQL,
+        SubAlarmDefinitionQueries.buildJoinClauseFor(dimensions),
+        sbWhere,
+        limitOffset,
+        orderByPart
+    );
 
     try {
       session = sessionFactory.openSession();
@@ -288,6 +297,7 @@ public class AlarmDefinitionSqlRepoImpl
       final Query qAlarmDefinition = session
           .createSQLQuery(sql)
           .setString("tenantId", tenantId)
+          .setReadOnly(true)
           .setResultTransformer(ALARM_DEF_RESULT_TRANSFORMER);
 
       if (name != null) {
@@ -304,12 +314,12 @@ public class AlarmDefinitionSqlRepoImpl
         }
       }
 
-      if (offset != null && !offset.equals("0")) {
-        qAlarmDefinition.setString("offset", offset);
-      }
-
       if (limit > 0) {
         qAlarmDefinition.setInteger("limit", limit + 1);
+      }
+
+      if (offset != null) {
+        qAlarmDefinition.setInteger("offset", Integer.parseInt(offset));
       }
 
       this.bindDimensionsToQuery(qAlarmDefinition, dimensions);

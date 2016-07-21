@@ -702,19 +702,26 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_update_alarm_definition(self):
+        notification_name = data_utils.rand_name('notification-')
+        notification_type = 'EMAIL'
+        address = 'root@localhost'
+
+        resp, response_body = self.monasca_client.create_notification_method(
+            notification_name, type=notification_type, address=address)
+        notification_id = self._verify_create_notification_method(
+            resp, response_body, notification_name, notification_type, address)
+
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
         # Update alarm definition
         updated_name = data_utils.rand_name('updated_name')
         updated_description = 'updated description'
         updated_expression = "max(cpu.system_perc) < 0"
+
         resp, response_body = self.monasca_client.update_alarm_definition(
-            id=str(response_body_list[0]['id']),
-            name=updated_name,
-            expression=updated_expression,
-            description=updated_description,
-            actions_enabled='true'
-        )
+            str(response_body_list[0]['id']), updated_name, updated_expression,
+            updated_description, True, response_body_list[0]['match_by'],
+            'LOW', [notification_id], [notification_id], [notification_id])
         self.assertEqual(200, resp.status)
         self._verify_update_patch_alarm_definition(response_body, updated_name,
                                                    updated_expression,
@@ -739,10 +746,24 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         updated_match_by = ['hostname']
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.update_alarm_definition,
-                          id=response_body_list[0]['id'], name=name,
-                          expression=expression,
-                          description=description, actions_enabled='true',
-                          match_by=updated_match_by)
+                          response_body_list[0]['id'], name, expression,
+                          description, 'true', updated_match_by, 'LOW', None,
+                          None, None)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_update_alarm_definition_with_no_ok_actions(self):
+        response_body_list = self._create_alarm_definitions(
+            expression=None, number_of_definitions=1)
+        name = response_body_list[0]['name']
+        expression = response_body_list[0]['expression']
+        description = response_body_list[0]['description']
+        updated_match_by = ['hostname']
+        self.assertRaises(
+            exceptions.UnprocessableEntity,
+            self.monasca_client.update_alarm_definition_with_no_ok_actions,
+            response_body_list[0]['id'], name, expression, description,
+            'true', updated_match_by, 'LOW', None, None)
 
     @test.attr(type="gate")
     def test_update_notification_in_alarm_definition(self):
@@ -763,13 +784,9 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         # Update alarm definition
         update_alarm_def_name = data_utils.rand_name('monitoring_alarm_update')
         resp, response_body = self.monasca_client.update_alarm_definition(
-            response_body_list[0]['id'],
-            name=update_alarm_def_name,
-            expression=expression,
-            actions_enabled='true',
-            alarm_actions=[notification_id],
-            ok_actions=[notification_id],
-            undetermined_actions=[notification_id])
+            response_body_list[0]['id'], update_alarm_def_name, expression,
+            'description', True, response_body_list[0]['match_by'], 'LOW',
+            [notification_id], [notification_id], [notification_id])
         self.assertEqual(200, resp.status)
         self._verify_update_patch_alarm_definition(response_body,
                                                    update_alarm_def_name,

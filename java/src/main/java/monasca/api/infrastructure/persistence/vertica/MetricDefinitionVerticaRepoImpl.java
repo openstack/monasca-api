@@ -29,12 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -46,7 +43,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       LoggerFactory.getLogger(MetricDefinitionVerticaRepoImpl.class);
 
   private static final String METRIC_DEF_SUB_QUERY =
-      "SELECT defDimsSub.id "
+      "SELECT TO_HEX(defDimsSub.id) "
       + "FROM MonMetrics.Definitions defSub "
       + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON defSub.id = defDimsSub.definition_id "
       + "WHERE defSub.tenant_id = :tenantId "
@@ -74,22 +71,8 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "GROUP BY defSub.name "   // This is to reduce the (id, name) sets to only include unique names
       + "ORDER BY max_id ASC %s"; // Limit goes here.
 
-  private static final String DEFDIM_IDS_SELECT =
-      "SELECT %s to_hex(defDims.id) AS id "
-      + "FROM MonMetrics.Definitions def, MonMetrics.DefinitionDimensions defDims "
-      + "WHERE defDims.definition_id = def.id "
-      + "AND def.tenant_id = :tenantId "
-      + "%s "   // Name clause here
-      + "%s;";  // Dimensions and clause goes here
 
-  private static final String MEASUREMENT_AND_CLAUSE =
-      "AND defDimsSub.id IN ("
-      + "SELECT definition_dimensions_id FROM MonMetrics.Measurements "
-      + "WHERE to_hex(definition_dimensions_id) "
-      + "%s "    // List of definition dimension ids here
-      + "%s ) "; // start or start and end time here
-
-  private static final String TABLE_TO_JOIN_DIMENSIONS_ON = "defDimsSub";
+  private static final String TABLE_TO_JOIN_ON = "defDimsSub";
 
   private final DBI db;
 
@@ -150,7 +133,7 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
         String.format(METRIC_NAMES_SUB_SELECT,
                       offsetPart,
                       MetricQueries.buildDimensionAndClause(dimensions,
-                                                            TABLE_TO_JOIN_DIMENSIONS_ON),
+                                                            TABLE_TO_JOIN_ON),
                       limitPart);
 
     String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, defSubSelect);
@@ -273,9 +256,6 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     try (Handle h = db.open()) {
 
-      // If startTime/endTime is specified, create the 'IN' select statement
-      String timeInClause = createTimeInClause(h, startTime, endTime, tenantId, name, dimensions);
-
       String sql =
         String.format(MetricQueries.FIND_METRIC_DEFS_SQL,
                       this.dbHint,
@@ -283,8 +263,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
                                     namePart,
                                     offsetPart,
                                     MetricQueries.buildDimensionAndClause(dimensions,
-                                                                          TABLE_TO_JOIN_DIMENSIONS_ON),
-                                    timeInClause,
+                                                                          TABLE_TO_JOIN_ON),
+                                    MetricQueries.buildTimeAndClause(startTime, endTime,
+                                                                     TABLE_TO_JOIN_ON),
                                     limitPart)
                       );
 
@@ -296,11 +277,11 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       }
 
       if (startTime != null) {
-        query.bind("start_time", startTime);
+        query.bind("startTime", startTime);
       }
 
       if (endTime != null) {
-        query.bind("end_time", endTime);
+        query.bind("endTime", endTime);
       }
 
       if (offset != null && !offset.isEmpty()) {
@@ -324,67 +305,4 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     }
   }
-
-  private String createTimeInClause(
-      Handle dbHandle,
-      DateTime startTime,
-      DateTime endTime,
-      String tenantId,
-      String metricName,
-      Map<String, String> dimensions)
-  {
-
-    if (startTime == null) {
-      return "";
-    }
-
-    Set<String> defDimIdSet = new HashSet<>();
-
-    String namePart = "";
-
-    if (metricName != null && !metricName.isEmpty()) {
-      namePart = "AND def.name = :name ";
-    }
-
-    String defDimSql = String.format(
-        DEFDIM_IDS_SELECT,
-        this.dbHint,
-        namePart,
-        MetricQueries.buildDimensionAndClause(dimensions, "defDims"));
-
-    Query<Map<String, Object>> query = dbHandle.createQuery(defDimSql).bind("tenantId", tenantId);
-
-    MetricQueries.bindDimensionsToQuery(query, dimensions);
-
-    if (metricName != null && !metricName.isEmpty()) {
-      query.bind("name", metricName);
-    }
-
-    List<Map<String, Object>> rows = query.list();
-
-    for (Map<String, Object> row : rows) {
-      String defDimId = (String) row.get("id");
-      defDimIdSet.add(defDimId);
-    }
-
-    //
-    // If we didn't find any definition dimension ids,
-    // we won't add the time clause.
-    //
-    if (defDimIdSet.size() == 0) {
-      return "";
-    }
-
-    String timeAndClause = "";
-
-    if (endTime != null) {
-      timeAndClause = "AND time_stamp >= :start_time AND time_stamp <= :end_time ";
-    } else {
-      timeAndClause = "AND time_stamp >= :start_time ";
-    }
-
-    String defDimInClause = MetricQueries.createDefDimIdInClause(defDimIdSet);
-    return String.format(MEASUREMENT_AND_CLAUSE, defDimInClause, timeAndClause);
-  }
-
 }

@@ -27,15 +27,15 @@ import java.util.List;
 public class NotificationMethodValidation {
     private static final String[] SCHEMES = {"http","https"};
     // Allow QA to use the TLD .test. This is valid according to RFC-2606
-    private static final RegexValidator TEST_TLD_VALIDATOR = new RegexValidator(".+\\.test$");
+    // The UrlValidator does not take the port off of the authority so have to handle that
+    private static final RegexValidator TEST_TLD_VALIDATOR = new RegexValidator(".+\\.test(:[0-9]+)?$");
     private static final UrlValidator URL_VALIDATOR =
               new UrlValidator(SCHEMES,
                                TEST_TLD_VALIDATOR,
                                UrlValidator.ALLOW_LOCAL_URLS | UrlValidator.ALLOW_2_SLASHES);
 
-    public static void validate(NotificationMethodType type, String address, String period,
+    public static void validate(NotificationMethodType type, String address, int period,
                                 List<Integer> validPeriods) {
-        int convertedPeriod = Validation.parseAndValidateNumber(period, "period");
         switch (type) {
             case EMAIL : {
                 try {
@@ -46,7 +46,7 @@ public class NotificationMethodValidation {
                 } catch (AddressException e) {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
                 }
-                if (convertedPeriod != 0)
+                if (period != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Email");
             } break;
             case WEBHOOK : {
@@ -54,12 +54,12 @@ public class NotificationMethodValidation {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
             } break;
             case PAGERDUTY : {
-                if (convertedPeriod != 0)
+                if (period != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Pagerduty");
             } break;
         }
-        if (convertedPeriod != 0 && !validPeriods.contains(convertedPeriod)){
-            throw Exceptions.unprocessableEntity("%d is not a valid period", convertedPeriod);
+        if (period != 0 && !validPeriods.contains(period)){
+            throw Exceptions.unprocessableEntity("%d is not a valid period", period);
         }
     }
 }

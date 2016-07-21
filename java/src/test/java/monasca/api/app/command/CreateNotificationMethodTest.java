@@ -124,6 +124,33 @@ public class CreateNotificationMethodTest extends AbstractModelTest {
       newNotificationMethod.validate(validPeriods);
   }
 
+  public void testValidationTestDomainWithPortForWebhook() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "http://test.test:4522", "60");
+      newNotificationMethod.validate(validPeriods);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void testValidationInvalidTestDomainForWebhook() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "http://test.invalid:4522", "60");
+      newNotificationMethod.validate(validPeriods);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void testValidationTestDomainWithInvalidPortForWebhook() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "http://test.test:4522AA/mywebhook", "60");
+      newNotificationMethod.validate(validPeriods);
+  }
+
+  @Test(expectedExceptions = WebApplicationException.class)
+  public void testValidationTestDomainWithInvalidMultiplePortsForWebhook() {
+    CreateNotificationMethodCommand newNotificationMethod =
+        new CreateNotificationMethodCommand("MyWebhook", NotificationMethodType.WEBHOOK, "http://test.test:4522:33/mywebhook", "60");
+      newNotificationMethod.validate(validPeriods);
+  }
+
   @Test(expectedExceptions = WebApplicationException.class)
   public void testValidationInvalidDomainForWebhook() {
     CreateNotificationMethodCommand newNotificationMethod =

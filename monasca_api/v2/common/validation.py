@@ -30,6 +30,8 @@ VALUE_META_MAX_LENGTH = 2048
 
 VALUE_META_NAME_MAX_LENGTH = 255
 
+EMAIL_PATTERN = '^.+@.+$'
+
 
 def metric_name(name):
     assert isinstance(name, (str, unicode)), "Metric name must be a string"
@@ -117,3 +119,10 @@ def validate_state_query(state_str):
     if state_str not in VALID_ALARM_STATES:
         raise HTTPUnprocessableEntityError("Unprocessable Entity",
                                            "state {} must be one of 'ALARM','OK','UNDETERMINED'".format(state_str))
+
+
+def validate_email_address(email):
+    if re.match(EMAIL_PATTERN, email) is None:
+        return False
+    else:
+        return True

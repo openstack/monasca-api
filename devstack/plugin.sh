@@ -69,6 +69,27 @@ function pre_install_monasca {
 }
 
 function install_monasca {
+    if [[ -n ${SCREEN_LOGDIR} ]]; then
+        sudo ln -sf /var/log/influxdb/influxd.log ${SCREEN_LOGDIR}/screen-influxdb.log
+
+        sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log
+
+        sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
+
+        sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log || true
+
+        sudo ln -sf /var/log/monasca/agent/statsd.log ${SCREEN_LOGDIR}/screen-monasca-agent-statsd.log
+        sudo ln -sf /var/log/monasca/agent/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-agent-supervisor.log
+        sudo ln -sf /var/log/monasca/agent/collector.log ${SCREEN_LOGDIR}/screen-monasca-agent-collector.log
+        sudo ln -sf /var/log/monasca/agent/forwarder.log ${SCREEN_LOGDIR}/screen-monasca-agent-forwarder.log
+
+        sudo ln -sf /var/log/storm/access.log ${SCREEN_LOGDIR}/screen-monasca-thresh-access.log
+        sudo ln -sf /var/log/storm/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-thresh-supervisor.log
+        sudo ln -sf /var/log/storm/metrics.log ${SCREEN_LOGDIR}/screen-monasca-thresh-metrics.log
+        sudo ln -sf /var/log/storm/nimbus.log  ${SCREEN_LOGDIR}/screen-monasca-thresh-nimbus.log
+        sudo ln -sf /var/log/storm/worker-6701.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6701.log
+        sudo ln -sf /var/log/storm/worker-6702.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6702.log
+    fi
 
     install_git
 
@@ -173,31 +194,13 @@ function extra_monasca {
 
         install_monasca_horizon_ui
 
+        install_node_nvm
+
         install_monasca_grafana
 
     fi
     if is_service_enabled monasca-smoke-test; then
         install_monasca_smoke_test
-    fi
-
-    if [[ -n ${SCREEN_LOGDIR} ]]; then
-        sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log
-
-        sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
-
-        sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log || true
-
-        sudo ln -sf /var/log/monasca/agent/statsd.log ${SCREEN_LOGDIR}/screen-monasca-agent-statsd.log
-        sudo ln -sf /var/log/monasca/agent/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-agent-supervisor.log
-        sudo ln -sf /var/log/monasca/agent/collector.log ${SCREEN_LOGDIR}/screen-monasca-agent-collector.log
-        sudo ln -sf /var/log/monasca/agent/forwarder.log ${SCREEN_LOGDIR}/screen-monasca-agent-forwarder.log
-
-        sudo ln -sf /var/log/storm/access.log ${SCREEN_LOGDIR}/screen-monasca-thresh-access.log
-        sudo ln -sf /var/log/storm/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-thresh-supervisor.log
-        sudo ln -sf /var/log/storm/metrics.log ${SCREEN_LOGDIR}/screen-monasca-thresh-metrics.log
-        sudo ln -sf /var/log/storm/nimbus.log  ${SCREEN_LOGDIR}/screen-monasca-thresh-nimbus.log
-        sudo ln -sf /var/log/storm/worker-6701.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6701.log
-        sudo ln -sf /var/log/storm/worker-6702.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6702.log
     fi
 }
 
@@ -241,6 +244,8 @@ function clean_monasca {
     if is_service_enabled horizon; then
 
         clean_monasca_horizon_ui
+
+        clean_node_nvm
 
         clean_monasca_grafana
 
@@ -854,6 +859,7 @@ function install_monasca_api_python {
 
     pip_install gunicorn
     pip_install PyMySQL
+    pip_install influxdb==2.8.0
 
     (cd "${MONASCA_BASE}"/monasca-api ; sudo python setup.py sdist)
 
@@ -1067,6 +1073,7 @@ function install_monasca_persister_python {
     PIP_VIRTUAL_ENV=/opt/monasca-persister
 
     pip_install $MONASCA_PERSISTER_SRC_DIST
+    pip_install influxdb==2.8.0
 
     unset PIP_VIRTUAL_ENV
 
@@ -1486,6 +1493,16 @@ function install_monasca_agent {
     sudo apt-get -y install libxml2-dev
     sudo apt-get -y install libxslt1-dev
 
+    if [[ ! -d "${MONASCA_BASE}"/python-monascaclient ]]; then
+
+        sudo git clone https://git.openstack.org/openstack/python-monascaclient "${MONASCA_BASE}"/python-monascaclient
+
+    fi
+
+    (cd "${MONASCA_BASE}"/python-monascaclient ; sudo python setup.py sdist)
+
+    MONASCA_CLIENT_SRC_DIST=$(ls -td "${MONASCA_BASE}"/python-monascaclient/dist/python-monascaclient*.tar.gz | head -1)
+
     if [[ ! -d "${MONASCA_BASE}"/monasca-agent ]]; then
 
         sudo git clone https://git.openstack.org/openstack/monasca-agent "${MONASCA_BASE}"/monasca-agent
@@ -1506,9 +1523,9 @@ function install_monasca_agent {
 
     pip_install --pre --allow-all-external --allow-unverified simport simport
 
-    pip_install $MONASCA_AGENT_SRC_DIST
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
 
-    (cd /opt/monasca-agent ; ./bin/pip install psutil==3.0.1)
+    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
 
     (cd /opt/monasca-agent ; ./bin/pip install kafka-python==0.9.2)
 
@@ -1574,7 +1591,7 @@ function clean_monasca_agent {
 
     sudo rm -rf /etc/monasca/agent
 
-    sudo rm -rf /opt/moansca-agent
+    sudo rm -rf /opt/monasca-agent
 
     sudo apt-get -y purge libxslt1-dev
     sudo apt-get -y purge libxml2-dev
@@ -1695,14 +1712,21 @@ function clean_monasca_horizon_ui {
 
 }
 
+# install node with nvm, works behind corporate proxy
+# and does not result in gnutsl_handshake error
+function install_node_nvm {
+
+    echo_summary "Install Node with NVM"
+
+    set -i
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.31.1/install.sh | bash
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm install 4.0.0; nvm use 4.0.0)
+    set +i
+}
+
 function install_monasca_grafana {
 
     echo_summary "Install Grafana"
-
-    sudo apt-get install -y wget
-
-    curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
-    sudo apt-get install -y nodejs
 
     cd "${MONASCA_BASE}"
     wget https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz
@@ -1736,10 +1760,16 @@ function install_monasca_grafana {
     go run build.go setup
     $GOPATH/bin/godep restore
     go run build.go build
-    npm config set unsafe-perm true
-    npm install
-    sudo npm install -g grunt-cli
-    grunt --force
+
+    set -i
+
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm config set unsafe-perm true)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm install)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm install -g grunt-cli)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; grunt --force)
+
+    set +i
+
     cd "${MONASCA_BASE}"
     sudo rm -r grafana-plugins
     sudo rm -r grafana
@@ -1757,6 +1787,10 @@ function install_monasca_grafana {
     sudo sed -i "s#/usr/share#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana#g" /etc/init.d/grafana-server
 
     sudo service grafana-server start
+}
+
+function clean_node_nvm {
+    sudo rm -rf "${HOME}"/.nvm
 }
 
 function clean_monasca_grafana {
