@@ -33,7 +33,7 @@ public class PatchNotificationMethodCommand {
     public String period;
     private int convertedPeriod = 0;
 
-    public PatchNotificationMethodCommand() {}
+    public PatchNotificationMethodCommand() {this.period = "0";}
 
     @Override
     public boolean equals(Object obj) {
