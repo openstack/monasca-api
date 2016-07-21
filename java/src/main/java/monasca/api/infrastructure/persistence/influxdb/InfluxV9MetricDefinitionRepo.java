@@ -166,7 +166,8 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
 
         for (String[] values : serie.getValues()) {
 
-          MetricDefinition m = new MetricDefinition(serie.getName(), dims(values, serie.getColumns()));
+          MetricDefinition m = new MetricDefinition(serie.getName(),
+                                                    this.influxV9Utils.getDimensions(values, serie.getColumns()));
           //
           // If start/end time are specified, ensure we've got measurements
           // for this definition before we add to the return list
@@ -200,27 +201,6 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     }
 
     return metricNameList;
-  }
-
-  private Map<String, String> dims(String[] vals, String[] cols) {
-
-    Map<String, String> dims = new HashMap<>();
-
-    for (int i = 0; i < cols.length; ++i) {
-
-      // Dimension names that start with underscore are reserved. I.e., _key, _region, _tenant_id.
-      // Influxdb inserts _key.
-      // Monasca Persister inserts _region and _tenant_id.
-
-      if (!cols[i].startsWith("_")) {
-
-        if (!vals[i].equalsIgnoreCase("null")) {
-
-          dims.put(cols[i], vals[i]);
-        }
-      }
-    }
-    return dims;
   }
 
   private boolean hasMeasurements(MetricDefinition m,

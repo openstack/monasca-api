@@ -43,7 +43,9 @@ dispatcher_opts = [cfg.StrOpt('versions', default=None,
                    cfg.StrOpt('alarms_state_history', default=None,
                               help='Alarms state history'),
                    cfg.StrOpt('notification_methods', default=None,
-                              help='Notification methods')]
+                              help='Notification methods'),
+                   cfg.StrOpt('dimension_values', default=None,
+                              help='Dimension values')]
 
 dispatcher_group = cfg.OptGroup(name='dispatcher', title='dispatcher')
 cfg.CONF.register_group(dispatcher_group)
@@ -107,6 +109,9 @@ def launch(conf, config_file="/etc/monasca/api-config.conf"):
     app.add_route("/v2.0/notification-methods", notification_methods)
     app.add_route("/v2.0/notification-methods/{notification_method_id}",
                   notification_methods)
+
+    dimension_values = simport.load(cfg.CONF.dispatcher.dimension_values)()
+    app.add_route("/v2.0/metrics/dimensions/names/values", dimension_values)
 
     LOG.debug('Dispatcher drivers have been added to the routes!')
     return app
