@@ -36,7 +36,7 @@ public class UpdateNotificationMethodCommand {
     public String period;
     private int convertedPeriod = 0;
 
-    public UpdateNotificationMethodCommand() {}
+    public UpdateNotificationMethodCommand() {this.period = "0";}
 
     public UpdateNotificationMethodCommand(String name, NotificationMethodType type, String address, String period) {
         this.name = name;
