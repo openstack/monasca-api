@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+* (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
 * Copyright 2016 FUJITSU LIMITED
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -186,68 +186,6 @@ CREATE TABLE `sub_alarm` (
   CONSTRAINT `fk_sub_alarm` FOREIGN KEY (`alarm_id`) REFERENCES `alarm` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_sub_alarm_expr` FOREIGN KEY (`sub_expression_id`) REFERENCES `sub_alarm_definition` (`id`)
 );
-
-CREATE TABLE `schema_migrations` (
-  `version` varchar(255) NOT NULL,
-  UNIQUE KEY `unique_schema_migrations` (`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-/*
- * The tables needed by Monasca for event stream definitions
- */
-CREATE TABLE `stream_actions` (
-  `stream_definition_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `action_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `action_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`stream_definition_id`,`action_id`,`action_type`),
-  KEY `stream_definition_id` (`stream_definition_id`),
-  KEY `action_type` (`action_type`),
-  KEY `fk_stream_action_notification_method_id` (`action_id`),
-  CONSTRAINT `fk_stream_action_stream_definition_id` FOREIGN KEY (`stream_definition_id`) REFERENCES `stream_definition` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_stream_action_notification_method_id` FOREIGN KEY (`action_id`) REFERENCES `notification_method` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_stream_actions_action_type` FOREIGN KEY (`action_type`) REFERENCES `stream_actions_action_type` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE `stream_definition` (
-  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tenant_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `select_by` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `group_by` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fire_criteria` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `expiration` int(10) UNSIGNED DEFAULT '0',
-  `actions_enabled` tinyint(1) NOT NULL DEFAULT '1',
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `tenant_name` (`tenant_id`,`name`),
-  KEY `name` (`name`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `deleted_at` (`deleted_at`),
-  KEY `created_at` (`created_at`),
-  KEY `updated_at` (`updated_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE `event_transform` (
-  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tenant_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `specification` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `enabled` bool DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
-  `deleted_at` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `tenant_name` (`tenant_id`,`name`),
-  KEY `name` (`name`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `deleted_at` (`deleted_at`),
-  KEY `created_at` (`created_at`),
-  KEY `updated_at` (`updated_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*
  * To require ssl connections add 'REQUIRE SSL' to the end of all grant statements
