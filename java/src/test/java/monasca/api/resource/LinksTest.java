@@ -115,7 +115,7 @@ public class LinksTest {
   }
 
   public void shouldHydrate() throws URISyntaxException {
-    checkHydrate("http://localhost:8080/");
+    checkHydrate("http://localhost:8070/");
     checkHydrate("https://localhost/");
     checkHydrate("https://localhost//");
     checkHydrate(""); // Should not happen but handle relative paths
