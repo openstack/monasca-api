@@ -414,7 +414,10 @@ function install_kafka {
 
     echo_summary "Install Monasca Kafka"
 
-    sudo curl http://apache.mirrors.tds.net/kafka/${BASE_KAFKA_VERSION}/kafka_${KAFKA_VERSION}.tgz -o /root/kafka_${KAFKA_VERSION}.tgz
+    if [[ "$OFFLINE" != "True" ]]; then
+        sudo curl http://apache.mirrors.tds.net/kafka/${BASE_KAFKA_VERSION}/kafka_${KAFKA_VERSION}.tgz \
+            -o /root/kafka_${KAFKA_VERSION}.tgz
+    fi
 
     sudo groupadd --system kafka || true
 
@@ -501,7 +504,10 @@ function install_monasca_influxdb {
 
     sudo mkdir -p /opt/monasca_download_dir || true
 
-    sudo curl http://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb -o /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
+    if [[ "$OFFLINE" != "True" ]]; then
+        sudo curl http://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb \
+            -o /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
+    fi
 
     sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
 
@@ -535,7 +541,9 @@ function install_monasca_vertica {
     sudo dpkg --skip-same-version -i /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb
 
     # Download Vertica JDBC driver
+    # if [[ "$OFFLINE" != "True" ]]; then
     # sudo curl https://my.vertica.com/client_drivers/7.2.x/${VERTICA_VERSION}/vertica-jdbc-{VERTICA_VERSION}.jar -o /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar
+    # fi
 
     sudo /opt/vertica/sbin/install_vertica --hosts "127.0.0.1" --deb /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb --dba-user-password password --license CE --accept-eula --failure-threshold NONE
 
@@ -1281,7 +1289,10 @@ function install_storm {
 
     echo_summary "Install Monasca Storm"
 
-    sudo curl http://apache.mirrors.tds.net/storm/apache-storm-${STORM_VERSION}/apache-storm-${STORM_VERSION}.tar.gz -o /root/apache-storm-${STORM_VERSION}.tar.gz
+    if [[ "$OFFLINE" != "True" ]]; then
+        sudo curl http://apache.mirrors.tds.net/storm/apache-storm-${STORM_VERSION}/apache-storm-${STORM_VERSION}.tar.gz \
+            -o /root/apache-storm-${STORM_VERSION}.tar.gz
+    fi
 
     sudo groupadd --system storm || true
 
@@ -1609,7 +1620,10 @@ function install_monasca_smoke_test {
 
     pip_install mySQL-python
 
-    sudo curl -L https://api.github.com/repos/hpcloud-mon/monasca-ci/tarball/master -o /opt/monasca/monasca-ci.tar.gz
+    if [[ "$OFFLINE" != "True" ]]; then
+        sudo curl -L https://api.github.com/repos/hpcloud-mon/monasca-ci/tarball/master \
+            -o /opt/monasca/monasca-ci.tar.gz
+    fi
 
     sudo tar -xzf /opt/monasca/monasca-ci.tar.gz -C /opt/monasca
 
@@ -1719,7 +1733,9 @@ function install_node_nvm {
     echo_summary "Install Node with NVM"
 
     set -i
-    curl https://raw.githubusercontent.com/creationix/nvm/v0.31.1/install.sh | bash
+    if [[ "$OFFLINE" != "True" ]]; then
+        curl https://raw.githubusercontent.com/creationix/nvm/v0.31.1/install.sh | bash
+    fi
     (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm install 4.0.0; nvm use 4.0.0)
     set +i
 }
