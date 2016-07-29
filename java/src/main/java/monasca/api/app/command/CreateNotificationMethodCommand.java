@@ -16,7 +16,8 @@ package monasca.api.app.command;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.AddressException;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;

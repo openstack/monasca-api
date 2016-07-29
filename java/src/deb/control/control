@@ -2,7 +2,7 @@ Package: [[name]]
 Section: misc
 Priority: optional
 Architecture: all
-Depends: openjdk-7-jre-headless | openjdk-7-jre
+Depends: openjdk-8-jre-headless | openjdk-8-jre
 Version: [[version]]-[[timestamp]]-[[buildNumber]]
 Maintainer: Monasca Team <monasca@lists.launchpad.net>
 Description: Monasca-API

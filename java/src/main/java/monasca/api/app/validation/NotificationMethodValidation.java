@@ -16,9 +16,11 @@ package monasca.api.app.validation;
 import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.resource.exception.Exceptions;
 
-import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
+
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.AddressException;
 
 import java.util.List;
 
@@ -36,8 +38,14 @@ public class NotificationMethodValidation {
                                 List<Integer> validPeriods) {
         switch (type) {
             case EMAIL : {
-                if (!EmailValidator.getInstance(true).isValid(address))
+                try {
+                    final InternetAddress addr = new InternetAddress(address, true);
+                    if(!address.equals(addr.getAddress())) {
+                        throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+                    }
+                } catch (AddressException e) {
                     throw Exceptions.unprocessableEntity("Address %s is not of correct format", address);
+                }
                 if (period != 0)
                     throw Exceptions.unprocessableEntity("Period can not be non zero for Email");
             } break;
