@@ -32,11 +32,9 @@ test_config = {
         'mysql_schema': [
             'alarm', 'alarm_action', 'alarm_definition', 'alarm_metric',
             'metric_definition', 'metric_definition_dimensions',
-            'metric_dimension', 'notification_method', 'schema_migrations',
-            'stream_actions', 'stream_definition', 'sub_alarm',
+            'metric_dimension', 'notification_method', 'sub_alarm',
             'sub_alarm_definition', 'sub_alarm_definition_dimension',
-            'event_transform', 'alarm_state', 'alarm_definition_severity',
-            'notification_method_type', 'stream_actions_action_type'
+            'alarm_state', 'alarm_definition_severity', 'notification_method_type'
         ],
         'arg_defaults': {
             'dbtype': "influxdb",

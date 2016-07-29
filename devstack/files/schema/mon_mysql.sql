@@ -41,11 +41,6 @@ CREATE TABLE `notification_method_type` (
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `stream_actions_action_type` (
-  `name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE `alarm` (
   `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `alarm_definition_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -212,7 +207,4 @@ insert into `alarm_definition_severity` values ('CRITICAL');
 insert into `notification_method_type` values ('EMAIL');
 insert into `notification_method_type` values ('WEBHOOK');
 insert into `notification_method_type` values ('PAGERDUTY');
-
-insert into `stream_actions_action_type` values ('FIRE');
-insert into `stream_actions_action_type` values ('EXPIRE');
 /* provide data for enum tables */

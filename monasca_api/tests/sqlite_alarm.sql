@@ -106,9 +106,6 @@ CREATE TABLE `sub_alarm` (
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
 );
-CREATE TABLE `schema_migrations` (
-  `version` varchar(255) NOT NULL
-);
 
 insert into `alarm_state` values ('UNDETERMINED');
 insert into `alarm_state` values ('OK');
