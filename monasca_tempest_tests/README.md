@@ -1,6 +1,6 @@
 # Introduction
 The Monasca Tempest Tests use the [OpenStack Tempest Plugin Interface](http://docs.openstack.org/developer/tempest/plugin.html). This README describes how to configure and run them using a variety of methods.
-Currently the monasca-vagrant environment is needed to run the tests. Instructions on setting up a monasca-vagrant environment can be found here: https://github.com/openstack/monasca-vagrant. This document will be updated when the environment is switched to the DevStack environment.
+Currently the devstack environment is needed to run the tests. Instructions on setting up a devstack environment can be found here: https://github.com/openstack/monasca-api/devstack/README.md.
 
 # Configuring to run the Monasca Tempest Tests
 1. Clone the OpenStack Tempest repo, and cd to it.
@@ -27,35 +27,35 @@ Currently the monasca-vagrant environment is needed to run the tests. Instructio
     oslo-config-generator --config-file  etc/config-generator.tempest.conf  --output-file etc/tempest.conf
     ```
 
-    Add the following sections to ```tempest.conf``` for testing using the monasca-vagrant environment.
+    Add the following sections to ```tempest.conf``` for testing using the devstack environment.
 
    ```
     [identity]
 
-    username = mini-mon
-    password = password
-    tenant_name = mini-mon
-    domain_name = default
-    admin_username = admin
-    admin_password = admin
-    admin_domain_name = default
-    admin_tenant_name = admin
-    alt_username = mini-mon
-    alt_password = password
-    alt_tenant_name = mini-mon
-    use_ssl = False
-    auth_version = v3
-    uri = http://192.168.10.5:5000/v2.0/
-    uri_v3 = http://192.168.10.5:35357/v3/
+username = mini-mon
+password = password
+tenant_name = mini-mon
+domain_name = Default
+admin_username = admin
+admin_password = secretadmin
+admin_domain_name = Default
+admin_tenant_name = admin
+alt_username = mini-mon
+alt_password = password
+alt_tenant_name = mini-mon
+use_ssl = False
+auth_version = v3
+uri = http://127.0.0.1:5000/v2.0/
+uri_v3 = http://127.0.0.1:35357/v3/
 
     [auth]
 
-    allow_tenant_isolation = true
+    use_dynamic_credentials = true
     tempest_roles = monasca-user
 
     ```
 
-    Edit the the variable values in the identity section to match your particular monasca-vagrant environment.
+    Edit the the variable values in the identity section to match your particular environment.
 
 5. Create ```etc/logging.conf``` in the Tempest root dir by making a copying ```logging.conf.sample```.
 
