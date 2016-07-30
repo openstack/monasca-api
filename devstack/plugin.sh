@@ -1510,21 +1510,15 @@ function install_monasca_agent {
 
     sudo mkdir -p /opt/monasca-agent/
 
+    (cd /opt/monasca-agent ; sudo virtualenv .)
+
+    (cd /opt/monasca-agent ; sudo ./bin/pip install $MONASCA_AGENT_SRC_DIST)
+
+    (cd /opt/monasca-agent ; sudo ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
+
+    (cd /opt/monasca-agent ; sudo ./bin/pip install kafka-python==0.9.2)
+
     sudo chown $STACK_USER:monasca /opt/monasca-agent
-
-    (cd /opt/monasca-agent ; virtualenv .)
-
-    PIP_VIRTUAL_ENV=/opt/monasca-agent
-
-    pip_install --pre --allow-all-external --allow-unverified simport simport
-
-    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_AGENT_SRC_DIST)
-
-    (cd /opt/monasca-agent ; sudo -H ./bin/pip install $MONASCA_CLIENT_SRC_DIST)
-
-    (cd /opt/monasca-agent ; ./bin/pip install kafka-python==0.9.2)
-
-    unset PIP_VIRTUAL_ENV
 
     sudo mkdir -p /etc/monasca/agent/conf.d || true
 
