@@ -116,7 +116,6 @@ class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures
                                 'metric_dimension',
                                 'notification_method',
                                 'notification_method_type',
-                                'schema_migrations',
                                 'sub_alarm',
                                 'sub_alarm_definition',
                                 'sub_alarm_definition_dimension']
