@@ -18,6 +18,7 @@
 # Environment variables for use with python-monascaclient running via monasca-vagrant
 
 . /opt/monasca/bin/activate
+. /usr/local/share/monasca.bash_completion
 export OS_USERNAME=mini-mon
 export OS_PASSWORD=password
 export OS_USER_DOMAIN_NAME=Default

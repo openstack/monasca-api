@@ -107,6 +107,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-p
 
 # Uncomment one of the following two lines to choose either InfluxDB or Vertica.
 # MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
+# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-cassandra}
 MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 
 # Uncomment one of the following lines and modify accordingly to enable the Monasca DevStack Plugin

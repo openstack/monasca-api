@@ -111,11 +111,15 @@ function install_monasca {
 
         install_monasca_vertica
 
+    elif [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+
+        install_monasca_cassandra
+
     else
 
         echo "Found invalid value for variable MONASCA_METRICS_DB: $MONASCA_METRICS_DB"
-        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\" and \"vertica\""
-        die "Please set MONASCA_METRICS_DB to either \"influxdb'' or \"vertica\""
+        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\", \"vertica\" and \"cassandra\""
+        die "Please set MONASCA_METRICS_DB to either \"influxdb\", \"vertica\" or \"cassandra\""
 
     fi
 
@@ -231,6 +235,8 @@ function unstack_monasca {
     sudo service verticad stop || true
 
     sudo service vertica_agent stop || true
+
+    sudo service cassandra stop || true
 }
 
 function clean_monasca {
@@ -317,11 +323,15 @@ function clean_monasca {
 
         clean_monasca_vertica
 
+    elif [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+
+        clean_monasca_cassandra
+
     else
 
         echo "Found invalid value for variable MONASCA_METRICS_DB: $MONASCA_METRICS_DB"
-        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\" and \"vertica\""
-        die "Please set MONASCA_METRICS_DB to either \"influxdb'' or \"vertica\""
+        echo "Valid values for MONASCA_METRICS_DB are \"influxdb\", \"vertica\" and \"cassandra\""
+        die "Please set MONASCA_METRICS_DB to either \"influxdb\", \"vertica\" or \"cassandra\""
 
     fi
 
@@ -555,6 +565,58 @@ function install_monasca_vertica {
 
 }
 
+function install_monasca_cassandra {
+
+    echo_summary "Install Monasca Cassandra"
+
+    # Recent Cassandra needs Java 8
+    sudo add-apt-repository ppa:openjdk-r/ppa
+    REPOS_UPDATED=False
+    apt_get_update
+    apt_get -y install openjdk-8-jre
+
+    if [[ "$OFFLINE" != "True" ]]; then
+        sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian ${CASSANDRA_VERSION} main' > /etc/apt/sources.list.d/cassandra.list"
+        REPOS_UPDATED=False
+        PUBLIC_KEY=`apt_get_update 2>&1 | awk '/NO_PUBKEY/ {print $21}'`
+        gpg --keyserver pgp.mit.edu --recv-keys ${PUBLIC_KEY}
+        gpg --export --armor ${PUBLIC_KEY} | sudo apt-key --keyring /etc/apt/trusted.gpg.d/cassandra.gpg add -
+    fi
+
+    REPOS_UPDATED=False
+    apt_get_update
+    apt_get -y install cassandra
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        # set cassandra server listening ip address
+        sudo sed -i "s/^rpc_address: localhost/rpc_address: ${SERVICE_HOST}/g" /etc/cassandra/cassandra.yaml
+
+    fi
+
+    # set batch size larger
+    sudo sed -i "s/^batch_size_warn_threshold_in_kb: 5/batch_size_warn_threshold_in_kb: 50/g" /etc/cassandra/cassandra.yaml
+
+    sudo sed -i "s/^batch_size_fail_threshold_in_kb: 50/batch_size_fail_threshold_in_kb: 500/g" /etc/cassandra/cassandra.yaml
+
+    sudo sh -c "echo 'JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' >> /etc/default/cassandra"
+
+    sudo service cassandra restart
+
+    echo "Sleep for 15 seconds to wait starting up Cassandra"
+    sleep 15s
+
+    if [[ ${SERVICE_HOST} ]]; then
+
+        /usr/bin/cqlsh ${SERVICE_HOST} -f "${MONASCA_BASE}"/monasca-api/devstack/files/cassandra/cassandra_schema.cql
+
+    else
+
+        /usr/bin/cqlsh -f "${MONASCA_BASE}"/monasca-api/devstack/files/cassandra/cassandra_schema.cql
+    fi
+
+}
+
 function clean_monasca_influxdb {
 
     echo_summary "Clean Monasca Influxdb"
@@ -603,6 +665,27 @@ function clean_monasca_vertica {
     sudo rm -rf /home/dbadmin
 
     sudo apt-get -y purge dialog
+}
+
+function clean_monasca_cassandra {
+
+    echo_summary "Clean Monasca Cassandra"
+
+    sudo rm -f /etc/cassandra/cassandra.yaml
+
+    sudo rm -rf /var/log/cassandra
+
+    sudo rm -rf /etc/cassandra
+
+    apt_get -y purge openjdk-8-jre cassandra
+
+    apt_get -y autoremove
+
+    sudo add-apt-repository -r ppa:openjdk-r/ppa
+
+    sudo rm -f /etc/apt/sources.list.d/cassandra.list
+
+    sudo rm -f /etc/apt/trusted.gpg.d/cassandra.gpg
 }
 
 function install_cli_creds {
@@ -860,6 +943,7 @@ function install_monasca_api_python {
     pip_install gunicorn
     pip_install PyMySQL
     pip_install influxdb==2.8.0
+    pip_install cassandra-driver>=2.1.4,!=3.6.0
 
     (cd "${MONASCA_BASE}"/monasca-api ; sudo python setup.py sdist)
 
@@ -911,6 +995,16 @@ function install_monasca_api_python {
         sudo sed -i "s/hostname = 127\.0\.0\.1/hostname = ${SERVICE_HOST}/g" /etc/monasca/api-config.conf
         # set keystone ip address
         sudo sed -i "s/identity_uri = http:\/\/127\.0\.0\.1:35357/identity_uri = http:\/\/${SERVICE_HOST}:35357/g" /etc/monasca/api-config.conf
+        # set cassandra ip address
+        sudo sed -i "s/cluster_ip_addresses: 127\.0\.0\.1/cluster_ip_addresses: ${SERVICE_HOST}/g" /etc/monasca/api-config.conf
+
+    fi
+
+    if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+
+        # Switch databaseType from influxdb to cassandra
+        sudo sed -i "s/metrics_driver = monasca_api\.common\.repositories\.influxdb/#metrics_driver = monasca_api.common.repositories.influxdb/g" /etc/monasca/api-config.conf
+        sudo sed -i "s/#metrics_driver = monasca_api\.common\.repositories\.cassandra/metrics_driver = monasca_api.common.repositories.cassandra/g" /etc/monasca/api-config.conf
 
     fi
 
@@ -1074,6 +1168,7 @@ function install_monasca_persister_python {
 
     pip_install $MONASCA_PERSISTER_SRC_DIST
     pip_install influxdb==2.8.0
+    pip_install cassandra-driver>=2.1.4,!=3.6.0
 
     unset PIP_VIRTUAL_ENV
 
@@ -1109,6 +1204,18 @@ function install_monasca_persister_python {
         sudo sed -i "s/uri = 127\.0\.0\.1:9092/uri = ${SERVICE_HOST}:9092/g" /etc/monasca/persister.conf
         # set influxdb ip address
         sudo sed -i "s/ip_address = 127\.0\.0\.1/ip_address = ${SERVICE_HOST}/g" /etc/monasca/persister.conf
+        # set cassandra ip address
+        sudo sed -i "s/cluster_ip_addresses: 127\.0\.0\.1/cluster_ip_addresses: ${SERVICE_HOST}/g" /etc/monasca/persister.conf
+
+    fi
+
+    if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+
+        # Switch databaseType from influxdb to cassandra
+        sudo sed -i "s/metrics_driver = monasca_persister\.repositories\.influxdb/#metrics_driver = monasca_persister.repositories.influxdb/g" /etc/monasca/persister.conf
+        sudo sed -i "s/#metrics_driver = monasca_persister\.repositories\.cassandra/metrics_driver = monasca_persister.repositories.cassandra/g" /etc/monasca/persister.conf
+        sudo sed -i "s/alarm_state_history_driver = monasca_persister\.repositories\.influxdb/#alarm_state_history_driver = monasca_persister.repositories.influxdb/g" /etc/monasca/persister.conf
+        sudo sed -i "s/#alarm_state_history_driver = monasca_persister\.repositories\.cassandra/alarm_state_history_driver = monasca_persister.repositories.cassandra/g" /etc/monasca/persister.conf
 
     fi
 
