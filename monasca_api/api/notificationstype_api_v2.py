@@ -1,4 +1,4 @@
-# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -17,22 +17,22 @@ from oslo_log import log
 LOG = log.getLogger(__name__)
 
 
-class NotificationsV2API(object):
+class NotificationsTypeV2API(object):
     def __init__(self):
-        super(NotificationsV2API, self).__init__()
-        LOG.info('Initializing NotificationsV2API!')
+        super(NotificationsTypeV2API, self).__init__()
+        LOG.info('Initializing NotificationsTypeV2API!')
 
     def on_post(self, req, res):
         res.status = '501 Not Implemented'
 
-    def on_delete(self, req, res, notification_method_id):
+    def on_delete(self, req, res):
         res.status = '501 Not Implemented'
 
-    def on_get(self, req, res, notification_method_id):
+    def on_get(self, req, res):
         res.status = '501 Not Implemented'
 
-    def on_put(self, req, res, notification_method_id):
+    def on_put(self, req, res):
         res.status = '501 Not Implemented'
 
-    def on_patch(self, req, res, notification_method_id):
+    def on_patch(self, req):
         res.status = '501 Not Implemented'

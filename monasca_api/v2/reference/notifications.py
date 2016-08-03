@@ -1,4 +1,4 @@
-# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -39,6 +39,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             cfg.CONF.security.default_authorized_roles)
         self._notifications_repo = simport.load(
             cfg.CONF.repositories.notifications_driver)()
+        self._notification_method_type_repo = simport.load(
+            cfg.CONF.repositories.notification_method_type_driver)()
         self.valid_periods = cfg.CONF.valid_notification_periods
 
     def _parse_and_validate_notification(self, notification, require_all=False):
@@ -70,6 +72,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                     "A notification method with name {} already exists with id {}"
                     .format(name, found_notification_id))
 
+    def _validate_notification_method_type_exist(self, nmt):
+        notification_methods = self._notification_method_type_repo.list_notification_method_types()
+        exists = nmt.upper() in notification_methods
+
+        if not exists:
+            LOG.warn("Found no notification method type  {} . Did you install/enable the plugin for that type?"
+                     .format(nmt))
+            raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} ".format(nmt))
+
     @resource.resource_try_catch_block
     def _create_notification(self, tenant_id, notification, uri):
 
@@ -79,6 +90,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         period = notification['period']
 
         self._validate_name_not_conflicting(tenant_id, name)
+        self._validate_notification_method_type_exist(notification_type)
 
         notification_id = self._notifications_repo.create_notification(
             tenant_id,
@@ -103,6 +115,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         period = notification['period']
 
         self._validate_name_not_conflicting(tenant_id, name, expected_id=notification_id)
+        self._validate_notification_method_type_exist(notification_type)
 
         self._notifications_repo.update_notification(notification_id, tenant_id, name,
                                                      notification_type,

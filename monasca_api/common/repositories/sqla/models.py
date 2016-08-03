@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015 Robin Hood
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,6 +78,11 @@ def create_nm_model(metadata=None):
                  Column('period', Integer),
                  Column('created_at', DateTime),
                  Column('updated_at', DateTime))
+
+
+def create_nmt_model(metadata=None):
+    return Table('notification_method_type', metadata,
+                 Column('name', String(20), primary_key=True))
 
 
 def create_mdd_model(metadata=None):

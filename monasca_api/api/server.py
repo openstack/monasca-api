@@ -1,5 +1,5 @@
 # Copyright 2014 IBM Corp
-# Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -45,7 +45,9 @@ dispatcher_opts = [cfg.StrOpt('versions', default=None,
                    cfg.StrOpt('notification_methods', default=None,
                               help='Notification methods'),
                    cfg.StrOpt('dimension_values', default=None,
-                              help='Dimension values')]
+                              help='Dimension values'),
+                   cfg.StrOpt('notification_method_types', default=None,
+                              help='notification_method_types methods')]
 
 dispatcher_group = cfg.OptGroup(name='dispatcher', title='dispatcher')
 cfg.CONF.register_group(dispatcher_group)
@@ -112,6 +114,10 @@ def launch(conf, config_file="/etc/monasca/api-config.conf"):
 
     dimension_values = simport.load(cfg.CONF.dispatcher.dimension_values)()
     app.add_route("/v2.0/metrics/dimensions/names/values", dimension_values)
+
+    notification_method_types = simport.load(
+        cfg.CONF.dispatcher.notification_method_types)()
+    app.add_route("/v2.0/notification-methods/types", notification_method_types)
 
     LOG.debug('Dispatcher drivers have been added to the routes!')
     return app

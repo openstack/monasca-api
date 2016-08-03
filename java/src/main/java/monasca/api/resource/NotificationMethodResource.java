@@ -1,11 +1,11 @@
 /*
- * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
- * 
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -45,7 +45,6 @@ import monasca.api.app.validation.NotificationMethodValidation;
 import monasca.api.app.validation.Validation;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
 import monasca.api.domain.model.notificationmethod.NotificationMethodRepo;
-import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 import monasca.api.infrastructure.persistence.PersistUtils;
 import monasca.api.resource.annotation.PATCH;
 
@@ -59,6 +58,7 @@ public class NotificationMethodResource {
   private final static List<String> ALLOWED_SORT_BY = Arrays.asList("id", "name", "type",
                                                                     "address", "updated_at",
                                                                     "created_at");
+
   private final List<Integer> validPeriods;
 
 
@@ -69,6 +69,7 @@ public class NotificationMethodResource {
     this.persistUtils = persistUtils;
     this.validPeriods = config.validNotificationPeriods == null ? Arrays.asList(0, 60):
             config.validNotificationPeriods;
+
   }
 
   @POST
@@ -145,7 +146,7 @@ public class NotificationMethodResource {
     NotificationMethod originalNotificationMethod = repo.findById(tenantId, notificationMethodId);
     String name = command.name == null ? originalNotificationMethod.getName()
             : command.name;
-    NotificationMethodType type = command.type == null ? originalNotificationMethod.getType()
+    String type = command.type == null ? originalNotificationMethod.getType()
             : command.type;
     String address = command.address == null ? originalNotificationMethod.getAddress()
             : command.address;

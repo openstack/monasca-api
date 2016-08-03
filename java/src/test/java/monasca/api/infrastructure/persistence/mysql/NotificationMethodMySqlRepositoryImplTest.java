@@ -1,11 +1,11 @@
 /*
- * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
- * 
+ * (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -26,7 +26,6 @@ import java.util.List;
 import monasca.api.domain.exception.EntityExistsException;
 import monasca.api.domain.exception.EntityNotFoundException;
 import monasca.api.domain.model.notificationmethod.NotificationMethod;
-import monasca.api.domain.model.notificationmethod.NotificationMethodType;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -44,12 +43,24 @@ public class NotificationMethodMySqlRepositoryImplTest {
   private Handle handle;
   private NotificationMethodMySqlRepoImpl repo;
 
+  private static final String NOTIFICATION_METHOD_WEBHOOK = "WEBHOOK";
+  private static final String NOTIFICATION_METHOD_EMAIL   = "EMAIL";
+  private static final String NOTIFICATION_METHOD_PAGERDUTY   = "PAGERDUTY";
+
   @BeforeClass
   protected void beforeClass() throws Exception {
     db = new DBI("jdbc:h2:mem:test;MODE=MySQL");
     handle = db.open();
     handle.execute(Resources.toString(getClass().getResource("notification_method.sql"),
         Charset.defaultCharset()));
+    handle.execute(Resources.toString(getClass().getResource("notification_method_type.sql"),
+            Charset.defaultCharset()));
+    handle
+    .execute("insert into notification_method_type ( name) values ('EMAIL')");
+    handle
+    .execute("insert into notification_method_type ( name) values ('PAGERDUTY')");
+    handle
+    .execute("insert into notification_method_type ( name) values ('WEBHOOK')");
     repo = new NotificationMethodMySqlRepoImpl(db, new PersistUtils());
   }
 
@@ -68,14 +79,14 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldCreateEmail() {
-    NotificationMethod nmA = repo.create("555", "MyEmail", NotificationMethodType.EMAIL, "a@b", 0);
+    NotificationMethod nmA = repo.create("555", "MyEmail", NOTIFICATION_METHOD_EMAIL, "a@b", 0);
     NotificationMethod nmB = repo.findById("555", nmA.getId());
 
     assertEquals(nmA, nmB);
   }
 
   public void shouldCreateWebhookNonZeroPeriod() {
-    NotificationMethod nmA = repo.create("555", "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 60);
+    NotificationMethod nmA = repo.create("555", "MyWebhook", NOTIFICATION_METHOD_WEBHOOK, "http://localhost:33", 60);
     NotificationMethod nmB = repo.findById("555", nmA.getId());
 
     assertEquals(nmA, nmB);
@@ -91,7 +102,7 @@ public class NotificationMethodMySqlRepositoryImplTest {
     NotificationMethod nm = repo.findById("444", "123");
 
     assertEquals(nm.getId(), "123");
-    assertEquals(nm.getType(), NotificationMethodType.EMAIL);
+    assertEquals(nm.getType(), NOTIFICATION_METHOD_EMAIL);
     assertEquals(nm.getAddress(), "a@b");
   }
 
@@ -99,20 +110,20 @@ public class NotificationMethodMySqlRepositoryImplTest {
     List<NotificationMethod> nms = repo.find("444", null, null, 1);
 
     assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MyEmail",
-        NotificationMethodType.EMAIL, "a@b", 0),new NotificationMethod("124", "OtherEmail",
-                NotificationMethodType.EMAIL, "a@b", 0)));
+            NOTIFICATION_METHOD_EMAIL, "a@b", 0),new NotificationMethod("124", "OtherEmail",
+              NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
   }
 
   public void shouldUpdate() {
-    repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc", 0);
+    repo.update("444", "123", "Foo", NOTIFICATION_METHOD_EMAIL, "abc", 0);
     NotificationMethod nm = repo.findById("444", "123");
 
-    assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc", 0));
+    assertEquals(nm, new NotificationMethod("123", "Foo", NOTIFICATION_METHOD_EMAIL, "abc", 0));
   }
 
   public void shouldUpdateWebhookWithNonZeroPeriod() {
-    NotificationMethod nmOriginal = repo.create("555", "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 0);
-    repo.update("555", nmOriginal.getId(), "MyWebhook", NotificationMethodType.WEBHOOK, "http://localhost:33", 60);
+    NotificationMethod nmOriginal = repo.create("555", "MyWebhook", NOTIFICATION_METHOD_WEBHOOK, "http://localhost:33", 0);
+    repo.update("555", nmOriginal.getId(), "MyWebhook", NOTIFICATION_METHOD_WEBHOOK, "http://localhost:33", 60);
     NotificationMethod nmUpdated = repo.findById("555", nmOriginal.getId());
 
     assertEquals(nmUpdated.getPeriod(), 60);
@@ -129,16 +140,16 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldUpdateDuplicateWithSameValues() {
-      repo.update("444", "123", "Foo", NotificationMethodType.EMAIL, "abc", 0);
+      repo.update("444", "123", "Foo", NOTIFICATION_METHOD_EMAIL, "abc", 0);
       NotificationMethod nm = repo.findById("444", "123");
 
-      assertEquals(nm, new NotificationMethod("123", "Foo", NotificationMethodType.EMAIL, "abc", 0));
+      assertEquals(nm, new NotificationMethod("123", "Foo", NOTIFICATION_METHOD_EMAIL, "abc", 0));
     }
 
   @Test(expectedExceptions = EntityExistsException.class)
   public void shouldNotUpdateDuplicateWithSameName() {
 
-      repo.update("444", "124", "MyEmail", NotificationMethodType.EMAIL, "abc", 0);
+      repo.update("444", "124", "MyEmail", NOTIFICATION_METHOD_EMAIL, "abc", 0);
     }
 
 }
