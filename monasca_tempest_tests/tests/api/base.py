@@ -93,5 +93,4 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
         query_params = urlparse.parse_qs(urlparse.urlparse(next_link).query)
         if 'offset' not in query_params:
             self.fail("No offset in next link: {}".format(next_link))
-
         return query_params['offset'][0]

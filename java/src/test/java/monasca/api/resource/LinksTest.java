@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+ * (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,7 +18,6 @@ import monasca.api.domain.model.alarm.Alarm;
 import monasca.api.domain.model.common.Link;
 import monasca.api.domain.model.common.Paged;
 import monasca.common.model.alarm.AlarmState;
-import monasca.api.domain.model.dimension.DimensionValues;
 import static org.testng.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -135,49 +134,4 @@ public class LinksTest {
         + ALARM_DEF_ID));
   }
 
-  public void verifyPaginateDimensionValues() throws UnsupportedEncodingException, URISyntaxException{
-    final String base = "http://TheVip:8070/v2.0/metrics/dimensions/names/values";
-    final String limitParam = "limit=1";
-    final String url = base + "?" + limitParam;
-    final UriInfo uriInfo = mock(UriInfo.class);
-    when(uriInfo.getRequestUri()).thenReturn(new URI(url));
-    when(uriInfo.getAbsolutePath()).thenReturn(new URI(base));
-
-    final Map<String, String> params = new HashMap<>();
-    params.put("limit", "1");
-    @SuppressWarnings("unchecked")
-    final MultivaluedMap<String, String> mockParams = mock(MultivaluedMap.class);
-    when(uriInfo.getQueryParameters()).thenReturn(mockParams);
-    when(mockParams.keySet()).thenReturn(params.keySet());
-    when(mockParams.get("limit")).thenReturn(Arrays.asList("1"));
-
-    List<String> values = new ArrayList<String>();
-    values.add("value1");
-    values.add("value2");
-    List<String> oneValue = Arrays.asList("value1");
-
-    DimensionValues dimVals = new DimensionValues("custom_metric",
-                                                  "dimension_name",
-                                                  values);
-
-    DimensionValues expectedDimVal = new DimensionValues("custom_metric",
-                                                         "dimension_name",
-                                                         oneValue);
-    final int limit = 1;
-    final Paged expected = new Paged();
-    final List<Link> links = new ArrayList<>();
-    String expectedSelf = url;
-    String expectedNext = base + "?offset=value1&" + limitParam;
-    links.add(new Link("self", expectedSelf));
-    links.add(new Link("next", expectedNext));
-    expected.links = links;
-
-    final ArrayList<DimensionValues> expectedElements = new ArrayList<DimensionValues>();
-    // Since limit is one, only the first element is returned
-    expectedElements.add(expectedDimVal);
-    expected.elements = expectedElements;
-
-    final Paged actual = Links.paginateDimensionValues(dimVals, 1, uriInfo);
-    assertEquals(actual, expected);
-  }
 }

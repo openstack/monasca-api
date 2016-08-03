@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,18 +14,11 @@
 
 package monasca.api.resource;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.testng.Assert.assertEquals;
 
-import java.util.List;
-import java.util.Map;
-
-import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
 import monasca.api.ApiConfig;
@@ -49,23 +42,32 @@ public class DimensionResourceTest extends AbstractMonApiResourceTest {
   }
 
   @SuppressWarnings("unchecked")
-  public void shouldQueryWithDefaultParams() throws Exception {
+  public void shouldQueryDimensionValuesWithDefaultParams() throws Exception {
 
     client()
         .resource(
             "/v2.0/metrics/dimensions/names/values?dimension_name=hpcs.compute")
         .header("X-Tenant-Id", "abc").get(ClientResponse.class);
-    verify(dimensionRepo).find(anyString(), anyString(), anyString(), anyString(),
+    verify(dimensionRepo).findValues(anyString(), anyString(), anyString(), anyString(),
            anyInt());
   }
 
-  public void shouldQueryWithOptionalMetricName() throws Exception {
+  public void shouldQueryDimensionValuesWithOptionalMetricName() throws Exception {
 
     client()
         .resource(
             "/v2.0/metrics/dimensions/names/values?dimension_name=hpcs.compute&metric_name=cpu_utilization")
         .header("X-Tenant-Id", "abc").get(ClientResponse.class);
-    verify(dimensionRepo).find(anyString(), anyString(), anyString(), anyString(),
+    verify(dimensionRepo).findValues(anyString(), anyString(), anyString(), anyString(),
            anyInt());
+  }
+
+  public void shouldQueryDimensionNamesWithDefaultParams() throws Exception {
+
+    client()
+       .resource(
+           "/v2.0/metrics/dimensions/names")
+       .header("X-Tenant-Id", "abc").get(ClientResponse.class);
+    verify(dimensionRepo).findNames(anyString(), anyString(), anyString(), anyInt());
   }
 }

@@ -16,7 +16,6 @@
 # under the License.
 from datetime import datetime
 from datetime import timedelta
-import hashlib
 import json
 
 from influxdb import client
@@ -207,28 +206,11 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _generate_dimension_values_id(self, metric_name, dimension_name):
-        sha1 = hashlib.sha1()
-        hashstr = "metricName=" + (metric_name or "") + "dimensionName=" + dimension_name
-        sha1.update(hashstr)
-        return sha1.hexdigest()
-
-    def _build_serie_dimension_values(self, series_names, metric_name, dimension_name,
-                                      tenant_id, region, offset):
-        dim_vals = []
-        sha1_id = self._generate_dimension_values_id(metric_name, dimension_name)
-        json_dim_vals = {u'id': sha1_id,
-                         u'dimension_name': dimension_name,
-                         u'values': dim_vals}
-
-        #
-        # Only return metric name if one was provided
-        #
-        if metric_name:
-            json_dim_vals[u'metric_name'] = metric_name
-
+    def _build_serie_dimension_values(self, series_names, dimension_name):
+        dim_values = []
+        json_dim_value_list = []
         if not series_names:
-            return json_dim_vals
+            return json_dim_value_list
 
         if 'series' in series_names.raw:
             for series in series_names.raw['series']:
@@ -240,12 +222,29 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                         if value and not name.startswith(u'_')
                     }
 
-                    if dimension_name in dims and dims[dimension_name] not in dim_vals:
-                        dim_vals.append(dims[dimension_name])
+                    if dimension_name in dims and dims[dimension_name] not in\
+                            dim_values:
+                        dim_values.append(dims[dimension_name])
+                        json_dim_value_list.append({u'dimension_value':
+                                                   dims[dimension_name]})
 
-        dim_vals = sorted(dim_vals)
-        json_dim_vals[u'values'] = dim_vals
-        return json_dim_vals
+        json_dim_value_list = sorted(json_dim_value_list)
+        return json_dim_value_list
+
+    def _build_serie_dimension_names(self, series_names):
+        dim_names = []
+        json_dim_name_list = []
+        if not series_names:
+            return json_dim_name_list
+
+        if 'series' in series_names.raw:
+            for series in series_names.raw['series']:
+                for name in series[u'columns']:
+                    if name not in dim_names and not name.startswith(u'_'):
+                        dim_names.append(name)
+                        json_dim_name_list.append({u'dimension_name': name})
+        json_dim_name_list = sorted(json_dim_name_list)
+        return json_dim_name_list
 
     def _build_serie_metric_list(self, series_names, tenant_id, region,
                                  start_timestamp, end_timestamp,
@@ -619,21 +618,25 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return int((dt - datetime(1970, 1, 1)).total_seconds() * 1000)
 
     def list_dimension_values(self, tenant_id, region, metric_name,
-                              dimension_name, offset, limit):
-
+                              dimension_name):
         try:
-            query = self._build_show_series_query(None, metric_name, tenant_id, region)
+            query = self._build_show_series_query(None, metric_name,
+                                                  tenant_id, region)
             result = self.influxdb_client.query(query)
+            json_dim_name_list = self._build_serie_dimension_values(
+                result, dimension_name)
+            return json_dim_name_list
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
 
-            json_dim_vals = self._build_serie_dimension_values(result,
-                                                               metric_name,
-                                                               dimension_name,
-                                                               tenant_id,
-                                                               region,
-                                                               offset)
-
-            return json_dim_vals
-
+    def list_dimension_names(self, tenant_id, region, metric_name):
+        try:
+            query = self._build_show_series_query(None, metric_name,
+                                                  tenant_id, region)
+            result = self.influxdb_client.query(query)
+            json_dim_name_list = self._build_serie_dimension_names(result)
+            return json_dim_name_list
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)

@@ -1,5 +1,5 @@
 # Copyright 2014 IBM Corp
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -61,6 +61,15 @@ class DimensionValuesV2API(object):
     def __init__(self):
         super(DimensionValuesV2API, self).__init__()
         LOG.info('Initializing DimensionValuesV2API!')
+
+    def on_get(self, req, res):
+        res.status = '501 Not Implemented'
+
+
+class DimensionNamesV2API(object):
+    def __init__(self):
+        super(DimensionNamesV2API, self).__init__()
+        LOG.info('Initializing DimensionNamesV2API!')
 
     def on_get(self, req, res):
         res.status = '501 Not Implemented'
