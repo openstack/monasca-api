@@ -175,10 +175,12 @@ CREATE TABLE `sub_alarm` (
   `expression` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
+  `state` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OK',
   PRIMARY KEY (`id`),
   KEY `fk_sub_alarm` (`alarm_id`),
   KEY `fk_sub_alarm_expr` (`sub_expression_id`),
   CONSTRAINT `fk_sub_alarm` FOREIGN KEY (`alarm_id`) REFERENCES `alarm` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_sub_alarm_state` FOREIGN KEY (`state`) REFERENCES `alarm_state` (`name`),
   CONSTRAINT `fk_sub_alarm_expr` FOREIGN KEY (`sub_expression_id`) REFERENCES `sub_alarm_definition` (`id`)
 );
 
