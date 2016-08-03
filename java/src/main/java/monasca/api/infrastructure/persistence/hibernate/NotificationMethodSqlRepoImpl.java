@@ -271,7 +271,7 @@ public class NotificationMethodSqlRepoImpl
     return db == null ? null : new NotificationMethod(
         db.getId(),
         db.getName(),
-        db.getType().name(),
+        db.getType().toString(),
         db.getAddress(),
         db.getPeriod()
     );
