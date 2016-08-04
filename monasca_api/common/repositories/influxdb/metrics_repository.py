@@ -14,8 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from datetime import datetime
 
+from datetime import datetime
 import hashlib
 import json
 
@@ -33,16 +33,7 @@ MEASUREMENT_NOT_FOUND_MSG = "measurement not found"
 LOG = log.getLogger(__name__)
 
 
-class MetricsRepository(metrics_repository.MetricsRepository):
-    MULTIPLE_METRICS_MESSAGE = ("Found multiple metrics matching metric name"
-                                + " and dimensions. Please refine your search"
-                                + " criteria using a unique"
-                                + " metric name or additional dimensions."
-                                + " Alternatively, you may specify"
-                                + " 'merge_metrics=True' as a query"
-                                + " parameter to combine all metrics"
-                                + " matching search criteria into a single"
-                                + " series.")
+class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def __init__(self):
 

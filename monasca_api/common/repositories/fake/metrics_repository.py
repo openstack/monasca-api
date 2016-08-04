@@ -19,7 +19,7 @@ from monasca_api.common.repositories import metrics_repository
 LOG = log.getLogger(__name__)
 
 
-class MetricsRepository(metrics_repository.MetricsRepository):
+class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def __init__(self):
         return
 
