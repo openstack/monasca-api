@@ -1,4 +1,4 @@
-# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -41,9 +41,11 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
             metric = helpers.create_metric(
                 name="name-1", dimensions={'key1': 'value1'}, value=0.0)
             cls.monasca_client.create_metrics(metric)
-            # sleep 0.05 second between metrics to make sure timestamps
-            # are different
-            time.sleep(0.05)
+            # sleep 1 second between metrics to make sure timestamps
+            # are different in the second field. Influxdb has a bug
+            # where it does not sort properly by milliseconds. .014
+            # is sorted as greater than .138
+            time.sleep(1.0)
             resp, response_body = cls.monasca_client.\
                 list_alarms_state_history()
             elements = response_body['elements']
