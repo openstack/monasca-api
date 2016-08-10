@@ -358,12 +358,6 @@ function install_monasca_virtual_env {
     sudo chown $STACK_USER:monasca /opt/monasca
 
     (cd /opt/monasca ; virtualenv .)
-
-    PIP_VIRTUAL_ENV=/opt/monasca
-
-    pip_install --pre --allow-all-external --allow-unverified simport simport
-
-    unset PIP_VIRTUAL_ENV
 }
 
 function clean_monasca_virtual_env {
@@ -1309,7 +1303,7 @@ function install_monasca_notification {
 
     PIP_VIRTUAL_ENV=/opt/monasca
 
-    pip_install --allow-unverified simport $MONASCA_NOTIFICATION_SRC_DIST
+    pip_install $MONASCA_NOTIFICATION_SRC_DIST
 
     pip_install mysql-python
 
