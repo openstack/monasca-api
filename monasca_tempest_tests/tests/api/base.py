@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+import six.moves.urllib.parse as urlparse
 from tempest import config
 from tempest.common import credentials_factory
 import tempest.test
@@ -76,3 +78,20 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
                     id = element['id']
                     cls.monasca_client.delete_alarm(id)
         cls.cred_provider.clear_creds()
+
+    def _get_offset(self, response_body):
+        next_link = None
+        self_link = None
+        for link in response_body['links']:
+            if link['rel'] == 'next':
+                next_link = link['href']
+            if link['rel'] == 'self':
+                self_link = link['href']
+        if not next_link:
+            query_parms = urlparse.parse_qs(urlparse.urlparse(self_link).query)
+            self.fail("No next link returned with query parameters: {}".format(query_parms))
+        query_params = urlparse.parse_qs(urlparse.urlparse(next_link).query)
+        if 'offset' not in query_params:
+            self.fail("No offset in next link: {}".format(next_link))
+
+        return query_params['offset'][0]

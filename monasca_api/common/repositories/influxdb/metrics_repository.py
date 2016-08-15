@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,8 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from datetime import datetime
+from datetime import timedelta
 import hashlib
 import json
 
@@ -82,6 +82,15 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                               region, start_timestamp,
                                               end_timestamp)
         if offset:
+            if '_' in offset:
+                tmp = datetime.strptime(str(offset).split('_')[1], "%Y-%m-%dT%H:%M:%SZ")
+                tmp = tmp + timedelta(seconds=int(period))
+                # Leave out any ID as influx doesn't understand it
+                offset = tmp.isoformat()
+            else:
+                tmp = datetime.strptime(offset, "%Y-%m-%dT%H:%M:%SZ")
+                offset = tmp + timedelta(seconds=int(period))
+
             offset_clause = (" and time > '{}'".format(offset))
             from_clause += offset_clause
 
@@ -443,6 +452,10 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
                     stats_list = []
                     for stats in serie['values']:
+                        # remove sub-second timestamp values (period can never be less than 1)
+                        timestamp = stats[0]
+                        if '.' in timestamp:
+                            stats[0] = str(timestamp)[:19] + 'Z'
                         stats[1] = stats[1] or 0
                         stats_list.append(stats)
 

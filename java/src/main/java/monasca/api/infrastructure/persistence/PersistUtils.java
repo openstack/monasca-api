@@ -13,16 +13,17 @@
  */
 package monasca.api.infrastructure.persistence;
 
+import monasca.api.ApiConfig;
+
 import com.google.inject.Inject;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import monasca.api.ApiConfig;
 
 public class PersistUtils {
 
@@ -32,17 +33,7 @@ public class PersistUtils {
 
   private final int DEFAULT_MAX_QUERY_LIMIT = 10000;
 
-  private final ThreadLocal<SimpleDateFormat> simpleDateFormatSpace = new ThreadLocal<>();
-  private static final String FORMAT_WITH_SPACE = "yyyy-MM-dd HH:mm:ss.SSSX";
-
-  private final ThreadLocal<SimpleDateFormat> simpleDateFormatSpaceOneDigitMilli = new ThreadLocal<>();
-  private static final String FORMAT_WITH_SPACE_ONE_DIGIT_MILLI = "yyyy-MM-dd HH:mm:ss.SX";
-
-  private final ThreadLocal<SimpleDateFormat> simpleDateFormatT = new ThreadLocal<>();
-  private static final String FORMAT_WITH_T = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
-
-  private final ThreadLocal<SimpleDateFormat> simpleDateFormatTOneDigitMilli = new ThreadLocal<>();
-  private static final String FORMAT_WITH_T_ONE_DIGIT_MILLI = "yyyy-MM-dd'T'HH:mm:ss.SX";
+  private DateTimeFormatter isoFormat = ISODateTimeFormat.dateTime();
 
   @Inject
   public PersistUtils(ApiConfig config) {
@@ -108,46 +99,7 @@ public class PersistUtils {
     }
   }
 
-  private Date parseForFormat(final String timeStamp,
-                              final ThreadLocal<SimpleDateFormat> formatter,
-                              final String format) throws ParseException {
-    if (formatter.get() == null) {
-      formatter.set(new SimpleDateFormat(format));
-    }
-    return formatter.get().parse(timeStamp);
-  }
-
   public Date parseTimestamp(String timestampString) throws ParseException {
-
-    try {
-
-      // Handles 2 and 3 digit millis. '2016-01-01 01:01:01.12Z' or '2016-01-01 01:01:01.123Z'
-      return parseForFormat(timestampString, this.simpleDateFormatSpace, FORMAT_WITH_SPACE);
-
-    } catch (ParseException pe0) {
-
-      try {
-
-        // Handles 1 digit millis. '2016-01-01 01:01:01.1Z'
-        return parseForFormat(timestampString, this.simpleDateFormatSpaceOneDigitMilli,
-            FORMAT_WITH_SPACE_ONE_DIGIT_MILLI);
-
-      } catch (ParseException pe1) {
-
-        try {
-
-          // Handles 2 and 3 digit millis with 'T'. Comes from the Python Persister.
-          //  '2016-01-01T01:01:01.12Z' or '2016-01-01T01:01:01.123Z'
-          return parseForFormat(timestampString, this.simpleDateFormatT, FORMAT_WITH_T);
-
-        } catch (ParseException pe2) {
-
-          // Handles 1 digit millis with 'T'. Comes from the Python Persister.
-          // '2016-01-01T01:01:01.1Z'
-          return parseForFormat(timestampString, this.simpleDateFormatTOneDigitMilli,
-              FORMAT_WITH_T_ONE_DIGIT_MILLI);
-        }
-      }
-    }
+    return isoFormat.parseDateTime(timestampString.trim().replace(' ', 'T')).toDate();
   }
 }
