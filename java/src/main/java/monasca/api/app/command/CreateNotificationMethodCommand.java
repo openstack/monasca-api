@@ -89,6 +89,10 @@ public class CreateNotificationMethodCommand {
     this.convertedPeriod = Validation.parseAndValidateNumber(period, "period");
   }
 
+  public void setType(String type){
+    this.type = type == null ? null : type.toUpperCase();
+  }
+
   public int getConvertedPeriod(){
     return this.convertedPeriod;
   }
