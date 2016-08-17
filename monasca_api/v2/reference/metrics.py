@@ -131,6 +131,9 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         name = helpers.get_query_name(req)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -139,7 +142,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
         start_timestamp = helpers.get_query_starttime_timestamp(req, False)
         end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         helpers.validate_start_end_timestamps(start_timestamp, end_timestamp)
-        result = self._list_metrics(req.project_id, name,
+        result = self._list_metrics(tenant_id, name,
                                     dimensions, req.uri,
                                     offset, req.limit,
                                     start_timestamp, end_timestamp)
@@ -170,6 +173,9 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -181,7 +187,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         merge_metrics_flag = get_merge_metrics_flag(req)
         group_by = helpers.get_query_group_by(req)
 
-        result = self._measurement_list(req.project_id, name, dimensions,
+        result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp,
                                         req.uri, offset,
                                         req.limit, merge_metrics_flag,
@@ -214,6 +220,8 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         try:
             super(MetricsStatistics, self).__init__()
             self._region = cfg.CONF.region
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
             self._get_metrics_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles +
                 cfg.CONF.security.read_only_authorized_roles)
@@ -227,6 +235,9 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -240,7 +251,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         merge_metrics_flag = get_merge_metrics_flag(req)
         group_by = helpers.get_query_group_by(req)
 
-        result = self._metric_statistics(req.project_id, name, dimensions,
+        result = self._metric_statistics(tenant_id, name, dimensions,
                                          start_timestamp, end_timestamp,
                                          statistics, period, req.uri,
                                          offset, req.limit, merge_metrics_flag,
@@ -274,6 +285,8 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
         try:
             super(MetricsNames, self).__init__()
             self._region = cfg.CONF.region
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
             self._get_metrics_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles +
                 cfg.CONF.security.read_only_authorized_roles)
@@ -287,10 +300,13 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         offset = helpers.get_query_param(req, 'offset')
-        result = self._list_metric_names(req.project_id, dimensions,
+        result = self._list_metric_names(tenant_id, dimensions,
                                          req.uri, offset, req.limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -311,6 +327,8 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
         try:
             super(DimensionValues, self).__init__()
             self._region = cfg.CONF.region
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
             self._get_metrics_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles +
                 cfg.CONF.security.read_only_authorized_roles)
@@ -324,11 +342,14 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         metric_name = helpers.get_query_param(req, 'metric_name')
         dimension_name = helpers.get_query_param(req, 'dimension_name',
                                                  required=True)
         offset = helpers.get_query_param(req, 'offset')
-        result = self._dimension_values(req.project_id, req.uri, metric_name,
+        result = self._dimension_values(tenant_id, req.uri, metric_name,
                                         dimension_name, offset, req.limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -350,6 +371,8 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         try:
             super(DimensionNames, self).__init__()
             self._region = cfg.CONF.region
+            self._delegate_authorized_roles = (
+                cfg.CONF.security.delegate_authorized_roles)
             self._get_metrics_authorized_roles = (
                 cfg.CONF.security.default_authorized_roles +
                 cfg.CONF.security.read_only_authorized_roles)
@@ -363,9 +386,12 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
+        tenant_id = (
+            helpers.get_x_tenant_or_tenant_id(req,
+                                              self._delegate_authorized_roles))
         metric_name = helpers.get_query_param(req, 'metric_name')
         offset = helpers.get_query_param(req, 'offset')
-        result = self._dimension_names(req.project_id, req.uri, metric_name,
+        result = self._dimension_names(tenant_id, req.uri, metric_name,
                                        offset, req.limit)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200

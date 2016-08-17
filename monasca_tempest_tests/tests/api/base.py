@@ -39,9 +39,10 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
             force_tenant_isolation=True,
             identity_version=auth_version)
         credentials = cls.cred_provider.get_creds_by_roles(
-            ['monasca-user', 'anotherrole']).credentials
+            ['monasca-user', 'anotherrole', 'admin']).credentials
         cls.os = clients.Manager(credentials=credentials)
         cls.monasca_client = cls.os.monasca_client
+        cls.tenants_client = cls.os.tenants_client
 
     @staticmethod
     def cleanup_resources(method, list_of_ids):
