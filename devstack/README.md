@@ -21,7 +21,6 @@ To run Monasca in DevStack, do the following three steps.
     \# BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
     [[local|localrc]]
-    MYSQL_PASSWORD=secretmysql
     DATABASE_PASSWORD=secretdatabase
     RABBIT_PASSWORD=secretrabbit
     ADMIN_PASSWORD=secretadmin
@@ -86,7 +85,7 @@ To enable Vertica, do the following:
 1. Register and download the Vertica Debian installer from `https://my.vertica.com/download/vertica/community-edition/` and put it in your home directory.
 Unfortunately, there isn't a URL that the DevStack installer can automatically use, so it must be downloaded seperately, and put in a location where the installer can find it when it runs.
 The installer assumes this location is your home directory.
-When using Vagrant, your home directory will normally be mounted inside the VM as "/vagrant_home". 
+When using Vagrant, your home directory will normally be mounted inside the VM as "/vagrant_home".
 
 2. Modify the environment variable `MONASCA_METRICS_DB` in the `local.conf`, `settings` or `Vagrantfile` file from influxdb to vertica as follows:
 

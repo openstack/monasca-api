@@ -51,6 +51,11 @@ export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_
 # Set default metrics DB to InfluxDB
 export MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 
+# Determine password for database (copied from devstack/lib/database)
+if [ -n "$MYSQL_PASSWORD" ]; then
+    DATABASE_PASSWORD=$MYSQL_PASSWORD
+fi
+
 # Determine if we are running in devstack-gate or devstack.
 if [[ $DEST ]]; then
 
@@ -740,7 +745,7 @@ function install_schema {
     sudo chown root:root /opt/monasca/sqls/mon.sql
 
     # must login as root@localhost
-    sudo mysql -h "127.0.0.1" -uroot -psecretmysql < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/winchester.sql /opt/monasca/sqls/winchester.sql
 
@@ -749,7 +754,7 @@ function install_schema {
     sudo chown root:root /opt/monasca/sqls/winchester.sql
 
     # must login as root@localhost
-    sudo mysql -h "127.0.0.1" -uroot -psecretmysql < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
+    sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo mkdir -p /opt/kafka/logs || true
 
@@ -770,9 +775,9 @@ function clean_schema {
 
     echo_summary "Clean Monasca Schema"
 
-    sudo echo "drop database winchester;" | mysql -uroot -ppassword
+    sudo echo "drop database winchester;" | mysql -u$DATABASE_USER -p$DATABASE_PASSWORD
 
-    sudo echo "drop database mon;" | mysql -uroot -ppassword
+    sudo echo "drop database mon;" | mysql -u$DATABASE_USER -p$DATABASE_PASSWORD
 
     sudo rm -f /opt/monasca/sqls/winchester.sql
 
