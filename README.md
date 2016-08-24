@@ -90,9 +90,9 @@ python monasca api implementation
 =================================
 
 To install the python api implementation, git clone the source and run the
-following command::
+following command using python3::
 
-    sudo python setup.py install
+    sudo python3 setup.py install
 
 If it installs successfully, you will need to make changes to the following
 two files to reflect your system settings, especially where kafka server is
