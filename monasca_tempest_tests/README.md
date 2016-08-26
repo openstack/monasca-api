@@ -24,7 +24,7 @@ Currently the devstack environment is needed to run the tests. Instructions on s
 4. Create ```etc/tempest.conf``` in the Tempest root dir by running the following command:
 
     ```
-    oslo-config-generator --config-file  etc/config-generator.tempest.conf  --output-file etc/tempest.conf
+    oslo-config-generator --config-file tempest/cmd/config-generator.tempest.conf  --output-file etc/tempest.conf
     ```
 
     Add the following sections to ```tempest.conf``` for testing using the devstack environment.
