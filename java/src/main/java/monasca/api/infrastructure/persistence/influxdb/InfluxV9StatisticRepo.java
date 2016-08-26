@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014, 2016 Hewlett-Packard Development LP
+ * (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -79,8 +79,9 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
       int indexOfUnderscore = offset.indexOf('_');
       if (indexOfUnderscore > -1) {
         offsetTimePart = offset.substring(indexOfUnderscore + 1);
-        // Add the period to the offset to ensure only the next group of points are returned
-        DateTime offsetDateTime = DateTime.parse(offsetTimePart).plusSeconds(period);
+        // Add the period minus one millisecond to the offset
+        // to ensure only the next group of points are returned
+        DateTime offsetDateTime = DateTime.parse(offsetTimePart).plusSeconds(period).minusMillis(1);
         // leave out any ID, as influx doesn't understand it
         offset = offsetDateTime.toString();
       }
@@ -196,6 +197,8 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
           }
 
           List<Object> values = buildValsList(valueObjects);
+          if (values == null)
+            continue;
 
           if (((String) values.get(0)).compareTo(offsetTimestamp) >= 0 || index > offsetId) {
             statistics.addMeasurement(values);
@@ -229,9 +232,13 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
     else
       valObjArryList.add(timestamp);
 
-    // All other values are doubles.
+    // All other values are doubles or nulls.
     for (int i = 1; i < values.length; ++i) {
-      valObjArryList.add(Double.parseDouble((String) values[i]));
+      if (values[i] != null) {
+        valObjArryList.add(Double.parseDouble((String) values[i]));
+      } else {
+        return null;
+      }
     }
 
     return valObjArryList;
