@@ -1,22 +1,25 @@
-oslo.config
-oslo.log
-oslo.middleware
-oslo.serialization
-oslo.utils
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, which may cause wedges in the gate later.
+oslo.config>=3.14.0 # Apache-2.0
+oslo.log>=1.14.0 # Apache-2.0
+oslo.middleware>=3.0.0 # Apache-2.0
+oslo.serialization>=1.10.0 # Apache-2.0
+oslo.utils>=3.16.0 # Apache-2.0
 
-python-keystoneclient
+python-keystoneclient!=2.1.0,>=2.0.0 # Apache-2.0
 
-falcon
-keystonemiddleware
-pastedeploy
-pbr
-six
-pyparsing
-voluptuous
+falcon>=0.1.6 # Apache-2.0
+keystonemiddleware!=4.1.0,!=4.5.0,>=4.0.0 # Apache-2.0
+PasteDeploy>=1.5.0 # MIT
+pbr>=1.6 # Apache-2.0
+six>=1.9.0 # MIT
+pyparsing>=2.0.1 # MIT
+voluptuous>=0.8.9 # BSD License
 #influxdb
 #cassandra-driver>=2.1.4,!=3.6.0 # Apache-2.0
-eventlet
-kafka-python>=0.9.5,<1.0.0
-simplejson
-monasca-common>=0.0.2
-sqlalchemy
+eventlet!=0.18.3,>=0.18.2 # MIT
+kafka-python<1.0.0,>=0.9.5 # Apache-2.0
+simplejson>=2.2.0 # MIT
+monasca-common>=1.0.0 # Apache-2.0
+SQLAlchemy<1.1.0,>=1.0.10 # MIT
