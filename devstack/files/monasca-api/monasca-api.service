@@ -1,11 +1,8 @@
-#
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +12,18 @@
 # limitations under the License.
 #
 
-# Startup script for the monasca_notification
+# Startup script for the Monasca API
 
-description "Monasca Notification daemon"
-start on runlevel [2345]
+[Unit]
+Description=Monasca API Java app
+Requires=network.target
+After=network.target kafka.service influxdb.service mysql.service
 
-console log
-respawn
+[Service]
+User=mon-api
+Group=monasca
+ExecStart=/usr/bin/java -Dfile.encoding=UTF-8 -Xmx128m -cp /opt/monasca/monasca-api.jar monasca.api.MonApiApplication server /etc/monasca/api-config.yml
+Restart=on-failure
 
-kill timeout 240
-respawn limit 25 5
-
-setgid monasca
-setuid mon-notification
-exec /opt/monasca/bin/monasca-notification
+[Install]
+WantedBy=multi-user.target
