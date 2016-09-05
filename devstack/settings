@@ -42,6 +42,8 @@ enable_service monasca
 # Monasca infrastructure services
 #
 
+enable_service zookeeper
+
 # Monasca databases
 # MySQL is already enabled in devstack
 enable_service monasca-influxdb
@@ -49,10 +51,7 @@ enable_service monasca-influxdb
 # Apache Storm
 enable_service monasca-storm
 
-# monasca-zookeeper depends on openjdk-7
-enable_service monasca-zookeeper
-
-# monasca-kafka depends on monasca-zookeeper
+# monasca-kafka depends on devstack-dlm-zookeeper
 enable_service monasca-kafka
 
 #
@@ -77,18 +76,62 @@ enable_service monasca-agent
 # monasca-cli depends on monasca-api
 enable_service monasca-cli
 
-# monasca-smoke-test enabled for ci
-enable_service monasca-smoke-test
-
 #
 # Dependent Software Versions
 #
 
 INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.9.5}
-VERTICA_VERSION=${VERTICA_VERSION:-7.2.1-0}
+VERTICA_VERSION=${VERTICA_VERSION:-8.0.0-0}
 CASSANDRA_VERSION=${CASSANDRA_VERSION:-37x}
 # Kafka deb consists of the version of scala plus the version of kafka
 BASE_KAFKA_VERSION=${BASE_KAFKA_VERSION:-0.8.1.1}
 SCALA_VERSION=${SCALA_VERSION:-2.9.2}
 KAFKA_VERSION=${KAFKA_VERSION:-${SCALA_VERSION}-${BASE_KAFKA_VERSION}}
 STORM_VERSION=${STORM_VERSION:-1.0.2}
+GO_VERSION=${GO_VERSION:-"1.7.1"}
+NODE_JS_VERSION=${NODE_JS_VERSION:-"4.0.0"}
+NVM_VERSION=${NVM_VERSION:-"0.32.1"}
+
+# Path settings
+MONASCA_BASE=${DEST}
+
+# Repository settings
+MONASCA_API_REPO=${MONASCA_API_REPO:-${GIT_BASE}/openstack/monasca-api.git}
+MONASCA_API_BRANCH=${MONASCA_API_BRANCH:-"stable/newton"}
+MONASCA_API_DIR=${MONASCA_BASE}/monasca-api
+
+MONASCA_PERSISTER_REPO=${MONASCA_PERSISTER_REPO:-${GIT_BASE}/openstack/monasca-persister.git}
+MONASCA_PERSISTER_BRANCH=${MONASCA_PERSISTER_BRANCH:-"stable/newton"}
+MONASCA_PERSISTER_DIR=${MONASCA_BASE}/monasca-persister
+
+MONASCA_NOTIFICATION_REPO=${MONASCA_NOTIFICATION_REPO:-${GIT_BASE}/openstack/monasca-notification.git}
+MONASCA_NOTIFICATION_BRANCH=${MONASCA_NOTIFICATION_BRANCH:-"stable/newton"}
+MONASCA_NOTIFICATION_DIR=${MONASCA_BASE}/monasca-notification
+
+MONASCA_THRESH_REPO=${MONASCA_THRESH_REPO:-${GIT_BASE}/openstack/monasca-thresh.git}
+MONASCA_THRESH_BRANCH=${MONASCA_THRESH_BRANCH:-"stable/newton"}
+MONASCA_THRESH_DIR=${MONASCA_BASE}/monasca-thresh
+
+MONASCA_CLIENT_REPO=${MONASCA_CLIENT_REPO:-${GIT_BASE}/openstack/python-monascaclient.git}
+MONASCA_CLIENT_BRANCH=${MONASCA_CLIENT_BRANCH:-"stable/newton"}
+MONASCA_CLIENT_DIR=${MONASCA_BASE}/python-monascaclient
+
+MONASCA_AGENT_REPO=${MONASCA_AGENT_REPO:-${GIT_BASE}/openstack/monasca-agent.git}
+MONASCA_AGENT_BRANCH=${MONASCA_AGENT_BRANCH:-"stable/newton"}
+MONASCA_AGENT_DIR=${MONASCA_BASE}/monasca-agent
+
+MONASCA_UI_REPO=${MONASCA_UI_REPO:-${GIT_BASE}/openstack/monasca-ui.git}
+MONASCA_UI_BRANCH=${MONASCA_UI_BRANCH:-"stable/newton"}
+MONASCA_UI_DIR=${MONASCA_BASE}/monasca-ui
+
+MONASCA_COMMON_REPO=${MONASCA_COMMON_REPO:-${GIT_BASE}/openstack/monasca-common.git}
+MONASCA_COMMON_BRANCH=${MONASCA_COMMON_BRANCH:-"stable/newton"}
+MONASCA_COMMON_DIR=${MONASCA_BASE}/monasca-common
+
+MONASCA_GRAFANA_DATASOURCE_REPO=${MONASCA_GRAFANA_DATASOURCE_REPO:-"https://github.com/twc-openstack/grafana-plugins.git"}
+MONASCA_GRAFANA_DATASOURCE_BRANCH=${MONASCA_GRAFANA_DATASOURCE_BRANCH:-"v2.6.0"}
+MONASCA_GRAFANA_DATASOURCE_DIR=${MONASCA_BASE}/grafana-plugins
+
+GRAFANA_REPO=${GRAFANA_REPO:-"https://github.com/twc-openstack/grafana.git"}
+GRAFANA_BRANCH=${GRAFANA_BRANCH:-"v2.6.0-keystone"}
+GRAFANA_DIR=${MONASCA_BASE}/grafana

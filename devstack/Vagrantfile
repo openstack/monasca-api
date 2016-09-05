@@ -26,8 +26,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.hostname = "devstack"
-  config.vm.box = "ubuntu/trusty64"
-  # config.vm.box_check_update = false
+  config.vm.box = "bento/ubuntu-16.04"
   config.vm.network "private_network",ip:"192.168.10.6"
   config.vm.synced_folder "~/", "/vagrant_home"
 
@@ -35,12 +34,9 @@ Vagrant.configure(2) do |config|
     vb.gui = false
     vb.memory = "12800"
     vb.cpus = 4
-    # vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    sudo apt-get update
-    sudo apt-get -y upgrade
     sudo apt-get -y install git
 
     if [ $http_proxy ]; then
@@ -70,9 +66,7 @@ Vagrant.configure(2) do |config|
       sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
     fi
 
-    git clone https://git.openstack.org/openstack-dev/devstack -b master
-    sudo pip install numpy
-    sudo pip install python-monascaclient
+    git clone https://git.openstack.org/openstack-dev/devstack --branch stable/newton --depth 1
     cd devstack
     echo '[[local|localrc]]
 
@@ -80,7 +74,7 @@ SERVICE_HOST=192.168.10.6
 HOST_IP=192.168.10.6
 HOST_IP_IFACE=eth1
 MYSQL_HOST=192.168.10.6
-MYSQL_PASSWORD=secretmysql
+
 DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
 ADMIN_PASSWORD=secretadmin
@@ -90,8 +84,10 @@ LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
 LOG_COLOR=False
 
+DEST=/opt/stack
+
 disable_all_services
-enable_service rabbit mysql key tempest horizon
+enable_service zookeeper rabbit mysql key tempest horizon
 
 # The following two variables allow switching between Java and Python for the implementations
 # of the Monasca API and the Monasca Persister. If these variables are not set, then the

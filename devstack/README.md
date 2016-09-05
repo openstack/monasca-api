@@ -21,7 +21,6 @@ To run Monasca in DevStack, do the following three steps.
     \# BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
     [[local|localrc]]
-    MYSQL_PASSWORD=secretmysql
     DATABASE_PASSWORD=secretdatabase
     RABBIT_PASSWORD=secretrabbit
     ADMIN_PASSWORD=secretadmin
