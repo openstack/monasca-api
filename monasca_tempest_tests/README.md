@@ -104,6 +104,17 @@ The Monasca Tempest Tests can be run using a variety of methods including:
     ```
 You can also use testr to create a list of specific tests for your needs.
 
+## Run the tests using Tempest Run command
+
+``tempest run`` is a domain-specific command to be used as the primary
+entry point for running Tempest tests.
+
+1. In the Tempest root dir:
+
+    ```
+    tempest run -r monasca_tempest_tests
+    ```
+
 ## Run the tests from the CLI using os-testr (no file necessary)
 [Os-testr](http://docs.openstack.org/developer/os-testr/) is a test wrapper that can be used to run the Monasca Tempest tests.
 
