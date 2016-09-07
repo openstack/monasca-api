@@ -12,11 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_log import log
-
 from monasca_api.common.repositories import metrics_repository
-
-LOG = log.getLogger(__name__)
 
 
 class MetricsRepository(metrics_repository.AbstractMetricsRepository):

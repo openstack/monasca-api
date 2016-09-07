@@ -18,17 +18,12 @@
 from datetime import datetime
 from time import time
 
-from oslo_log import log
-
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, delete, select, text, bindparam, func, literal_column, asc, desc
 from sqlalchemy import or_
-
-
-LOG = log.getLogger(__name__)
 
 
 class AlarmsRepository(sql_repository.SQLRepository,

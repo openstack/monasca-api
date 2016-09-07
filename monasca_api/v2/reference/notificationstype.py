@@ -15,13 +15,10 @@
 import falcon
 from monasca_common.simport import simport
 from oslo_config import cfg
-from oslo_log import log
 
 from monasca_api.api import notificationstype_api_v2
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
-
-LOG = log.getLogger(__name__)
 
 
 class NotificationsType(notificationstype_api_v2.NotificationsTypeV2API):

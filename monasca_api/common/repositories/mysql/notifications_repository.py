@@ -15,13 +15,10 @@
 import datetime
 
 from monasca_common.repositories.mysql import mysql_repository
-from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import notifications_repository as nr
-
-LOG = log.getLogger(__name__)
 
 
 class NotificationsRepository(mysql_repository.MySQLRepository,

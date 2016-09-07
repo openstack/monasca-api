@@ -15,7 +15,6 @@
 
 import datetime
 
-from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import alarm_definitions_repository as adr
@@ -26,9 +25,6 @@ from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, delete, insert
 from sqlalchemy import select, text, bindparam, null, literal_column
 from sqlalchemy import or_
-
-
-LOG = log.getLogger(__name__)
 
 
 class AlarmDefinitionsRepository(sql_repository.SQLRepository,

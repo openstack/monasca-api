@@ -15,7 +15,6 @@
 
 import datetime
 
-from oslo_log import log
 from oslo_utils import uuidutils
 
 from monasca_api.common.repositories import exceptions
@@ -24,8 +23,6 @@ from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
 from sqlalchemy import MetaData, update, insert, delete
 from sqlalchemy import select, bindparam, func, and_, literal_column
-
-LOG = log.getLogger(__name__)
 
 
 class NotificationsRepository(sql_repository.SQLRepository,

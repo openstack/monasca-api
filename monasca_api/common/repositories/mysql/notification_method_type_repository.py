@@ -14,11 +14,8 @@
 
 
 from monasca_common.repositories.mysql import mysql_repository
-from oslo_log import log
 
 from monasca_api.common.repositories import notification_method_type_repository as nr
-
-LOG = log.getLogger(__name__)
 
 
 class NotificationMethodTypeRepository(mysql_repository.MySQLRepository,
