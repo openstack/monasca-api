@@ -296,17 +296,11 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             return json_metric_list
 
         if 'series' in series_names.raw:
-
-            id = 0
-
             for series in series_names.raw['series']:
-                id += 1
-
-                name = {u'id': str(id),
-                        u'name': series[u'name']}
-
+                name = {u'name': series[u'name']}
                 json_metric_list.append(name)
 
+        json_metric_list = sorted(json_metric_list)
         return json_metric_list
 
     def _get_dimensions(self, tenant_id, region, name, dimensions):
@@ -399,22 +393,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
             raise exceptions.RepositoryException(ex)
 
-    def list_metric_names(self, tenant_id, region, dimensions, offset, limit):
+    def list_metric_names(self, tenant_id, region, dimensions):
 
         try:
 
             query = self._build_show_series_query(dimensions, None, tenant_id,
                                                   region)
-
-            query += " limit {}".format(limit + 1)
-
-            if offset:
-                query += ' offset {}'.format(int(offset) + 1)
-
             result = self.influxdb_client.query(query)
-
             json_name_list = self._build_serie_name_list(result)
-
             return json_name_list
 
         except Exception as ex:

@@ -35,7 +35,7 @@ class AbstractMetricsRepository(object):
         pass
 
     @abc.abstractmethod
-    def list_metric_names(self, tenant_id, region, dimensions, offset, limit):
+    def list_metric_names(self, tenant_id, region, dimensions):
         pass
 
     @abc.abstractmethod

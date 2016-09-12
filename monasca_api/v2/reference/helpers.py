@@ -1,6 +1,5 @@
-# Copyright 2014 Hewlett-Packard
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -353,6 +352,72 @@ def paginate(resource, uri, limit):
                     u'elements': resource}
 
     return resource
+
+
+def paginate_with_no_id(dictionary_list, uri, offset, limit):
+    """This method is to paginate a list of dictionaries with no id in it.
+       For example, metric name list, directory name list and directory
+       value list.
+    """
+    parsed_uri = urlparse.urlparse(uri)
+    self_link = build_base_uri(parsed_uri)
+    old_query_params = _get_old_query_params(parsed_uri)
+
+    if old_query_params:
+        self_link += '?' + '&'.join(old_query_params)
+
+    value_list = []
+    for item in dictionary_list:
+        value_list.extend(item.values())
+
+    if value_list:
+        # Truncate dictionary list with offset first
+        truncated_list_offset = _truncate_with_offset(
+            dictionary_list, value_list, offset)
+
+        # Then truncate it with limit
+        truncated_list_offset_limit = truncated_list_offset[:limit]
+
+        links = [{u'rel': u'self', u'href': self_link.decode('utf8')}]
+        if len(truncated_list_offset) > limit:
+            new_offset = truncated_list_offset_limit[limit - 1].values()[0]
+            next_link = build_base_uri(parsed_uri)
+            new_query_params = [u'offset' + '=' + new_offset]
+
+            _get_old_query_params_except_offset(new_query_params, parsed_uri)
+
+            if new_query_params:
+                next_link += '?' + '&'.join(new_query_params)
+
+            links.append({u'rel': u'next', u'href': next_link.decode('utf8')})
+
+        resource = {u'links': links,
+                    u'elements': truncated_list_offset_limit}
+    else:
+        resource = {u'links': ([{u'rel': u'self',
+                                 u'href': self_link.decode('utf8')}]),
+                    u'elements': dictionary_list}
+
+    return resource
+
+
+def _truncate_with_offset(resource, value_list, offset):
+    """Truncate a list of dictionaries with a given offset.
+    """
+    if not offset:
+        return resource
+
+    offset = offset.lower()
+    for i, j in enumerate(value_list):
+        # if offset matches one of the values in value_list,
+        # the truncated list should start with the one after current offset
+        if j == offset:
+            return resource[i + 1:]
+        # if offset does not exist in value_list, find the nearest
+        # location and truncate from that location.
+        if j > offset:
+            return resource[i:]
+    return []
 
 
 def paginate_alarming(resource, uri, limit):

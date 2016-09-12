@@ -302,10 +302,9 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
         result = self._metrics_repo.list_metric_names(tenant_id,
                                                       self._region,
-                                                      dimensions,
-                                                      offset, limit)
+                                                      dimensions)
 
-        return helpers.paginate(result, req_uri, limit)
+        return helpers.paginate_with_no_id(result, req_uri, offset, limit)
 
 
 class DimensionValues(metrics_api_v2.DimensionValuesV2API):
