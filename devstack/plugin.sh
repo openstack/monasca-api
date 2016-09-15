@@ -1418,12 +1418,6 @@ function install_storm {
 
     sudo ln -sf /var/log/storm /opt/storm/current/logs
 
-    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/cluster.xml /opt/storm/current/log4j2/cluster.xml
-
-    sudo chown storm:storm /opt/storm/current/log4j2/cluster.xml
-
-    sudo chmod 0644 /opt/storm/current/log4j2/cluster.xml
-
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/storm/storm.yaml /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
     sudo chown storm:storm /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
@@ -1464,8 +1458,6 @@ function clean_storm {
     sudo rm /etc/init/storm-nimbus.conf
 
     sudo rm /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
-
-    sudo rm /opt/storm/current/logback/cluster.xml
 
     sudo unlink /opt/storm/current/logs
 
