@@ -64,6 +64,9 @@ else
 
 fi
 
+# go version
+export GO_VERSION=${GO_VERSION:-"1.7.1"}
+
 function pre_install_monasca {
 :
 }
@@ -1827,8 +1830,8 @@ function install_monasca_grafana {
     echo_summary "Install Grafana"
 
     cd "${MONASCA_BASE}"
-    wget https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.5.2.linux-amd64.tar.gz
+    wget -N https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
 
     if [ ! -e grafana-plugins ]; then
@@ -1871,7 +1874,7 @@ function install_monasca_grafana {
     cd "${MONASCA_BASE}"
     sudo rm -r grafana-plugins
     sudo rm -r grafana
-    rm go1.5.2.linux-amd64.tar.gz
+    rm go${GO_VERSION}.linux-amd64.tar.gz
 
     sudo useradd grafana || true
     sudo mkdir /etc/grafana || true
