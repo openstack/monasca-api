@@ -1025,6 +1025,14 @@ function install_monasca_api_python {
 
     sudo ln -sf /etc/monasca/api-config.ini /etc/api-config.ini
 
+    sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/monasca-api/python/api-logging.conf /etc/monasca/api-logging.conf
+
+    sudo chown mon-api:root /etc/monasca/api-logging.conf
+
+    sudo chmod 0660 /etc/monasca/api-logging.conf
+
+    sudo ln -sf /etc/monasca/api-logging.conf /etc/api-logging.conf
+
     sudo start monasca-api || sudo restart monasca-api
 }
 
@@ -1056,6 +1064,10 @@ function clean_monasca_api_python {
     sudo rm /etc/api-config.conf
 
     sudo rm /etc/monasca/api-config.conf
+
+    sudo rm /etc/api-logging.conf
+
+    sudo rm /etc/monasca/api-logging.conf
 
     sudo rm /etc/api-config.ini
 
