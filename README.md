@@ -8,10 +8,8 @@ The full API Specification can be found in [docs/monasca-api-spec.md](docs/monas
 
 Requires monasca-common from https://git.openstack.org/openstack/monasca-common. First clone this repository and then do mvn install. Then return to monasca-api and:
 
-```
-cd java
-mvn clean package
-```
+    $ cd java
+    $ mvn clean package
 
 # StackForge Java Build
 
@@ -25,9 +23,7 @@ Combining monasca-common, monasca-thresh, monasca-api and monasca-persister into
 
 ## Usage
 
-```
-java -jar target/monasca-api.jar server config-file.yml
-```
+    $ java -jar target/monasca-api.jar server config-file.yml
 
 ## Keystone Configuration
 
@@ -92,7 +88,7 @@ python monasca api implementation
 To install the python api implementation, git clone the source and run the
 following command::
 
-    sudo python setup.py install
+    $ sudo python setup.py install
 
 If it installs successfully, you will need to make changes to the following
 two files to reflect your system settings, especially where kafka server is
@@ -107,22 +103,20 @@ up the server by following the following instructions.
 To start the server, run the following command:
 
     Running the server in foreground mode
-    gunicorn -k eventlet --worker-connections=2000 --backlog=1000
-             --paste /etc/monasca/api-config.ini
+    $ gunicorn -k eventlet --worker-connections=2000 --backlog=1000 --paste /etc/monasca/api-config.ini
 
     Running the server as daemons
-    gunicorn -k eventlet --worker-connections=2000 --backlog=1000
-             --paste /etc/monasca/api-config.ini -D
+    $ gunicorn -k eventlet --worker-connections=2000 --backlog=1000 --paste /etc/monasca/api-config.ini -D
 
 To check if the code follows python coding style, run the following command
 from the root directory of this project
 
-    tox -e pep8
+    $ tox -e pep8
 
 To run all the unit test cases, run the following command from the root
 directory of this project
 
-    tox -e py27   (or -e py26, -e py33)
+    $ tox -e py27   (or -e py26, -e py33)
 
 
 # License
