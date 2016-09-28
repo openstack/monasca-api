@@ -801,7 +801,7 @@ The offset is determined by the ID of the last element in the result list. Users
 The offset can take the form of an integer, string, or timestamp, but the user should treat the offset as an opaque reference. When using offsets in manually generated URLs, users enter them as strings that look like integers, timestamps, or strings. Future releases may change the type and form of the offsets for each resource.
 
 ## Limit
-The Monasca API has a server-wide default limit that is applied. Users may specifiy their own limit in the URL, but the server-wide limit may not be exceeded. The Monasca server-wide limit is configured in the Monasca API config file as maxQueryLimit. Users may specify a limit up to the maxQueryLimit.
+The Monasca API has a server-wide default limit that is applied. Users may specify their own limit in the URL, but the server-wide limit may not be exceeded. The Monasca server-wide limit is configured in the Monasca API config file as maxQueryLimit. Users may specify a limit up to the maxQueryLimit.
 
 ```
 limit=1000
@@ -1094,7 +1094,7 @@ Get metrics
 None.
 
 #### Query Parameters
-* tenant_id (string, optional, restricted) - Tenant ID to from which to get metrics. This parameter can be used to get metrics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
+* tenant_id (string, optional, restricted) - Tenant ID to from which to get metrics. This parameter can be used to get metrics from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * name (string(255), optional) - A metric name to filter metrics by.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`, leaving the value empty `key1,key2:value2` will return all values for that key, multiple values for a key may be specified as `key1:value1|value2|...,key2:value4,...`
 * start_time (string, optional) - The start time in ISO 8601 combined date and time format in UTC.  This is useful for only listing metrics that have measurements since the specified start_time.
@@ -1235,7 +1235,7 @@ Get measurements for metrics.
 
 If `group_by` is not specified, metrics must be fully qualified with name and dimensions so that only measurements are returned for a single metric. If the metric name and dimensions given do not resolve to a single metric, an error will be displayed asking the user to further qualify the metric with a name and additional dimensions.
 
-If users do not wish to see measurements for a single metric, but would prefer to have measurements from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all meaurements for all metrics that satisfy the query parameters will be merged into a single list of measurements.
+If users do not wish to see measurements for a single metric, but would prefer to have measurements from multiple metrics combined, a 'merge_metrics' flag can be specified. when 'merge_metrics' is set to true (**merge_metrics=true**), all measurements for all metrics that satisfy the query parameters will be merged into a single list of measurements.
 
 ### GET /v2.0/metrics/measurements
 
@@ -1754,7 +1754,7 @@ Update the specified notification method.
 None.
 
 #### Request Body
-* name (string(250), required) - A descriptive name of the notifcation method.
+* name (string(250), required) - A descriptive name of the notification method.
 * type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
 * address (string(100), required) - The email/url address to notify.
 * period (integer, required) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
@@ -1825,7 +1825,7 @@ Patch the specified notification method.
 None.
 
 #### Request Body
-* name (string(250), optional) - A descriptive name of the notifcation method.
+* name (string(250), optional) - A descriptive name of the notification method.
 * type (string(100), optional) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
 * address (string(100), optional) - The email/url address to notify.
 * period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
