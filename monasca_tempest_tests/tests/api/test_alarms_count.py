@@ -202,9 +202,9 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         self._verify_counts_format(response_body, group_by=['state'])
 
-        self.assertEquals('ALARM', response_body['counts'][0][1])
+        self.assertEqual('ALARM', response_body['counts'][0][1])
         self.assertEqual(alarm_state_count, response_body['counts'][0][0])
-        self.assertEquals('UNDETERMINED', response_body['counts'][-1][1])
+        self.assertEqual('UNDETERMINED', response_body['counts'][-1][1])
         self.assertEqual(undet_state_count, response_body['counts'][-1][0])
 
         resp, response_body = self.monasca_client.count_alarms("?group_by=name")
