@@ -746,7 +746,7 @@ function install_git {
 function download_monasca_libraries {
 
     echo_summary "Download Monasca monasca_common and monasca_statsd"
-  
+
     GIT_DEPTH_OLD=$GIT_DEPTH
     GIT_DEPTH=0
     git_clone $MONASCA_COMMON_REPO $MONASCA_COMMON_DIR $MONASCA_COMMON_BRANCH
@@ -868,10 +868,10 @@ function install_monasca_api_python {
     pip_install gunicorn
 
     if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
-        pip_install influxdb==2.8.0
+        pip_install_gr influxdb
     fi
     if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
-        pip_install cassandra-driver>=2.1.4,!=3.6.0
+        pip_install_gr cassandra-driver
     fi
     if is_service_enabled postgresql; then
       apt_get -y install libpq-dev
@@ -1105,11 +1105,11 @@ function install_monasca_persister_python {
 
     if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
 
-        pip_install influxdb==2.8.0
+        pip_install_gr influxdb
 
     elif [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
 
-        pip_install 'cassandra-driver>=2.1.4,!=3.6.0'
+        pip_install_gr cassandra-driver
 
     fi
 
