@@ -96,7 +96,7 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
                             set(response_body))
             elements = response_body['elements']
             links = response_body['links']
-            self.assertTrue(isinstance(links, list))
+            self.assertIsInstance(links, list)
             link = links[0]
             self.assertTrue(set(['rel', 'href']) ==
                             set(link))
