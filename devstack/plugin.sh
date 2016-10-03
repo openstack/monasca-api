@@ -1834,17 +1834,12 @@ function install_monasca_grafana {
     sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
 
-    if [ ! -e grafana-plugins ]; then
-        git clone https://github.com/twc-openstack/grafana-plugins.git
-    fi
-    cd grafana-plugins
-    git checkout v2.6.0
     cd "${MONASCA_BASE}"
     if [ ! -e grafana ]; then
         git clone https://github.com/twc-openstack/grafana.git
     fi
     cd grafana
-    git checkout v2.6.0-keystone
+    git checkout master-keystone
     cd "${MONASCA_BASE}"
 
     mkdir grafana-build || true
@@ -1854,7 +1849,6 @@ function install_monasca_grafana {
     cd $GOPATH/src/github.com/grafana
     cp -r "${MONASCA_BASE}"/grafana .
     cd grafana
-    cp -r "${MONASCA_BASE}"/grafana-plugins/datasources/monasca ./public/app/plugins/datasource/
     cp "${MONASCA_BASE}"/monasca-ui/grafana-dashboards/* ./public/dashboards/
 
     go run build.go setup
@@ -1870,14 +1864,19 @@ function install_monasca_grafana {
     set +i
 
     cd "${MONASCA_BASE}"
-    sudo rm -r grafana-plugins
     sudo rm -r grafana
     rm go${GO_VERSION}.linux-amd64.tar.gz
 
     sudo useradd grafana || true
     sudo mkdir /etc/grafana || true
     sudo mkdir /var/lib/grafana || true
+    sudo mkdir /var/lib/grafana/plugins || true
     sudo mkdir /var/log/grafana || true
+
+    cd /var/lib/grafana/plugins
+    if [ ! -e monasca-grafana-datasource ]; then
+        sudo git clone https://github.com/openstack/monasca-grafana-datasource.git
+    fi
     sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/grafana/grafana.ini /etc/grafana/grafana.ini
