@@ -15,14 +15,10 @@
 from oslo_config import cfg
 
 
-service_available_group = cfg.OptGroup(name="service_available",
-                                       title="Available OpenStack Services")
-
-ServiceAvailableGroup = [
-    cfg.BoolOpt("monasca",
-                default=True,
-                help="Whether or not Monasca is expected to be available"),
-]
+service_option = cfg.BoolOpt("monasca",
+                             default=True,
+                             help="Whether or not Monasca is expected to be "
+                                  "available")
 
 monitoring_group = cfg.OptGroup(name="monitoring",
                                 title="Monitoring Service Options")

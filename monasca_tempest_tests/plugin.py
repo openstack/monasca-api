@@ -14,7 +14,6 @@
 
 import os
 
-from tempest import config
 from tempest.test_discover import plugins
 
 from monasca_tempest_tests import config as config_monitoring
@@ -29,12 +28,13 @@ class MonascaTempestPlugin(plugins.TempestPlugin):
         return full_test_dir, base_path
 
     def register_opts(self, conf):
-        config.register_opt_group(
-            conf, config_monitoring.service_available_group,
-            config_monitoring.ServiceAvailableGroup)
-        config.register_opt_group(conf, config_monitoring.monitoring_group,
-                                  config_monitoring.MonitoringGroup)
+        conf.register_opt(config_monitoring.service_option,
+                          group='service_available')
+        conf.register_group(config_monitoring.monitoring_group)
+        conf.register_opts(config_monitoring.MonitoringGroup,
+                           group='monitoring')
 
     def get_opt_lists(self):
         return [(config_monitoring.monitoring_group.name,
-                 config_monitoring.MonitoringGroup)]
+                 config_monitoring.MonitoringGroup),
+                ('service_available', [config_monitoring.service_option])]
