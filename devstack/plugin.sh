@@ -1850,17 +1850,15 @@ function install_monasca_grafana {
     mkdir grafana-build || true
     cd grafana-build
     export GOPATH=`pwd`
-    go get -d github.com/grafana/grafana/...
+    mkdir -p $GOPATH/src/github.com/grafana
     cd $GOPATH/src/github.com/grafana
-    sudo rm -r grafana
     cp -r "${MONASCA_BASE}"/grafana .
     cd grafana
     cp -r "${MONASCA_BASE}"/grafana-plugins/datasources/monasca ./public/app/plugins/datasource/
     cp "${MONASCA_BASE}"/monasca-ui/grafana-dashboards/* ./public/dashboards/
 
     go run build.go setup
-    $GOPATH/bin/godep restore
-    go run build.go build
+    $GOPATH/bin/godep go run build.go build
 
     set -i
 
