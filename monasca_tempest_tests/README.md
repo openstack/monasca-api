@@ -55,7 +55,7 @@ uri_v3 = http://127.0.0.1:35357/v3/
 
     ```
 
-    Edit the the variable values in the identity section to match your particular environment.
+    Edit the variable values in the identity section to match your particular environment.
 
 5. Create ```etc/logging.conf``` in the Tempest root dir by making a copying ```logging.conf.sample```.
 

@@ -1170,7 +1170,7 @@ Get dimension values
 None.
 
 #### Query Parameters
-* tenant_id (string, optional, restricted) - Tenant ID to from which to get dimension values. This parameter can be used to get dimension values from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
+* tenant_id (string, optional, restricted) - Tenant ID to from which to get dimension values. This parameter can be used to get dimension values from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * metric_name (string(255), optional) - A metric name to filter dimension values by.
 * dimension_name (string(255), required) - A dimension name to filter dimension values by.
 * offset (string(255), optional) - The dimension values are returned in alphabetic order, and the offset is the dimension name after which to return in the next pagination request.
