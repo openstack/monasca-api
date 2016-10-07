@@ -52,6 +52,13 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.get(uri)
         return resp, json.loads(response_body)
 
+    def list_dimension_names(self, query_params=None):
+        uri = 'metrics/dimensions/names'
+        if query_params is not None:
+            uri = uri + query_params
+        resp, response_body = self.get(uri)
+        return resp, json.loads(response_body)
+
     def list_dimension_values(self, query_params=None):
         uri = 'metrics/dimensions/names/values'
         if query_params is not None:

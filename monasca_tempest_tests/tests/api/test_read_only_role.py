@@ -1,4 +1,4 @@
-#
+# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -13,14 +13,13 @@
 
 import time
 
-import six.moves.urllib.parse as urlparse
-
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
 from tempest import test
 from tempest.lib import exceptions
 
 from monasca_tempest_tests import clients
+
 
 class TestReadOnlyRole(base.BaseMonascaTest):
 
@@ -112,7 +111,19 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         #
         url = '/v2.0/metrics/dimensions/names/values?dimension_name=foo'
         self.assertEqual(200, resp.status)
-        self.assertEqual(0, len(response_body['elements'][0]['values']))
+        self.assertEqual(0, len(response_body['elements']))
+        self.assertTrue(response_body['links'][0]['href'].endswith(url))
+
+    @test.attr(type="gate")
+    def test_list_dimension_names_success(self):
+        resp, response_body = self.monasca_client.list_dimension_names()
+        #
+        # Validate the call succeeds with empty result (we didn't
+        # create any metrics/dimensions)
+        #
+        url = '/v2.0/metrics/dimensions/names'
+        self.assertEqual(200, resp.status)
+        self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith(url))
 
     @test.attr(type="gate")
@@ -128,7 +139,6 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue('/v2.0/metrics/measurements' in response_body['links'][0]['href'])
-
 
     @test.attr(type="gate")
     def test_list_statistics_success(self):
