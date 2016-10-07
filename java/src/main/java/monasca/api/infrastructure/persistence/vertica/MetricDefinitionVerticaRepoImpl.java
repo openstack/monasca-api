@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
+ * (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -56,21 +56,12 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "%s "; // limit goes here
 
   private static final String FIND_METRIC_NAMES_SQL =
-      "SELECT %s distinct def.id, def.name "
+      "SELECT distinct def.name "
       + "FROM MonMetrics.Definitions def "
-      + "WHERE def.id IN (%s) " // Subselect goes here
-      + "ORDER BY def.id ASC ";
-
-  private static final String METRIC_NAMES_SUB_SELECT =
-      "SELECT distinct MAX(defSub.id) as max_id " // The aggregation function gives us one id per name
-      + "FROM  MonMetrics.Definitions defSub "
-      + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON defDimsSub.definition_id = defSub.id "
-      + "WHERE defSub.tenant_id = :tenantId "
-      + "%s " // Offset goes here.
+      + "WHERE def.tenant_id = :tenantId " // tenantId
+      + "%s " // optional offset goes here
       + "%s " // Dimensions and clause goes here
-      + "GROUP BY defSub.name "   // This is to reduce the (id, name) sets to only include unique names
-      + "ORDER BY max_id ASC %s"; // Limit goes here.
-
+      + "ORDER BY def.name ASC %s "; // Limit goes here.
 
   private static final String TABLE_TO_JOIN_ON = "defDimsSub";
 
@@ -98,11 +89,9 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     for (Map<String, Object> row : rows) {
 
-      byte[] defId = (byte[]) row.get("id");
-
       String name = (String) row.get("name");
 
-      MetricName metricName = new MetricName(Hex.encodeHexString(defId), name);
+      MetricName metricName = new MetricName(name);
 
       metricNameList.add(metricName);
 
@@ -122,40 +111,18 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      offsetPart = " and defSub.id > :offset ";
+      offsetPart = " and def.name > '" + offset + "' ";
 
     }
 
     // Can't bind limit in a nested sub query. So, just tack on as String.
     String limitPart = " limit " + Integer.toString(limit + 1);
 
-    String defSubSelect =
-        String.format(METRIC_NAMES_SUB_SELECT,
-                      offsetPart,
-                      MetricQueries.buildDimensionAndClause(dimensions,
-                                                            TABLE_TO_JOIN_ON),
-                      limitPart);
-
-    String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, defSubSelect);
+    String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, offsetPart, limitPart);
 
     try (Handle h = db.open()) {
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
-
-      if (offset != null && !offset.isEmpty()) {
-
-        logger.debug("binding offset: {}", offset);
-
-        try {
-
-          query.bind("offset", Hex.decodeHex(offset.toCharArray()));
-
-        } catch (DecoderException e) {
-
-          throw Exceptions.badRequest("failed to decode offset " + offset, e);
-        }
-
-      }
 
       MetricQueries.bindDimensionsToQuery(query, dimensions);
 

@@ -1,3 +1,4 @@
+
 # Monasca API
 
 Date: November 5, 2014
@@ -1352,7 +1353,7 @@ None.
 #### Query Parameters
 * tenant_id (string, optional, restricted) - Tenant ID from which to get metric names. This parameter can be used to get metric names from a tenant other than the tenant the request auth token is scoped to. Usage of this query parameter is restricted to users with the monasca admin role, as defined in the monasca api configuration file, which defaults to `monasca-admin`.
 * dimensions (string, optional) - A dictionary to filter metrics by specified as a comma separated array of (key, value) pairs as `key1:value1,key2:value2, ...`
-* offset (integer, optional)
+* offset (string, optional) 
 * limit (integer, optional)
 
 #### Request Body
@@ -1372,31 +1373,37 @@ Cache-Control: no-cache
 * 200 - OK
 
 #### Response Body
-Returns a JSON object with a 'links' array of links and an 'elements' array of metric name objects for each unique metric name (not including dimensions) with the following fields:
+Returns a JSON object with a 'links' array of links and an 'elements' array of metric name objects for each unique metric name (not including dimensions) in alphabetical order with the following fields:
 
 * name (string(255)) - A name of a metric.
 
 #### Response Examples
 ```
 {
-    "elements": [
-        {
-            "name":"name1"
-        },
-        {
-            "name":"name2"
-        }
-    ],
-    "links": [
-        {
-            "rel": "self",
-            "href": "http://192.168.10.4:8070/v2.0/metrics/names?offset=tenantId%3region%26name1%26dimensionKey1%3DdimensionValue1%26dimensionKey2%3DdimensionValue2"
-        },
-        {
-            "rel": "next"
-            "href": http://192.168.10.4:8070/v2.0/metrics/names?offset=tenantId%3region%26name3%26dimensionKey1%3DdimensionValue1%26dimensionKey2%3DdimensionValue2
-        }
-    ]
+  "elements": [
+    {
+      "name": "cpu.idle_perc"
+    },
+    {
+      "name": "cpu.idle_time"
+    },
+    {
+      "name": "cpu.percent"
+    },
+    {
+      "name": "cpu.stolen_perc"
+    }
+  ],
+  "links": [
+    {
+      "href": "http://192.168.10.6:8070/v2.0/metrics/names?offset=cpu.frequency_mhz&limit=4",
+      "rel": "self"
+    },
+    {
+      "href": "http://192.168.10.6:8070/v2.0/metrics/names?offset=cpu.stolen_perc&limit=4",
+      "rel": "next"
+    }
+  ]
 }
 ```
 ___

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
+ * (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,7 @@
  */
 package monasca.api.infrastructure.persistence.influxdb;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,12 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.Set;
 
 import monasca.api.ApiConfig;
-import monasca.api.domain.model.measurement.Measurements;
 import monasca.api.domain.model.metric.MetricDefinitionRepo;
 import monasca.api.domain.model.metric.MetricName;
 import monasca.common.model.metric.MetricDefinition;
@@ -124,28 +125,58 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
   @Override
   public List<MetricName> findNames(String tenantId, Map<String, String> dimensions,
                                     String offset, int limit) throws Exception {
+    //
+    // Use treeset to keep list in alphabetic/predictable order
+    // for string based offset.
+    //
+    List<MetricName> metricNameList = new ArrayList<>();
+    Set<String> matchingNames = new TreeSet<>();
 
-    int startIndex = this.influxV9Utils.startIndex(offset);
-
-    String q = String.format("show measurements "
-                             + "where %1$s %2$s %3$s %4$s %5$s",
+    String q = String.format("show series "
+                             + "where %1$s %2$s %3$s",
                              this.influxV9Utils.privateTenantIdPart(tenantId),
                              this.influxV9Utils.privateRegionPart(this.region),
-                             this.influxV9Utils.dimPart(dimensions),
-                             this.influxV9Utils.limitPart(limit),
-                             this.influxV9Utils.offsetPart(startIndex));
+                             this.influxV9Utils.dimPart(dimensions));
 
     logger.debug("Metric name query: {}", q);
-
     String r = this.influxV9RepoReader.read(q);
-
     Series series = this.objectMapper.readValue(r, Series.class);
+    if (!series.isEmpty()) {
+      for (Serie serie : series.getSeries()) {
+        matchingNames.add(serie.getName());
+      }
+    }
 
-    List<MetricName> metricNameList = metricNameList(series, startIndex);
+    List<String> filteredNames = filterMetricNames(matchingNames, limit, offset);
 
+    for (String filteredName : filteredNames) {
+      MetricName dimName = new MetricName(filteredName);
+      metricNameList.add(dimName);
+    }
     logger.debug("Found {} metric definitions matching query", metricNameList.size());
 
     return metricNameList;
+  }
+
+  private List<String> filterMetricNames(Set<String> matchingNames,
+                                         int limit,
+                                         String offset) {
+    Boolean haveOffset = !Strings.isNullOrEmpty(offset);
+    List<String> filteredNames = new ArrayList<>();
+    int remaining_limit = limit + 1;
+
+    for (String dimName : matchingNames) {
+      if (remaining_limit <= 0) {
+        break;
+      }
+      if (haveOffset && dimName.compareTo(offset) <= 0) {
+        continue;
+      }
+      filteredNames.add(dimName);
+      remaining_limit--;
+    }
+
+    return filteredNames;
   }
 
   private List<MetricDefinition> metricDefinitionList(Series series,
@@ -183,18 +214,15 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
     return metricDefinitionList;
   }
 
-  private List<MetricName> metricNameList(Series series, int startIndex) {
+  private List<MetricName> metricNameList(Series series) {
     List<MetricName> metricNameList = new ArrayList<>();
 
     if (!series.isEmpty()) {
 
-      int index = startIndex;
-
       Serie serie = series.getSeries()[0];
 
       for (String[] values : serie.getValues()) {
-        MetricName m =
-            new MetricName(String.valueOf(index++), values[0]);
+        MetricName m = new MetricName(values[0]);
         metricNameList.add(m);
       }
 
@@ -236,7 +264,7 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
       // checking if there are current measurements, default to
       // existing behavior and return the definition.
       //
-      logger.error("Failed to query for measuremnts for: {}", m.name, e);
+      logger.error("Failed to query for measurements for: {}", m.name, e);
       hasMeasurements = true;
     }
 
