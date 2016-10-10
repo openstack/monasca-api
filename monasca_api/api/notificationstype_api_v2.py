@@ -34,5 +34,5 @@ class NotificationsTypeV2API(object):
     def on_put(self, req, res):
         res.status = '501 Not Implemented'
 
-    def on_patch(self, req):
+    def on_patch(self, req, res):
         res.status = '501 Not Implemented'
