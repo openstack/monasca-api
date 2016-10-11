@@ -1851,8 +1851,7 @@ function install_monasca_grafana {
     cd grafana
     cp "${MONASCA_BASE}"/monasca-ui/grafana-dashboards/* ./public/dashboards/
 
-    go run build.go setup
-    $GOPATH/bin/godep go run build.go build
+    go run build.go build
 
     set -i
 
