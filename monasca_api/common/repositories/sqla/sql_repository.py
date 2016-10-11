@@ -39,7 +39,7 @@ class SQLRepository(object):
                                self.conf.mysql.password,
                                self.conf.mysql.hostname,
                                self.conf.mysql.database_name)
-                url = make_url("mysql+pymysql://{}:{}@{}/{}" % settings_db)
+                url = make_url("mysql+pymysql://%s:%s@%s/%s" % settings_db)
             else:
                 if self.conf.database.url is not None:
                     url = make_url(self.conf.database.url)
