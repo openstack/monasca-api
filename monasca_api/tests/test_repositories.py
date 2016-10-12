@@ -66,7 +66,7 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             merge_metrics_flag=True)
 
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['dimensions'], None)
+        self.assertIsNone(result[0]['dimensions'])
         self.assertEqual(result[0]['name'], 'dummy.series')
         self.assertEqual(result[0]['columns'],
                          ['timestamp', 'value', 'value_meta'])
@@ -328,7 +328,7 @@ class TestRepoMetricsCassandra(testtools.TestCase):
             merge_metrics_flag=True)
 
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['dimensions'], None)
+        self.assertIsNone(result[0]['dimensions'])
         self.assertEqual(result[0]['name'], 'disk.space_used_perc')
         self.assertEqual(result[0]['columns'],
                          ['timestamp', 'value', 'value_meta'])
