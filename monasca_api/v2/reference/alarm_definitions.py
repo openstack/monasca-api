@@ -231,14 +231,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                                          limit=0)
         if definitions:
             if not expected_id:
-                LOG.warn("Found existing definition for {} with tenant_id {}".format(name, tenant_id))
+                LOG.warning("Found existing definition for {} with tenant_id {}".format(name, tenant_id))
                 raise exceptions.AlreadyExistsException("An alarm definition with the name {} already exists"
                                                         .format(name))
 
             found_definition_id = definitions[0]['id']
             if found_definition_id != expected_id:
-                LOG.warn("Found existing alarm definition for {} with tenant_id {} with unexpected id {}"
-                         .format(name, tenant_id, found_definition_id))
+                LOG.warning("Found existing alarm definition for {} with tenant_id {} with unexpected id {}"
+                            .format(name, tenant_id, found_definition_id))
                 raise exceptions.AlreadyExistsException(
                     "An alarm definition with the name {} already exists with id {}"
                     .format(name, found_definition_id))
