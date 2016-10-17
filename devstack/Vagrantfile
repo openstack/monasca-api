@@ -70,11 +70,13 @@ Vagrant.configure(2) do |config|
       sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
     fi
 
-    git clone https://git.openstack.org/openstack-dev/devstack -b master
+    git clone https://git.openstack.org/openstack-dev/devstack -b master --depth 1
     sudo pip install numpy
     sudo pip install python-monascaclient
     cd devstack
     echo '[[local|localrc]]
+
+GIT_DEPTH=1
 
 SERVICE_HOST=192.168.10.6
 HOST_IP=192.168.10.6
