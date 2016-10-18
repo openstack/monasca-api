@@ -52,15 +52,18 @@ final class MetricQueries {
       "SELECT TO_HEX(defDimsSub.id) as id "
       + "FROM MonMetrics.Definitions as defSub "
       + "JOIN MonMetrics.DefinitionDimensions as defDimsSub ON defDimsSub.definition_id = defSub.id "
+      + "%s " // possible measurements time join here
       + "WHERE defSub.tenant_id = :tenantId "
       + "%s " // metric name here
       + "%s " // dimension and clause here
-      + "%s " // time and clause here
+      + "%s " // possible time and clause here
       + "GROUP BY defDimsSub.id";
 
   private static final String MEASUREMENT_AND_CLAUSE =
-      "SELECT definition_dimensions_id FROM MonMetrics.Measurements "
-      + "WHERE time_stamp >= :startTime "; // start or start and end time here
+      "AND time_stamp >= :startTime "; // start or start and end time here
+
+  private static final String MEASUREMENT_JOIN =
+      "JOIN MonMetrics.Measurements AS meas ON defDimsSub.id = meas.definition_dimensions_id";
 
   private static final String TABLE_TO_JOIN_ON = "defDimsSub";
 
@@ -76,11 +79,10 @@ final class MetricQueries {
     }
 
     return String.format(METRIC_DEF_SUB_SQL,
+                         buildTimeJoin(startTime),
                          namePart,
-                         buildDimensionAndClause(dimensions,
-                                                 TABLE_TO_JOIN_ON),
-                         buildTimeAndClause(startTime, endTime,
-                                            TABLE_TO_JOIN_ON));
+                         buildDimensionAndClause(dimensions, TABLE_TO_JOIN_ON),
+                         buildTimeAndClause(startTime, endTime));
   }
 
   static String buildDimensionAndClause(Map<String, String> dimensions,
@@ -139,8 +141,7 @@ final class MetricQueries {
 
   static String buildTimeAndClause(
       DateTime startTime,
-      DateTime endTime,
-      String tableToJoin)
+      DateTime endTime)
   {
     if (startTime == null) {
       return "";
@@ -148,17 +149,22 @@ final class MetricQueries {
 
     StringBuilder timeAndClause = new StringBuilder();
 
-    timeAndClause.append("AND ").append(tableToJoin).append(".id IN (");
-
     timeAndClause.append(MEASUREMENT_AND_CLAUSE);
 
     if (endTime != null) {
       timeAndClause.append("AND time_stamp <= :endTime ");
     }
 
-    timeAndClause.append(")");
-
     return timeAndClause.toString();
+  }
+
+  static String buildTimeJoin(DateTime startTime)
+  {
+    if (startTime == null) {
+      return "";
+    }
+
+    return MEASUREMENT_JOIN;
   }
 
   static void bindDimensionsToQuery(Query<?> query, Map<String, String> dimensions) {
@@ -203,6 +209,7 @@ final class MetricQueries {
     }
 
     String sql = String.format(METRIC_DEF_SUB_SQL,
+                               "",
                                namePart,
                                buildDimensionAndClause(dimensions,
                                                  TABLE_TO_JOIN_ON),
