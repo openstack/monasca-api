@@ -16,9 +16,6 @@
 * limitations under the License.
 */
 
-DROP DATABASE IF EXISTS `mon`;
-
-CREATE DATABASE IF NOT EXISTS `mon` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `mon`;
 
 SET foreign_key_checks = 0;
@@ -183,16 +180,6 @@ CREATE TABLE `sub_alarm` (
   CONSTRAINT `fk_sub_alarm_state` FOREIGN KEY (`state`) REFERENCES `alarm_state` (`name`),
   CONSTRAINT `fk_sub_alarm_expr` FOREIGN KEY (`sub_expression_id`) REFERENCES `sub_alarm_definition` (`id`)
 );
-
-/*
- * To require ssl connections add 'REQUIRE SSL' to the end of all grant statements
- */
-GRANT ALL ON mon.* TO 'notification'@'%' IDENTIFIED BY 'password';
-GRANT ALL ON mon.* TO 'notification'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL ON mon.* TO 'monapi'@'%' IDENTIFIED BY 'password';
-GRANT ALL ON mon.* TO 'monapi'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL ON mon.* TO 'thresh'@'%' IDENTIFIED BY 'password';
-GRANT ALL ON mon.* TO 'thresh'@'localhost' IDENTIFIED BY 'password';
 
 SET foreign_key_checks = 1;
 
