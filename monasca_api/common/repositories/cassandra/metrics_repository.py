@@ -16,7 +16,6 @@
 import binascii
 from datetime import datetime
 from datetime import timedelta
-import hashlib
 import itertools
 import json
 import urllib
@@ -200,6 +199,19 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             parms.append(urllib.quote_plus(name).encode('utf8'))
 
         return name_clause
+
+    def _build_select_metric_map_query(self, tenant_id, region, parms):
+
+        select_stmt = """
+          select metric_map
+          from metric_map
+          where tenant_id = %s and region = %s
+          """
+
+        parms.append(tenant_id.encode('utf8'))
+        parms.append(region.encode('utf8'))
+
+        return select_stmt
 
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
@@ -653,24 +665,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         dt = timeutils.normalize_time(dt)
         return int((dt - datetime(1970, 1, 1)).total_seconds() * 1000)
 
-    def _generate_dimension_values_id(self, metric_name, dimension_name):
-        sha1 = hashlib.sha1()
-        hashstr = "metricName=" + (metric_name or "") + "dimensionName=" + dimension_name
-        sha1.update(hashstr)
-        return sha1.hexdigest()
-
     def list_dimension_values(self, tenant_id, region, metric_name,
-                              dimension_name, offset, limit):
+                              dimension_name):
 
         try:
 
-            select_stmt = """
-              select metric_map
-              from metric_map
-              where tenant_id = %s and region = %s
-              """
+            parms = []
 
-            parms = [tenant_id.encode('utf8'), region.encode('utf8')]
+            query = self._build_select_metric_map_query(tenant_id, region, parms)
 
             name_clause = self._build_name_clause(metric_name, parms)
 
@@ -678,37 +680,19 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
             dimension_clause = self._build_dimensions_clause(dimensions, parms)
 
-            select_stmt += name_clause + dimension_clause
+            query += name_clause + dimension_clause
 
-            if offset:
-                select_stmt += ' and metric_hash > %s '
-                parms.append(bytearray(offset.decode('hex')))
+            query += ' allow filtering '
 
-            if limit:
-                select_stmt += ' limit %s '
-                parms.append(limit + 1)
-
-            select_stmt += ' allow filtering '
-
-            stmt = SimpleStatement(select_stmt,
+            stmt = SimpleStatement(query,
                                    fetch_size=2147483647)
 
             rows = self.cassandra_session.execute(stmt, parms)
 
-            sha1_id = self._generate_dimension_values_id(metric_name, dimension_name)
-            json_dim_vals = {u'id': sha1_id,
-                             u'dimension_name': dimension_name,
-                             u'values': []}
-            #
-            # Only return metric name if one was provided
-            #
-            if metric_name:
-                json_dim_vals[u'metric_name'] = metric_name
+            json_dim_value_list = []
 
             if not rows:
-                return json_dim_vals
-
-            dim_vals = set()
+                return json_dim_value_list
 
             for row in rows:
 
@@ -717,13 +701,48 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
                     name = urllib.unquote_plus(name)
                     value = urllib.unquote_plus(value)
+                    dim_value = {u'dimension_value': value}
 
-                    if name == dimension_name:
-                        dim_vals.add(value)
+                    if name == dimension_name and dim_value not in json_dim_value_list:
+                        json_dim_value_list.append(dim_value)
 
-            json_dim_vals[u'values'] = sorted(list(dim_vals))
+            return sorted(json_dim_value_list)
 
-            return json_dim_vals
+        except Exception as ex:
+            LOG.exception(ex)
+            raise exceptions.RepositoryException(ex)
+
+    def list_dimension_names(self, tenant_id, region, metric_name):
+
+        try:
+
+            parms = []
+
+            query = self._build_select_metric_map_query(tenant_id, region, parms)
+
+            name_clause = self._build_name_clause(metric_name, parms)
+
+            query += name_clause
+
+            stmt = SimpleStatement(query,
+                                   fetch_size=2147483647)
+
+            rows = self.cassandra_session.execute(stmt, parms)
+
+            json_dim_name_list = []
+
+            for row in rows:
+
+                metric_map = row.metric_map
+                for name, value in metric_map.iteritems():
+
+                    name = urllib.unquote_plus(name)
+                    dim_name = {u'dimension_name': name}
+
+                    if name != '__name__' and dim_name not in json_dim_name_list:
+                        json_dim_name_list.append(dim_name)
+
+            return sorted(json_dim_name_list)
 
         except Exception as ex:
             LOG.exception(ex)
