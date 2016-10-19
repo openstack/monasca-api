@@ -46,11 +46,12 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       "SELECT TO_HEX(defDimsSub.id) "
       + "FROM MonMetrics.Definitions defSub "
       + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON defSub.id = defDimsSub.definition_id "
+      + "%s " // possible measurements time join here
       + "WHERE defSub.tenant_id = :tenantId "
       + "%s " // Name goes here
       + "%s " // Offset goes here
       + "%s " // Dimensions and clause goes here
-      + "%s " // Time qualifier goes here
+      + "%s " // possible time and clause here
       + "GROUP BY defDimsSub.id "
       + "ORDER BY defDimsSub.id ASC "
       + "%s "; // limit goes here
@@ -227,12 +228,12 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
         String.format(MetricQueries.FIND_METRIC_DEFS_SQL,
                       this.dbHint,
                       String.format(METRIC_DEF_SUB_QUERY,
+                                    MetricQueries.buildTimeJoin(startTime),
                                     namePart,
                                     offsetPart,
                                     MetricQueries.buildDimensionAndClause(dimensions,
                                                                           TABLE_TO_JOIN_ON),
-                                    MetricQueries.buildTimeAndClause(startTime, endTime,
-                                                                     TABLE_TO_JOIN_ON),
+                                    MetricQueries.buildTimeAndClause(startTime, endTime),
                                     limitPart)
                       );
 
