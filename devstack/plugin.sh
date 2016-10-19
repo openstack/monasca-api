@@ -72,6 +72,10 @@ fi
 # go version
 export GO_VERSION=${GO_VERSION:-"1.7.1"}
 
+# db users
+MON_DB_USERS=("notification" "monapi" "thresh")
+MON_DB_HOSTS=("%" "localhost", "$MYSQL_HOST")
+
 function pre_install_monasca {
 :
 }
@@ -133,8 +137,6 @@ function install_monasca {
 
     install_cli_creds
 
-    install_schema
-
     install_maven
 
     install_monasca_common
@@ -191,7 +193,7 @@ function update_maven {
 }
 
 function post_config_monasca {
-:
+    install_schema
 }
 
 function extra_monasca {
@@ -214,37 +216,44 @@ function extra_monasca {
     if is_service_enabled monasca-smoke-test; then
         install_monasca_smoke_test
     fi
+
+    start_monasca_services
 }
 
+function start_monasca_services {
+    restart_service monasca-api
+    restart_service monasca-persister
+    restart_service monasca-notification
+    restart_service monasca-thresh
+    restart_service monasca-agent
+}
 
 function unstack_monasca {
+    stop_service monasca-agent || true
 
+    stop_service monasca-thresh || true
 
-    sudo service monasca-agent stop || true
+    stop_service storm-supervisor || true
 
-    sudo service monasca-thresh stop || true
+    stop_service storm-nimbus || true
 
-    sudo stop storm-supervisor || true
+    stop_service monasca-notification || true
 
-    sudo stop storm-nimbus || true
+    stop_service monasca-persister || true
 
-    sudo stop monasca-notification || true
+    stop_service monasca-api || true
 
-    sudo stop monasca-persister || true
+    stop_service kafka || true
 
-    sudo stop monasca-api || true
-
-    sudo stop kafka || true
-
-    sudo stop zookeeper || true
+    stop_service zookeeper || true
 
     sudo /etc/init.d/influxdb stop || true
 
-    sudo service verticad stop || true
+    stop_service verticad || true
 
-    sudo service vertica_agent stop || true
+    stop_service vertica_agent || true
 
-    sudo service cassandra stop || true
+    stop_service cassandra || true
 }
 
 function clean_monasca {
@@ -739,13 +748,12 @@ function install_schema {
     fi
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/mon_mysql.sql /opt/monasca/sqls/mon.sql
-
     sudo chmod 0644 /opt/monasca/sqls/mon.sql
-
     sudo chown root:root /opt/monasca/sqls/mon.sql
 
-    # must login as root@localhost
-    sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
+    recreate_database mon
+    recreate_users mon MON_DB_USERS MON_DB_HOSTS
+    mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/mon.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo cp -f "${MONASCA_BASE}"/monasca-api/devstack/files/schema/winchester.sql /opt/monasca/sqls/winchester.sql
 
@@ -754,7 +762,7 @@ function install_schema {
     sudo chown root:root /opt/monasca/sqls/winchester.sql
 
     # must login as root@localhost
-    sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
+    mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < /opt/monasca/sqls/winchester.sql || echo "Did the schema change? This process will fail on schema changes."
 
     sudo mkdir -p /opt/kafka/logs || true
 
@@ -926,8 +934,6 @@ function install_monasca_api_java {
 
     fi
 
-    sudo start monasca-api || sudo restart monasca-api
-
 }
 
 function install_monasca_api_python {
@@ -1037,8 +1043,6 @@ function install_monasca_api_python {
     sudo chmod 0660 /etc/monasca/api-logging.conf
 
     sudo ln -sf /etc/monasca/api-logging.conf /etc/api-logging.conf
-
-    sudo start monasca-api || sudo restart monasca-api
 }
 
 function clean_monasca_api_java {
@@ -1157,8 +1161,6 @@ function install_monasca_persister_java {
 
     sudo chmod 0744 /etc/init/monasca-persister.conf
 
-    sudo start monasca-persister || sudo restart monasca-persister
-
 }
 
 function install_monasca_persister_python {
@@ -1259,8 +1261,6 @@ function install_monasca_persister_python {
     sudo chown root:root /etc/init/monasca-persister.conf
 
     sudo chmod 0744 /etc/init/monasca-persister.conf
-
-    sudo start monasca-persister || sudo restart monasca-persister
 
 }
 
@@ -1371,8 +1371,6 @@ function install_monasca_notification {
     sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
 
     apt_get -y install mailutils
-
-    sudo start monasca-notification || sudo restart monasca-notification
 
 }
 
@@ -1541,8 +1539,6 @@ function install_monasca_thresh {
 
     sudo chmod 0744 /etc/init.d/monasca-thresh
 
-    sudo service monasca-thresh start || sudo service monasca-thresh restart
-
 }
 
 function clean_monasca_thresh {
@@ -1678,8 +1674,6 @@ function install_monasca_agent {
 
     sudo /usr/local/bin/monasca-reconfigure
 
-    sudo service monasca-agent start || sudo service monasca-agent restart
-
 }
 
 function clean_monasca_agent {
@@ -1812,7 +1806,7 @@ function install_monasca_horizon_ui {
 
     sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
 
-    sudo service apache2 restart
+    restart_service apache2
 
 }
 
@@ -1900,7 +1894,7 @@ function install_monasca_grafana {
     sudo sed -i "s#/usr/sbin#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana/grafana/bin#g" /etc/init.d/grafana-server
     sudo sed -i "s#/usr/share#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana#g" /etc/init.d/grafana-server
 
-    sudo service grafana-server start
+    restart_service grafana-server
 }
 
 function clean_node_nvm {
@@ -1919,6 +1913,28 @@ function clean_monasca_grafana {
 
     sudo rm -r /var/log/grafana
 
+}
+
+###### extra functions
+function recreate_users {
+  local db=$1
+  local users=$2
+  local hosts=$3
+  recreate_users_$DATABASE_TYPE $db $users $hosts
+}
+
+function recreate_users_mysql {
+  local db=$1
+  local -n users=$2
+  local -n hosts=$3
+  for user in "${users[@]}"; do
+    for host in "${hosts[@]}"; do
+      # loading grants needs to be done from localhost and by root at this very point
+      # after loading schema is moved to post-config it could be possible to this as
+      # DATABASE_USER
+      mysql -uroot -p$DATABASE_PASSWORD -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON $db.* TO '$user'@'$host' identified by 'password';"
+    done
+  done
 }
 
 # Allows this script to be called directly outside of
