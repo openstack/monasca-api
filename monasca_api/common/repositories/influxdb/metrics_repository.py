@@ -80,6 +80,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         from_clause = self._build_from_clause(dimensions, name, tenant_id,
                                               region, start_timestamp,
                                               end_timestamp)
+        if period is None:
+            period = str(300)
+
         if offset:
             if '_' in offset:
                 tmp = datetime.strptime(str(offset).split('_')[1], "%Y-%m-%dT%H:%M:%SZ")
@@ -100,9 +103,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         statistic_string = ",".join(statistics)
 
         query = 'select ' + statistic_string + ' ' + from_clause
-
-        if period is None:
-            period = str(300)
 
         query += " group by time(" + period + "s)"
 
