@@ -387,11 +387,21 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 period = 300
             period = int(period)
 
-            json_statistics_list = []
+            if offset:
+                if '_' in offset:
+                    tmp = datetime.strptime(str(offset).split('_')[1], "%Y-%m-%dT%H:%M:%SZ")
+                    tmp = tmp + timedelta(seconds=int(period))
+                    # Leave out any ID as cassandra doesn't understand it
+                    offset = tmp.isoformat()
+                else:
+                    tmp = datetime.strptime(offset, "%Y-%m-%dT%H:%M:%SZ")
+                    offset = tmp + timedelta(seconds=int(period))
 
             rows = self._get_measurements(tenant_id, region, name, dimensions,
                                           start_timestamp, end_timestamp,
                                           offset, limit, merge_metrics_flag)
+
+            json_statistics_list = []
 
             if not rows:
                 return json_statistics_list
@@ -424,7 +434,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
             stats_list = []
 
-            tmp_start_period = datetime.utcfromtimestamp(start_timestamp)
+            start_datetime = datetime.utcfromtimestamp(start_timestamp)
+            if offset and offset > start_datetime:
+                tmp_start_period = offset
+            else:
+                tmp_start_period = start_datetime
+
             while start_period >= tmp_start_period + timedelta(seconds=period):
                 stat = [
                     tmp_start_period.strftime('%Y-%m-%dT%H:%M:%SZ')
