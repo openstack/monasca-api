@@ -93,6 +93,8 @@ LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
 LOG_COLOR=False
 
+DEST=/opt/stack
+
 disable_all_services
 enable_service rabbit mysql key tempest horizon
 
