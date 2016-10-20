@@ -69,9 +69,6 @@ else
 
 fi
 
-# go version
-export GO_VERSION=${GO_VERSION:-"1.7.1"}
-
 # db users
 MON_DB_USERS=("notification" "monapi" "thresh")
 MON_DB_HOSTS=("%" "localhost", "$MYSQL_HOST")
@@ -1830,9 +1827,9 @@ function install_node_nvm {
 
     set -i
     if [[ "$OFFLINE" != "True" ]]; then
-        curl https://raw.githubusercontent.com/creationix/nvm/v0.31.1/install.sh | bash
+        curl https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
     fi
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm install 4.0.0; nvm use 4.0.0)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm install ${NODE_JS_VERSION}; nvm use ${NODE_JS_VERSION})
     set +i
 }
 
@@ -1866,10 +1863,10 @@ function install_monasca_grafana {
 
     set -i
 
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm config set unsafe-perm true)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm install)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; npm install -g grunt-cli)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use 4.0.0; grunt --force)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm config set unsafe-perm true)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm install)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm install -g grunt-cli)
+    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; grunt --force)
 
     set +i
 
