@@ -241,10 +241,12 @@ class TestRepoMetricsCassandra(testtools.TestCase):
 
     @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
     def test_list_metric_names(self, cassandra_connect_mock):
+
+        Metric_map = namedtuple('Metric_map', 'metric_map')
+
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_session_mock.execute.return_value = [
-            [
-                binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
+            Metric_map(
                 {
                     "__name__": "disk.space_used_perc",
                     "device": "rootfs",
@@ -252,15 +254,14 @@ class TestRepoMetricsCassandra(testtools.TestCase):
                     "hosttype": "native",
                     "mount_point": "/",
                 }
-            ],
-            [
-                binascii.unhexlify(b"042da8f7445d779f4bb7214aaf744e512d897ac7"),
+            ),
+            Metric_map(
                 {
                     "__name__": "cpu.idle_perc",
                     "hostname": "host0",
                     "service": "monitoring"
                 }
-            ]
+            )
         ]
 
         repo = cassandra_repo.MetricsRepository()
@@ -271,18 +272,14 @@ class TestRepoMetricsCassandra(testtools.TestCase):
                 "hostname": "host0",
                 "hosttype": "native",
                 "mount_point": "/",
-                "device": "rootfs"},
-            offset=None,
-            limit=1)
+                "device": "rootfs"})
 
         self.assertEqual([
             {
-                u'name': u'disk.space_used_perc',
-                u'id': u'01d39f19798ed27bbf458300bf843edd17654614'
+                u'name': u'cpu.idle_perc'
             },
             {
-                u'name': u'cpu.idle_perc',
-                u'id': u'042da8f7445d779f4bb7214aaf744e512d897ac7'
+                u'name': u'disk.space_used_perc'
             }
         ], result)
 

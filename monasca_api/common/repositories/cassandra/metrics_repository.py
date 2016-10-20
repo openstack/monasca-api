@@ -201,6 +201,19 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return name_clause
 
+    def _build_select_metric_map_query(self, tenant_id, region, parms):
+
+        select_stmt = """
+          select metric_map
+          from metric_map
+          where tenant_id = %s and region = %s
+          """
+
+        parms.append(tenant_id.encode('utf8'))
+        parms.append(region.encode('utf8'))
+
+        return select_stmt
+
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
                          limit, merge_metrics_flag):
@@ -318,60 +331,43 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return metrics_list[0]['dimensions']
 
-    def list_metric_names(self, tenant_id, region, dimensions, offset, limit):
+    def list_metric_names(self, tenant_id, region, dimensions):
 
         try:
 
-            select_stmt = """
-              select metric_hash, metric_map
-              from metric_map
-              where tenant_id = %s and region = %s
-              """
+            parms = []
 
-            parms = [tenant_id.encode('utf8'), region.encode('utf8')]
+            query = self._build_select_metric_map_query(tenant_id, region, parms)
 
             dimension_clause = self._build_dimensions_clause(dimensions, parms)
 
-            select_stmt += dimension_clause
+            query += dimension_clause
 
-            if offset:
-                select_stmt += ' and metric_hash > %s '
-                parms.append(bytearray(offset.decode('hex')))
-
-            if limit:
-                select_stmt += ' limit %s '
-                parms.append(limit + 1)
-
-            select_stmt += ' allow filtering'
-
-            json_name_list = []
-
-            stmt = SimpleStatement(select_stmt,
+            stmt = SimpleStatement(query,
                                    fetch_size=2147483647)
 
             rows = self.cassandra_session.execute(stmt, parms)
 
+            json_name_list = []
+
             if not rows:
                 return json_name_list
 
-            for (metric_hash, metric_map) in rows:
+            for row in rows:
 
-                metric = {}
-
+                metric_map = row.metric_map
                 for name, value in metric_map.iteritems():
 
                     if name == '__name__':
-                        name = urllib.unquote_plus(value)
+                        value = urllib.unquote_plus(value)
+                        metric_name = {u'name': value}
 
-                        metric[u'name'] = name
+                        if metric_name not in json_name_list:
+                            json_name_list.append(metric_name)
 
                         break
 
-                metric[u'id'] = binascii.hexlify(bytearray(metric_hash))
-
-                json_name_list.append(metric)
-
-            return json_name_list
+            return sorted(json_name_list)
 
         except Exception as ex:
             LOG.exception(ex)
