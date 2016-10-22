@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015,2016 Hewlett Packard Enterprise Development Company, L.P.
+ * (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -255,14 +255,14 @@ public class InfluxV9Utils {
 
   public String periodPartWithGroupBy(int period) {
 
-    return period > 0 ? String.format(" group by time(%1$ds), * fill(0)", period)
-                      : " group by time(300s), * fill(0)";
+    return period > 0 ? String.format(" group by time(%1$ds), *", period)
+                      : " group by time(300s), *";
   }
 
   public String periodPart(int period) {
 
-    return period > 0 ? String.format(" group by time(%1$ds) fill(0)", period)
-                      : " group by time(300s) fill(0)";
+    return period > 0 ? String.format(" group by time(%1$ds)", period)
+                      : " group by time(300s)";
   }
 
   Map<String, String> filterPrivateTags(Map<String, String> tagMap) {

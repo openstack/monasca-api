@@ -181,19 +181,19 @@ class TestStatistics(base.BaseMonascaTest):
         start_timestamp = int(time.time() * 1000)
         name = data_utils.rand_name()
         metric = [
-            helpers.create_metric(name=name, timestamp=start_timestamp + 0,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 1,
                                   dimensions={'key1': 'value-1',
                                               'key2': 'value-1'},
                                   value=1),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 1000,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 1001,
                                   dimensions={'key1': 'value-2',
                                               'key2': 'value-2'},
                                   value=2),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 2000,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 2001,
                                   dimensions={'key1': 'value-3',
                                               'key2': 'value-3'},
                                   value=3),
-            helpers.create_metric(name=name, timestamp=start_timestamp + 3000,
+            helpers.create_metric(name=name, timestamp=start_timestamp + 3001,
                                   dimensions={'key1': 'value-4',
                                               'key2': 'value-4'},
                                   value=4)
@@ -213,7 +213,7 @@ class TestStatistics(base.BaseMonascaTest):
         self._check_timeout(i, constants.MAX_RETRIES, elements, num_metrics)
 
         start_time = helpers.timestamp_to_iso(start_timestamp)
-        end_timestamp = start_timestamp + 4000
+        end_timestamp = start_timestamp + 4001
         end_time = helpers.timestamp_to_iso(end_timestamp)
         query_parms = '?name=' + name + '&merge_metrics=true&statistics=avg' \
                       + '&start_time=' + str(start_time) + '&end_time=' + \
