@@ -63,14 +63,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
         if notification:
             if not expected_id:
-                LOG.warn("Found existing notification method for {} with tenant_id {}".format(name, tenant_id))
+                LOG.warning("Found existing notification method for {} with tenant_id {}".format(name, tenant_id))
                 raise exceptions.AlreadyExistsException(
                     "A notification method with the name {} already exists".format(name))
 
             found_notification_id = notification['id']
             if found_notification_id != expected_id:
-                LOG.warn("Found existing notification method for {} with tenant_id {} with unexpected id {}"
-                         .format(name, tenant_id, found_notification_id))
+                LOG.warning("Found existing notification method for {} with tenant_id {} with unexpected id {}"
+                            .format(name, tenant_id, found_notification_id))
                 raise exceptions.AlreadyExistsException(
                     "A notification method with name {} already exists with id {}"
                     .format(name, found_notification_id))
@@ -80,8 +80,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         exists = nmt.upper() in notification_methods
 
         if not exists:
-            LOG.warn("Found no notification method type  {} . Did you install/enable the plugin for that type?"
-                     .format(nmt))
+            LOG.warning("Found no notification method type  {} . Did you install/enable the plugin for that type?"
+                        .format(nmt))
             raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} ".format(nmt))
 
     @resource.resource_try_catch_block
