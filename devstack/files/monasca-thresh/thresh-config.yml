@@ -1,5 +1,6 @@
 #
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +84,7 @@ eventSpoutConfig:
 kafkaProducerConfig:
   # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
   topic: "alarm-state-transitions"
-  metadataBrokerList: "127.0.0.1:9092"
+  metadataBrokerList: "%KAFKA_HOST%:9092"
   serializerClass: kafka.serializer.StringEncoder
   partitionerClass:
   requestRequiredAcks: 1
@@ -107,22 +108,38 @@ sporadicMetricNamespaces:
   - foo
 
 database:
-  driverClass: com.mysql.jdbc.Driver
-  url: "jdbc:mysql://127.0.0.1/mon?useSSL=true"
-  user: "thresh"
-  password: "password"
+  driverClass: %MONASCA_THRESH_DATABASE_ENGINE%
+  url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?useSSL=true"
+  user: "%MONASCA_THRESH_DATABASE_USER%"
+  password: "%DATABASE_PASSWORD%"
   properties:
       ssl: false
   # the maximum amount of time to wait on an empty pool before throwing an exception
   maxWaitForConnection: 1s
 
   # the SQL query to run when validating a connection's liveness
-  validationQuery: "/* MyService Health Check */ SELECT 1"
+  validationQuery: "/* %DATABASE_TYPE% Health Check */ SELECT 1"
 
   # the minimum number of connections to keep open
   minSize: 8
 
   # the maximum number of connections to keep open
-
-
   maxSize: 41
+
+  # flag indicates if Hibernate support enabled
+  hibernateSupport: %MONASCA_DATABASE_USE_ORM%
+
+  # hibernate provider class
+  providerClass: com.zaxxer.hikari.hibernate.HikariConnectionProvider
+
+  # database name
+  databaseName: mon
+
+  # server name/address
+  serverName: %DATABASE_HOST%
+
+  # server port number
+  portNumber: %DATABASE_PORT%
+
+  # hibernate auto configuretion parameter
+  autoConfig: validate

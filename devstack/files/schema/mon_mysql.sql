@@ -1,6 +1,6 @@
 /*
 * (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
-* Copyright 2016 FUJITSU LIMITED
+* Copyright 2017 FUJITSU LIMITED
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 */
 
 USE `mon`;
-
 SET foreign_key_checks = 0;
 
 /*

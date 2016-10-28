@@ -98,7 +98,34 @@ When using Vagrant, your home directory will normally be mounted inside the VM a
     MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
 
 ```
+
+## Using PostgreSQL or MySQL
+
+Monasca supports using both PostgreSQL and MySQL and so does this devstack plugin.
+Enable either ```postgresql``` or ```mysql``` to use either of them.
+
+To setup environment with MySQL use:
+```sh
+enable_service mysql
+```
+
+Alternatively, for PostgreSQL, use:
+```
+enable_service postgresql
+```
+
+## Using ORM support
+
+ORM support can be controlled with ```MONASCA_DATABASE_USE_ORM``` variable.
+However ORM support is enforced if PostgreSQL is enabled, as the database backend,
+a.k.a.
+
+```sh
+enable_service postgresql
+```
+
 # (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# Copyright Fujitsu LIMITED 2017
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

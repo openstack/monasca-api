@@ -1,5 +1,6 @@
 #
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +17,7 @@
 #
 
 kafka:
-    url: "127.0.0.1:9092"
+    url: "%KAFKA_HOST%:9092"
     group: "monasca-notification"
     alarm_topic: "alarm-state-transitions"
     notification_topic: "alarm-notifications"
@@ -25,11 +26,26 @@ kafka:
         60: 60-seconds-notifications
     max_offset_lag: 600  # In seconds, undefined for none
 
+database:
+# repo_driver: monasca_notification.common.repositories.postgres.pgsql_repo:PostgresqlRepo
+# repo_driver: monasca_notification.common.repositories.orm.orm_repo:OrmRepo
+# repo_driver: monasca_notification.common.repositories.mysql.mysql_repo:MysqlRepo
+  repo_driver: %MONASCA_NOTIFICATION_DATABASE_DRIVER%
+  orm:
+    url: %MONASCA_NOTIFICATION_DATABASE_ENGINE%://%MONASCA_NOTIFICATION_DATABASE_USER%:%DATABASE_PASSWORD%@%DATABASE_HOST%:%DATABASE_PORT%/mon
+
 mysql:
-    host: "127.0.0.1"
-    user: "notification"
-    passwd: "password"
-    db: "mon"
+    host: %DATABASE_HOST%
+    user: %MONASCA_NOTIFICATION_DATABASE_USER%
+    passwd: %DATABASE_PASSWORD%
+    db: mon
+
+postgresql:
+  host: %DATABASE_HOST%
+  port: %DATABASE_PORT%
+  user: %MONASCA_NOTIFICATION_DATABASE_USER%
+  password: %DATABASE_PASSWORD%
+  database: mon
 
 notification_types:
 

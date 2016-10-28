@@ -80,8 +80,6 @@ GIT_DEPTH=1
 
 SERVICE_HOST=192.168.10.6
 HOST_IP=192.168.10.6
-DATABASE_HOST=192.168.10.6
-MYSQL_HOST=192.168.10.6
 HOST_IP_IFACE=eth1
 
 DATABASE_PASSWORD=secretdatabase
@@ -96,7 +94,16 @@ LOG_COLOR=False
 DEST=/opt/stack
 
 disable_all_services
-enable_service zookeeper rabbit mysql key tempest horizon
+enable_service zookeeper rabbit key tempest horizon
+
+# Uncomment one of the following lines to use either MySQL or PostgreSQL
+# as RDB (relational database) backend for monasca.
+enable_service mysql
+#enable_service postgresql
+
+# Enable/Disable ORM support for mysql/postgresql
+# HINT: If postgresql service is enabled, ORM is enforced
+MONASCA_DATABASE_USE_ORM=${MONASCA_DATABASE_USE_ORM:-false}
 
 # The following two variables allow switching between Java and Python for the implementations
 # of the Monasca API and the Monasca Persister. If these variables are not set, then the
