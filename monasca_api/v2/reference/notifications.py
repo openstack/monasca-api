@@ -202,8 +202,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         helpers.validate_authorization(req, self._default_authorized_roles)
         notification = helpers.read_http_resource(req)
         self._parse_and_validate_notification(notification)
-        tenant_id = helpers.get_tenant_id(req)
-        result = self._create_notification(tenant_id, notification, req.uri)
+        result = self._create_notification(req.project_id, notification, req.uri)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_201
 
@@ -211,7 +210,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         if notification_method_id is None:
             helpers.validate_authorization(req,
                                            self._get_notifications_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, basestring):
@@ -223,16 +221,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                 validation.validate_sort_by(sort_by, allowed_sort_by)
 
             offset = helpers.get_query_param(req, 'offset')
-            limit = helpers.get_limit(req)
-            result = self._list_notifications(tenant_id, req.uri, sort_by,
-                                              offset, limit)
+            result = self._list_notifications(req.project_id, req.uri, sort_by,
+                                              offset, req.limit)
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
         else:
             helpers.validate_authorization(req,
                                            self._get_notifications_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
-            result = self._list_notification(tenant_id,
+            result = self._list_notification(req.project_id,
                                              notification_method_id,
                                              req.uri)
             res.body = helpers.dumpit_utf8(result)
@@ -240,8 +236,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     def on_delete(self, req, res, notification_method_id):
         helpers.validate_authorization(req, self._default_authorized_roles)
-        tenant_id = helpers.get_tenant_id(req)
-        self._delete_notification(tenant_id, notification_method_id)
+        self._delete_notification(req.project_id, notification_method_id)
         res.status = falcon.HTTP_204
 
     def on_put(self, req, res, notification_method_id):
@@ -249,8 +244,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         helpers.validate_authorization(req, self._default_authorized_roles)
         notification = helpers.read_http_resource(req)
         self._parse_and_validate_notification(notification, require_all=True)
-        tenant_id = helpers.get_tenant_id(req)
-        result = self._update_notification(notification_method_id, tenant_id,
+        result = self._update_notification(notification_method_id, req.project_id,
                                            notification, req.uri)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -259,10 +253,9 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
         notification = helpers.read_http_resource(req)
-        tenant_id = helpers.get_tenant_id(req)
-        self._patch_get_notification(tenant_id, notification_method_id, notification)
+        self._patch_get_notification(req.project_id, notification_method_id, notification)
         self._parse_and_validate_notification(notification, require_all=True)
-        result = self._update_notification(notification_method_id, tenant_id,
+        result = self._update_notification(notification_method_id, req.project_id,
                                            notification, req.uri)
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200

@@ -37,8 +37,7 @@ class NotificationsType(notificationstype_api_v2.NotificationsTypeV2API):
 
         # This is to provide consistency. Pagination is not really supported here as there
         # are not that many rows
-        limit = helpers.get_limit(req)
-        result = self._list_notifications(req.uri, limit)
+        result = self._list_notifications(req.uri, req.limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200

@@ -24,10 +24,10 @@ import fixtures
 import testtools.matchers as matchers
 
 from monasca_api.common.repositories.model import sub_alarm_definition
+from monasca_api.tests import base
 from monasca_api.v2.reference import alarm_definitions
 from monasca_api.v2.reference import alarms
 
-import oslo_config
 import oslo_config.fixture
 import oslotest.base as oslotest
 
@@ -158,6 +158,8 @@ class RESTResponseEquals(object):
 
 
 class AlarmTestBase(falcon.testing.TestBase, oslotest.BaseTestCase):
+
+    api_class = base.MockedAPI
 
     def setUp(self):
         super(AlarmTestBase, self).setUp()
