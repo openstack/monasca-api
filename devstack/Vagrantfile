@@ -96,7 +96,7 @@ LOG_COLOR=False
 DEST=/opt/stack
 
 disable_all_services
-enable_service rabbit mysql key tempest horizon
+enable_service zookeeper rabbit mysql key tempest horizon
 
 # The following two variables allow switching between Java and Python for the implementations
 # of the Monasca API and the Monasca Persister. If these variables are not set, then the

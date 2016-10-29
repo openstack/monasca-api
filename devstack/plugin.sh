@@ -95,8 +95,6 @@ function install_monasca {
 
     install_openjdk_7_jdk
 
-    install_zookeeper
-
     install_kafka
 
     if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
@@ -235,8 +233,6 @@ function unstack_monasca {
 
     stop_service kafka || true
 
-    stop_service zookeeper || true
-
     sudo /etc/init.d/influxdb stop || true
 
     stop_service verticad || true
@@ -344,8 +340,6 @@ function clean_monasca {
 
     clean_kafka
 
-    clean_zookeeper
-
     clean_openjdk_7_jdk
 
     clean_monasca_virtual_env
@@ -374,50 +368,6 @@ function clean_monasca_virtual_env {
     sudo rm -rf /opt/monasca
 
     sudo groupdel monasca
-
-}
-
-function install_zookeeper {
-
-    echo_summary "Install Monasca Zookeeper"
-
-    apt_get -y install zookeeperd
-
-    sudo cp "${MONASCA_API_DIR}"/devstack/files/zookeeper/zoo.cfg /etc/zookeeper/conf/zoo.cfg
-
-    if [[ ${SERVICE_HOST} ]]; then
-
-        sudo sed -i "s/server\.0=127\.0\.0\.1/server.0=${SERVICE_HOST}/g" /etc/zookeeper/conf/zoo.cfg
-
-    fi
-
-    sudo cp "${MONASCA_API_DIR}"/devstack/files/zookeeper/myid /etc/zookeeper/conf/myid
-
-    sudo cp "${MONASCA_API_DIR}"/devstack/files/zookeeper/environment /etc/zookeeper/conf/environment
-
-    sudo mkdir -p /var/log/zookeeper || true
-
-    sudo chmod 755 /var/log/zookeeper
-
-    sudo cp "${MONASCA_API_DIR}"/devstack/files/zookeeper/log4j.properties /etc/zookeeper/conf/log4j.properties
-
-    sudo start zookeeper || sudo restart zookeeper
-
-}
-
-function clean_zookeeper {
-
-    echo_summary "Clean Monasca Zookeeper"
-
-    apt_get -y purge zookeeperd
-
-    apt_get -y purge zookeeper
-
-    sudo rm -rf /etc/zookeeper
-
-    sudo rm -rf  /var/log/zookeeper
-
-    sudo rm -rf /var/lib/zookeeper
 
 }
 
@@ -475,10 +425,7 @@ function install_kafka {
     sudo chmod 644 /etc/kafka/server.properties
 
     if [[ ${SERVICE_HOST} ]]; then
-
         sudo sed -i "s/host\.name=127\.0\.0\.1/host.name=${SERVICE_HOST}/g" /etc/kafka/server.properties
-        sudo sed -i "s/zookeeper\.connect=127\.0\.0\.1:2181/zookeeper.connect=${SERVICE_HOST}:2181/g" /etc/kafka/server.properties
-
     fi
 
     sudo start kafka || sudo restart kafka
@@ -910,8 +857,6 @@ function install_monasca_api_java {
 
         # set kafka ip address
         sudo sed -i "s/127\.0\.0\.1:9092/${SERVICE_HOST}:9092/g" /etc/monasca/api-config.yml
-        # set zookeeper ip address
-        sudo sed -i "s/127\.0\.0\.1:2181/${SERVICE_HOST}:2181/g" /etc/monasca/api-config.yml
         # set monasca api server listening ip address
         sudo sed -i "s/bindHost: 127\.0\.0\.1/bindHost: ${SERVICE_HOST}/g" /etc/monasca/api-config.yml
         # set mysql ip address
@@ -1118,8 +1063,6 @@ function install_monasca_persister_java {
 
     if [[ ${SERVICE_HOST} ]]; then
 
-        # set zookeeper ip address
-        sudo sed -i "s/zookeeperConnect: \"127\.0\.0\.1:2181\"/zookeeperConnect: \"${SERVICE_HOST}:2181\"/g" /etc/monasca/persister-config.yml
         # set influxdb ip address
         sudo sed -i "s/url: \"http:\/\/127\.0\.0\.1:8086\"/url: \"http:\/\/${SERVICE_HOST}:8086\"/g" /etc/monasca/persister-config.yml
         # set monasca persister server listening ip address
@@ -1191,8 +1134,6 @@ function install_monasca_persister_python {
 
     if [[ ${SERVICE_HOST} ]]; then
 
-        # set zookeeper ip address
-        sudo sed -i "s/uri = 127\.0\.0\.1:2181/uri = ${SERVICE_HOST}:2181/g" /etc/monasca/persister.conf
         # set kafka ip address
         sudo sed -i "s/uri = 127\.0\.0\.1:9092/uri = ${SERVICE_HOST}:9092/g" /etc/monasca/persister.conf
         # set influxdb ip address
@@ -1221,8 +1162,6 @@ function install_monasca_persister_python {
 
     if [[ ${SERVICE_HOST} ]]; then
 
-        # set zookeeper ip address
-        sudo sed -i "s/zookeeperConnect: \"127\.0\.0\.1:2181\"/zookeeperConnect: \"${SERVICE_HOST}:2181\"/g" /etc/monasca/persister-config.yml
         # set influxdb ip address
         sudo sed -i "s/url: \"http:\/\/127\.0\.0\.1:8086\"/url: \"http:\/\/${SERVICE_HOST}:8086\"/g" /etc/monasca/persister-config.yml
         # set monasca persister server listening ip address
@@ -1322,8 +1261,6 @@ function install_monasca_notification {
 
         # set kafka ip address
         sudo sed -i "s/url: \"127\.0\.0\.1:9092\"/url: \"${SERVICE_HOST}:9092\"/g" /etc/monasca/notification.yaml
-        # set zookeeper ip address
-        sudo sed -i "s/url: \"127\.0\.0\.1:2181\"/url: \"${SERVICE_HOST}:2181\"/g" /etc/monasca/notification.yaml
         # set mysql ip address
         sudo sed -i "s/host: \"127\.0\.0\.1\"/host: \"${SERVICE_HOST}\"/g" /etc/monasca/notification.yaml
 
@@ -1411,13 +1348,6 @@ function install_storm {
 
     sudo chmod 0644 /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
 
-    if [[ ${SERVICE_HOST} ]]; then
-
-        # set zookeeper ip address
-        sudo sed -i "s/127\.0\.0\.1/${SERVICE_HOST}/g" /opt/storm/apache-storm-${STORM_VERSION}/conf/storm.yaml
-
-    fi
-
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/storm/storm-nimbus.conf /etc/init/storm-nimbus.conf
 
     sudo chown root:root /etc/init/storm-nimbus.conf
@@ -1491,8 +1421,6 @@ function install_monasca_thresh {
 
         # set kafka ip address
         sudo sed -i "s/metadataBrokerList: \"127\.0\.0\.1:9092\"/metadataBrokerList: \"${SERVICE_HOST}:9092\"/g" /etc/monasca/thresh-config.yml
-        # set zookeeper ip address
-        sudo sed -i "s/zookeeperConnect: \"127\.0\.0\.1:2181\"/zookeeperConnect: \"${SERVICE_HOST}:2181\"/g" /etc/monasca/thresh-config.yml
         # set mysql ip address
         sudo sed -i "s/jdbc:mysql:\/\/127\.0\.0\.1/jdbc:mysql:\/\/${SERVICE_HOST}/g" /etc/monasca/thresh-config.yml
     fi

@@ -42,6 +42,9 @@ enable_service monasca
 # Monasca infrastructure services
 #
 
+# devstack zookeeper
+enable_service zookeeper
+
 # Monasca databases
 # MySQL is already enabled in devstack
 enable_service monasca-influxdb
@@ -49,10 +52,7 @@ enable_service monasca-influxdb
 # Apache Storm
 enable_service monasca-storm
 
-# monasca-zookeeper depends on openjdk-7
-enable_service monasca-zookeeper
-
-# monasca-kafka depends on monasca-zookeeper
+# monasca-kafka depends on devstack-dlm-zookeeper
 enable_service monasca-kafka
 
 #
