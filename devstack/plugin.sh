@@ -535,10 +535,6 @@ function install_monasca_influxdb {
 
     sudo /etc/init.d/influxdb start || sudo /etc/init.d/influxdb restart
 
-    echo "Sleep for 60 seconds to let Influxdb elect a leader and start listening for connections"
-
-    sleep 60s
-
 }
 
 function install_monasca_vertica {
