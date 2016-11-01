@@ -201,13 +201,20 @@ function extra_monasca {
 
     start_monasca_services
 }
-
 function start_monasca_services {
     start_service monasca-api || restart_service monasca-api
-    start_service monasca-persister || restart_service monasca-persister
-    start_service monasca-notification || restart_service monasca-notification
-    start_service monasca-thresh || restart_service monasca-thresh
-    start_service grafana-server || restart_service grafana-server
+    if is_service_enabled monasca-persister; then
+        start_service monasca-persister || restart_service monasca-persister
+    fi
+    if is_service_enabled monasca-notification; then
+        start_service monasca-notification || restart_service monasca-notification
+    fi
+    if is_service_enabled monasca-thresh; then
+        start_service monasca-thresh || restart_service monasca-thresh
+    fi
+    if is_service_enabled grafana-server; then
+        start_service grafana-server || restart_service grafana-server
+    fi
     _start_monasca_agent
 }
 
