@@ -91,37 +91,31 @@ public class InfluxV9MeasurementRepo implements MeasurementRepo {
                             Boolean mergeMetricsFlag, String groupBy) throws Exception {
 
     String q;
-    if (Boolean.TRUE.equals(mergeMetricsFlag)) {
+    String groupByStr = "";
+    if ("*".equals(groupBy)) {
 
-      // The time column is automatically included in the results before all other columns.
-      q = String.format("select value, value_meta %1$s "
-                        + "where %2$s %3$s %4$s %5$s %6$s",
-                        this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.privateTenantIdPart(tenantId),
-                        this.influxV9Utils.privateRegionPart(this.region),
-                        this.influxV9Utils.startTimePart(startTime),
-                        this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime));
+      groupByStr = " group by * ";
 
     } else {
+      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+          if (!this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
+            throw new MultipleMetricsException(name, dimensions);
+          }
 
-      if (!"*".equals(groupBy) &&
-          !this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
-
-        throw new MultipleMetricsException(name, dimensions);
-
+        groupByStr = this.influxV9Utils.groupByPart();
       }
-      // The time column is automatically included in the results before all other columns.
-      q = String.format("select value, value_meta %1$s "
-                        + "where %2$s %3$s %4$s %5$s %6$s %7$s", //slimit 1
-                        this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.privateTenantIdPart(tenantId),
-                        this.influxV9Utils.privateRegionPart(this.region),
-                        this.influxV9Utils.startTimePart(startTime),
-                        this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.groupByPart());
     }
+
+    // The time column is automatically included in the results before all other columns.
+    q = String.format("select value, value_meta %1$s "
+                    + "where %2$s %3$s %4$s %5$s %6$s %7$s",
+            this.influxV9Utils.namePart(name, true),
+            this.influxV9Utils.privateTenantIdPart(tenantId),
+            this.influxV9Utils.privateRegionPart(this.region),
+            this.influxV9Utils.startTimePart(startTime),
+            this.influxV9Utils.dimPart(dimensions),
+            this.influxV9Utils.endTimePart(endTime),
+            groupByStr);
 
     logger.debug("Measurements query: {}", q);
 

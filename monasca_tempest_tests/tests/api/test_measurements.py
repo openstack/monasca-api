@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -259,6 +259,33 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
 
     @test.attr(type="gate")
+    def test_list_measurements_with_group_by(self):
+        query_parms = '?name=' + str(self._names_list[1]) + \
+                      '&group_by=*' + \
+                      '&start_time=' + str(self._start_time) + \
+                      '&end_time=' + str(self._end_time)
+        resp, response_body = self.monasca_client.list_measurements(
+            query_parms)
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(len(elements), 4)
+        self._verify_list_measurements_elements(elements, None, None)
+
+    @test.attr(type="gate")
+    def test_list_measurements_with_group_by_and_merge(self):
+        query_parms = '?name=' + str(self._names_list[1]) + \
+                      '&group_by=*' + \
+                      '&merge_metrics=true' + \
+                      '&start_time=' + str(self._start_time) + \
+                      '&end_time=' + str(self._end_time)
+        resp, response_body = self.monasca_client.list_measurements(
+            query_parms)
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(len(elements), 4)
+        self._verify_list_measurements_elements(elements, None, None)
+
+    @test.attr(type="gate")
     @test.attr(type=['negative'])
     def test_list_measurements_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_LIST_MEASUREMENTS_NAME_LENGTH + 1)
@@ -320,8 +347,13 @@ class TestMeasurements(base.BaseMonascaTest):
 
     def _verify_list_measurements_elements(self, elements, test_key,
                                            test_value):
-        if elements:
-            element = elements[0]
+        if not elements:
+            error_msg = "Failed: at least one element is needed. " \
+                        "Number of element = 0."
+            self.fail(error_msg)
+
+        for element in elements:
+            # element = elements[0]
             self.assertEqual(set(element),
                              set(['columns', 'dimensions', 'id',
                                   'measurements', 'name']))
@@ -335,10 +367,6 @@ class TestMeasurements(base.BaseMonascaTest):
             if test_key is not None and test_value is not None:
                 self.assertEqual(str(element['dimensions'][test_key]),
                                  test_value)
-        else:
-            error_msg = "Failed: at least one element is needed. " \
-                        "Number of element = 0."
-            self.fail(error_msg)
 
     def _verify_list_measurements_meas_len(self, measurements, test_len):
         if measurements:

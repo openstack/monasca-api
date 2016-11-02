@@ -182,11 +182,13 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         offset = helpers.get_query_param(req, 'offset')
         limit = helpers.get_limit(req)
         merge_metrics_flag = get_merge_metrics_flag(req)
+        group_by = helpers.get_query_param(req, "group_by")
 
         result = self._measurement_list(tenant_id, name, dimensions,
                                         start_timestamp, end_timestamp,
                                         req.uri, offset,
-                                        limit, merge_metrics_flag)
+                                        limit, merge_metrics_flag,
+                                        group_by)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -194,7 +196,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
     @resource.resource_try_catch_block
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp, req_uri, offset,
-                          limit, merge_metrics_flag):
+                          limit, merge_metrics_flag, group_by):
 
         result = self._metrics_repo.measurement_list(tenant_id,
                                                      self._region,
@@ -204,9 +206,10 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
                                                      end_timestamp,
                                                      offset,
                                                      limit,
-                                                     merge_metrics_flag)
+                                                     merge_metrics_flag,
+                                                     group_by)
 
-        return helpers.paginate_measurement(result, req_uri, limit)
+        return helpers.paginate_measurements(result, req_uri, limit)
 
 
 class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
@@ -240,11 +243,13 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         offset = helpers.get_query_param(req, 'offset')
         limit = helpers.get_limit(req)
         merge_metrics_flag = get_merge_metrics_flag(req)
+        group_by = helpers.get_query_param(req, "group_by")
 
         result = self._metric_statistics(tenant_id, name, dimensions,
                                          start_timestamp, end_timestamp,
                                          statistics, period, req.uri,
-                                         offset, limit, merge_metrics_flag)
+                                         offset, limit, merge_metrics_flag,
+                                         group_by)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -252,7 +257,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
     @resource.resource_try_catch_block
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
                            end_timestamp, statistics, period, req_uri,
-                           offset, limit, merge_metrics_flag):
+                           offset, limit, merge_metrics_flag, group_by):
 
         result = self._metrics_repo.metrics_statistics(tenant_id,
                                                        self._region,
@@ -263,7 +268,8 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
                                                        statistics, period,
                                                        offset,
                                                        limit,
-                                                       merge_metrics_flag)
+                                                       merge_metrics_flag,
+                                                       group_by)
 
         return helpers.paginate_statistics(result, req_uri, limit)
 

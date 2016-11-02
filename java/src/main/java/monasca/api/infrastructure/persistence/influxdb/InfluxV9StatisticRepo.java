@@ -116,24 +116,22 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
 
     String q;
 
-    if (Boolean.TRUE.equals(mergeMetricsFlag)) {
+    if ("*".equals(groupBy) ) {
 
       q = String.format("select %1$s %2$s "
-                        + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s",
-                        funcPart(statistics),
-                        this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.privateTenantIdPart(tenantId),
-                        this.influxV9Utils.privateRegionPart(this.region),
-                        this.influxV9Utils.startTimePart(startTime),
-                        this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.timeOffsetPart(offsetTimePart),
-                        this.influxV9Utils.periodPart(period),
-                        this.influxV9Utils.limitPart(limit));
+                      + "where %3$s %4$s %5$s %6$s %7$s %8$s",
+              funcPart(statistics),
+              this.influxV9Utils.namePart(name, true),
+              this.influxV9Utils.privateTenantIdPart(tenantId),
+              this.influxV9Utils.privateRegionPart(this.region),
+              this.influxV9Utils.startTimePart(startTime),
+              this.influxV9Utils.dimPart(dimensions),
+              this.influxV9Utils.endTimePart(endTime),
+              this.influxV9Utils.periodPartWithGroupBy(period));
 
     } else {
 
-      if (!"*".equals(groupBy) &&
+      if (Boolean.FALSE.equals(mergeMetricsFlag) &&
           !this.influxV9MetricDefinitionRepo.isAtMostOneSeries(tenantId, name, dimensions)) {
 
         throw new MultipleMetricsException(name, dimensions);
@@ -141,15 +139,18 @@ public class InfluxV9StatisticRepo implements StatisticRepo {
       }
 
       q = String.format("select %1$s %2$s "
-                        + "where %3$s %4$s %5$s %6$s %7$s %8$s",
-                        funcPart(statistics),
-                        this.influxV9Utils.namePart(name, true),
-                        this.influxV9Utils.privateTenantIdPart(tenantId),
-                        this.influxV9Utils.privateRegionPart(this.region),
-                        this.influxV9Utils.startTimePart(startTime),
-                        this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.periodPartWithGroupBy(period));
+                      + "where %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s",
+              funcPart(statistics),
+              this.influxV9Utils.namePart(name, true),
+              this.influxV9Utils.privateTenantIdPart(tenantId),
+              this.influxV9Utils.privateRegionPart(this.region),
+              this.influxV9Utils.startTimePart(startTime),
+              this.influxV9Utils.dimPart(dimensions),
+              this.influxV9Utils.endTimePart(endTime),
+              this.influxV9Utils.timeOffsetPart(offsetTimePart),
+              this.influxV9Utils.periodPart(period, mergeMetricsFlag),
+              this.influxV9Utils.limitPart(limit));
+
     }
 
     logger.debug("Statistics query: {}", q);
