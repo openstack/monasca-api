@@ -61,16 +61,16 @@ class TestMeasurements(base.BaseMonascaTest):
         metric3 = [
             helpers.create_metric(
                 name=name2, timestamp=start_timestamp + ONE_SECOND * 3,
-                dimensions={'key1': 'value1', 'key2': 'value1'}),
+                dimensions={'key1': 'value1', 'key2': 'value5', 'key3': 'value7'}),
             helpers.create_metric(
                 name=name2, timestamp=start_timestamp + ONE_SECOND * 3 + 10,
-                dimensions={'key1': 'value2', 'key2': 'value2'}),
+                dimensions={'key1': 'value2', 'key2': 'value5', 'key3': 'value7'}),
             helpers.create_metric(
                 name=name2, timestamp=start_timestamp + ONE_SECOND * 3 + 20,
-                dimensions={'key1': 'value3', 'key2': 'value3'}),
+                dimensions={'key1': 'value3', 'key2': 'value6', 'key3': 'value7'}),
             helpers.create_metric(
                 name=name2, timestamp=start_timestamp + ONE_SECOND * 3 + 30,
-                dimensions={'key1': 'value4', 'key2': 'value4'})
+                dimensions={'key1': 'value4', 'key2': 'value6', 'key3': 'value8'})
         ]
         cls.monasca_client.create_metrics(metric3)
 
@@ -194,7 +194,6 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertRaises(exceptions.BadRequest,
                           self.monasca_client.list_measurements, query_parms)
 
-
     @test.attr(type="gate")
     def test_list_measurements_with_offset_limit(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
@@ -259,7 +258,39 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
 
     @test.attr(type="gate")
-    def test_list_measurements_with_group_by(self):
+    def test_list_measurements_with_group_by_one(self):
+        query_parms = '?name=' + str(self._names_list[1]) + \
+                      '&group_by=key2' + \
+                      '&start_time=' + str(self._start_time) + \
+                      '&end_time=' + str(self._end_time)
+        resp, response_body = self.monasca_client.list_measurements(
+            query_parms)
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(len(elements), 2)
+        self._verify_list_measurements_elements(elements, None, None)
+        for measurements in elements:
+            self.assertEqual(1, len(measurements['dimensions'].keys()))
+            self.assertEqual([u'key2'], measurements['dimensions'].keys())
+
+    @test.attr(type="gate")
+    def test_list_measurements_with_group_by_multiple(self):
+        query_parms = '?name=' + str(self._names_list[1]) + \
+                      '&group_by=key2,key3' + \
+                      '&start_time=' + str(self._start_time) + \
+                      '&end_time=' + str(self._end_time)
+        resp, response_body = self.monasca_client.list_measurements(
+            query_parms)
+        self.assertEqual(200, resp.status)
+        elements = response_body['elements']
+        self.assertEqual(len(elements), 3)
+        self._verify_list_measurements_elements(elements, None, None)
+        for measurements in elements:
+            self.assertEqual(2, len(measurements['dimensions'].keys()))
+            self.assertEqual({u'key2', u'key3'}, set(measurements['dimensions'].keys()))
+
+    @test.attr(type="gate")
+    def test_list_measurements_with_group_by_all(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&group_by=*' + \
                       '&start_time=' + str(self._start_time) + \

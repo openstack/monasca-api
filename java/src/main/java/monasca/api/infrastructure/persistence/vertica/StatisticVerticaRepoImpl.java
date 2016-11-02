@@ -68,7 +68,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       String offset,
       int limit,
       Boolean mergeMetricsFlag,
-      String groupBy) throws MultipleMetricsException {
+      List<String> groupBy) throws MultipleMetricsException {
 
     Map<String, Statistics> statisticsMap = new HashMap<>();
 
@@ -77,14 +77,14 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     try (Handle h = db.open()) {
 
-      if (!"*".equals(groupBy) && !Boolean.TRUE.equals(mergeMetricsFlag)) {
+      if (groupBy.isEmpty() && !Boolean.TRUE.equals(mergeMetricsFlag)) {
 
         MetricQueries.checkForMultipleDefinitions(h, tenantId, name, dimensions);
 
       }
 
       String sql = createQuery(name, dimensions, period, startTime, endTime, offset,
-                               statisticsCols, mergeMetricsFlag);
+                               statisticsCols, mergeMetricsFlag, groupBy);
 
       logger.debug("vertica sql: {}", sql);
 
@@ -102,6 +102,10 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
       MetricQueries.bindDimensionsToQuery(query, dimensions);
 
+      if (!groupBy.isEmpty()) {
+        MetricQueries.bindGroupBy(query, groupBy);
+      }
+
       if (offset != null && !offset.isEmpty()) {
         logger.debug("binding offset: {}", offset);
 
@@ -114,7 +118,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
         return new ArrayList<>();
       }
 
-      if ("*".equals(groupBy)) {
+      if (!groupBy.isEmpty() && groupBy.contains("*")) {
 
         String currentDefId = null;
 
@@ -137,6 +141,31 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
         }
 
         MetricQueries.addDefsToResults(statisticsMap, h, this.dbHint);
+
+      } else if (!groupBy.isEmpty()) {
+
+        String currentId = null;
+
+        for (Map<String, Object> row : rows) {
+
+          String dimensionValues = (String) row.get("dimension_values");
+
+          if (dimensionValues != null && !dimensionValues.equals(currentId)) {
+            currentId = dimensionValues;
+
+            Statistics tmp = new Statistics();
+            tmp.setId(dimensionValues);
+            tmp.setName(name);
+            tmp.setDimensions(MetricQueries.combineGroupByAndValues(groupBy, dimensionValues));
+
+            statisticsMap.put(dimensionValues, tmp);
+          }
+
+          List<Object> statisticsRow = parseRow(row);
+
+          statisticsMap.get(dimensionValues).addMeasurement(statisticsRow);
+
+        }
 
       } else {
 
@@ -173,7 +202,11 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     }
 
-    return new ArrayList<>(statisticsMap.values());
+    List<Statistics> results = new ArrayList<>(statisticsMap.values());
+
+    Collections.sort(results);
+
+    return results;
   }
 
   private List<Object> parseRow(Map<String, Object> row) {
@@ -235,11 +268,18 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       DateTime endTime,
       String offset,
       List<String> statistics,
-      Boolean mergeMetricsFlag) {
+      Boolean mergeMetricsFlag,
+      List<String> groupBy) {
 
     StringBuilder sb = new StringBuilder();
 
     sb.append("SELECT ").append(this.dbHint).append(" ");
+    if (!groupBy.isEmpty() && !groupBy.contains("*")) {
+
+      sb.append(MetricQueries.buildGroupByConcatString(groupBy));
+      sb.append(" as dimension_values, ");
+
+    }
     sb.append(" max(to_hex(definition_dimensions_id)) AS id, ");
     sb.append(createColumnsStr(statistics));
 
@@ -248,21 +288,44 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       sb.append(", 'SECOND', 'START') AS time_interval");
     }
 
-    sb.append(" FROM MonMetrics.Measurements ");
+    sb.append(" FROM MonMetrics.Measurements as mes ");
+    if (!groupBy.isEmpty() && !groupBy.contains("*")) {
+
+      sb.append(MetricQueries.buildGroupBySql(groupBy));
+
+    }
+
     sb.append("WHERE TO_HEX(definition_dimensions_id) IN (")
         .append(MetricQueries.buildMetricDefinitionSubSql(name, dimensions, null, null))
         .append(") ");
-    sb.append(createWhereClause(startTime, endTime, offset, mergeMetricsFlag));
+    sb.append(createWhereClause(startTime, endTime, offset, groupBy));
 
     if (period >= 1) {
       sb.append(" group by ");
-      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+      if (!groupBy.isEmpty() && groupBy.contains("*")) {
+
         sb.append("definition_dimensions_id, ");
+
+      } else if (!groupBy.isEmpty()) {
+
+        for (int i = 0; i < groupBy.size(); i++) {
+          sb.append("gb").append(i).append(".value,");
+        }
+
       }
       sb.append("time_interval ");
+
       sb.append(" order by ");
-      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+      if (!groupBy.isEmpty() && groupBy.contains("*")) {
+
         sb.append("to_hex(definition_dimensions_id),");
+
+      } else {
+
+        sb.append(MetricQueries.buildGroupByCommaString(groupBy));
+        if (!groupBy.isEmpty())
+          sb.append(',');
+
       }
       sb.append("time_interval ");
     }
@@ -276,7 +339,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
       DateTime startTime,
       DateTime endTime,
       String offset,
-      Boolean mergeMetricsFlag) {
+      List<String> groupBy) {
 
     String s = "";
 
@@ -288,9 +351,16 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     if (offset != null && !offset.isEmpty()) {
 
-      if (Boolean.FALSE.equals(mergeMetricsFlag)) {
+      if (!groupBy.isEmpty()) {
         s += " AND (TO_HEX(definition_dimensions_id) > :offset_id "
              + "OR (TO_HEX(definition_dimensions_id) = :offset_id AND time_stamp > :offset_timestamp)) ";
+      } else if (!groupBy.isEmpty()){
+
+        String concatGroupByString = MetricQueries.buildGroupByConcatString(groupBy);
+
+        s += " AND (" + concatGroupByString + " > :offset_id" +
+              " OR (" + concatGroupByString + " = :offset_id AND mes.time_stamp > :offset_timestamp)) ";
+
       } else {
         s += " AND time_stamp > :offset_timestamp ";
       }
@@ -307,7 +377,7 @@ public class StatisticVerticaRepoImpl implements StatisticRepo {
 
     for (String statistic : statistics) {
 
-        sb.append(statistic + "(value) as " + statistic + ", ");
+        sb.append(statistic + "(mes.value) as " + statistic + ", ");
     }
 
     return sb.toString();

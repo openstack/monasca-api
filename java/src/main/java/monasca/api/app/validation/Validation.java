@@ -193,11 +193,12 @@ public final class Validation {
     }
   }
 
-  public static void validateMetricsGroupBy(String groupBy) {
+  public static List<String> parseAndValidateMetricsGroupBy(String groupBy) {
 
-    if (!Strings.isNullOrEmpty(groupBy) && !"*".equals(groupBy)) {
-      throw Exceptions.unprocessableEntity("Invalid group_by", "Group_by must be '*' if specified");
+    if (!Strings.isNullOrEmpty(groupBy)) {
+      return COMMA_SPLITTER.splitToList(groupBy);
     }
+    return new ArrayList<>();
   }
 
   public static void validateLifecycleState(String lifecycleState) {

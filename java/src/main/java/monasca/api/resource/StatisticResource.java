@@ -80,7 +80,7 @@ public class StatisticResource {
       @QueryParam("limit") String limit,
       @QueryParam("tenant_id") String crossTenantId,
       @QueryParam("merge_metrics") String mergeMetricsFlag,
-      @QueryParam("group_by") String groupBy) throws Exception {
+      @QueryParam("group_by") String groupByStr) throws Exception {
 
     // Validate query parameters
     Validation.validateNotNullOrEmpty(name, "name");
@@ -96,7 +96,7 @@ public class StatisticResource {
             .parseAndValidateDimensions(dimensionsStr);
     MetricNameValidation.validate(name, true);
     Boolean mergeMetricsFlagBool = Validation.validateAndParseMergeMetricsFlag(mergeMetricsFlag);
-    Validation.validateMetricsGroupBy(groupBy);
+    List<String> groupBy = Validation.parseAndValidateMetricsGroupBy(groupByStr);
 
     String queryTenantId = Validation.getQueryProject(roles, crossTenantId, tenantId, admin_role);
 

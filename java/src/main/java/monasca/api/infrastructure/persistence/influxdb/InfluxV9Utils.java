@@ -13,6 +13,7 @@
  */
 package monasca.api.infrastructure.persistence.influxdb;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
@@ -34,6 +35,7 @@ public class InfluxV9Utils {
   static final String OFFSET_SEPARATOR = "_";
   static final Splitter
       offsetSplitter = Splitter.on(OFFSET_SEPARATOR).omitEmptyStrings().trimResults();
+  static final Joiner COMMA_JOINER = Joiner.on(',');
 
   public InfluxV9Utils() {
   }
@@ -85,9 +87,11 @@ public class InfluxV9Utils {
     return sb.toString();
   }
 
-  public String groupByPart() {
+  public String groupByPart(List<String> groupBy) {
 
-    return " group by *";
+    if (!groupBy.isEmpty() && !groupBy.contains("*"))
+      return " group by " + COMMA_JOINER.join(groupBy) + ' ';
+    return "group by * ";
 
   }
 
@@ -253,10 +257,14 @@ public class InfluxV9Utils {
 
   }
 
-  public String periodPartWithGroupBy(int period) {
+  public String periodPartWithGroupBy(int period, List<String> groupBy) {
+    if (period <= 0) {
+      period = 300;
+    }
 
-    return period > 0 ? String.format(" group by time(%1$ds), *", period)
-                      : " group by time(300s), *";
+    String periodStr = ",time(" + period + "s)";
+
+    return String.format(" group by %1$s%2$s", COMMA_JOINER.join(groupBy), periodStr);
   }
 
   public String periodPart(int period, Boolean mergeMetricsFlag) {
@@ -273,6 +281,17 @@ public class InfluxV9Utils {
 
     filteredMap.remove("_tenant_id");
     filteredMap.remove("_region");
+
+    return filteredMap;
+  }
+
+  Map<String, String> filterGroupByTags(Map<String, String> tagMap, List<String> groupBy) {
+    Map<String, String> filteredMap = new HashMap<>(tagMap);
+
+    for (String key : tagMap.keySet()) {
+      if (!groupBy.contains(key))
+        filteredMap.remove(key);
+    }
 
     return filteredMap;
   }

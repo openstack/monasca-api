@@ -288,6 +288,21 @@ def get_query_period(req):
         raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
+def get_query_group_by(req):
+    try:
+        params = falcon.uri.parse_query_string(req.query_string)
+        if 'group_by' in params:
+            group_by = params['group_by']
+            if not isinstance(group_by, list):
+                group_by = [group_by]
+            return group_by
+        else:
+            return None
+    except Exception as ex:
+        LOG.debug(ex)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+
+
 def validate_query_name(name):
     """Validates the query param name.
 
@@ -556,7 +571,7 @@ def paginate_measurements(measurements, uri, limit):
                                                            ['measurements'][:limit]),
                                          u'name': measurement['name'],
                                          u'columns': measurement['columns'],
-                                         u'id': new_offset}
+                                         u'id': measurement['id']}
                 measurement_elements.append(truncated_measurement)
                 break
             else:
@@ -641,7 +656,7 @@ def paginate_statistics(statistics, uri, limit):
                                        u'statistics': (statistic['statistics'][:limit]),
                                        u'name': statistic['name'],
                                        u'columns': statistic['columns'],
-                                       u'id': new_offset}
+                                       u'id': statistic['id']}
 
                 statistic_elements.append(truncated_statistic)
                 break

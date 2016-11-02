@@ -28,6 +28,6 @@ public interface MeasurementRepo {
    */
   List<Measurements> find(String tenantId, String name, Map<String, String> dimensions,
                           DateTime startTime, @Nullable DateTime endTime, @Nullable String offset,
-                          int limit, Boolean mergeMetricsFlag, String groupBy)
+                          int limit, Boolean mergeMetricsFlag, List<String> groupBy)
       throws Exception;
 }

@@ -279,14 +279,13 @@ public class InfluxV9MetricDefinitionRepo implements MetricDefinitionRepo {
   {
 
     String q = String.format("select value, value_meta %1$s "
-                        + "where %2$s %3$s %4$s %5$s %6$s %7$s slimit 1",
+                        + "where %2$s %3$s %4$s %5$s %6$s group by * slimit 1",
                         this.influxV9Utils.namePart(name, true),
                         this.influxV9Utils.privateTenantIdPart(tenantId),
                         this.influxV9Utils.privateRegionPart(this.region),
                         this.influxV9Utils.startTimePart(startTime),
                         this.influxV9Utils.dimPart(dimensions),
-                        this.influxV9Utils.endTimePart(endTime),
-                        this.influxV9Utils.groupByPart());
+                        this.influxV9Utils.endTimePart(endTime));
 
     logger.debug("Measurements query: {}", q);
 

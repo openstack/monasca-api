@@ -343,6 +343,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if not result:
                 return json_measurement_list
 
+            offset_id = 0
+            if offset is not None:
+                offset_tuple = offset.split('_')
+                offset_id = int(offset_tuple[0]) if len(offset_tuple) > 1 else 0
+            index = offset_id
+
             for serie in result.raw['series']:
 
                 if 'values' in serie:
@@ -357,7 +363,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                   value_meta])
 
                     measurement = {u'name': serie['name'],
-                                   u'id': measurements_list[-1][0],
+                                   u'id': str(index),
                                    u'columns': [u'timestamp', u'value',
                                                 u'value_meta'],
                                    u'measurements': measurements_list}
@@ -369,6 +375,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                       if not key.startswith('_')}
 
                     json_measurement_list.append(measurement)
+                    index += 1
 
             return json_measurement_list
 
@@ -439,6 +446,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if not result:
                 return json_statistics_list
 
+            offset_id = 0
+            if offset is not None:
+                offset_tuple = offset.split('_')
+                offset_id = int(offset_tuple[0]) if len(offset_tuple) > 1 else 0
+            index = offset_id
+
             for serie in result.raw['series']:
 
                 if 'values' in serie:
@@ -451,11 +464,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                         timestamp = stats[0]
                         if '.' in timestamp:
                             stats[0] = str(timestamp)[:19] + 'Z'
-                        stats[1] = stats[1] or 0
-                        stats_list.append(stats)
+                        for stat in stats[1:]:
+                            if stat is not None:
+                                stats_list.append(stats)
 
                     statistic = {u'name': serie['name'],
-                                 u'id': stats_list[-1][0],
+                                 u'id': str(index),
                                  u'columns': columns,
                                  u'statistics': stats_list}
 
@@ -466,6 +480,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                     if not key.startswith('_')}
 
                     json_statistics_list.append(statistic)
+                    index += 1
 
             return json_statistics_list
 
@@ -510,12 +525,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return offset_clause
 
     def _build_group_by_clause(self, group_by, period=None):
+        if group_by is not None and not isinstance(group_by, list):
+            group_by = str(group_by).split(',')
         if group_by or period:
             items = []
+            if group_by:
+                items.extend(group_by)
             if period:
                 items.append("time(" + str(period) + "s)")
-            if group_by:
-                items.append('*')
             clause = " group by " + ','.join(items)
         else:
             clause = ""
@@ -547,7 +564,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                              dimensions,
                                              start_timestamp,
                                              end_timestamp,
-                                             0,
+                                             None,
                                              1,
                                              False,
                                              None)
