@@ -1,6 +1,5 @@
 # Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,14 +14,55 @@
 # under the License.
 
 from oslo_config import cfg
+from oslo_db.sqlalchemy import enginefacade
 from oslo_log import log
 
-from sqlalchemy.engine.url import URL, make_url
-from sqlalchemy import MetaData
+import sqlalchemy
 
 from monasca_api.common.repositories import exceptions
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
+
+
+def _get_db_conf(conf_group, connection=None):
+    return dict(
+        connection=connection or conf_group.connection,
+        slave_connection=conf_group.slave_connection,
+        sqlite_fk=False,
+        __autocommit=True,
+        expire_on_commit=False,
+        mysql_sql_mode=conf_group.mysql_sql_mode,
+        idle_timeout=conf_group.idle_timeout,
+        connection_debug=conf_group.connection_debug,
+        max_pool_size=conf_group.max_pool_size,
+        max_overflow=conf_group.max_overflow,
+        pool_timeout=conf_group.pool_timeout,
+        sqlite_synchronous=conf_group.sqlite_synchronous,
+        connection_trace=conf_group.connection_trace,
+        max_retries=conf_group.max_retries,
+        retry_interval=conf_group.retry_interval
+    )
+
+
+def create_context_manager(connection=None):
+    """Create a database context manager object.
+
+    :param connection: The database connection string
+    """
+    ctxt_mgr = enginefacade.transaction_context()
+    ctxt_mgr.configure(**_get_db_conf(CONF.database, connection=connection))
+    return ctxt_mgr
+
+
+def get_engine(use_slave=False, connection=None):
+    """Get a database engine object.
+
+    :param use_slave: Whether to use the slave connection
+    :param connection: The database connection string
+    """
+    ctxt_mgr = create_context_manager(connection=connection)
+    return ctxt_mgr.get_legacy_facade().get_engine(use_slave=use_slave)
 
 
 class SQLRepository(object):
@@ -30,23 +70,10 @@ class SQLRepository(object):
     def __init__(self):
 
         try:
-
             super(SQLRepository, self).__init__()
-
-            self.conf = cfg.CONF
-            url = None
-            if self.conf.database.url is not None:
-                url = make_url(self.conf.database.url)
-            else:
-                database_conf = dict(self.conf.database)
-                if 'url' in database_conf:
-                    del database_conf['url']
-                url = URL(**database_conf)
-
-            from sqlalchemy import create_engine
-            self._db_engine = create_engine(url, pool_recycle=3600)
-
-            self.metadata = MetaData()
+            self.conf = CONF
+            self._db_engine = get_engine()
+            self.metadata = sqlalchemy.MetaData()
 
         except Exception as ex:
             LOG.exception(ex)
