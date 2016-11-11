@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,6 +18,7 @@ import unittest
 import falcon
 import mock
 
+import monasca_api.v2.common.schemas.alarm_definition_request_body_schema as schemas_alarm_defs
 import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
 import monasca_api.v2.common.schemas.notifications_request_body_schema as schemas_notifications
 import monasca_api.v2.common.validation as validation
@@ -380,3 +381,82 @@ class TestNotificationValidation(unittest.TestCase):
             schemas_notifications.parse_and_validate(notification, valid_periods, require_all=True)
         ex = ve.exception
         self.assertEqual("Period is required", ex.message)
+
+
+class TestAlarmDefinitionValidation(unittest.TestCase):
+
+    def setUp(self):
+        self.full_alarm_definition = (
+            {"name": self._create_string_of_length(255),
+             "expression": "min(cpu.idle_perc) < 10",
+             "description": self._create_string_of_length(255),
+             "severity": "MEDIUM",
+             "match_by": ["hostname"],
+             "ok_actions:": [self._create_string_of_length(50)],
+             "undetermined_actions": [self._create_string_of_length(50)],
+             "alarm_actions": [self._create_string_of_length(50)],
+             "actions_enabled": True})
+
+    def _create_string_of_length(self, length):
+        s = ''
+        for i in xrange(0, length):
+            s += str(i % 10)
+        return s
+
+    def test_validation_good_minimum(self):
+        alarm_definition = {"name": "MyAlarmDefinition", "expression": "min(cpu.idle_perc) < 10"}
+        try:
+            schemas_alarm_defs.validate(alarm_definition)
+        except schemas_exceptions.ValidationException as e:
+            self.fail("shouldn't happen: {}".format(str(e)))
+
+    def test_validation_good_full(self):
+        alarm_definition = self.full_alarm_definition
+        try:
+            schemas_alarm_defs.validate(alarm_definition)
+        except schemas_exceptions.ValidationException as e:
+            self.fail("shouldn't happen: {}".format(str(e)))
+
+    def _ensure_fails_with_new_value(self, name, value):
+        alarm_definition = self.full_alarm_definition.copy()
+        alarm_definition[name] = value
+        self._ensure_validation_fails(alarm_definition)
+
+    def _ensure_validation_fails(self, alarm_definition):
+        self.assertRaises(
+            schemas_exceptions.ValidationException,
+            schemas_alarm_defs.validate, alarm_definition)
+
+    def _run_duplicate_action_test(self, actions_type):
+        actions = ["a", "b", "a"]
+        self._ensure_fails_with_new_value(actions_type, actions)
+
+    def test_validation_too_long_name(self):
+        self._ensure_fails_with_new_value("name",
+                                          self._create_string_of_length(256))
+
+    def test_validation_too_long_description(self):
+        self._ensure_fails_with_new_value("description",
+                                          self._create_string_of_length(256))
+
+    def test_validation_duplicate_ok_actions(self):
+        self._run_duplicate_action_test("ok_actions")
+
+    def test_validation_duplicate_alarm_actions(self):
+        self._run_duplicate_action_test("alarm_actions")
+
+    def test_validation_duplicate_undetermined_actions(self):
+        self._run_duplicate_action_test("undetermined_actions")
+
+    def test_validation_too_many_actions(self):
+        actions = [self._create_string_of_length(51)]
+        self._ensure_fails_with_new_value("ok_actions", actions)
+
+    def test_validation_invalid_severity(self):
+        self._ensure_fails_with_new_value("severity", "BOGUS")
+
+    def test_validation_invalid_match_by(self):
+        self._ensure_fails_with_new_value("match_by", "NOT_A_LIST")
+
+    def test_validation_invalid_actions_enabled(self):
+        self._ensure_fails_with_new_value("actions_enabled", 42)
