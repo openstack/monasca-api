@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -28,15 +29,6 @@ NUM_ALARM_DEFINITIONS = 2
 
 
 class TestAlarmDefinitions(base.BaseMonascaTest):
-    @classmethod
-    def resource_setup(cls):
-        super(TestAlarmDefinitions, cls).resource_setup()
-
-    @classmethod
-    def resource_cleanup(cls):
-        super(TestAlarmDefinitions, cls).resource_cleanup()
-
-    # Create
 
     @test.attr(type="gate")
     def test_create_alarm_definition(self):
@@ -346,6 +338,30 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self._verify_list_alarm_definitions_links(links)
 
     @test.attr(type="gate")
+    def test_list_alarm_definitions_with_multibyte_character(self):
+        name = data_utils.rand_name('ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ').decode('utf8')
+        description = 'ｄｅｓｃｒｉｐｔｉｏｎ'.decode('utf8')
+
+        response_body_list = self._create_alarm_definitions(
+            name=name,
+            description=description,
+            number_of_definitions=1
+        )
+        alarm_definition = response_body_list[0]
+
+        query_param = '?name=' + urlparse.quote(name.encode('utf8'))
+        resp, response_body = self.monasca_client.list_alarm_definitions(
+            query_param)
+
+        self._verify_list_alarm_definitions_response_body(resp, response_body)
+
+        # Test list alarm definition response body
+        elements = response_body['elements']
+        self._verify_alarm_definitions_list(elements, [alarm_definition])
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
+
+    @test.attr(type="gate")
     def test_list_alarm_definitions_with_name(self):
         name = data_utils.rand_name('alarm_definition')
         alarm_definition = helpers.create_alarm_definition(
@@ -427,7 +443,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             name=name,
             description="description",
             expression=expression,
-            severity="low")
+            severity="LOW")
         resp, res_body_create_alarm_def = self.monasca_client.\
             create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
@@ -701,6 +717,28 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
+    @test.attr(type="gate")
+    def test_get_alarm_definition_with_multibyte_character(self):
+        # Create an alarm definition
+        name = data_utils.rand_name('ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ').decode('utf8')
+        description = 'ｄｅｓｃｒｉｐｔｉｏｎ'.decode('utf8')
+        response_body_list = self._create_alarm_definitions(
+            name=name,
+            description=description,
+            number_of_definitions=1
+        )
+        alarm_definition = response_body_list[0]
+
+        resp, response_body = self.monasca_client.get_alarm_definition(
+            alarm_definition['id'])
+
+        self.assertEqual(200, resp.status)
+        self._verify_element_set(response_body)
+        self._verify_alarm_definitions_element(response_body,
+                                               alarm_definition)
+        links = response_body['links']
+        self._verify_list_alarm_definitions_links(links)
+
     # Update
 
     @test.attr(type="gate")
@@ -951,17 +989,28 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           'LOW', [], [],
                           [])
 
-    def _create_alarm_definitions(self, expression, number_of_definitions):
+    def _create_alarm_definitions(self, number_of_definitions, **kwargs):
         self.rule = {'expression': 'mem_total_mb > 0'}
+
+        expression = kwargs.get('expression', None)
         if expression is None:
-            expression = "max(cpu.system_perc) > 0"
+            expression = 'max(cpu.system_perc) > 0'
+        match_by = kwargs.get('match_by', ['device'])
+
         response_body_list = []
         for i in xrange(number_of_definitions):
+
+            name = kwargs.get('name',
+                              data_utils.rand_name('alarm_definition'))
+            desc = kwargs.get('description',
+                              data_utils.rand_name('description'))
+
             alarm_definition = helpers.create_alarm_definition(
-                name=data_utils.rand_name('alarm_definition'),
-                description=data_utils.rand_name('description'),
+                name=name,
+                description=desc,
                 expression=expression,
-                match_by=['device'])
+                match_by=match_by
+            )
             resp, response_body = self.monasca_client.create_alarm_definitions(
                 alarm_definition)
             self.assertEqual(201, resp.status)
