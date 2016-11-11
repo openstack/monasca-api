@@ -1,4 +1,4 @@
-# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014,2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -385,11 +385,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                     monasca_api.expression_parser.alarm_expr_parser.
                     AlarmExprParser(expression).sub_expr_list)
 
-            except pyparsing.ParseException as ex:
+            except (pyparsing.ParseException,
+                    pyparsing.ParseFatalException) as ex:
                 LOG.exception(ex)
                 title = "Invalid alarm expression".encode('utf8')
-                msg = "parser failed on expression '{}' at column {}".format(
-                    expression.encode('utf8'), str(ex.column).encode('utf8'))
+                msg = "parser failed on expression '{}' at column {}: {}".format(
+                      expression.encode('utf8'), str(ex.column).encode('utf8'),
+                      ex.msg.encode('utf8'))
                 raise HTTPUnprocessableEntityError(title, msg)
         else:
             sub_expr_list = None
@@ -491,11 +493,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                 monasca_api.expression_parser.alarm_expr_parser.
                 AlarmExprParser(expression).sub_expr_list)
 
-        except pyparsing.ParseException as ex:
+        except (pyparsing.ParseException,
+                pyparsing.ParseFatalException) as ex:
             LOG.exception(ex)
             title = "Invalid alarm expression".encode('utf8')
-            msg = "parser failed on expression '{}' at column {}".format(
-                expression.encode('utf8'), str(ex.column).encode('utf8'))
+            msg = "parser failed on expression '{}' at column {}: {}".format(
+                  expression.encode('utf8'), str(ex.column).encode('utf8'),
+                  ex.msg.encode('utf8'))
             raise HTTPUnprocessableEntityError(title, msg)
 
         self._validate_name_not_conflicting(tenant_id, name)
