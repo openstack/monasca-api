@@ -184,7 +184,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                     else:
                         validation.dimension_value(name_value[1])
         except Exception as e:
-            raise HTTPUnprocessableEntityError("Unprocessable Entity", e.message)
+            raise HTTPUnprocessableEntityError("Unprocessable Entity", str(e))
 
     @resource.resource_try_catch_block
     def _alarm_update(self, tenant_id, alarm_id, new_state, lifecycle_state,
