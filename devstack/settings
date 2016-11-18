@@ -77,9 +77,6 @@ enable_service monasca-agent
 # monasca-cli depends on monasca-api
 enable_service monasca-cli
 
-# monasca-smoke-test enabled for ci
-enable_service monasca-smoke-test
-
 #
 # Dependent Software Versions
 #
