@@ -92,6 +92,10 @@ public class MetricResource {
         isDelegate =
         !Strings.isNullOrEmpty(roles) && COMMA_SPLITTER.splitToList(roles)
             .contains(monitoring_delegate_role);
+    boolean
+        isAdmin =
+        !Strings.isNullOrEmpty(roles) && COMMA_SPLITTER.splitToList(roles)
+            .contains(admin_role);
     List<Metric> metrics = new ArrayList<>(commands.length);
     for (CreateMetricCommand command : commands) {
       if (!isDelegate) {
@@ -106,8 +110,8 @@ public class MetricResource {
           throw Exceptions.forbidden("Project %s cannot POST cross tenant metrics", tenantId);
         }
       }
+      command.validate(!isAdmin);
 
-      command.validate();
       metrics.add(command.toMetric());
     }
 
