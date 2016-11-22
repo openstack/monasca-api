@@ -2,12 +2,12 @@
 
 # chkconfig: 2345 80 05
 # description: Grafana web server & backend
-# processname: grafana
+# processname: grafana-server
 # config: /etc/grafana/grafana.ini
-# pidfile: /var/run/grafana.pid
+# pidfile: /var/run/grafana-server.pid
 
 ### BEGIN INIT INFO
-# Provides:          grafana
+# Provides:          grafana-server
 # Required-Start:    $all
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5

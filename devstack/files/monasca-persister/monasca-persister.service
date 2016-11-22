@@ -1,11 +1,8 @@
-#
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,14 +12,18 @@
 # limitations under the License.
 #
 
-# Startup script for the Monasca API
+# Startup script for the Monasca Persister
 
-description "Monasca API Python app"
-start on runlevel [2345]
+[Unit]
+Description=Monasca Persister Java app
+Requires=network.target
+After=network.target kafka.service influxdb.service
 
-console log
-respawn
+[Service]
+User=mon-persister
+Group=monasca
+ExecStart=/usr/bin/java -Dfile.encoding=UTF-8 -Xmx128m -cp /opt/monasca/monasca-persister.jar monasca.persister.PersisterApplication server /etc/monasca/persister-config.yml
+Restart=on-failure
 
-setgid monasca
-setuid mon-api
-exec /opt/monasca-api/bin/gunicorn -n monasca-api -k eventlet --worker-connections=2000 --backlog=1000 --paste /etc/monasca/api-config.ini -w 9
+[Install]
+WantedBy=multi-user.target
