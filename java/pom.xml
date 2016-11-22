@@ -5,7 +5,7 @@
 
     <groupId>monasca-api</groupId>
     <artifactId>monasca-api</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <url>http://github.com/openstack/monasca-api</url>
     <packaging>jar</packaging>
 
@@ -19,7 +19,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
         <computedVersion>${project.version}-${timestamp}-${gitRevision}</computedVersion>
         <computedName>${project.artifactId}-${computedVersion}</computedName>
-        <mon.common.version>1.1.0-SNAPSHOT</mon.common.version>
+        <mon.common.version>1.2.0-SNAPSHOT</mon.common.version>
         <dropwizard.version>0.7.0</dropwizard.version>
         <hikaricp.version>2.3.9</hikaricp.version>
 
