@@ -1793,9 +1793,8 @@ function install_monasca_grafana {
     export PATH=$PATH:/usr/local/go/bin
 
     if [ ! -d "${GRAFANA_DIR}" ]; then
-        git_timed clone $GRAFANA_REPO $GRAFANA_DIR
+        git_timed clone $GRAFANA_REPO $GRAFANA_DIR --branch $GRAFANA_BRANCH --depth 1
     fi
-    (cd "${GRAFANA_DIR}"; git checkout $GRAFANA_BRANCH)
 
     cd "${MONASCA_BASE}"
 
