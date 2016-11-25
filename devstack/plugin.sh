@@ -195,9 +195,6 @@ function extra_monasca {
         install_monasca_grafana
 
     fi
-    if is_service_enabled monasca-smoke-test; then
-        install_monasca_smoke_test
-    fi
 
     start_monasca_services
 }
@@ -256,8 +253,6 @@ function clean_monasca {
     set +o errexit
 
     unstack_monasca
-
-    clean_monasca_smoke_test
 
     if is_service_enabled horizon; then
 
@@ -1657,64 +1652,6 @@ function clean_monasca_agent {
     apt_get -y purge python-dev
 
 }
-
-function install_monasca_smoke_test {
-
-    echo_summary "Install Monasca Smoke Test"
-
-    PIP_VIRTUAL_ENV=/opt/monasca
-
-    pip_install mySQL-python
-
-    if [[ "$OFFLINE" != "True" ]]; then
-        sudo curl -L https://api.github.com/repos/hpcloud-mon/monasca-ci/tarball/master \
-            -o /opt/monasca/monasca-ci.tar.gz
-    fi
-
-    sudo tar -xzf /opt/monasca/monasca-ci.tar.gz -C /opt/monasca
-
-    HPCLOUD_MON_MONASCA_CI_DIR=$(ls -td /opt/monasca/hpcloud-mon-monasca-ci-* | head -1)
-
-    if [[ ${SERVICE_HOST} ]]; then
-
-        sudo sed -i s/192\.168\.10\.4/${SERVICE_HOST}/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
-        sudo sed -i s/192\.168\.10\.5/${SERVICE_HOST}/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
-
-    else
-
-        sudo sed -i s/192\.168\.10\.4/127\.0\.0\.1/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
-        sudo sed -i s/192\.168\.10\.5/127\.0\.0\.1/g ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/utils.py
-
-    fi
-
-    sudo sed -i "s/'hostname', '-f'/'hostname'/g" ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke_configs.py
-
-    (cd /opt/monasca ; sudo -H ./bin/pip install influxdb)
-
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-smoke-test/smoke2_configs.py ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2_configs.py
-
-    if [[ ${SERVICE_HOST} ]]; then
-
-        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi ${SERVICE_HOST} --kafka ${SERVICE_HOST} --zoo ${SERVICE_HOST} --mysql ${SERVICE_HOST} || true
-
-    else
-
-        sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke2.py --monapi "127.0.0.1" --kafka "127.0.0.1" --zoo "127.0.0.1" --mysql "127.0.0.1" || true
-
-    fi
-
-    (cd /opt/monasca ; LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 OS_USERNAME=admin OS_PASSWORD=secretadmin OS_PROJECT_NAME=test OS_AUTH_URL=http://127.0.0.1:35357/v3 bash -c "sudo /opt/monasca/bin/python ${HPCLOUD_MON_MONASCA_CI_DIR}/tests/smoke/smoke.py" || true)
-}
-
-function clean_monasca_smoke_test {
-
-    echo_summary "Clean Monasca Smoke Test"
-
-    sudo rm  /opt/monasca/monasca-ci.tar.gz
-
-    sudo rm -rf /opt/monasca/hpcloud-mon-monasca-ci-7a45d29
-}
-
 
 function install_monasca_default_alarms {
 :
