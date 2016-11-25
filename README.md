@@ -1,3 +1,10 @@
+Team and repository tags
+========================
+
+[![Team and repository tags](http://governance.openstack.org/badges/monasca-api.svg)](http://governance.openstack.org/reference/tags/index.html)
+
+<!-- Change things from this point on -->
+
 # Overview
 
 `monasca-api` is a RESTful API server that is designed with a layered architecture [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
