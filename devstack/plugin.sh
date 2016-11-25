@@ -138,6 +138,9 @@ function install_monasca {
         die "Please set MONASCA_API_IMPLEMENTATION_LANG to either \"java'' or \"python\""
 
     fi
+
+    sudo systemctl enable monasca-api
+
     if is_service_enabled monasca-persister; then
         if [[ "${MONASCA_PERSISTER_IMPLEMENTATION_LANG,,}" == 'java' ]]; then
 
@@ -154,6 +157,9 @@ function install_monasca {
             die "Please set MONASCA_PERSISTER_IMPLEMENTATION_LANG to either \"java\" or \"python\""
 
         fi
+
+        sudo systemctl enable monasca-persister
+
     fi
     if is_service_enabled monasca-notification; then
         install_monasca_notification
@@ -1001,6 +1007,7 @@ function install_monasca_api_python {
     sudo chmod 0660 /etc/monasca/api-logging.conf
 
     sudo ln -sf /etc/monasca/api-logging.conf /etc/api-logging.conf
+
 }
 
 function clean_monasca_api_java {
@@ -1322,6 +1329,8 @@ function install_monasca_notification {
 
     sudo chmod 0644 /etc/systemd/system/monasca-notification.service
 
+    sudo systemctl enable monasca-notification
+
     sudo debconf-set-selections <<< "postfix postfix/mailname string localhost"
 
     sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
@@ -1490,6 +1499,8 @@ function install_monasca_thresh {
     sudo chown root:root /etc/init.d/monasca-thresh
 
     sudo chmod 0744 /etc/init.d/monasca-thresh
+
+    sudo systemctl enable monasca-thresh
 
 }
 
