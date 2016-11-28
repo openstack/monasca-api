@@ -198,6 +198,8 @@ function extra_monasca {
 
         install_node_nvm
 
+        install_go
+
         install_monasca_grafana
 
     fi
@@ -267,6 +269,8 @@ function clean_monasca {
         clean_node_nvm
 
         clean_monasca_grafana
+
+        clean_go
 
     fi
 
@@ -385,16 +389,17 @@ function install_kafka {
 
     echo_summary "Install Monasca Kafka"
 
-    if [[ "$OFFLINE" != "True" ]]; then
-        sudo curl http://apache.mirrors.tds.net/kafka/${BASE_KAFKA_VERSION}/kafka_${KAFKA_VERSION}.tgz \
-            -o /root/kafka_${KAFKA_VERSION}.tgz
-    fi
+    local kafka_tarball=kafka_${KAFKA_VERSION}.tgz
+    local kafka_tarball_url=http://apache.mirrors.tds.net/kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
+    local kafka_tarball_dest=${FILES}/${kafka_tarball}
+
+    download_file ${kafka_tarball_url} ${kafka_tarball_dest}
 
     sudo groupadd --system kafka || true
 
     sudo useradd --system -g kafka kafka || true
 
-    sudo tar -xzf /root/kafka_${KAFKA_VERSION}.tgz -C /opt
+    sudo tar -xzf ${kafka_tarball_dest} -C /opt
 
     sudo ln -sf /opt/kafka_${KAFKA_VERSION} /opt/kafka
 
@@ -466,7 +471,7 @@ function clean_kafka {
 
     sudo rm -rf /opt/kafka_${KAFKA_VERSION}
 
-    sudo rm -rf /root/kafka_${KAFKA_VERSION}.tgz
+    sudo rm -rf ${FILES}/kafka_${KAFKA_VERSION}.tgz
 
 }
 
@@ -474,14 +479,13 @@ function install_monasca_influxdb {
 
     echo_summary "Install Monasca Influxdb"
 
-    sudo mkdir -p /opt/monasca_download_dir || true
+    local influxdb_deb=influxdb_${INFLUXDB_VERSION}_amd64.deb
+    local influxdb_deb_url=http://s3.amazonaws.com/influxdb/${influxdb_deb}
+    local influxdb_deb_dest=${FILES}/${influxdb_deb}
 
-    if [[ "$OFFLINE" != "True" ]]; then
-        sudo curl http://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb \
-            -o /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
-    fi
+    download_file ${influxdb_deb_url} ${influxdb_deb_dest}
 
-    sudo dpkg --skip-same-version -i /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
+    sudo dpkg --skip-same-version -i ${influxdb_deb_dest}
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/influxdb/influxdb.conf /etc/influxdb/influxdb.conf
 
@@ -502,16 +506,16 @@ function install_monasca_vertica {
 
     echo_summary "Install Monasca Vertica"
 
-    # sudo mkdir -p /opt/monasca_download_dir || true
-
     apt_get -y install dialog
 
     sudo dpkg --skip-same-version -i /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb
 
     # Download Vertica JDBC driver
-    # if [[ "$OFFLINE" != "True" ]]; then
-    # sudo curl https://my.vertica.com/client_drivers/8.0.x/${VERTICA_VERSION}/vertica-jdbc-{VERTICA_VERSION}.jar -o /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar
-    # fi
+    # local vertica_jar=vertica-jdbc-${VERTICA_VERSION}.jar
+    # local vertica_jar_url=https://my.vertica.com/client_drivers/7.2.x/${VERTICA_VERSION}/${vertica_jar}
+    # local vertica_jar_dest=${FILES}/${vertica_jar}
+    #
+    # download_file ${vertica_jar_url} ${vertica_jar_dest}
 
     # Current version of Vertica 8.0.0 doesn't support Ubuntu Xenial, so fake a version
     sudo cp -p /etc/debian_version /etc/debian_version.org
@@ -533,7 +537,7 @@ function install_monasca_vertica {
     /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/users.sql
 
     # Copy Vertica JDBC driver to /opt/monasca
-    # sudo cp /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
+    # sudo cp ${FILES}/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
     sudo cp /vagrant_home/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
 
 }
@@ -612,9 +616,7 @@ function clean_monasca_influxdb {
 
     sudo rm -rf /run/influxdb
 
-    sudo rm -f  /opt/monasca_download_dir/influxdb_${INFLUXDB_VERSION}_amd64.deb
-
-    sudo rm -rf /opt/monasca_download_dir
+    sudo rm -f  ${FILES}/influxdb_${INFLUXDB_VERSION}_amd64.deb
 
     sudo rm -f /etc/init.d/influxdb
 }
@@ -1377,10 +1379,11 @@ function install_storm {
 
     echo_summary "Install Monasca Storm"
 
-    if [[ "$OFFLINE" != "True" ]]; then
-        sudo curl http://apache.mirrors.tds.net/storm/apache-storm-${STORM_VERSION}/apache-storm-${STORM_VERSION}.tar.gz \
-            -o /root/apache-storm-${STORM_VERSION}.tar.gz
-    fi
+    local storm_tarball=apache-storm-${STORM_VERSION}.tar.gz
+    local storm_tarball_url=http://apache.mirrors.tds.net/storm/apache-storm-${STORM_VERSION}/${storm_tarball}
+    local storm_tarball_dest=${FILES}/${storm_tarball}
+
+    download_file ${storm_tarball_url} ${storm_tarball_dest}
 
     sudo groupadd --system storm || true
 
@@ -1392,7 +1395,7 @@ function install_storm {
 
     sudo chmod 0755 /opt/storm
 
-    sudo tar -xzf /root/apache-storm-${STORM_VERSION}.tar.gz -C /opt/storm
+    sudo tar -xzf ${storm_tarball_dest} -C /opt/storm
 
     sudo ln -sf /opt/storm/apache-storm-${STORM_VERSION} /opt/storm/current
 
@@ -1466,7 +1469,7 @@ function clean_storm {
 
     sudo rm -rf /opt/storm
 
-    sudo rm /root/apache-storm-${STORM_VERSION}.tar.gz
+    sudo rm ${FILES}/apache-storm-${STORM_VERSION}.tar.gz
 
 }
 
@@ -1728,12 +1731,14 @@ function clean_monasca_horizon_ui {
 # and does not result in gnutsl_handshake error
 function install_node_nvm {
 
-    echo_summary "Install Node with NVM"
+    echo_summary "Install Node ${NODE_JS_VERSION} with NVM ${NVM_VERSION}"
+
+    local nvm_url=https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh
+    local nvm_dest=${FILES}/nvm_install.sh
+    download_file ${nvm_url} ${nvm_dest}
 
     set -i
-    if [[ "$OFFLINE" != "True" ]]; then
-        curl https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
-    fi
+    bash ${nvm_dest}
     (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm install ${NODE_JS_VERSION}; nvm use ${NODE_JS_VERSION})
     set +i
 }
@@ -1741,11 +1746,6 @@ function install_node_nvm {
 function install_monasca_grafana {
 
     echo_summary "Install Grafana"
-
-    cd "${MONASCA_BASE}"
-    wget -N https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
-    export PATH=$PATH:/usr/local/go/bin
 
     if [ ! -d "${GRAFANA_DIR}" ]; then
         git_timed clone $GRAFANA_REPO $GRAFANA_DIR --branch $GRAFANA_BRANCH --depth 1
@@ -1776,7 +1776,6 @@ function install_monasca_grafana {
 
     cd "${MONASCA_BASE}"
     sudo rm -r grafana
-    rm go${GO_VERSION}.linux-amd64.tar.gz
 
     sudo useradd grafana || true
     sudo mkdir /etc/grafana || true
@@ -1799,6 +1798,8 @@ function install_monasca_grafana {
 
 function clean_node_nvm {
     sudo rm -rf "${HOME}"/.nvm
+
+    sudo rm -f ${FILES}/nvm_install.sh
 }
 
 function clean_monasca_grafana {
@@ -1815,6 +1816,27 @@ function clean_monasca_grafana {
 
     sudo rm -r /var/log/grafana
 
+}
+
+function install_go {
+    echo_summary "Install Go ${GO_VERSION}"
+
+    local go_tarball=go${GO_VERSION}.linux-amd64.tar.gz
+    local go_tarball_url=https://storage.googleapis.com/golang/${go_tarball}
+    local go_tarball_dest=${FILES}/${go_tarball}
+
+    download_file ${go_tarball_url} ${go_tarball_dest}
+
+    sudo tar -C /usr/local -xzf ${go_tarball_dest}
+    export PATH=$PATH:/usr/local/go/bin
+}
+
+function clean_go {
+    echo_summary "Clean Go ${GO_VERSION}"
+
+    sudo rm -f ${FILES}/go${GO_VERSION}*
+    sudo rm -rf /usr/local/go*
+    export PATH=$(echo $PATH | sed -e 's|:/usr/local/go/bin||')
 }
 
 ###### extra functions
@@ -1896,6 +1918,47 @@ if is_service_enabled monasca; then
         clean_monasca
     fi
 fi
+
+# download_file
+#  $1 - url to download
+#  $2 - location where to save url to
+#
+# Download file only when it not exists or there is newer version of it.
+#
+#  Uses global variables:
+#  - OFFLINE
+#  - DOWNLOAD_FILE_TIMEOUT
+# note(trebskit) maybe this function will enter upstream devstack in case it does
+#                we should remove it from here
+function download_file {
+    local url=$1
+    local file=$2
+
+    # If in OFFLINE mode check if file already exists
+    if [[ ${OFFLINE} == "True" ]] && [[ ! -f ${file} ]]; then
+        die $LINENO "You are running in OFFLINE mode but
+                     the target file \"$file\" was not found"
+    fi
+
+    local curl_z_flag=""
+    if [[ -f ${file} ]]; then
+        # If the file exists tell cURL to download only if newer version
+        # is available
+        curl_z_flag="-z $file"
+    fi
+
+    # yeah...downloading...devstack...hungry..om, om, om
+    local timeout=0
+
+    if [[ -n "${DOWNLOAD_FILE_TIMEOUT}" ]]; then
+        timeout=${DOWNLOAD_FILE_TIMEOUT}
+    fi
+
+    time_start "download_file"
+    _safe_permission_operation ${CURL_GET} -L $url --connect-timeout $timeout --retry 3 --retry-delay 5 -o $file $curl_z_flag
+    time_stop "download_file"
+
+}
 
 #Restore errexit
 $ERREXIT
