@@ -510,12 +510,19 @@ function install_monasca_vertica {
 
     # Download Vertica JDBC driver
     # if [[ "$OFFLINE" != "True" ]]; then
-    # sudo curl https://my.vertica.com/client_drivers/7.2.x/${VERTICA_VERSION}/vertica-jdbc-{VERTICA_VERSION}.jar -o /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar
+    # sudo curl https://my.vertica.com/client_drivers/8.0.x/${VERTICA_VERSION}/vertica-jdbc-{VERTICA_VERSION}.jar -o /opt/monasca_download_dir/vertica-jdbc-${VERTICA_VERSION}.jar
     # fi
+
+    # Current version of Vertica 8.0.0 doesn't support Ubuntu Xenial, so fake a version
+    sudo cp -p /etc/debian_version /etc/debian_version.org
+    sudo sh -c "echo 'jessie/sid' > /etc/debian_version"
 
     sudo /opt/vertica/sbin/install_vertica --hosts "127.0.0.1" --deb /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb --dba-user-password password --license CE --accept-eula --failure-threshold NONE
 
     sudo su dbadmin -c '/opt/vertica/bin/admintools -t create_db -s "127.0.0.1" -d mon -p password'
+
+    # Bring back Ubuntu version
+    sudo mv /etc/debian_version.org /etc/debian_version
 
     /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_metrics.sql
 
