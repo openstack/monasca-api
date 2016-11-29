@@ -99,3 +99,6 @@ logging: # Used in logging.dictConfig
         handlers:
             - file
         level: WARN
+statsd:
+    host: 'localhost'
+    port: 8125
