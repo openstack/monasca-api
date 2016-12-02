@@ -19,7 +19,7 @@ metricSpoutTasks: 2
 
 statsdConfig:
   host: "127.0.0.1"
-  port: 8125
+  port: %MONASCA_STATSD_PORT%
   prefix: monasca.storm.
   dimensions: !!map
     service : monitoring

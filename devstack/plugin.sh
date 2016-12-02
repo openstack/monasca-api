@@ -1332,6 +1332,10 @@ function install_monasca_notification {
 
     fi
 
+    sudo sed -e "
+       s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+    " -i /etc/monasca/notification.yaml
+
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-notification/monasca-notification.service /etc/systemd/system/monasca-notification.service
 
     sudo chown root:root /etc/systemd/system/monasca-notification.service
@@ -1504,6 +1508,10 @@ function install_monasca_thresh {
         sudo sed -i "s/jdbc:mysql:\/\/127\.0\.0\.1/jdbc:mysql:\/\/${SERVICE_HOST}/g" /etc/monasca/thresh-config.yml
     fi
 
+    sudo sed -e "
+       s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+    " -i /etc/monasca/thresh-config.yml
+
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-thresh/monasca-thresh /etc/init.d/monasca-thresh
 
     sudo chown root:root /etc/init.d/monasca-thresh
@@ -1639,7 +1647,9 @@ function install_monasca_agent {
         sudo sed -i "s/--monasca_url 'http:\/\/127\.0\.0\.1:8070\/v2\.0'/--monasca_url 'http:\/\/${SERVICE_HOST}:8070\/v2\.0'/" /usr/local/bin/monasca-reconfigure
         sudo sed -i "s/--keystone_url 'http:\/\/127\.0\.0\.1:35357\/v3'/--keystone_url 'http:\/\/${SERVICE_HOST}:35357\/v3'/" /usr/local/bin/monasca-reconfigure
     fi
-
+    sudo sed -e "
+       s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+    " -i /usr/local/bin/monasca-reconfigure
 }
 
 function clean_monasca_agent {
