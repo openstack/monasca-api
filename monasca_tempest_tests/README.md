@@ -11,7 +11,7 @@ Currently the devstack environment is needed to run the tests. Instructions on s
    ```
 2. Create a virtualenv for running the Tempest tests and activate it. For example in the Tempest root dir
 
-    ```
+    ```    
     virtualenv .venv
     source .venv/bin/activate
     ```
@@ -140,12 +140,40 @@ Assuming that you have already created a PyCharm project for the ```monasca-api`
 
 ## Run the tests from the CLI using tempest scripts in devstack
 
-1. In /opt/stack/tempest, run ```./run_tempest.sh monasca_tempest_tests```
-2. If asked to create a new virtual environment, select yes
-3. Activate the virtual environment ```source .venv/bin/activate```
-4. In your monasca-api directory, run ```python setup.py install```
-5. In /opt/stack/tempest, run ```./run_tempest.sh monasca_tempest_tests```
+1. Create a virtualenv in devstack for running the tempest tests and activate it:
 
+    ```
+    cd /opt/stack/tempest
+    virtualenv .venv
+    source .venv/bin/activate
+    ```
+2. Install the tempest requirements in the virtualenv:
+
+    ```
+    pip install -r requirements.txt -r test-requirements.txt
+    pip install nose
+    ```
+3. If you want to test changes in monasca-api code on your local machine, change directory to monasca-api and install the latest monasca-api code:
+
+    ```
+    cd /vagrant_home/<monasca-api directory>
+    python setup.py install
+    ```
+   Or if you want to use the current monasca api in devstack:
+   
+   ```
+   cd /opt/stack/monasca-api
+   python setup.py install
+   ```
+
+4. Run tempest tests:
+
+   ```
+   cd /opt/stack/tempest
+   testr init
+   ostestr --serial --regex monasca_tempest_tests
+   ```
+   
 # References
 This section provides a few additional references that might be useful:
 * [Tempest - The OpenStack Integration Test Suite](http://docs.openstack.org/developer/tempest/overview.html#quickstart)
