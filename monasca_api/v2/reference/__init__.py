@@ -130,7 +130,7 @@ cfg.CONF.register_opts(kafka_opts, kafka_group)
 
 influxdb_opts = [cfg.StrOpt('database_name'), cfg.StrOpt('ip_address'),
                  cfg.StrOpt('port'), cfg.StrOpt('user'),
-                 cfg.StrOpt('password')]
+                 cfg.StrOpt('password', secret=True)]
 
 influxdb_group = cfg.OptGroup(name='influxdb', title='influxdb')
 cfg.CONF.register_group(influxdb_group)
@@ -142,18 +142,24 @@ cassandra_group = cfg.OptGroup(name='cassandra', title='cassandra')
 cfg.CONF.register_group(cassandra_group)
 cfg.CONF.register_opts(cassandra_opts, cassandra_group)
 
-mysql_opts = [cfg.StrOpt('database_name'), cfg.StrOpt('hostname'),
-              cfg.StrOpt('username'), cfg.StrOpt('password')]
+mysql_opts = [cfg.StrOpt('database_name'),
+              cfg.StrOpt('hostname'),
+              cfg.StrOpt('username'),
+              cfg.StrOpt('password', secret=True)]
 
 mysql_group = cfg.OptGroup(name='mysql', title='mysql')
 
 cfg.CONF.register_group(mysql_group)
 cfg.CONF.register_opts(mysql_opts, mysql_group)
 
-sql_opts = [cfg.StrOpt('url', default=None), cfg.StrOpt('host', default=None),
-            cfg.StrOpt('username', default=None), cfg.StrOpt('password', default=None),
-            cfg.StrOpt('drivername', default=None), cfg.IntOpt('port', default=None),
-            cfg.StrOpt('database', default=None), cfg.StrOpt('query', default=None)]
+sql_opts = [cfg.StrOpt('url', default=None),
+            cfg.StrOpt('host', default=None),
+            cfg.StrOpt('username', default=None),
+            cfg.StrOpt('password', default=None, secret=True),
+            cfg.StrOpt('drivername', default=None),
+            cfg.IntOpt('port', default=None),
+            cfg.StrOpt('database', default=None),
+            cfg.StrOpt('query', default=None)]
 sql_group = cfg.OptGroup(name='database', title='sql')
 
 
