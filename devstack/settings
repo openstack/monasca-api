@@ -82,7 +82,7 @@ enable_service monasca-cli
 #
 
 INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.9.5}
-VERTICA_VERSION=${VERTICA_VERSION:-7.2.1-0}
+VERTICA_VERSION=${VERTICA_VERSION:-8.0.0-0}
 CASSANDRA_VERSION=${CASSANDRA_VERSION:-37x}
 # Kafka deb consists of the version of scala plus the version of kafka
 BASE_KAFKA_VERSION=${BASE_KAFKA_VERSION:-0.8.1.1}
