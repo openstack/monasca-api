@@ -55,7 +55,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         try:
             schemas_notifications.parse_and_validate(notification, self.valid_periods, require_all=require_all)
         except schemas_exceptions.ValidationException as ex:
-            LOG.debug(ex)
+            LOG.exception(ex)
             raise falcon.HTTPBadRequest('Bad Request', ex.message)
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
