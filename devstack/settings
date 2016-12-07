@@ -1,5 +1,5 @@
 #
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,7 +81,20 @@ enable_service monasca-cli
 # Dependent Software Versions
 #
 
-INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.9.5}
+# Set the InfluxDB version to use for the Java and Python API
+# InfluxDB has modified the result sets for SHOW SERIES. The
+# Python API has been modified to support those changes, but the
+# Java API hasn't yet. These two environment variables allow you
+# to deploy either the Java or Python API without having to
+# also set the INFLUXDB_VERSION when switching between the two.
+INFLUXDB_JAVA_VERSION=${INFLUXDB_JAVA_VERSION:-0.9.5}
+INFLUXDB_PYTHON_VERSION=${INFLUXDB_PYTHON_VERSION:-1.1.0}
+
+# To set the same version of InfluxDB for both languages use the
+# following variable. This will override both the Java and Python
+# specific variables above.
+# INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.9.5}
+
 VERTICA_VERSION=${VERTICA_VERSION:-8.0.0-0}
 CASSANDRA_VERSION=${CASSANDRA_VERSION:-37x}
 # Kafka deb consists of the version of scala plus the version of kafka
