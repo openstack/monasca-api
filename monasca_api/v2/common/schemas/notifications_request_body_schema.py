@@ -41,7 +41,7 @@ def parse_and_validate(msg, valid_periods, require_all=False):
     try:
         request_body_schema(msg)
     except Exception as ex:
-        LOG.debug(ex)
+        LOG.exception(ex)
         raise exceptions.ValidationException(str(ex))
 
     if 'period' not in msg:
