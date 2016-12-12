@@ -36,10 +36,6 @@ username = mini-mon
 password = password
 tenant_name = mini-mon
 domain_name = Default
-admin_username = admin
-admin_password = secretadmin
-admin_domain_name = Default
-admin_tenant_name = admin
 alt_username = mini-mon
 alt_password = password
 alt_tenant_name = mini-mon
@@ -52,6 +48,10 @@ uri_v3 = http://127.0.0.1:35357/v3/
 
     use_dynamic_credentials = true
     tempest_roles = monasca-user
+    admin_project_name = admin
+    admin_username = admin
+    admin_password = secretadmin
+    admin_domain_name = Default
 
     ```
 
