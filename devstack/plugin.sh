@@ -456,10 +456,6 @@ function install_kafka {
 
     sudo chmod 644 /etc/kafka/server.properties
 
-    if [[ ${SERVICE_HOST} ]]; then
-        sudo sed -i "s/host\.name=127\.0\.0\.1/host.name=${SERVICE_HOST}/g" /etc/kafka/server.properties
-    fi
-
     sudo systemctl enable kafka
 
     sudo systemctl start kafka || sudo systemctl restart kafka
