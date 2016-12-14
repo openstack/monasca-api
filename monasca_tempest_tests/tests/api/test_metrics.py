@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -586,7 +586,7 @@ class TestMetrics(base.BaseMonascaTest):
             if i == constants.MAX_RETRIES - 1:
                 error_msg = "Timeout on waiting for metrics: at least " \
                             "2 metrics are needed. Current number of " \
-                            "metrics = 0"
+                            "metrics = {}".format(len(elements))
                 self.fail(error_msg)
 
     def _create_metrics_with_different_dimensions(self, same_name=True):
