@@ -50,7 +50,7 @@ class SQLRepository(object):
                     url = URL(**database_conf)
 
             from sqlalchemy import create_engine
-            self._db_engine = create_engine(url)
+            self._db_engine = create_engine(url, pool_recycle=3600)
 
             self.metadata = MetaData()
 
