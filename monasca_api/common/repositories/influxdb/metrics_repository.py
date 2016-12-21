@@ -66,7 +66,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         '''Initialize function for InfluxDB serie builders <  v0.11.0
         '''
         LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
-        self._build_serie_dimension_names = self._build_serie_dimension_names_to_v0_11_0
         self._build_serie_dimension_values = self._build_serie_dimension_values_to_v0_11_0
         self._build_serie_metric_list = self._build_serie_metric_list_to_v0_11_0
 
@@ -76,7 +75,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
         '''
         LOG.info('Initialize InfluxDB serie builders >=  v0.11.0')
-        self._build_serie_dimension_names = self._build_serie_dimension_names_from_v0_11_0
         self._build_serie_dimension_values = self._build_serie_dimension_values_from_v0_11_0
         self._build_serie_metric_list = self._build_serie_metric_list_from_v0_11_0
 
@@ -127,6 +125,32 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                 region)
 
         query = 'show measurements ' + where_clause
+
+        return query
+
+    def _build_show_tag_values_query(self, metric_name, dimension_name,
+                                     tenant_id, region):
+        from_with_clause = ''
+        if metric_name:
+            from_with_clause += ' from "{}"'.format(metric_name)
+
+        if dimension_name:
+            from_with_clause += ' with key = {}'.format(dimension_name)
+
+        where_clause = self._build_where_clause(None, None, tenant_id, region)
+
+        query = 'show tag values' + from_with_clause + where_clause
+
+        return query
+
+    def _build_show_tag_keys_query(self, metric_name, tenant_id, region):
+        from_with_clause = ''
+        if metric_name:
+            from_with_clause += ' from "{}"'.format(metric_name)
+
+        where_clause = self._build_where_clause(None, None, tenant_id, region)
+
+        query = 'show tag keys' + from_with_clause + where_clause
 
         return query
 
@@ -284,7 +308,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def _build_serie_dimension_values_to_v0_11_0(self, series_names, dimension_name):
-        dim_values = []
+        dim_value_set = set()
         json_dim_value_list = []
 
         if not series_names:
@@ -294,27 +318,22 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         if not dimension_name:
             return json_dim_value_list
 
-        if 'series' in series_names.raw:
-            for series in series_names.raw['series']:
-                for tag_values in series[u'values']:
+        for series in series_names.raw['series']:
+            if 'columns' not in series:
+                continue
+            if u'values' not in series:
+                continue
+            for value in series[u'values']:
+                dim_value_set.add(value[0])
 
-                    dims = {
-                        name: value
-                        for name, value in zip(series[u'columns'], tag_values)
-                        if value and not name.startswith(u'_')
-                    }
-
-                    if dimension_name in dims and dims[dimension_name] not in\
-                            dim_values:
-                        dim_values.append(dims[dimension_name])
-                        json_dim_value_list.append({u'dimension_value':
-                                                   dims[dimension_name]})
+        for value in dim_value_set:
+            json_dim_value_list.append({u'dimension_value': value})
 
         json_dim_value_list = sorted(json_dim_value_list)
         return json_dim_value_list
 
     def _build_serie_dimension_values_from_v0_11_0(self, series_names, dimension_name):
-        '''In InfluxDB v0.11.0 the SHOW SERIES output changed.
+        '''In InfluxDB v0.11.0 the SHOW TAG VALUES output changed.
         See, https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
         '''
         dim_value_set = set()
@@ -333,23 +352,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             columns = series['columns']
             if 'key' not in columns:
                 continue
-            key_index = columns.index('key')
             if u'values' not in series:
                 continue
             for value in series[u'values']:
-                split_value = value[key_index].split(',')
-                if len(split_value) < 2:
+                if len(value) < 2:
                     continue
-                for tag in split_value[1:]:
-                    tag_key_value = tag.split('=')
-                    if len(tag_key_value) != 2:
-                        continue
-                    tag_key = tag_key_value[0]
-                    tag_value = tag_key_value[1]
-                    if tag_key.startswith(u'_'):
-                        continue
-                    if tag_key == dimension_name:
-                        dim_value_set.add(tag_value)
+                for tag in value[1:]:
+                    dim_value_set.add(tag)
 
         for value in dim_value_set:
             json_dim_value_list.append({u'dimension_value': value})
@@ -357,27 +366,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         json_dim_value_list = sorted(json_dim_value_list)
         return json_dim_value_list
 
-    def _build_serie_dimension_names_to_v0_11_0(self, series_names):
-        dim_names = []
-        json_dim_name_list = []
-        if not series_names:
-            return json_dim_name_list
-        if 'series' not in series_names.raw:
-            return json_dim_name_list
-
-        for series in series_names.raw['series']:
-            for name in series[u'columns']:
-                if name not in dim_names and not name.startswith(u'_'):
-                    dim_names.append(name)
-                    json_dim_name_list.append({u'dimension_name': name})
-
-        json_dim_name_list = sorted(json_dim_name_list)
-        return json_dim_name_list
-
-    def _build_serie_dimension_names_from_v0_11_0(self, series_names):
-        '''In InfluxDB v0.11.0 the SHOW SERIES output changed.
-        See, https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
-        '''
+    def _build_serie_dimension_names(self, series_names):
         dim_name_set = set()
         json_dim_name_list = []
 
@@ -389,24 +378,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         for series in series_names.raw['series']:
             if 'columns' not in series:
                 continue
-            columns = series['columns']
-            if 'key' not in columns:
-                continue
-            key_index = columns.index('key')
             if u'values' not in series:
                 continue
             for value in series[u'values']:
-                split_value = value[key_index].split(',')
-                if len(split_value) < 2:
+                tag_key = value[0]
+                if tag_key.startswith(u'_'):
                     continue
-                for tag in split_value[1:]:
-                    tag_key_value = tag.split('=')
-                    if len(tag_key_value) < 2:
-                        continue
-                    tag_key = tag_key_value[0]
-                    if tag_key.startswith(u'_'):
-                        continue
-                    dim_name_set.add(tag_key)
+                dim_name_set.add(tag_key)
 
         for name in dim_name_set:
             json_dim_name_list.append({u'dimension_name': name})
@@ -897,8 +875,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def list_dimension_values(self, tenant_id, region, metric_name,
                               dimension_name):
         try:
-            query = self._build_show_series_query(None, metric_name,
-                                                  tenant_id, region)
+            query = self._build_show_tag_values_query(metric_name,
+                                                      dimension_name,
+                                                      tenant_id, region)
             result = self.influxdb_client.query(query)
             json_dim_name_list = self._build_serie_dimension_values(
                 result, dimension_name)
@@ -909,8 +888,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def list_dimension_names(self, tenant_id, region, metric_name):
         try:
-            query = self._build_show_series_query(None, metric_name,
-                                                  tenant_id, region)
+            query = self._build_show_tag_keys_query(metric_name,
+                                                    tenant_id, region)
             result = self.influxdb_client.query(query)
             json_dim_name_list = self._build_serie_dimension_names(result)
             return json_dim_name_list
