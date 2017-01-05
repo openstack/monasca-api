@@ -1,4 +1,4 @@
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,6 +18,6 @@ from monasca_tempest_tests.services import monasca_client
 
 
 class Manager(clients.Manager):
-    def __init__(self, credentials=None, service=None):
-        super(Manager, self).__init__(credentials, service)
+    def __init__(self, credentials=None):
+        super(Manager, self).__init__(credentials)
         self.monasca_client = monasca_client.MonascaClient(self.auth_provider)
