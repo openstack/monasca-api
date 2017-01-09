@@ -53,8 +53,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        tenant_id = helpers.get_tenant_id(req)
-
         alarm = helpers.read_http_resource(req)
         schema_alarm.validate(alarm)
 
@@ -69,10 +67,10 @@ class Alarms(alarms_api_v2.AlarmsV2API,
             raise HTTPUnprocessableEntityError('Unprocessable Entity',
                                                "Field 'link' is required")
 
-        self._alarm_update(tenant_id, alarm_id, alarm['state'],
+        self._alarm_update(req.project_id, alarm_id, alarm['state'],
                            alarm['lifecycle_state'], alarm['link'])
 
-        result = self._alarm_show(req.uri, tenant_id, alarm_id)
+        result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -81,12 +79,10 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        tenant_id = helpers.get_tenant_id(req)
-
         alarm = helpers.read_http_resource(req)
         schema_alarm.validate(alarm)
 
-        old_alarm = self._alarms_repo.get_alarm(tenant_id, alarm_id)[0]
+        old_alarm = self._alarms_repo.get_alarm(req.project_id, alarm_id)[0]
 
         # if a field is not present or is None, replace it with the old value
         if 'state' not in alarm or not alarm['state']:
@@ -96,10 +92,10 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         if 'link' not in alarm or alarm['link'] is None:
             alarm['link'] = old_alarm['link']
 
-        self._alarm_patch(tenant_id, alarm_id, alarm['state'],
+        self._alarm_patch(req.project_id, alarm_id, alarm['state'],
                           alarm['lifecycle_state'], alarm['link'])
 
-        result = self._alarm_show(req.uri, tenant_id, alarm_id)
+        result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -108,15 +104,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
-        tenant_id = helpers.get_tenant_id(req)
-
-        self._alarm_delete(tenant_id, alarm_id)
+        self._alarm_delete(req.project_id, alarm_id)
 
         res.status = falcon.HTTP_204
 
     def on_get(self, req, res, alarm_id=None):
         helpers.validate_authorization(req, self._get_alarms_authorized_roles)
-        tenant_id = helpers.get_tenant_id(req)
 
         if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
@@ -155,16 +148,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                     raise HTTPUnprocessableEntityError("Unprocessable Entity",
                                                        "Offset value {} must be an integer".format(offset))
 
-            limit = helpers.get_limit(req)
-
-            result = self._alarm_list(req.uri, tenant_id, query_parms, offset,
-                                      limit)
+            result = self._alarm_list(req.uri, req.project_id,
+                                      query_parms, offset,
+                                      req.limit)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
         else:
-            result = self._alarm_show(req.uri, tenant_id, alarm_id)
+            result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
@@ -399,7 +391,6 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_alarms_authorized_roles)
-        tenant_id = helpers.get_tenant_id(req)
         query_parms = falcon.uri.parse_query_string(req.query_string)
 
         if 'state' in query_parms:
@@ -426,9 +417,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
                 raise HTTPUnprocessableEntityError("Unprocessable Entity",
                                                    "Offset must be a valid integer, was {}".format(offset))
 
-        limit = helpers.get_limit(req)
-
-        result = self._alarms_count(req.uri, tenant_id, query_parms, offset, limit)
+        result = self._alarms_count(req.uri, req.project_id, query_parms, offset, req.limit)
 
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
@@ -507,28 +496,25 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
 
         if alarm_id is None:
             helpers.validate_authorization(req, self._get_alarms_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
             start_timestamp = helpers.get_query_starttime_timestamp(req, False)
             end_timestamp = helpers.get_query_endtime_timestamp(req, False)
             query_parms = falcon.uri.parse_query_string(req.query_string)
             offset = helpers.get_query_param(req, 'offset')
-            limit = helpers.get_limit(req)
 
-            result = self._alarm_history_list(tenant_id, start_timestamp,
+            result = self._alarm_history_list(req.project_id, start_timestamp,
                                               end_timestamp, query_parms,
-                                              req.uri, offset, limit)
+                                              req.uri, offset, req.limit)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
         else:
             helpers.validate_authorization(req, self._get_alarms_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
             offset = helpers.get_query_param(req, 'offset')
-            limit = helpers.get_limit(req)
 
-            result = self._alarm_history(tenant_id, [alarm_id], req.uri,
-                                         offset, limit)
+            result = self._alarm_history(req.project_id, [alarm_id],
+                                         req.uri, offset,
+                                         req.limit)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200

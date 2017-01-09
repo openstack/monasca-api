@@ -60,7 +60,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         self._validate_alarm_definition(alarm_definition)
 
-        tenant_id = helpers.get_tenant_id(req)
         name = get_query_alarm_definition_name(alarm_definition)
         expression = get_query_alarm_definition_expression(alarm_definition)
         description = get_query_alarm_definition_description(alarm_definition)
@@ -72,7 +71,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             alarm_definition)
         ok_actions = get_query_ok_actions(alarm_definition)
 
-        result = self._alarm_definition_create(tenant_id, name, expression,
+        result = self._alarm_definition_create(req.project_id, name, expression,
                                                description, severity, match_by,
                                                alarm_actions,
                                                undetermined_actions,
@@ -85,7 +84,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
     def on_get(self, req, res, alarm_definition_id=None):
         if alarm_definition_id is None:
             helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
             name = helpers.get_query_name(req)
             dimensions = helpers.get_query_dimensions(req)
             severity = helpers.get_query_param(req, "severity", default_val=None)
@@ -108,19 +106,18 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                 except Exception:
                     raise HTTPUnprocessableEntityError('Unprocessable Entity',
                                                        'Offset value {} must be an integer'.format(offset))
-            limit = helpers.get_limit(req)
-
-            result = self._alarm_definition_list(tenant_id, name, dimensions, severity,
-                                                 req.uri, sort_by, offset, limit)
+            result = self._alarm_definition_list(req.project_id, name,
+                                                 dimensions, severity,
+                                                 req.uri, sort_by,
+                                                 offset, req.limit)
 
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
         else:
             helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
-            tenant_id = helpers.get_tenant_id(req)
 
-            result = self._alarm_definition_show(tenant_id,
+            result = self._alarm_definition_show(req.project_id,
                                                  alarm_definition_id)
 
             helpers.add_links_to_resource(result,
@@ -137,8 +134,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         self._validate_alarm_definition(alarm_definition, require_all=True)
 
-        tenant_id = helpers.get_tenant_id(req)
-
         name = get_query_alarm_definition_name(alarm_definition)
         expression = get_query_alarm_definition_expression(alarm_definition)
         actions_enabled = (
@@ -151,7 +146,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         match_by = get_query_alarm_definition_match_by(alarm_definition)
         severity = get_query_alarm_definition_severity(alarm_definition)
 
-        result = self._alarm_definition_update_or_patch(tenant_id,
+        result = self._alarm_definition_update_or_patch(req.project_id,
                                                         alarm_definition_id,
                                                         name,
                                                         expression,
@@ -174,8 +169,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         alarm_definition = helpers.read_json_msg_body(req)
 
-        tenant_id = helpers.get_tenant_id(req)
-
         # Optional args
         name = get_query_alarm_definition_name(alarm_definition,
                                                return_none=True)
@@ -197,7 +190,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         severity = get_query_alarm_definition_severity(alarm_definition,
                                                        return_none=True)
 
-        result = self._alarm_definition_update_or_patch(tenant_id,
+        result = self._alarm_definition_update_or_patch(req.project_id,
                                                         alarm_definition_id,
                                                         name,
                                                         expression,
@@ -217,8 +210,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
     def on_delete(self, req, res, alarm_definition_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
-        tenant_id = helpers.get_tenant_id(req)
-        self._alarm_definition_delete(tenant_id, alarm_definition_id)
+        self._alarm_definition_delete(req.project_id, alarm_definition_id)
         res.status = falcon.HTTP_204
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):

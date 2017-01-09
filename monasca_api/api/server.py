@@ -22,6 +22,8 @@ from oslo_config import cfg
 from oslo_log import log
 import paste.deploy
 
+from monasca_api.api.core import request
+
 dispatcher_opts = [cfg.StrOpt('versions', default=None,
                               help='Versions'),
                    cfg.StrOpt('version_2_0', default=None,
@@ -66,7 +68,7 @@ def launch(conf, config_file="/etc/monasca/api-config.conf"):
              default_config_files=[config_file])
     log.setup(cfg.CONF, 'monasca_api')
 
-    app = falcon.API()
+    app = falcon.API(request_type=request.Request)
 
     versions = simport.load(cfg.CONF.dispatcher.versions)()
     app.add_route("/", versions)

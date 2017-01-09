@@ -140,31 +140,31 @@ class TestValueMetaValidation(unittest.TestCase):
 class TestRoleValidation(unittest.TestCase):
 
     def test_role_valid(self):
-        req_roles = 'role0,rOlE1'
+        req_roles = 'role0', 'rOlE1'
         authorized_roles = ['RolE1', 'Role2']
 
         req = mock.Mock()
-        req.get_header.return_value = req_roles
+        req.roles = req_roles
 
         helpers.validate_authorization(req, authorized_roles)
 
     def test_role_invalid(self):
-        req_roles = 'role2 ,role3'
-        authorized_roles = ['role0', 'role1', 'role2']
+        req_roles = 'role2', 'role3'
+        authorized_roles = ['role0', 'role1']
 
         req = mock.Mock()
-        req.get_header.return_value = req_roles
+        req.roles = req_roles
 
         self.assertRaises(
             falcon.HTTPUnauthorized,
             helpers.validate_authorization, req, authorized_roles)
 
     def test_empty_role_header(self):
-        req_roles = ''
+        req_roles = []
         authorized_roles = ['Role1', 'Role2']
 
         req = mock.Mock()
-        req.get_header.return_value = req_roles
+        req.roles = req_roles
 
         self.assertRaises(
             falcon.HTTPUnauthorized,
@@ -175,7 +175,7 @@ class TestRoleValidation(unittest.TestCase):
         authorized_roles = ['Role1', 'Role2']
 
         req = mock.Mock()
-        req.get_header.return_value = req_roles
+        req.roles = req_roles
 
         self.assertRaises(
             falcon.HTTPUnauthorized,

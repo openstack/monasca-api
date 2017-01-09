@@ -20,9 +20,9 @@ import falcon
 from oslo_log import log
 from oslo_utils import timeutils
 import simplejson
+import six
 import six.moves.urllib.parse as urlparse
 
-from monasca_api.common.repositories import constants
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import dimensions_schema
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
@@ -54,24 +54,6 @@ def validate_json_content_type(req):
                                                    'application/json')
 
 
-def is_in_role(req, authorized_roles):
-    """Is one or more of the X-ROLES in the supplied authorized_roles.
-
-    :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
-    request header.
-    :param authorized_roles: List of authorized roles to check against.
-    :return: Returns True if in the list of authorized roles, otherwise False.
-    """
-    str_roles = req.get_header('X-ROLES')
-    if str_roles is None:
-        return False
-    roles = str_roles.lower().split(',')
-    for role in roles:
-        if role in authorized_roles:
-            return True
-    return False
-
-
 def validate_authorization(req, authorized_roles):
     """Validates whether one or more X-ROLES in the HTTP header is authorized.
 
@@ -85,29 +67,22 @@ def validate_authorization(req, authorized_roles):
     :param authorized_roles: List of authorized roles to check against.
     :raises falcon.HTTPUnauthorized
     """
-    str_roles = req.get_header('X-ROLES')
+    roles = req.roles
     challenge = 'Token'
-    if str_roles is None:
+    if not roles:
         raise falcon.HTTPUnauthorized('Forbidden',
                                       'Tenant does not have any roles',
                                       challenge)
-    roles = str_roles.lower().split(',')
+    roles = roles.split(',') if isinstance(roles, six.string_types) else roles
     authorized_roles_lower = [r.lower() for r in authorized_roles]
     for role in roles:
+        role = role.lower()
         if role in authorized_roles_lower:
             return
     raise falcon.HTTPUnauthorized('Forbidden',
                                   'Tenant ID is missing a required role to '
                                   'access this service',
                                   challenge)
-
-
-def get_tenant_id(req):
-    """Returns the tenant ID in the HTTP request header.
-
-    :param req: HTTP request object.
-    """
-    return req.get_header('X-TENANT-ID')
 
 
 def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
@@ -118,12 +93,12 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
     delegate privileges.
     :returns: Returns the cross tenant or tenant ID.
     """
-    if is_in_role(req, delegate_authorized_roles):
+    if any(x in set(delegate_authorized_roles) for x in req.roles):
         params = falcon.uri.parse_query_string(req.query_string)
         if 'tenant_id' in params:
             tenant_id = params['tenant_id']
             return tenant_id
-    return get_tenant_id(req)
+    return req.project_id
 
 
 def get_query_param(req, param_name, required=False, default_val=None):
@@ -769,21 +744,3 @@ def dumpit_utf8(thingy):
 
 def str_2_bool(s):
     return s.lower() in ("true")
-
-
-def get_limit(req):
-    limit = get_query_param(req, 'limit')
-
-    if limit:
-        if limit.isdigit():
-            limit = int(limit)
-            if limit > constants.PAGE_LIMIT:
-                return constants.PAGE_LIMIT
-            else:
-                return limit
-        else:
-            raise HTTPUnprocessableEntityError("Invalid limit",
-                                               "Limit parameter must "
-                                               "be a positive integer")
-    else:
-        return constants.PAGE_LIMIT
