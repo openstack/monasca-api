@@ -257,7 +257,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         undetermined_actions_list = get_comma_separated_str_as_list(
             alarm_definition_row['undetermined_actions'])
 
-        description = (alarm_definition_row['description'].decode('utf8')
+        description = (alarm_definition_row['description']
                        if alarm_definition_row['description'] is not None else None)
 
         expression = alarm_definition_row['expression'].decode('utf8')
@@ -620,7 +620,7 @@ def get_query_alarm_definition_expression(alarm_definition,
 def get_query_alarm_definition_description(alarm_definition,
                                            return_none=False):
     if 'description' in alarm_definition:
-        return alarm_definition['description']
+        return alarm_definition['description'].decode('utf8')
     else:
         if return_none:
             return None
