@@ -3,7 +3,7 @@
 docs/build/*
 dist
 build
-cover
+cover*
 .coverage
 *.egg
 *.egg-info
