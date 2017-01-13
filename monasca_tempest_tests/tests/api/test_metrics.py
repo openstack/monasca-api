@@ -15,6 +15,7 @@
 # TODO(RMH): Check if ' should be added in the list of INVALID_CHARS.
 # TODO(RMH): test_create_metric_no_value, should return 422 if value not sent
 import time
+from six.moves import range as xrange
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
@@ -408,6 +409,38 @@ class TestMetrics(base.BaseMonascaTest):
             time.sleep(constants.RETRY_WAIT_SECS)
             if i == constants.MAX_RETRIES - 1:
                 error_msg = "Failed test_list_metrics_with_name: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
+
+    @test.attr(type='gate')
+    def test_list_metrics_with_tenant(self):
+        name = data_utils.rand_name('name')
+        key = data_utils.rand_name('key')
+        value = data_utils.rand_name('value')
+        tenant = self.tenants_client.create_tenant(
+            name=data_utils.rand_name('test_tenant'))['tenant']
+        # Delete the tenant at the end of the test
+        self.addCleanup(self.tenants_client.delete_tenant, tenant['id'])
+        metric = helpers.create_metric(name=name,
+                                       dimensions={key: value})
+        resp, response_body = self.monasca_client.create_metrics(
+            metric, tenant_id=tenant['id'])
+        self.assertEqual(204, resp.status)
+        query_param = '?tenant_id=' + str(tenant['id'])
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.list_metrics(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if str(element['name']) == name:
+                    self._verify_list_metrics_element(element, test_key=key,
+                                                      test_value=value)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_list_metrics_with_tenant: " \
                             "timeout on waiting for metrics: at least " \
                             "one metric is needed. Current number of " \
                             "metrics = 0"

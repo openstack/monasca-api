@@ -32,8 +32,10 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.get('')
         return resp, response_body
 
-    def create_metrics(self, metrics):
+    def create_metrics(self, metrics, tenant_id=None):
         uri = 'metrics'
+        if tenant_id:
+            uri = uri + '?tenant_id=%s' % tenant_id
         request_body = json.dumps(metrics)
         resp, response_body = self.post(uri, request_body)
         return resp, response_body
