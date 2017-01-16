@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright 2014 Hewlett-Packard
-# (C) Copyright 2016 Hewlett Packard Enterprise LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -189,6 +188,30 @@ EQUAL = pyparsing.Literal("=")
 LBRACE = pyparsing.Suppress(pyparsing.Literal("{"))
 RBRACE = pyparsing.Suppress(pyparsing.Literal("}"))
 
+
+def periodValidation(instr, loc, tokens):
+    period = int(tokens[0])
+    if period == 0:
+        raise pyparsing.ParseFatalException(instr, loc,
+                                            "Period must not be 0")
+
+    if (period % 60) != 0:
+        raise pyparsing.ParseFatalException(instr, loc,
+                                            "Period {} must be a multiple of 60"
+                                            .format(period))
+    # Must return the string
+    return tokens[0]
+
+
+def periodsValidation(instr, loc, tokens):
+    periods = int(tokens[0])
+    if periods < 1:
+        raise pyparsing.ParseFatalException(instr, loc,
+                                            "Periods {} must be 1 or greater"
+                                            .format(periods))
+    # Must return the string
+    return tokens[0]
+
 # Initialize non-ascii unicode code points in the Basic Multilingual Plane.
 unicode_printables = u''.join(
     unichr(c) for c in xrange(128, 65536) if not unichr(c).isspace())
@@ -244,9 +267,9 @@ dimension_list = pyparsing.Group((LBRACE + pyparsing.Optional(
     RBRACE))("dimensions_list")
 
 metric = metric_name + pyparsing.Optional(dimension_list)
-period = integer_number("period")
+period = integer_number.copy().addParseAction(periodValidation)("period")
 threshold = decimal_number("threshold")
-periods = integer_number("periods")
+periods = integer_number.copy().addParseAction(periodsValidation)("periods")
 
 deterministic = (
     pyparsing.CaselessLiteral('deterministic')
@@ -315,7 +338,11 @@ def main():
 
         "count(log.error{test=1}, deterministic, 120) > 1.0",
 
-        "last(test_metric{hold=here}) < 13"
+        "last(test_metric{hold=here}) < 13",
+
+        "count(log.error{test=1}, deterministic, 130) > 1.0",
+
+        "count(log.error{test=1}, deterministic) > 1.0 times 0",
     ]
 
     for expr in expr_list:
