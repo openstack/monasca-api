@@ -1,4 +1,4 @@
-# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -426,9 +426,9 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                              b_function=sub_expr.normalized_func.encode('utf8'),
                              b_metric_name=metric_name,
                              b_operator=operator,
-                             b_threshold=sub_expr.threshold.encode('utf8'),
-                             b_period=sub_expr.period.encode('utf8'),
-                             b_periods=sub_expr.periods.encode('utf8'),
+                             b_threshold=sub_expr.threshold,
+                             b_period=sub_expr.period,
+                             b_periods=sub_expr.periods,
                              b_is_deterministic=sub_expr.deterministic,
                              b_created_at=now,
                              b_updated_at=now)
@@ -592,9 +592,9 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 function = sub_alarm_def.function.encode('utf8')
                 metric_name = sub_alarm_def.metric_name.encode('utf8')
                 operator = sub_alarm_def.operator.encode('utf8')
-                threshold = str(sub_alarm_def.threshold).encode('utf8')
-                period = str(sub_alarm_def.period).encode('utf8')
-                periods = str(sub_alarm_def.periods).encode('utf8')
+                threshold = sub_alarm_def.threshold
+                period = sub_alarm_def.period
+                periods = sub_alarm_def.periods
                 is_deterministic = sub_alarm_def.is_deterministic
                 parms.append({'b_id': sub_alarm_def.id,
                               'b_alarm_definition_id': adi,

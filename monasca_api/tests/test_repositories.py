@@ -1,5 +1,5 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -425,9 +425,9 @@ class TestRepoMetricsCassandra(testtools.TestCase):
                                  ],
                                  "sub_alarm_expression": {
                                      "function": "AVG",
-                                     "period": "60",
-                                     "threshold": "10.0",
-                                     "periods": "3",
+                                     "period": 60,
+                                     "threshold": 10.0,
+                                     "periods": 3,
                                      "operator": "LT",
                                      "metric_definition": {
                                          "dimensions": "{}",
@@ -470,10 +470,10 @@ class TestRepoMetricsCassandra(testtools.TestCase):
                         ],
                         u'sub_alarm_expression': {
                             u'dimensions': u'{}',
-                            u'threshold': u'10.0',
-                            u'periods': u'3',
+                            u'threshold': 10.0,
+                            u'periods': 3,
                             u'operator': u'LT',
-                            u'period': u'60',
+                            u'period': 60,
                             u'metric_name': u'cpu.idle_perc',
                             u'function': u'AVG'
                         }

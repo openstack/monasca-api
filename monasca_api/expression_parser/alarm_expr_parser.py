@@ -20,6 +20,8 @@ import pyparsing
 _DETERMINISTIC_ASSIGNMENT_LEN = 3
 _DETERMINISTIC_ASSIGNMENT_SHORT_LEN = 1
 _DETERMINISTIC_ASSIGNMENT_VALUE_INDEX = 2
+_DEFAULT_PERIOD = 60
+_DEFAULT_PERIODS = 1
 
 
 class SubExpr(object):
@@ -36,9 +38,15 @@ class SubExpr(object):
         self._metric_name = tokens.metric_name
         self._dimensions = tokens.dimensions_list
         self._operator = tokens.relational_op
-        self._threshold = tokens.threshold
-        self._period = tokens.period
-        self._periods = tokens.periods
+        self._threshold = float(tokens.threshold)
+        if tokens.period:
+            self._period = int(tokens.period)
+        else:
+            self._period = _DEFAULT_PERIOD
+        if tokens.periods:
+            self._periods = int(tokens.periods)
+        else:
+            self._periods = _DEFAULT_PERIODS
         self._deterministic = tokens.deterministic
         self._id = None
 
@@ -51,7 +59,7 @@ class SubExpr(object):
         if self._dimensions is not None:
             result += "{" + self.dimensions_str + "}"
 
-        if self._period:
+        if self._period != _DEFAULT_PERIOD:
             result += ", {}".format(self._period)
 
         result += ")"
@@ -59,7 +67,7 @@ class SubExpr(object):
         result += " {} {}".format(self._operator,
                                   self._threshold)
 
-        if self._periods:
+        if self._periods != _DEFAULT_PERIODS:
             result += " times {}".format(self._periods)
 
         return result
