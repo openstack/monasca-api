@@ -1,4 +1,4 @@
-# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -85,7 +85,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                         .format(nmt))
             raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} ".format(nmt))
 
-    @resource.resource_try_catch_block
     def _create_notification(self, tenant_id, notification, uri):
 
         name = notification['name']
@@ -110,7 +109,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                                                   period,
                                                   uri)
 
-    @resource.resource_try_catch_block
     def _update_notification(self, notification_id, tenant_id, notification, uri):
 
         name = notification['name']
@@ -146,7 +144,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
         return helpers.add_links_to_resource(response, uri)
 
-    @resource.resource_try_catch_block
     def _list_notifications(self, tenant_id, uri, sort_by, offset, limit):
 
         rows = self._notifications_repo.list_notifications(tenant_id, sort_by,
@@ -157,7 +154,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
         return helpers.paginate(result, uri, limit)
 
-    @resource.resource_try_catch_block
     def _list_notification(self, tenant_id, notification_id, uri):
 
         row = self._notifications_repo.list_notification(
@@ -180,13 +176,11 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
         return result
 
-    @resource.resource_try_catch_block
     def _delete_notification(self, tenant_id, notification_id):
 
         self._notifications_repo.delete_notification(tenant_id,
                                                      notification_id)
 
-    @resource.resource_try_catch_block
     def _patch_get_notification(self, tenant_id, notification_id, notification):
         original_notification = self._notifications_repo.list_notification(tenant_id, notification_id)
         if 'name' not in notification:
@@ -198,6 +192,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         if 'period' not in notification:
             notification['period'] = original_notification['period']
 
+    @resource.resource_try_catch_block
     def on_post(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -207,6 +202,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_201
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res, notification_method_id=None):
         if notification_method_id is None:
             helpers.validate_authorization(req,
@@ -243,11 +239,13 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_delete(self, req, res, notification_method_id):
         helpers.validate_authorization(req, self._default_authorized_roles)
         self._delete_notification(req.project_id, notification_method_id)
         res.status = falcon.HTTP_204
 
+    @resource.resource_try_catch_block
     def on_put(self, req, res, notification_method_id):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -258,6 +256,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_patch(self, req, res, notification_method_id):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, self._default_authorized_roles)

@@ -1,4 +1,4 @@
-# (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -101,7 +101,6 @@ class Metrics(metrics_api_v2.MetricsV2API):
             raise falcon.HTTPServiceUnavailable('Service unavailable',
                                                 ex.message, 60)
 
-    @resource.resource_try_catch_block
     def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset,
                       limit, start_timestamp, end_timestamp):
 
@@ -115,6 +114,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
         return helpers.paginate(result, req_uri, limit)
 
+    @resource.resource_try_catch_block
     def on_post(self, req, res):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req,
@@ -129,6 +129,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
         self._send_metrics(transformed_metrics)
         res.status = falcon.HTTP_204
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -171,6 +172,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -196,7 +198,6 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp, req_uri, offset,
                           limit, merge_metrics_flag, group_by):
@@ -233,6 +234,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -260,7 +262,6 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
                            end_timestamp, statistics, period, req_uri,
                            offset, limit, merge_metrics_flag, group_by):
@@ -298,6 +299,7 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -311,7 +313,6 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _list_metric_names(self, tenant_id, dimensions, req_uri, offset,
                            limit):
 
@@ -340,6 +341,7 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -354,7 +356,6 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _dimension_values(self, tenant_id, req_uri, metric_name,
                           dimension_name, offset, limit):
 
@@ -384,6 +385,7 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_metrics_authorized_roles)
         tenant_id = (
@@ -396,7 +398,6 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _dimension_names(self, tenant_id, req_uri, metric_name, offset, limit):
 
         result = self._metrics_repo.list_dimension_names(tenant_id,
