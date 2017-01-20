@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -675,7 +675,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             offset_id = 0
             if offset is not None:
                 offset_tuple = offset.split('_')
-                offset_id = int(offset_tuple[0]) if len(offset_tuple) > 1 else 0
+                # If offset_id is given, add 1 since we want the next one
+                if len(offset_tuple) > 1:
+                    offset_id = int(offset_tuple[0]) + 1
             index = offset_id
 
             for serie in result.raw['series']:
@@ -691,8 +693,10 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                         if '.' in timestamp:
                             stats[0] = str(timestamp)[:19] + 'Z'
                         for stat in stats[1:]:
+                            # Only add row if there is a valid value in the row
                             if stat is not None:
                                 stats_list.append(stats)
+                                break
 
                     statistic = {u'name': serie['name'],
                                  u'id': str(index),
