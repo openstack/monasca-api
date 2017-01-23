@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -43,11 +43,9 @@ class SubAlarmDefinition(object):
             self.dimensions = self._init_dimensions(row['dimensions'])
             self.function = row['function']
             self.operator = row['operator']
-            # Make sure that the following are converted to unicode
-            self.period = str(row['period']).decode('utf8')
-            self.periods = str(row['periods']).decode('utf8')
-            # threshold comes from the DB as a float in 0.0 form.
-            self.threshold = str(row['threshold']).decode('utf8')
+            self.period = row['period']
+            self.periods = row['periods']
+            self.threshold = row['threshold']
             self.deterministic = str(row['is_deterministic']) == '1'
 
         if sub_expr:
@@ -91,15 +89,15 @@ class SubAlarmDefinition(object):
             result += ', deterministic'
 
         if self.period:
-            result += ", {}".format(self.period.encode('utf8'))
+            result += ", {}".format(str(self.period).encode('utf8'))
 
         result += ")"
 
         result += " {} {}".format(self.operator.encode('utf8'),
-                                  self.threshold.encode('utf8'))
+                                  str(self.threshold).encode('utf8'))
 
         if self.periods:
-            result += " times {}".format(self.periods.encode('utf8'))
+            result += " times {}".format(str(self.periods).encode('utf8'))
 
         return result.decode('utf8')
 
