@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015 Cray Inc.
-# (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2017 Hewlett Packard Enterprise Development LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,6 +22,8 @@ import json
 import falcon.testing
 import fixtures
 import testtools.matchers as matchers
+
+from mock import Mock
 
 from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.tests import base
@@ -210,6 +212,8 @@ class TestAlarmDefinition(AlarmTestBase):
         )).mock
 
         self.alarm_definition_resource = alarm_definitions.AlarmDefinitions()
+        self.alarm_definition_resource.send_event = Mock()
+        self._send_event = self.alarm_definition_resource.send_event
 
         self.api.add_route("/v2.0/alarm-definitions/",
                            self.alarm_definition_resource)
@@ -407,6 +411,115 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         result_def = json.loads(result[0])
         self.assertEqual(result_def, expected_def)
+
+    def test_alarm_definition_patch(self):
+        self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
+        description = u'Non-ASCII character: \u2603'
+        new_name = u'Test Alarm Updated'
+        actions_enabled = True
+        alarm_def_id = u'00000001-0001-0001-0001-000000000001'
+        alarm_expression = u'max(test.metric{hostname=host}) gte 1'
+        severity = u'LOW'
+        match_by = u'hostname'
+        self.alarm_def_repo_mock.return_value.update_or_patch_alarm_definition.return_value = (
+            {u'alarm_actions': [],
+             u'ok_actions': [],
+             u'description': description,
+             u'match_by': match_by,
+             u'name': new_name,
+             u'actions_enabled': actions_enabled,
+             u'undetermined_actions': [],
+             u'is_deterministic': False,
+             u'expression': alarm_expression,
+             u'id': alarm_def_id,
+             u'severity': severity},
+            {'old': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                row={'id': '11111',
+                     'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                     'function': 'max',
+                     'metric_name': 'test.metric',
+                     'dimensions': 'hostname=host',
+                     'operator': 'gte',
+                     'threshold': 1,
+                     'period': 60,
+                     'is_deterministic': False,
+                     'periods': 1})},
+             'changed': {},
+             'new': {},
+             'unchanged': {'11111': sub_alarm_definition.SubAlarmDefinition(
+                 row={'id': '11111',
+                      'alarm_definition_id': u'00000001-0001-0001-0001-000000000001',
+                      'function': 'max',
+                      'metric_name': 'test.metric',
+                      'dimensions': 'hostname=host',
+                      'operator': 'gte',
+                      'threshold': 1,
+                      'period': 60,
+                      'is_deterministic': False,
+                      'periods': 1})}
+             }
+        )
+
+        expected_def = {
+            u'id': alarm_def_id,
+            u'alarm_actions': [],
+            u'ok_actions': [],
+            u'description': description,
+            u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
+                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                        u'rel': u'self'}],
+            u'match_by': [match_by],
+            u'name': new_name,
+            u'actions_enabled': actions_enabled,
+            u'undetermined_actions': [],
+            u'deterministic': False,
+            u'expression': alarm_expression,
+            u'severity': severity,
+        }
+
+        alarm_def = {
+            u'name': u'Test Alarm Updated',
+        }
+
+        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+                                       headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                                       method="PATCH",
+                                       body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        result_def = json.loads(result[0])
+        self.assertEqual(result_def, expected_def)
+        # If the alarm-definition-updated event does not have all of the
+        # fields set, the Threshold Engine will get confused. For example,
+        # if alarmActionsEnabled is none, thresh will read that as false
+        # and pass that value onto the Notification Engine which will not
+        # create a notification even actions_enabled is True in the
+        # database. So, ensure all fields are set correctly
+        ((_, event), _) = self._send_event.call_args
+        expr = u'max(test.metric{hostname=host}, 60) gte 1 times 1'
+        sub_expression = {'11111': {u'expression': expr,
+                                    u'function': 'max',
+                                    u'metricDefinition': {
+                                        u'dimensions': {u'uname': 'host'},
+                                        u'name': 'test.metric'},
+                                    u'operator': 'gte',
+                                    u'period': 60,
+                                    u'periods': 1,
+                                    u'threshold': 1}}
+        fields = {u'alarmActionsEnabled': actions_enabled,
+                  u'alarmDefinitionId': alarm_def_id,
+                  u'alarmDescription': description,
+                  u'alarmExpression': alarm_expression,
+                  u'alarmName': new_name,
+                  u'changedSubExpressions': {},
+                  u'matchBy': [match_by],
+                  u'severity': severity,
+                  u'tenantId': u'fedcba9876543210fedcba9876543210',
+                  u'newAlarmSubExpressions': {},
+                  u'oldAlarmSubExpressions': sub_expression,
+                  u'unchangedSubExpressions': sub_expression}
+        reference = {u'alarm-definition-updated': fields}
+        self.assertEqual(reference, event)
 
     def test_alarm_definition_update_missing_fields(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
