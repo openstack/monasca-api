@@ -153,11 +153,27 @@ public class NotificationMethodMySqlRepositoryImplTest {
   }
 
   public void shouldFind() {
-    List<NotificationMethod> nms = repo.find("444", null, null, 1);
+    List<NotificationMethod> nms1 = repo.find("444", null, null, 1);
 
-    assertEquals(nms, Arrays.asList(new NotificationMethod("123", "MyEmail",
-            NOTIFICATION_METHOD_EMAIL, "a@b", 0),new NotificationMethod("124", "OtherEmail",
-              NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
+    assertEquals(nms1, Arrays.asList(new NotificationMethod("123", "MyEmail",
+        NOTIFICATION_METHOD_EMAIL, "a@b", 0),new NotificationMethod("124", "OtherEmail",
+            NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
+
+    List<NotificationMethod> nms2 = repo.find("444", null, "1", 1);
+
+    assertEquals(nms2, Arrays.asList(new NotificationMethod("124", "OtherEmail",
+        NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
+  }
+
+  public void shouldSortBy() {
+    // null sorts by will sort by ID
+    List<NotificationMethod> nms1 = repo.find("444", null, null, 1);
+    assertEquals(nms1, Arrays.asList(new NotificationMethod("123", "MyEmail", NOTIFICATION_METHOD_EMAIL, "a@b", 0),
+        new NotificationMethod("124", "OtherEmail", NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
+
+    List<NotificationMethod> nms2 = repo.find("444", Arrays.asList("name desc", "address"), null, 1);
+    assertEquals(nms2, Arrays.asList(new NotificationMethod("124", "OtherEmail", NOTIFICATION_METHOD_EMAIL, "a@b", 0),
+        new NotificationMethod("123", "MyEmail", NOTIFICATION_METHOD_EMAIL, "a@b", 0)));
   }
 
   public void shouldUpdate() {

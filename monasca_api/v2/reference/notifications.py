@@ -19,6 +19,7 @@ from oslo_log import log
 
 from monasca_api.api import notifications_api_v2
 from monasca_api.common.repositories import exceptions
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import (
     notifications_request_body_schema as schemas_notifications)
 from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
@@ -221,6 +222,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                 validation.validate_sort_by(sort_by, allowed_sort_by)
 
             offset = helpers.get_query_param(req, 'offset')
+            if offset is not None and not isinstance(offset, int):
+                try:
+                    offset = int(offset)
+                except Exception:
+                    raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                                       'Offset value {} must be an integer'
+                                                       .format(offset))
+
             result = self._list_notifications(req.project_id, req.uri, sort_by,
                                               offset, req.limit)
             res.body = helpers.dumpit_utf8(result)

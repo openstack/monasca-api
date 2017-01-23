@@ -13,10 +13,6 @@
  */
 package monasca.api.domain.model.notificationmethod;
  
-import java.util.List;
-
-import monasca.api.domain.model.common.Link;
-import monasca.api.domain.model.common.Linked;
 import monasca.common.model.domain.common.AbstractEntity;
 
 public class NotificationMethodType extends AbstractEntity{

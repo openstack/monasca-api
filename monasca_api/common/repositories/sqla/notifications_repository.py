@@ -130,12 +130,6 @@ class NotificationsRepository(sql_repository.SQLRepository,
             else:
                 order_columns = [nm.c.id]
 
-            if offset:
-                select_nm_query = (select_nm_query
-                                   .where(nm.c.id > bindparam('b_offset')))
-
-                parms['b_offset'] = offset.encode('utf8')
-
             select_nm_query = select_nm_query.order_by(*order_columns)
 
             select_nm_query = (select_nm_query
@@ -143,6 +137,10 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                .limit(bindparam('b_limit')))
 
             parms['b_limit'] = limit + 1
+
+            if offset:
+                select_nm_query = select_nm_query.offset(bindparam('b_offset'))
+                parms['b_offset'] = offset
 
             rows = conn.execute(select_nm_query, parms).fetchall()
 

@@ -14,6 +14,7 @@
 package monasca.api.resource;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Strings;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -97,6 +98,9 @@ public class NotificationMethodResource {
                      @QueryParam("limit") String limit) throws UnsupportedEncodingException {
 
     List<String> sortByList = Validation.parseAndValidateSortBy(sortByStr, ALLOWED_SORT_BY);
+    if (!Strings.isNullOrEmpty(offset)) {
+      Validation.parseAndValidateNumber(offset, "offset");
+    }
 
     final int paging_limit = this.persistUtils.getLimit(limit);
     final List<NotificationMethod> resources = repo.find(tenantId, sortByList, offset,
