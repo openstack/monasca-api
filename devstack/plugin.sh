@@ -1,5 +1,5 @@
 #
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2016 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -837,18 +837,21 @@ function install_git {
 function download_monasca_libraries {
 
     echo_summary "Download Monasca monasca_common and monasca_statsd"
-
+  
+    GIT_DEPTH_OLD=$GIT_DEPTH
+    GIT_DEPTH=0
     git_clone $MONASCA_COMMON_REPO $MONASCA_COMMON_DIR $MONASCA_COMMON_BRANCH
     git_clone $MONASCA_STATSD_REPO $MONASCA_STATSD_DIR $MONASCA_STATSD_BRANCH
 
     (cd "${MONASCA_COMMON_DIR}"/java ; sudo mvn clean install -DskipTests)
 
-    (cd "${MONASCA_COMMON_DIR}" ; python setup.py sdist)
+    (cd "${MONASCA_COMMON_DIR}"; python setup.py sdist)
     MONASCA_COMMON_SRC_DIST=$(ls -td "$MONASCA_COMMON_DIR"/dist/monasca-common*.tar.gz | head -1)
 
     (cd "${MONASCA_STATSD_DIR}"; python setup.py sdist)
     MONASCA_STATSD_SRC_DIST=$(ls -td "$MONASCA_STATSD_DIR"/dist/monasca-statsd*.tar.gz | head -1)
 
+    GIT_DEPTH=$GIT_DEPTH_OLD
 }
 
 function clean_monasca_common {
