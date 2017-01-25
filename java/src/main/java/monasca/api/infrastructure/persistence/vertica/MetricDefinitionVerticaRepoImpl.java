@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014, 2016 Hewlett Packard Enterprise Development LP
+ * (C) Copyright 2014, 2016, 2017 Hewlett Packard Enterprise Development LP
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -57,12 +57,14 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
       + "%s "; // limit goes here
 
   private static final String FIND_METRIC_NAMES_SQL =
-      "SELECT distinct def.name "
+      "SELECT %s distinct def.name "
       + "FROM MonMetrics.Definitions def "
+      + "JOIN MonMetrics.DefinitionDimensions defDimsSub ON def.id = defDimsSub.definition_id "
       + "WHERE def.tenant_id = :tenantId " // tenantId
-      + "%s " // optional offset goes here
+      + "%s " // Offset goes here
       + "%s " // Dimensions and clause goes here
-      + "ORDER BY def.name ASC %s "; // Limit goes here.
+      + "ORDER BY def.name ASC "
+      + "%s "; // Limit goes here.
 
   private static final String TABLE_TO_JOIN_ON = "defDimsSub";
 
@@ -119,9 +121,13 @@ public class MetricDefinitionVerticaRepoImpl implements MetricDefinitionRepo {
     // Can't bind limit in a nested sub query. So, just tack on as String.
     String limitPart = " limit " + Integer.toString(limit + 1);
 
-    String sql = String.format(FIND_METRIC_NAMES_SQL, this.dbHint, offsetPart, limitPart);
-
     try (Handle h = db.open()) {
+      String sql = String.format(
+              FIND_METRIC_NAMES_SQL,
+              this.dbHint,
+              offsetPart,
+              MetricQueries.buildDimensionAndClause(dimensions, TABLE_TO_JOIN_ON),
+              limitPart);
 
       Query<Map<String, Object>> query = h.createQuery(sql).bind("tenantId", tenantId);
 
