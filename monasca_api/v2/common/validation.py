@@ -1,4 +1,4 @@
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -56,14 +56,14 @@ def dimension_value(value):
 
 
 def validate_alarm_state(state):
-    if state not in VALID_ALARM_STATES:
+    if state.upper() not in VALID_ALARM_STATES:
         raise HTTPUnprocessableEntityError("Invalid State",
                                            "State {} must be one of {}".format(state.encode('utf8'),
                                                                                VALID_ALARM_STATES))
 
 
 def validate_alarm_definition_severity(severity):
-    if severity not in VALID_ALARM_DEFINITION_SEVERITIES:
+    if severity.upper() not in VALID_ALARM_DEFINITION_SEVERITIES:
         raise HTTPUnprocessableEntityError("Invalid Severity",
                                            "Severity {} must be one of {}".format(severity.encode('utf8'),
                                                                                   VALID_ALARM_DEFINITION_SEVERITIES))
@@ -113,12 +113,6 @@ def validate_value_meta(value_meta):
         # value
         assert isinstance(value_meta[name], (str, unicode)), "ValueMeta value must be a string"
         assert len(value_meta[name]) >= 1, "ValueMeta value cannot be empty"
-
-
-def validate_state_query(state_str):
-    if state_str not in VALID_ALARM_STATES:
-        raise HTTPUnprocessableEntityError("Unprocessable Entity",
-                                           "state {} must be one of 'ALARM','OK','UNDETERMINED'".format(state_str))
 
 
 def validate_email_address(email):

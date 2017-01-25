@@ -1,4 +1,4 @@
-# (C) Copyright 2014,2015-2017 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -89,6 +89,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             severity = helpers.get_query_param(req, "severity", default_val=None)
             if severity is not None:
                 validation.validate_severity_query(severity)
+                severity = severity.upper()
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, basestring):

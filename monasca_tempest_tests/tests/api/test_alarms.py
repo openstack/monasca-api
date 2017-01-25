@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -252,7 +252,7 @@ class TestAlarms(base.BaseMonascaTest):
         resp, response_body1 = self.monasca_client.list_alarms(query_parms)
         len1 = len(response_body1['elements'])
         self.assertEqual(200, resp.status)
-        query_parms = '?state=OK'
+        query_parms = '?state=ok'
         resp, response_body2 = self.monasca_client.list_alarms(query_parms)
         len2 = len(response_body2['elements'])
         self.assertEqual(200, resp.status)
