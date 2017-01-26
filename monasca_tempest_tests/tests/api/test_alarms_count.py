@@ -1,4 +1,4 @@
-# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -194,7 +194,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.list_alarms("?state=ALARM")
         self.assertEqual(200, resp.status)
         alarm_state_count = len(response_body['elements'])
-        resp, response_body = self.monasca_client.list_alarms("?state=UNDETERMINED")
+        resp, response_body = self.monasca_client.list_alarms("?state=undetermined")
         self.assertEqual(200, resp.status)
         undet_state_count = len(response_body['elements'])
 
@@ -235,7 +235,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
     # test with filter parameters
     @test.attr(type='gate')
     def test_filter_params(self):
-        resp, response_body = self.monasca_client.list_alarms("?severity=LOW")
+        resp, response_body = self.monasca_client.list_alarms("?severity=low")
         self.assertEqual(200, resp.status)
         expected_count = len(response_body['elements'])
 

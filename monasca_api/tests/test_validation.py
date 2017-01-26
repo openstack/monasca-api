@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,6 +18,7 @@ import unittest
 import falcon
 import mock
 
+import monasca_api.v2.common.exceptions as common_exceptions
 import monasca_api.v2.common.schemas.alarm_definition_request_body_schema as schemas_alarm_defs
 import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
 import monasca_api.v2.common.schemas.notifications_request_body_schema as schemas_notifications
@@ -135,6 +136,51 @@ class TestValueMetaValidation(unittest.TestCase):
         value_meta = {'value_meta_name': value_meta_value}
         self.assertRaises(AssertionError, validation.validate_value_meta,
                           value_meta)
+
+
+class TestStateValidation(unittest.TestCase):
+
+    VALID_STATES = "OK", "ALARM", "UNDETERMINED"
+
+    def test_valid_states(self):
+        for state in self.VALID_STATES:
+            validation.validate_alarm_state(state)
+
+    def test_valid_states_lower_case(self):
+        for state in self.VALID_STATES:
+            validation.validate_alarm_state(state.lower())
+
+    def test_invalid_state(self):
+        self.assertRaises(common_exceptions.HTTPUnprocessableEntityError,
+                          validation.validate_alarm_state, 'BOGUS')
+
+
+class TestSeverityValidation(unittest.TestCase):
+
+    VALID_SEVERITIES = "LOW", "MEDIUM", "HIGH", "CRITICAL"
+
+    def test_valid_severities(self):
+        for state in self.VALID_SEVERITIES:
+            validation.validate_severity_query(state)
+
+    def test_valid_severities_lower_case(self):
+        for state in self.VALID_SEVERITIES:
+            validation.validate_severity_query(state.lower())
+
+    def test_valid_multi_severities(self):
+        validation.validate_severity_query('|'.join(self.VALID_SEVERITIES))
+
+    def test_valid_multi_severities_lower_case(self):
+        validation.validate_severity_query('|'.join(self.VALID_SEVERITIES)
+                                           .lower())
+
+    def test_invalid_state(self):
+        self.assertRaises(common_exceptions.HTTPUnprocessableEntityError,
+                          validation.validate_severity_query,
+                          'BOGUS')
+        self.assertRaises(common_exceptions.HTTPUnprocessableEntityError,
+                          validation.validate_severity_query,
+                          '|'.join([self.VALID_SEVERITIES[0], 'BOGUS']))
 
 
 class TestRoleValidation(unittest.TestCase):

@@ -1,4 +1,4 @@
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -426,7 +426,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             name=name,
             description="description",
             expression=expression,
-            severity="LOW")
+            severity="low")
         resp, res_body_create_alarm_def = self.monasca_client.\
             create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
