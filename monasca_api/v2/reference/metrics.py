@@ -95,7 +95,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     def _send_metrics(self, metrics):
         try:
-            self._message_queue.send_message_batch(metrics)
+            self._message_queue.send_message(metrics)
         except message_queue_exceptions.MessageQueueException as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
