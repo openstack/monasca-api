@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
