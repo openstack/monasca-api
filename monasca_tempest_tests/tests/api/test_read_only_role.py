@@ -13,12 +13,12 @@
 
 import time
 
-from monasca_tempest_tests.tests.api import base
-from monasca_tempest_tests.tests.api import helpers
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 
 from monasca_tempest_tests import clients
+from monasca_tempest_tests.tests.api import base
+from monasca_tempest_tests.tests.api import helpers
 
 
 class TestReadOnlyRole(base.BaseMonascaTest):

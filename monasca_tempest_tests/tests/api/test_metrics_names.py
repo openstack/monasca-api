@@ -113,7 +113,7 @@ class TestMetricsNames(base.BaseMonascaTest):
                 new_elements = self._verify_response(resp, response_body)
                 self.assertEqual(num_expected_elements, len(new_elements))
 
-                expected_elements = elements[start_index:start_index+limit]
+                expected_elements = elements[start_index:start_index + limit]
                 expected_names = \
                     [expected_elements[i]['name'] for i in xrange(
                         len(expected_elements))]

@@ -14,10 +14,11 @@
 
 import time
 
-import base
-from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
 from tempest import test
+
+from monasca_tempest_tests.tests.api import base
+from monasca_tempest_tests.tests.api import helpers
 
 WAIT_SECS = 10
 
@@ -64,16 +65,19 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_alarm_max_function(self):
-        metric_def = {'name': data_utils.rand_name("max_test"),
-                      'dimensions': {
-                          'dim_to_match': data_utils.rand_name("max_match")
-                      }}
+        metric_def = {
+            'name': data_utils.rand_name("max_test"),
+            'dimensions': {
+                'dim_to_match': data_utils.rand_name("max_match")
+            }
+        }
         expression = "max(" + metric_def['name'] + ") > 14"
         definition = helpers.create_alarm_definition(name="Test Max Function",
                                                      description="",
                                                      expression=expression,
                                                      match_by=["dim_to_match"])
-        resp, resp_body = self.monasca_client.create_alarm_definitions(definition)
+        resp, resp_body = (self.monasca_client
+                           .create_alarm_definitions(definition))
         self.assertEqual(201, resp.status)
         definition_id = resp_body['id']
         time.sleep(1)
@@ -89,10 +93,12 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_alarm_max_with_deterministic(self):
-        metric_def = {'name': data_utils.rand_name("max_deterministic_test"),
-                      'dimensions': {
-                          'dim_to_match': data_utils.rand_name("max_match")
-                      }}
+        metric_def = {
+            'name': data_utils.rand_name("max_deterministic_test"),
+            'dimensions': {
+                'dim_to_match': data_utils.rand_name("max_match")
+            }
+        }
         expression = "max(" + metric_def['name'] + ",deterministic) > 14"
         definition = helpers.create_alarm_definition(name="Test Max Deterministic Function",
                                                      description="",
@@ -114,10 +120,12 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_alarm_last_function(self):
-        metric_def = {'name': data_utils.rand_name("last_test"),
-                      'dimensions': {
-                          'dim_to_match': data_utils.rand_name("last_match")
-                      }}
+        metric_def = {
+            'name': data_utils.rand_name("last_test"),
+            'dimensions': {
+                'dim_to_match': data_utils.rand_name("last_match")
+            }
+        }
         expression = "last(" + metric_def['name'] + ") > 14"
         definition = helpers.create_alarm_definition(name="Test Last Function",
                                                      description="",
@@ -143,10 +151,12 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_alarm_last_with_deterministic(self):
-        metric_def = {'name': data_utils.rand_name("last_deterministic_test"),
-                      'dimensions': {
-                          'dim_to_match': data_utils.rand_name("last_match")
-                      }}
+        metric_def = {
+            'name': data_utils.rand_name("last_deterministic_test"),
+            'dimensions': {
+                'dim_to_match': data_utils.rand_name("last_match")
+            }
+        }
         expression = "last(" + metric_def['name'] + ",deterministic) > 14"
         definition = helpers.create_alarm_definition(name="Test Last Deterministic Function",
                                                      description="",

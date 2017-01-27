@@ -134,12 +134,9 @@ class MonascaClient(rest_client.RestClient):
         resp, response_body = self.put(uri, json.dumps(request_body))
         return resp, json.loads(response_body)
 
-    def patch_notification_method(self,
-                                   id,
-                                   name=None,
-                                   type=None,
-                                   address=None,
-                                   period=None):
+    def patch_notification_method(self, id,
+                                  name=None, type=None,
+                                  address=None, period=None):
         uri = 'notification-methods/' + id
         request_body = {}
         if name is not None:

@@ -17,13 +17,14 @@ import time
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 
 
 GROUP_BY_ALLOWED_PARAMS = {'alarm_definition_id', 'name', 'state', 'severity',
                            'link', 'lifecycle_state', 'metric_name',
                            'dimension_name', 'dimension_value'}
+
 
 class TestAlarmsCount(base.BaseMonascaTest):
 
@@ -155,7 +156,6 @@ class TestAlarmsCount(base.BaseMonascaTest):
         msg = "Failed to create all specified alarms during setup, alarm_count was {}".format(alarm_count)
         assert False, msg
 
-
     @classmethod
     def resource_cleanup(cls):
         for definition_id in cls.alarm_definition_ids:
@@ -227,10 +227,8 @@ class TestAlarmsCount(base.BaseMonascaTest):
             if alarm['state'] is 'ALARM' and alarm['severity'] is 'LOW':
                 alarm_low_count += 1
 
-
         resp, response_body = self.monasca_client.count_alarms("?group_by=state,severity")
         self._verify_counts_format(response_body, group_by=['state', 'severity'])
-
 
     # test with filter parameters
     @test.attr(type='gate')
@@ -302,8 +300,6 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self._verify_counts_format(response_body,
                                    group_by=['metric_name', 'dimension_name', 'dimension_value'],
                                    expected_length=1)
-
-
 
     @test.attr(type='gate')
     def test_offset(self):

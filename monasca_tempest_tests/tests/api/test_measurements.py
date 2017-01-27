@@ -18,8 +18,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 
 NUM_MEASUREMENTS = 50
 ONE_SECOND = 1000

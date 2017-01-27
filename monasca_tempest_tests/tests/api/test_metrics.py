@@ -15,14 +15,16 @@
 # TODO(RMH): Check if ' should be added in the list of INVALID_CHARS.
 # TODO(RMH): test_create_metric_no_value, should return 422 if value not sent
 import time
+
 from six.moves import range as xrange
+
+from tempest.common.utils import data_utils
+from tempest.lib import exceptions
+from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
-from tempest.common.utils import data_utils
-from tempest import test
-from tempest.lib import exceptions
 
 
 class TestMetrics(base.BaseMonascaTest):
@@ -287,11 +289,8 @@ class TestMetrics(base.BaseMonascaTest):
     @test.attr(type=['negative'])
     def test_create_metric_with_value_meta_name_exceeds_max_length(self):
         long_value_meta_name = "x" * (constants.MAX_VALUE_META_NAME_LENGTH + 1)
-        metric = helpers.create_metric(name='name',
-                                       value_meta=
-                                       {long_value_meta_name:
-                                            "value_meta_value"}
-                                       )
+        value_meta_dict = {long_value_meta_name: "value_meta_value"}
+        metric = helpers.create_metric(name='name', value_meta=value_meta_dict)
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)
@@ -301,10 +300,8 @@ class TestMetrics(base.BaseMonascaTest):
     def test_create_metric_with_value_meta_exceeds_max_length(self):
         value_meta_name = "x"
         long_value_meta_value = "y" * constants.MAX_VALUE_META_TOTAL_LENGTH
-        metric = helpers.create_metric(name='name',
-                                       value_meta=
-                                       {value_meta_name: long_value_meta_value}
-                                       )
+        value_meta_dict = {value_meta_name: long_value_meta_value}
+        metric = helpers.create_metric(name='name', value_meta=value_meta_dict)
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)

@@ -13,10 +13,10 @@
 # under the License.
 
 import six.moves.urllib.parse as urlparse
-from tempest import config
 from tempest.common import credentials_factory
-import tempest.test
+from tempest import config
 from tempest.lib import exceptions
+import tempest.test
 
 from monasca_tempest_tests import clients
 

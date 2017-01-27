@@ -20,8 +20,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 from urllib import urlencode
 
 NUM_MEASUREMENTS = 100
@@ -294,7 +294,7 @@ class TestStatistics(base.BaseMonascaTest):
                 new_elements = response_body['elements'][0]['statistics']
 
                 self.assertEqual(num_expected_elements, len(new_elements))
-                expected_elements = elements[start_index:start_index+limit]
+                expected_elements = elements[start_index:start_index + limit]
                 self.assertEqual(expected_elements, new_elements)
                 start_index += num_expected_elements
                 if start_index >= num_metrics:

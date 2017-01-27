@@ -12,16 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
-
-import six.moves.urllib.parse as urlparse
-
 from monasca_tempest_tests.tests.api import base
-from monasca_tempest_tests.tests.api import constants
-from monasca_tempest_tests.tests.api import helpers
-from tempest.common.utils import data_utils
 from tempest import test
-from tempest.lib import exceptions
 
 
 class TestNotificationMethodType(base.BaseMonascaTest):
@@ -36,7 +28,6 @@ class TestNotificationMethodType(base.BaseMonascaTest):
 
     @test.attr(type="gate")
     def test_list_notification_method_type(self):
-
-        resp, response_body = self.monasca_client.list_notification_method_types()
+        resp, response_body = (self.monasca_client.
+                               list_notification_method_types())
         self.assertEqual(200, resp.status)
-

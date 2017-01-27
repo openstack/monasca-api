@@ -15,13 +15,14 @@
 import time
 
 import six.moves.urllib.parse as urlparse
+from tempest.common.utils import data_utils
+from tempest.lib import exceptions
+from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
-from tempest.common.utils import data_utils
-from tempest import test
-from tempest.lib import exceptions
+
 
 NUM_ALARM_DEFINITIONS = 2
 
@@ -493,10 +494,10 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             create_alarm_definitions(alarm_definition)
         self.assertEqual(201, resp.status)
 
-
-        query_param = '?severity=MEDIUM|LOW&dimensions=alarm:severity&sort_by=severity'
-        resp, response_body = self.monasca_client.\
-            list_alarm_definitions(query_param)
+        query_param = ('?severity=MEDIUM|LOW&dimensions=alarm:severity'
+                       '&sort_by=severity')
+        resp, response_body = (self.monasca_client
+                               .list_alarm_definitions(query_param))
         self._verify_list_alarm_definitions_response_body(resp, response_body)
         elements = response_body['elements']
         self._verify_alarm_definitions_list(elements, [res_body_create_alarm_def_low,
@@ -550,8 +551,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
         sort_params1 = ['id', 'name', 'severity']
         for sort_by in sort_params1:
-            alarmdefs_sort_by = sorted(alarm_definitions, key=lambda
-                definition: definition[sort_by])
+            alarmdefs_sort_by = sorted(alarm_definitions,
+                                       key=lambda d: d[sort_by])
 
             resp, response_body = self.monasca_client.list_alarm_definitions(
                 '?dimensions=' + str(key) + ':' + str(value) +
@@ -567,8 +568,9 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             for i, element in enumerate(response_body['elements']):
                 self.assertEqual(alarmdefs_sort_by[i][sort_by], element[sort_by])
 
-            alarmdefs_sort_by_reverse = sorted(alarm_definitions, key=lambda
-                definition: definition[sort_by], reverse=True)
+            alarmdefs_sort_by_reverse = sorted(alarm_definitions,
+                                               key=lambda d: d[sort_by],
+                                               reverse=True)
 
             resp, response_body = self.monasca_client.list_alarm_definitions(
                 '?dimensions=' + str(key) + ':' + str(value) +
@@ -598,7 +600,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                 '&sort_by=' + sort_by + urlparse.quote(' desc'))
             self.assertEqual(200, resp.status)
             for i, element in enumerate(response_body['elements']):
-                self.assertEqual(alarm_definitions[-i-1]['id'], element['id'])
+                self.assertEqual(alarm_definitions[-i - 1]['id'], element['id'])
 
     @test.attr(type='gate')
     def test_list_alarm_definitions_multiple_sort_by(self):
@@ -674,7 +676,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                 new_elements = response_body['elements']
                 self.assertEqual(limit, len(new_elements))
                 self.assertEqual(elements[offset], new_elements[0])
-                self.assertEqual(elements[offset+limit-1], new_elements[-1])
+                self.assertEqual(elements[offset + limit - 1],
+                                 new_elements[-1])
                 links = response_body['links']
                 for link in links:
                     if link['rel'] == 'next':

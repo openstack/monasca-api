@@ -13,14 +13,15 @@
 # under the License.
 
 import time
+from urllib import urlencode
+
+from tempest.common.utils import data_utils
+from tempest.lib import exceptions
+from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
-from tempest.common.utils import data_utils
-from tempest import test
-from tempest.lib import exceptions
-from urllib import urlencode
 
 
 class TestDimensions(base.BaseMonascaTest):
@@ -145,7 +146,7 @@ class TestDimensions(base.BaseMonascaTest):
                                 xrange(response_values_length)]
                 self.assertEqual(num_expected_elements, len(new_elements))
 
-                expected_elements = elements[start_index:start_index+limit]
+                expected_elements = elements[start_index:start_index + limit]
                 expected_dimension_values = \
                     [expected_elements[i]['dimension_value'] for i in xrange(
                         len(expected_elements))]
@@ -213,7 +214,7 @@ class TestDimensions(base.BaseMonascaTest):
                                 xrange(response_names_length)]
                 self.assertEqual(num_expected_elements, len(new_elements))
 
-                expected_elements = elements[start_index:start_index+limit]
+                expected_elements = elements[start_index:start_index + limit]
                 expected_dimension_names = \
                     [expected_elements[i]['dimension_name'] for i in xrange(
                         len(expected_elements))]

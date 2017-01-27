@@ -20,8 +20,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 
 
 class TestAlarms(base.BaseMonascaTest):
@@ -133,7 +133,7 @@ class TestAlarms(base.BaseMonascaTest):
         self._wait_for_alarms(1, alarm_def_id)
 
         query_dimensions = [key + ':' + value for key, value in metric['dimensions'].items()]
-        query_parms="?metric_dimensions=" + ','.join(query_dimensions)
+        query_parms = "?metric_dimensions=" + ','.join(query_dimensions)
 
         resp, response_body = self.monasca_client.list_alarms(query_parms)
         self._verify_list_alarms_elements(resp, response_body,
@@ -192,7 +192,6 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertIn(metric_2['dimensions'], dimension_sets)
         self.assertNotIn(metric_3['dimensions'], dimension_sets)
 
-
     @test.attr(type="gate")
     def test_list_alarms_by_metric_dimensions_multi_value(self):
         metric_name = data_utils.rand_name('metric')
@@ -237,7 +236,6 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertIn(metric_1['dimensions'], dimension_sets)
         self.assertIn(metric_2['dimensions'], dimension_sets)
         self.assertNotIn(metric_3['dimensions'], dimension_sets)
-
 
     @test.attr(type="gate")
     def test_list_alarms_by_state(self):

@@ -20,8 +20,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.common.utils import data_utils
-from tempest import test
 from tempest.lib import exceptions
+from tempest import test
 
 DEFAULT_EMAIL_ADDRESS = 'john.doe@domain.com'
 
@@ -366,8 +366,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
 
         sort_params1 = ['id', 'name', 'type', 'address']
         for sort_by in sort_params1:
-            notif_sorted_by = sorted(notifications, key=lambda
-                notification: notification[sort_by])
+            notif_sorted_by = sorted(notifications,
+                                     key=lambda obj: obj[sort_by])
 
             resp, response_body = self.monasca_client.list_notification_methods(
                 '?sort_by=' + sort_by)
@@ -381,8 +381,9 @@ class TestNotificationMethods(base.BaseMonascaTest):
             for i, element in enumerate(response_body['elements']):
                 self.assertEqual(notif_sorted_by[i][sort_by], element[sort_by])
 
-            notif_sorted_by_reverse = sorted(notifications, key=lambda
-                notification: notification[sort_by], reverse=True)
+            notif_sorted_by_reverse = sorted(notifications,
+                                             key=lambda obj: obj[sort_by],
+                                             reverse=True)
 
             resp, response_body = self.monasca_client.list_notification_methods(
                 '?sort_by=' + sort_by + urlparse.quote(' desc'))
@@ -408,7 +409,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
                 '?sort_by=' + sort_by + urlparse.quote(' desc'))
             self.assertEqual(200, resp.status)
             for i, element in enumerate(response_body['elements']):
-                self.assertEqual(notifications[-i-1]['id'], element['id'])
+                self.assertEqual(notifications[-i - 1]['id'], element['id'])
 
         for notification in notifications:
             self.monasca_client.delete_notification_method(notification['id'])
