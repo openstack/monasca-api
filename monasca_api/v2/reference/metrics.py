@@ -96,7 +96,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req,
                                        self._post_metrics_authorized_roles)
-        metrics = helpers.read_http_resource(req)
+        metrics = helpers.from_json(req)
         try:
             metric_validation.validate(metrics)
         except Exception as ex:
@@ -129,7 +129,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
                                     dimensions, req.uri,
                                     offset, req.limit,
                                     start_timestamp, end_timestamp)
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
 
@@ -177,7 +177,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
                                         req.limit, merge_metrics_flag,
                                         group_by)
 
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
@@ -241,7 +241,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
                                          offset, req.limit, merge_metrics_flag,
                                          group_by)
 
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
@@ -292,7 +292,7 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
         offset = helpers.get_query_param(req, 'offset')
         result = self._list_metric_names(tenant_id, dimensions,
                                          req.uri, offset, req.limit)
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _list_metric_names(self, tenant_id, dimensions, req_uri, offset,
@@ -335,7 +335,7 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
         offset = helpers.get_query_param(req, 'offset')
         result = self._dimension_values(tenant_id, req.uri, metric_name,
                                         dimension_name, offset, req.limit)
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _dimension_values(self, tenant_id, req_uri, metric_name,
@@ -377,7 +377,7 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         offset = helpers.get_query_param(req, 'offset')
         result = self._dimension_names(tenant_id, req.uri, metric_name,
                                        offset, req.limit)
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _dimension_names(self, tenant_id, req_uri, metric_name, offset, limit):

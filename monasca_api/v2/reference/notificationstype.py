@@ -39,5 +39,5 @@ class NotificationsType(notificationstype_api_v2.NotificationsTypeV2API):
         # are not that many rows
         result = self._list_notifications(req.uri, req.limit)
 
-        res.body = helpers.dumpit_utf8(result)
+        res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200

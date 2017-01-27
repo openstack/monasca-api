@@ -15,13 +15,14 @@
 from datetime import datetime
 from datetime import timedelta
 from distutils import version
-import json
 
 from influxdb import client
 from influxdb.exceptions import InfluxDBClientError
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
+
+from monasca_common.rest import utils as rest_utils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
@@ -556,7 +557,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
                     measurements_list = []
                     for point in serie['values']:
-                        value_meta = json.loads(point[2]) if point[2] else {}
+                        value_meta = rest_utils.from_json(point[2]) if point[2] else {}
                         timestamp = point[0][:19] + '.' + point[0][20:-1].ljust(3, '0') + 'Z'
 
                         measurements_list.append([timestamp,
@@ -840,12 +841,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 for point in result.raw['series'][0]['values']:
                     alarm_point = {u'timestamp': point[0],
                                    u'alarm_id': point[1],
-                                   u'metrics': json.loads(point[2]),
+                                   u'metrics': rest_utils.from_json(point[2]),
                                    u'new_state': point[3],
                                    u'old_state': point[4],
                                    u'reason': point[5],
                                    u'reason_data': point[6],
-                                   u'sub_alarms': json.loads(point[7]),
+                                   u'sub_alarms': rest_utils.from_json(point[7]),
                                    u'id': str(self._get_millis_from_timestamp(
                                        timeutils.parse_isotime(point[0])))}
 

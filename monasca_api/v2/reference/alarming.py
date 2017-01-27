@@ -174,8 +174,7 @@ class Alarming(object):
 
     def send_event(self, message_queue, event_msg):
         try:
-            message_queue.send_message(
-                helpers.dumpit_utf8(event_msg))
+            message_queue.send_message(helpers.to_json(event_msg))
         except message_queue_exceptions.MessageQueueException as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError(

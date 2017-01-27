@@ -16,7 +16,6 @@ import binascii
 from datetime import datetime
 from datetime import timedelta
 import itertools
-import json
 import urllib
 
 from cassandra.cluster import Cluster
@@ -24,6 +23,8 @@ from cassandra.query import SimpleStatement
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
+
+from monasca_common.rest import utils as rest_utils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
@@ -233,7 +234,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             measurements_list = (
                 [[self._isotime_msec(time_stamp),
                   value,
-                  json.loads(value_meta) if value_meta else {}]
+                  rest_utils.from_json(value_meta) if value_meta else {}]
                  for (time_stamp, value, value_meta) in rows])
 
             measurement = {u'name': name,
@@ -621,12 +622,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
                 alarm = {u'timestamp': self._isotime_msec(time_stamp),
                          u'alarm_id': alarm_id,
-                         u'metrics': json.loads(metrics),
+                         u'metrics': rest_utils.from_json(metrics),
                          u'new_state': new_state,
                          u'old_state': old_state,
                          u'reason': reason,
                          u'reason_data': reason_data,
-                         u'sub_alarms': json.loads(sub_alarms),
+                         u'sub_alarms': rest_utils.from_json(sub_alarms),
                          u'id': str(self._get_millis_from_timestamp(time_stamp)
                                     ).decode('utf8')}
 

@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
-
 from oslo_utils import timeutils
+
+from monasca_common.rest import utils as rest_utils
 
 
 def transform(metrics, tenant_id, region):
@@ -26,8 +26,8 @@ def transform(metrics, tenant_id, region):
         transformed_metrics = []
         for metric in metrics:
             transformed_metric['metric'] = metric
-            transformed_metrics.append(json.dumps(transformed_metric))
+            transformed_metrics.append(rest_utils.as_json(transformed_metric))
         return transformed_metrics
     else:
         transformed_metric['metric'] = metrics
-        return [json.dumps(transformed_metric)]
+        return [rest_utils.as_json(transformed_metric)]
