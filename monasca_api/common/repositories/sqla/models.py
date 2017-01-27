@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2015 Robin Hood
 # Copyright 2016 FUJITSU LIMITED
 # (C) Copyright 2016 Hewlett Packard Enterprise Development LP

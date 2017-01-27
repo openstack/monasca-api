@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
 # (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
