@@ -1836,7 +1836,7 @@ function install_monasca_grafana {
     export GOPATH=`pwd`
     mkdir -p $GOPATH/src/github.com/grafana
     cd $GOPATH/src/github.com/grafana
-    cp -r "${GRAFANA_DIR}" .
+    cp -rf "${GRAFANA_DIR}" .
 
     cd grafana
     cp "${MONASCA_UI_DIR}"/grafana-dashboards/* ./public/dashboards/
@@ -1862,7 +1862,7 @@ function install_monasca_grafana {
     sudo mkdir /var/log/grafana || true
 
     git_clone $MONASCA_GRAFANA_DATASOURCE_REPO $MONASCA_GRAFANA_DATASOURCE_DIR $MONASCA_GRAFANA_DATASOURCE_BRANCH
-    sudo ln -sF "${MONASCA_GRAFANA_DATASOURCE_DIR}" /var/lib/grafana/plugins/monasca-grafana-datasource
+    sudo ln -sfF "${MONASCA_GRAFANA_DATASOURCE_DIR}" /var/lib/grafana/plugins/monasca-grafana-datasource
 
     sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
 
