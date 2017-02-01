@@ -134,18 +134,12 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
     def test_list_dimension_values(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
-            u'series': [{
-                u'values': [[
-                    u'custom_metric,_region=useast,_tenant_id=38dc2a2549f94d2e9a4fa1cc45a4970c,'
-                    u'hostname=custom_host,service=custom_service',
-                    u'useast',
-                    u'38dc2a2549f94d2e9a4fa1cc45a4970c',
-                    u'custom_host',
-                    u'custom_service'
-                ]],
-                u'name': u'custom_metric',
-                u'columns': [u'_key', u'_region', u'_tenant_id', u'hostname', u'service']
-            }]
+            u'series': [
+                {
+                    u'values': [[u'custom_host']],
+                    u'name': u'custom_metric',
+                    u'columns': [u'hostname']
+                }]
         }
 
         repo = influxdb_repo.MetricsRepository()
@@ -163,16 +157,10 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
             u'series': [{
-                u'values': [[
-                    u'custom_metric,_region=useast,_tenant_id=38dc2a2549f94d2e9a4fa1cc45a4970c,'
-                    u'hostname=custom_host,service=custom_service',
-                    u'useast',
-                    u'38dc2a2549f94d2e9a4fa1cc45a4970c',
-                    u'custom_host',
-                    u'custom_service'
-                ]],
+                u'values': [[u'_region'], [u'_tenant_id'], [u'hostname'],
+                            [u'service']],
                 u'name': u'custom_metric',
-                u'columns': [u'_key', u'_region', u'_tenant_id', u'hostname', u'service']
+                u'columns': [u'tagKey']
             }]
         }
 
