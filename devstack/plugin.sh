@@ -1239,6 +1239,7 @@ function install_monasca_persister_python {
     sudo chown root:monasca /etc/monasca
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-persister/python/persister.conf /etc/monasca/persister.conf
+    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-persister/python/persister-logging.conf /etc/monasca/persister-logging.conf
 
     sudo chown mon-persister:monasca /etc/monasca/persister.conf
 
@@ -1325,6 +1326,7 @@ function clean_monasca_persister_python {
     sudo rm /etc/systemd/system/monasca-persister.service
 
     sudo rm /etc/monasca/persister.conf
+    sudo rm /etc/monasca/persister-logging.conf
 
     sudo rm /etc/monasca/persister-config.yml
 
