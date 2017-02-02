@@ -52,9 +52,9 @@ export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_
 export MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 # Make sure we use ORM mapping as default if postgresql is enabled
 if is_service_enabled mysql; then
-  MONASCA_DATABASE_USE_ORM=${MONASCA_DATABASE_USE_ORM:-false}
+    MONASCA_DATABASE_USE_ORM=${MONASCA_DATABASE_USE_ORM:-false}
 elif is_service_enabled postgresql; then
-  MONASCA_DATABASE_USE_ORM=true
+    MONASCA_DATABASE_USE_ORM=true
 fi
 MONASCA_DATABASE_USE_ORM=$(trueorfalse False MONASCA_DATABASE_USE_ORM)
 
@@ -81,18 +81,18 @@ MON_DB_HOSTS=("%" "localhost" "$DATABASE_HOST" "$MYSQL_HOST")
 MON_DB_HOSTS=$(echo "${MON_DB_HOSTS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
 function pre_install_monasca {
-  echo_summary "Pre-Installing Monasca Components"
-  install_git
-  install_maven
-  install_openjdk_8_jdk
+    echo_summary "Pre-Installing Monasca Components"
+    install_git
+    install_maven
+    install_openjdk_8_jdk
 
-  install_kafka
+    install_kafka
 
-  if is_service_enabled monasca-storm; then
-      install_storm
-  fi
+    if is_service_enabled monasca-storm; then
+        install_storm
+    fi
 
-  install_monasca_$MONASCA_METRICS_DB
+    install_monasca_$MONASCA_METRICS_DB
 }
 
 function install_monasca {
@@ -103,57 +103,56 @@ function install_monasca {
     download_monasca_libraries
 
     if is_service_enabled monasca-persister; then
-      install_monasca_persister_$MONASCA_PERSISTER_IMPLEMENTATION_LANG
-      sudo systemctl enable monasca-persister
+        install_monasca_persister_$MONASCA_PERSISTER_IMPLEMENTATION_LANG
+        sudo systemctl enable monasca-persister
     fi
     if is_service_enabled monasca-notification; then
-      install_monasca_notification
+        install_monasca_notification
     fi
     if is_service_enabled monasca-thresh; then
-      if ! is_service_enabled monasca-storm; then
-        die "monasca-thresh requires monasca-storm service to be enabled"
-      fi
-      install_monasca_thresh
+        if ! is_service_enabled monasca-storm; then
+            die "monasca-thresh requires monasca-storm service to be enabled"
+        fi
+        install_monasca_thresh
     fi
     if is_service_enabled monasca-api; then
-      install_monasca_api_$MONASCA_API_IMPLEMENTATION_LANG
-      sudo systemctl enable monasca-api
+        install_monasca_api_$MONASCA_API_IMPLEMENTATION_LANG
+        sudo systemctl enable monasca-api
     fi
 
     install_cli_creds
-
 }
 
 function post_config_monasca {
-  echo_summary "Configuring Monasca"
-  #(trebskit) Installing should happen in post-config phase
-  # at this point databases is already configured
-  install_schema
-  configure_screen
+    echo_summary "Configuring Monasca"
+    #(trebskit) Installing should happen in post-config phase
+    # at this point databases is already configured
+    install_schema
+    configure_screen
 }
 
 function configure_screen {
-  if [[ -n ${SCREEN_LOGDIR} ]]; then
-    sudo ln -sf /var/log/influxdb/influxd.log ${SCREEN_LOGDIR}/screen-influxdb.log || true
+    if [[ -n ${SCREEN_LOGDIR} ]]; then
+        sudo ln -sf /var/log/influxdb/influxd.log ${SCREEN_LOGDIR}/screen-influxdb.log || true
 
-    sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log || true
+        sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log || true
 
-    sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
+        sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
 
-    sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log || true
+        sudo ln -sf /var/log/monasca/notification/notification.log ${SCREEN_LOGDIR}/screen-monasca-notification.log || true
 
-    sudo ln -sf /var/log/monasca/agent/statsd.log ${SCREEN_LOGDIR}/screen-monasca-agent-statsd.log || true
-    sudo ln -sf /var/log/monasca/agent/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-agent-supervisor.log || true
-    sudo ln -sf /var/log/monasca/agent/collector.log ${SCREEN_LOGDIR}/screen-monasca-agent-collector.log || true
-    sudo ln -sf /var/log/monasca/agent/forwarder.log ${SCREEN_LOGDIR}/screen-monasca-agent-forwarder.log || true
+        sudo ln -sf /var/log/monasca/agent/statsd.log ${SCREEN_LOGDIR}/screen-monasca-agent-statsd.log || true
+        sudo ln -sf /var/log/monasca/agent/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-agent-supervisor.log || true
+        sudo ln -sf /var/log/monasca/agent/collector.log ${SCREEN_LOGDIR}/screen-monasca-agent-collector.log || true
+        sudo ln -sf /var/log/monasca/agent/forwarder.log ${SCREEN_LOGDIR}/screen-monasca-agent-forwarder.log || true
 
-    sudo ln -sf /var/log/storm/access.log ${SCREEN_LOGDIR}/screen-monasca-thresh-access.log || true
-    sudo ln -sf /var/log/storm/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-thresh-supervisor.log || true
-    sudo ln -sf /var/log/storm/metrics.log ${SCREEN_LOGDIR}/screen-monasca-thresh-metrics.log || true
-    sudo ln -sf /var/log/storm/nimbus.log  ${SCREEN_LOGDIR}/screen-monasca-thresh-nimbus.log || true
-    sudo ln -sf /var/log/storm/worker-6701.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6701.log || true
-    sudo ln -sf /var/log/storm/worker-6702.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6702.log || true
-  fi
+        sudo ln -sf /var/log/storm/access.log ${SCREEN_LOGDIR}/screen-monasca-thresh-access.log || true
+        sudo ln -sf /var/log/storm/supervisor.log ${SCREEN_LOGDIR}/screen-monasca-thresh-supervisor.log || true
+        sudo ln -sf /var/log/storm/metrics.log ${SCREEN_LOGDIR}/screen-monasca-thresh-metrics.log || true
+        sudo ln -sf /var/log/storm/nimbus.log  ${SCREEN_LOGDIR}/screen-monasca-thresh-nimbus.log || true
+        sudo ln -sf /var/log/storm/worker-6701.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6701.log || true
+        sudo ln -sf /var/log/storm/worker-6702.log ${SCREEN_LOGDIR}/screen-monasca-thresh-worker-6702.log || true
+    fi
 }
 
 function extra_monasca {
@@ -182,7 +181,7 @@ function extra_monasca {
 
 function start_monasca_services {
     if is_service_enabled monasca-api; then
-      start_service monasca-api || restart_service monasca-api
+        start_service monasca-api || restart_service monasca-api
     fi
     if is_service_enabled monasca-persister; then
         start_service monasca-persister || restart_service monasca-persister
@@ -197,8 +196,8 @@ function start_monasca_services {
         start_service grafana-server || restart_service grafana-server
     fi
     if is_service_enabled monasca-agent; then
-      sudo /usr/local/bin/monasca-reconfigure
-      start_service monasca-agent || restart_service monasca-agent
+        sudo /usr/local/bin/monasca-reconfigure
+        start_service monasca-agent || restart_service monasca-agent
     fi
 }
 
@@ -251,7 +250,7 @@ function clean_monasca {
     clean_monasca_default_alarms
 
     if is_service_enabled monasca-agent; then
-      clean_monasca_agent
+        clean_monasca_agent
     fi
 
     clean_monasca_keystone_client
@@ -637,54 +636,60 @@ function clean_cli_creds {
 }
 
 function install_schema {
-  echo_summary "Install Monasca Schema"
+    echo_summary "Install Monasca Schema"
 
-  sudo mkdir -p $MONASCA_SCHEMA_DIR || true
-  sudo chmod 0755 $MONASCA_SCHEMA_DIR
+    sudo mkdir -p $MONASCA_SCHEMA_DIR || true
+    sudo chmod 0755 $MONASCA_SCHEMA_DIR
 
-  install_schema_metric_database_$MONASCA_METRICS_DB
-  install_schema_alarm_database
-  install_schema_kafka_topics
+    install_schema_metric_database_$MONASCA_METRICS_DB
+    install_schema_alarm_database
+    install_schema_kafka_topics
 }
 
 function install_schema_metric_database_influxdb {
-  sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/influxdb_setup.py $MONASCA_SCHEMA_DIR/influxdb_setup.py
-  sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
-  sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
-  sudo $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/influxdb_setup.py $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    sudo $MONASCA_SCHEMA_DIR/influxdb_setup.py
 }
 
 function install_schema_kafka_topics {
-  sudo mkdir -p /opt/kafka/logs || true
-  sudo chown kafka:kafka /opt/kafka/logs
-  sudo chmod 0766 /opt/kafka/logs
+    sudo mkdir -p /opt/kafka/logs || true
+    sudo chown kafka:kafka /opt/kafka/logs
+    sudo chmod 0766 /opt/kafka/logs
 
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 64 --topic metrics
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic events
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic alarm-state-transitions
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 12 --topic alarm-notifications
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic retry-notifications
-  /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic 60-seconds-notifications
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 64 --topic metrics
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 12 --topic events
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 12 --topic alarm-state-transitions
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 12 --topic alarm-notifications
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 3 --topic retry-notifications
+    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
+        --replication-factor 1 --partitions 3 --topic 60-seconds-notifications
 }
 
 function install_schema_alarm_database {
-  local databaseName="mon"
+    local databaseName="mon"
 
-  # copy the file with the $DATABASE_TYPE to just know what DB is used
-  sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql
-  sudo ln -sf $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon.sql
-  sudo chmod 0644 $MONASCA_SCHEMA_DIR/mon.sql
-  sudo chown root:root $MONASCA_SCHEMA_DIR/mon.sql
+    # copy the file with the $DATABASE_TYPE to just know what DB is used
+    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql
+    sudo ln -sf $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon.sql
+    sudo chmod 0644 $MONASCA_SCHEMA_DIR/mon.sql
+    sudo chown root:root $MONASCA_SCHEMA_DIR/mon.sql
 
-  recreate_database $databaseName
-  if is_service_enabled mysql; then
-      sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < $MONASCA_SCHEMA_DIR/mon.sql
-  elif is_service_enabled postgresql; then
-      sudo -u root sudo -u postgres -i psql -d $databaseName -f $MONASCA_SCHEMA_DIR/mon.sql
-  fi
+    recreate_database $databaseName
+    if is_service_enabled mysql; then
+        sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < $MONASCA_SCHEMA_DIR/mon.sql
+    elif is_service_enabled postgresql; then
+        sudo -u root sudo -u postgres -i psql -d $databaseName -f $MONASCA_SCHEMA_DIR/mon.sql
+    fi
 
-  # for postgres, creating users must be after schema has been deployed
-  recreate_users $databaseName MON_DB_USERS MON_DB_HOSTS
+    # for postgres, creating users must be after schema has been deployed
+    recreate_users $databaseName MON_DB_USERS MON_DB_HOSTS
 }
 
 
@@ -693,9 +698,9 @@ function clean_schema {
     echo_summary "Clean Monasca Schema"
 
     if is_service_enabled mysql; then
-      sudo echo "drop database mon;" | mysql -u$DATABASE_USER -p$DATABASE_PASSWORD
+        sudo echo "drop database mon;" | mysql -u$DATABASE_USER -p$DATABASE_PASSWORD
     elif is_service_enabled postgresql; then
-      sudo -u postgres psql -c "DROP DATABASE mon;"
+        sudo -u postgres psql -c "DROP DATABASE mon;"
     fi
 
     sudo rm -rf $MONASCA_SCHEMA_DIR
@@ -744,9 +749,8 @@ function install_git {
 }
 
 function download_monasca_libraries {
-
     echo_summary "Download Monasca monasca_common and monasca_statsd"
-  
+
     GIT_DEPTH_OLD=$GIT_DEPTH
     GIT_DEPTH=0
     git_clone $MONASCA_COMMON_REPO $MONASCA_COMMON_DIR $MONASCA_COMMON_BRANCH
@@ -771,10 +775,11 @@ function install_monasca_api_java {
 
     (cd "${MONASCA_API_DIR}"/java ; sudo mvn clean package -DskipTests)
 
-    local version="$(get_version_from_pom "${MONASCA_API_DIR}"/java)"
+    local version=""
+    version="$(get_version_from_pom "${MONASCA_API_DIR}"/java)"
 
     sudo cp -f "${MONASCA_API_DIR}"/java/target/monasca-api-${version}-shaded.jar \
-      /opt/monasca/monasca-api.jar
+        /opt/monasca/monasca-api.jar
 
     sudo useradd --system -g monasca mon-api || true
 
@@ -815,10 +820,10 @@ function install_monasca_api_java {
     local dbPort=3306
 
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
-      if is_service_enabled postgresql; then
-        dbEngine="org.postgresql.ds.PGPoolingDataSource"
-        dbPort=5432
-      fi
+        if is_service_enabled postgresql; then
+            dbEngine="org.postgresql.ds.PGPoolingDataSource"
+            dbPort=5432
+        fi
     fi
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-api/api-config.yml /etc/monasca/api-config.yml
@@ -826,23 +831,23 @@ function install_monasca_api_java {
     sudo chmod 0640 /etc/monasca/api-config.yml
 
     sudo sed -e "
-      s|%KAFKA_HOST%|$SERVICE_HOST|g;
-      s|%MONASCA_DATABASE_USE_ORM%|$MONASCA_DATABASE_USE_ORM|g;
-      s|%MONASCA_API_DATABASE_ENGINE%|$dbEngine|g;
-      s|%MONASCA_API_DATABASE_USER%|$MONASCA_API_DATABASE_USER|g;
-      s|%DATABASE_HOST%|$DATABASE_HOST|g;
-      s|%DATABASE_PORT%|$dbPort|g;
-      s|%MYSQL_HOST%|$MYSQL_HOST|g;
-      s|%MYSQL_PORT%|$dbPort|g;
-      s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
-      s|%MONASCA_METRICS_DB%|$MONASCA_METRICS_DB|g;
-      s|%INFLUXDB_HOST%|$SERVICE_HOST|g;
-      s|%INFLUXDB_PORT%|8086|g;
-      s|%VERTICA_HOST%|$SERVICE_HOST|g;
-      s|%SERVICE_HOST%|$SERVICE_HOST|g;
-      s|%ADMIN_PASSWORD%|$ADMIN_PASSWORD|g;
-      s|%KEYSTONE_SERVICE_PORT%|$KEYSTONE_SERVICE_PORT|g;
-      s|%KEYSTONE_SERVICE_HOST%|$KEYSTONE_SERVICE_HOST|g;
+        s|%KAFKA_HOST%|$SERVICE_HOST|g;
+        s|%MONASCA_DATABASE_USE_ORM%|$MONASCA_DATABASE_USE_ORM|g;
+        s|%MONASCA_API_DATABASE_ENGINE%|$dbEngine|g;
+        s|%MONASCA_API_DATABASE_USER%|$MONASCA_API_DATABASE_USER|g;
+        s|%DATABASE_HOST%|$DATABASE_HOST|g;
+        s|%DATABASE_PORT%|$dbPort|g;
+        s|%MYSQL_HOST%|$MYSQL_HOST|g;
+        s|%MYSQL_PORT%|$dbPort|g;
+        s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
+        s|%MONASCA_METRICS_DB%|$MONASCA_METRICS_DB|g;
+        s|%INFLUXDB_HOST%|$SERVICE_HOST|g;
+        s|%INFLUXDB_PORT%|8086|g;
+        s|%VERTICA_HOST%|$SERVICE_HOST|g;
+        s|%SERVICE_HOST%|$SERVICE_HOST|g;
+        s|%ADMIN_PASSWORD%|$ADMIN_PASSWORD|g;
+        s|%KEYSTONE_SERVICE_PORT%|$KEYSTONE_SERVICE_PORT|g;
+        s|%KEYSTONE_SERVICE_HOST%|$KEYSTONE_SERVICE_HOST|g;
     " -i /etc/monasca/api-config.yml
 
 }
@@ -874,11 +879,11 @@ function install_monasca_api_python {
         pip_install cassandra-driver>=2.1.4,!=3.6.0
     fi
     if is_service_enabled postgresql; then
-      apt_get -y install libpq-dev
-      pip_install psycopg2==2.6.2
+        apt_get -y install libpq-dev
+        pip_install psycopg2==2.6.2
     elif is_service_enabled mysql; then
-      apt_get -y install libmysqlclient-dev
-      pip_install PyMySQL
+        apt_get -y install libmysqlclient-dev
+        pip_install PyMySQL
     fi
 
     setup_install $MONASCA_API_DIR
@@ -914,11 +919,15 @@ function install_monasca_api_python {
 
     # if monasca devstack would use DATABASE_USER everywhere, following line
     # might be replaced with database_connection_url call
-    local dbAlarmUrl=`get_database_type_$DATABASE_TYPE`://$MONASCA_API_DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST/mon
-    local dbMetricDriver="monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository"
+    local dbAlarmUrl
+    local dbMetricDriver
+
     if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
-      dbMetricDriver="monasca_api.common.repositories.cassandra.metrics_repository:MetricsRepository"
+        dbMetricDriver="monasca_api.common.repositories.cassandra.metrics_repository:MetricsRepository"
+    else
+        dbMetricDriver="monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository"
     fi
+    dbAlarmUrl=`get_database_type_$DATABASE_TYPE`://$MONASCA_API_DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST/mon
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-api/python/api-config.conf /etc/monasca/api-config.conf
     sudo chown mon-api:root /etc/monasca/api-config.conf
@@ -936,24 +945,24 @@ function install_monasca_api_python {
     sudo ln -sf /etc/monasca/api-config.ini /etc/api-config.ini
 
     sudo sed -e "
-      s|%KEYSTONE_AUTH_HOST%|$KEYSTONE_AUTH_HOST|g;
-      s|%KEYSTONE_AUTH_PORT%|$KEYSTONE_AUTH_PORT|g;
-      s|%KEYSTONE_SERVICE_HOST%|$KEYSTONE_SERVICE_HOST|g;
-      s|%KEYSTONE_SERVICE_PORT%|$KEYSTONE_SERVICE_PORT|g;
-      s|%DATABASE_HOST%|$DATABASE_HOST|g;
-      s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
-      s|%MONASCA_API_DATABASE_USER%|$MONASCA_API_DATABASE_USER|g;
-      s|%MONASCA_API_DATABASE_URL%|$dbAlarmUrl|g;
-      s|%MONASCA_METRIC_DATABASE_DRIVER%|$dbMetricDriver|g;
-      s|%CASSANDRA_HOST%|$SERVICE_HOST|g;
-      s|%INFLUXDB_HOST%|$SERVICE_HOST|g;
-      s|%INFLUXDB_PORT%|8086|g;
-      s|%KAFKA_HOST%|$SERVICE_HOST|g;
-      s|%ADMIN_PASSWORD%|$ADMIN_PASSWORD|g;
+        s|%KEYSTONE_AUTH_HOST%|$KEYSTONE_AUTH_HOST|g;
+        s|%KEYSTONE_AUTH_PORT%|$KEYSTONE_AUTH_PORT|g;
+        s|%KEYSTONE_SERVICE_HOST%|$KEYSTONE_SERVICE_HOST|g;
+        s|%KEYSTONE_SERVICE_PORT%|$KEYSTONE_SERVICE_PORT|g;
+        s|%DATABASE_HOST%|$DATABASE_HOST|g;
+        s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
+        s|%MONASCA_API_DATABASE_USER%|$MONASCA_API_DATABASE_USER|g;
+        s|%MONASCA_API_DATABASE_URL%|$dbAlarmUrl|g;
+        s|%MONASCA_METRIC_DATABASE_DRIVER%|$dbMetricDriver|g;
+        s|%CASSANDRA_HOST%|$SERVICE_HOST|g;
+        s|%INFLUXDB_HOST%|$SERVICE_HOST|g;
+        s|%INFLUXDB_PORT%|8086|g;
+        s|%KAFKA_HOST%|$SERVICE_HOST|g;
+        s|%ADMIN_PASSWORD%|$ADMIN_PASSWORD|g;
     " -i /etc/monasca/api-config.conf
 
     sudo sed -e "
-      s|%SERVICE_HOST%|$SERVICE_HOST|g;
+        s|%SERVICE_HOST%|$SERVICE_HOST|g;
     " -i /etc/monasca/api-config.ini
 
 }
@@ -1008,10 +1017,10 @@ function clean_monasca_api_python {
     sudo userdel mon-api
 
     if is_service_enabled postgresql; then
-      apt_get -y purge libpq-dev
+        apt_get -y purge libpq-dev
     elif is_service_enabled mysql; then
-      apt_get -y purge libpq-dev
-      apt_get -y purge libmysqlclient-dev
+        apt_get -y purge libpq-dev
+        apt_get -y purge libmysqlclient-dev
     fi
 
 }
@@ -1023,10 +1032,11 @@ function install_monasca_persister_java {
     git_clone $MONASCA_PERSISTER_REPO $MONASCA_PERSISTER_DIR $MONASCA_PERSISTER_BRANCH
     (cd "${MONASCA_PERSISTER_DIR}"/java ; sudo mvn clean package -DskipTests)
 
-    local version="$(get_version_from_pom "${MONASCA_PERSISTER_DIR}"/java)"
+    local version=""
+    version="$(get_version_from_pom "${MONASCA_PERSISTER_DIR}"/java)"
 
     sudo cp -f "${MONASCA_PERSISTER_DIR}"/java/target/monasca-persister-${version}-shaded.jar \
-      /opt/monasca/monasca-persister.jar
+        /opt/monasca/monasca-persister.jar
 
     sudo useradd --system -g monasca mon-persister || true
 
@@ -1246,16 +1256,16 @@ function install_monasca_notification {
     PIP_VIRTUAL_ENV=/opt/monasca
 
     if is_service_enabled postgresql; then
-      apt_get -y install libpq-dev
-      pip_install psycopg2==2.6.2
+        apt_get -y install libpq-dev
+        pip_install psycopg2==2.6.2
     elif is_service_enabled mysql; then
-      apt_get -y install python-mysqldb
-      apt_get -y install libmysqlclient-dev
-      pip_install PyMySQL
-      pip_install mysql-python
+        apt_get -y install python-mysqldb
+        apt_get -y install libmysqlclient-dev
+        pip_install PyMySQL
+        pip_install mysql-python
     fi
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
-      pip_install sqlalchemy
+        pip_install sqlalchemy
     fi
 
     setup_install $MONASCA_COMMON_DIR
@@ -1290,27 +1300,27 @@ function install_monasca_notification {
     local dbEngine
     local dbPort
     if is_service_enabled postgresql; then
-      dbDriver="monasca_notification.common.repositories.postgres.pgsql_repo:PostgresqlRepo"
-      dbEngine="postgres"
-      dbPort=5432
+        dbDriver="monasca_notification.common.repositories.postgres.pgsql_repo:PostgresqlRepo"
+        dbEngine="postgres"
+        dbPort=5432
     else
-      dbDriver="monasca_notification.common.repositories.mysql.mysql_repo:MysqlRepo"
-      dbEngine="mysql"
-      dbPort=3306
+        dbDriver="monasca_notification.common.repositories.mysql.mysql_repo:MysqlRepo"
+        dbEngine="mysql"
+        dbPort=3306
     fi
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
-      dbDriver="monasca_notification.common.repositories.orm.orm_repo:OrmRepo"
+        dbDriver="monasca_notification.common.repositories.orm.orm_repo:OrmRepo"
     fi
 
     sudo sed -e "
-      s|%DATABASE_HOST%|$DATABASE_HOST|g;
-      s|%DATABASE_PORT%|$dbPort|g;
-      s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
-      s|%MONASCA_NOTIFICATION_DATABASE_USER%|$MONASCA_NOTIFICATION_DATABASE_USER|g;
-      s|%MONASCA_NOTIFICATION_DATABASE_DRIVER%|$dbDriver|g;
-      s|%MONASCA_NOTIFICATION_DATABASE_ENGINE%|$dbEngine|g;
-      s|%KAFKA_HOST%|$SERVICE_HOST|g;
-      s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+        s|%DATABASE_HOST%|$DATABASE_HOST|g;
+        s|%DATABASE_PORT%|$dbPort|g;
+        s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
+        s|%MONASCA_NOTIFICATION_DATABASE_USER%|$MONASCA_NOTIFICATION_DATABASE_USER|g;
+        s|%MONASCA_NOTIFICATION_DATABASE_DRIVER%|$dbDriver|g;
+        s|%MONASCA_NOTIFICATION_DATABASE_ENGINE%|$dbEngine|g;
+        s|%KAFKA_HOST%|$SERVICE_HOST|g;
+        s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
     " -i /etc/monasca/notification.yaml
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-notification/monasca-notification.service /etc/systemd/system/monasca-notification.service
@@ -1352,10 +1362,10 @@ function clean_monasca_notification {
     apt_get -y purge mailutils
 
     if is_service_enabled postgresql; then
-      apt_get -y purge libpq-dev
+        apt_get -y purge libpq-dev
     elif is_service_enabled mysql; then
-      apt_get -y purge libmysqlclient-dev
-      apt_get -y purge python-mysqldb
+        apt_get -y purge libmysqlclient-dev
+        apt_get -y purge python-mysqldb
     fi
 
 }
@@ -1465,10 +1475,11 @@ function install_monasca_thresh {
     git_clone $MONASCA_THRESH_REPO $MONASCA_THRESH_DIR $MONASCA_THRESH_BRANCH
     (cd "${MONASCA_THRESH_DIR}"/thresh ; sudo mvn clean package -DskipTests)
 
-    local version="$(get_version_from_pom "${MONASCA_THRESH_DIR}"/thresh)"
+    local version=""
+    version="$(get_version_from_pom "${MONASCA_THRESH_DIR}"/thresh)"
 
     sudo cp -f "${MONASCA_THRESH_DIR}"/thresh/target/monasca-thresh-${version}-shaded.jar \
-      /opt/monasca/monasca-thresh.jar
+        /opt/monasca/monasca-thresh.jar
 
     sudo useradd --system -g monasca mon-thresh || true
 
@@ -1488,22 +1499,22 @@ function install_monasca_thresh {
     local dbPort=3306
 
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
-      if is_service_enabled postgresql; then
-        dbEngine="org.postgresql.ds.PGPoolingDataSource"
-        dbPort=5432
-      fi
+        if is_service_enabled postgresql; then
+            dbEngine="org.postgresql.ds.PGPoolingDataSource"
+            dbPort=5432
+        fi
     fi
 
     sudo sed -e "
-      s|%KAFKA_HOST%|$SERVICE_HOST|g;
-      s|%MONASCA_THRESH_DATABASE_ENGINE%|$dbEngine|g;
-      s|%MONASCA_THRESH_DATABASE_USER%|$MONASCA_THRESH_DATABASE_USER|g;
-      s|%MONASCA_DATABASE_USE_ORM%|$MONASCA_DATABASE_USE_ORM|g;
-      s|%DATABASE_TYPE%|$DATABASE_TYPE|g;
-      s|%DATABASE_HOST%|$DATABASE_HOST|g;
-      s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
-      s|%DATABASE_PORT%|$dbPort|g;
-      s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+        s|%KAFKA_HOST%|$SERVICE_HOST|g;
+        s|%MONASCA_THRESH_DATABASE_ENGINE%|$dbEngine|g;
+        s|%MONASCA_THRESH_DATABASE_USER%|$MONASCA_THRESH_DATABASE_USER|g;
+        s|%MONASCA_DATABASE_USE_ORM%|$MONASCA_DATABASE_USE_ORM|g;
+        s|%DATABASE_TYPE%|$DATABASE_TYPE|g;
+        s|%DATABASE_HOST%|$DATABASE_HOST|g;
+        s|%DATABASE_PASSWORD%|$DATABASE_PASSWORD|g;
+        s|%DATABASE_PORT%|$dbPort|g;
+        s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
     " -i /etc/monasca/thresh-config.yml
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-thresh/monasca-thresh /etc/init.d/monasca-thresh
@@ -1588,8 +1599,8 @@ function install_monasca_agent {
     # clients needs to be downloaded without git_clone wrapper
     # because of the GIT_DEPTH flag that affects python package version
     if [ ! -d "${MONASCA_CLIENT_DIR}" ]; then
-       # project is cloned in the gate already, do not reclone
-       git_timed clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR
+        # project is cloned in the gate already, do not reclone
+        git_timed clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR
     fi
     (cd "${MONASCA_CLIENT_DIR}" ; git checkout $MONASCA_CLIENT_BRANCH ; sudo python setup.py sdist)
     MONASCA_CLIENT_SRC_DIST=$(ls -td "${MONASCA_CLIENT_DIR}"/dist/python-monascaclient*.tar.gz | head -1)
@@ -1642,7 +1653,7 @@ function install_monasca_agent {
         sudo sed -i "s/--keystone_url 'http:\/\/127\.0\.0\.1:35357\/v3'/--keystone_url 'http:\/\/${SERVICE_HOST}:35357\/v3'/" /usr/local/bin/monasca-reconfigure
     fi
     sudo sed -e "
-       s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+        s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
     " -i /usr/local/bin/monasca-reconfigure
 }
 
@@ -1744,12 +1755,12 @@ function install_node_nvm {
     set -i
     bash ${nvm_dest}
     (
-      source "${HOME}"/.nvm/nvm.sh >> /dev/null; \
-        nvm install ${NODE_JS_VERSION}; \
-        nvm use ${NODE_JS_VERSION}; \
-        npm config set registry "http://registry.npmjs.org/"; \
-        npm config set proxy "${HTTP_PROXY}"; \
-        npm set strict-ssl false;
+        source "${HOME}"/.nvm/nvm.sh >> /dev/null; \
+            nvm install ${NODE_JS_VERSION}; \
+            nvm use ${NODE_JS_VERSION}; \
+            npm config set registry "http://registry.npmjs.org/"; \
+            npm config set proxy "${HTTP_PROXY}"; \
+            npm set strict-ssl false;
     )
     set +i
 }
@@ -1852,43 +1863,43 @@ function clean_go {
 
 ###### extra functions
 function recreate_users {
-  local db=$1
-  local users=$2
-  local hosts=$3
-  recreate_users_$DATABASE_TYPE $db $users $hosts
+    local db=$1
+    local users=$2
+    local hosts=$3
+    recreate_users_$DATABASE_TYPE $db $users $hosts
 }
 
 function recreate_users_mysql {
-  local db=$1
-  local -n users=$2
-  local -n hosts=$3
-  for user in "${users[@]}"; do
-    for host in "${hosts[@]}"; do
-      # loading grants needs to be done from localhost and by root at this very point
-      # after loading schema is moved to post-config it could be possible to this as
-      # DATABASE_USER
-      mysql -uroot -p$DATABASE_PASSWORD -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON $db.* TO '$user'@'$host' identified by '$DATABASE_PASSWORD';"
+    local db=$1
+    local -n users=$2
+    local -n hosts=$3
+    for user in "${users[@]}"; do
+        for host in "${hosts[@]}"; do
+        # loading grants needs to be done from localhost and by root at this very point
+        # after loading schema is moved to post-config it could be possible to this as
+        # DATABASE_USER
+            mysql -uroot -p$DATABASE_PASSWORD -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON $db.* TO '$user'@'$host' identified by '$DATABASE_PASSWORD';"
+        done
     done
-  done
 }
 
 function recreate_users_postgresql {
-  local db=$1
-  local -n users=$2
+    local db=$1
+    local -n users=$2
 
-  local dbPermissions="SELECT, UPDATE, INSERT, DELETE, REFERENCES"
-  local echoFlag=""
+    local dbPermissions="SELECT, UPDATE, INSERT, DELETE, REFERENCES"
+    local echoFlag=""
 
-  if [[ "$VERBOSE" != "True" ]]; then
-    echoFlag="-e"
-  fi
+    if [[ "$VERBOSE" != "True" ]]; then
+        echoFlag="-e"
+    fi
 
-  for user in "${users[@]}"; do
-    createuser $echoFlag -h $DATABASE_HOST -U$DATABASE_USER -c $MAX_DB_CONNECTIONS -E $user
-    sudo -u root sudo -u postgres -i psql -c "ALTER USER $user WITH PASSWORD '$DATABASE_PASSWORD';"
-    sudo -u root sudo -u postgres -i psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO $user;"
-    sudo -u root sudo -u postgres -i psql -d $db -c "GRANT $dbPermissions ON ALL TABLES IN SCHEMA public TO $user;"
-  done
+    for user in "${users[@]}"; do
+        createuser $echoFlag -h $DATABASE_HOST -U$DATABASE_USER -c $MAX_DB_CONNECTIONS -E $user
+        sudo -u root sudo -u postgres -i psql -c "ALTER USER $user WITH PASSWORD '$DATABASE_PASSWORD';"
+        sudo -u root sudo -u postgres -i psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO $user;"
+        sudo -u root sudo -u postgres -i psql -d $db -c "GRANT $dbPermissions ON ALL TABLES IN SCHEMA public TO $user;"
+    done
 }
 
 # Validate a program version string is of the form 1.0.0.
@@ -1896,8 +1907,7 @@ function recreate_users_postgresql {
 function validate_version {
     version_regex="^([0-9]+\.)?([0-9]+\.)?([0-9]+)$"
 
-    if [[ $1 =~ $version_regex ]];
-    then
+    if [[ $1 =~ $version_regex ]]; then
         return 0
     else
         return 1
@@ -1907,32 +1917,26 @@ function validate_version {
 # Compares two program version strings of the form 1.0.0.
 # Returns "lt" if $1 is less than $2, "eq" if equal, and "gt" if greater than.
 function compare_versions {
-    if [[ $1 == $2 ]]
-    then
+    if [[ $1 == $2 ]]; then
         echo eq
         return
     fi
     local IFS=.
     local i ver1=($1) ver2=($2)
     # fill empty fields in ver1 with zeros
-    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
-    do
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do
         ver1[i]=0
     done
-    for ((i=0; i<${#ver1[@]}; i++))
-    do
-        if [[ -z ${ver2[i]} ]]
-        then
+    for ((i=0; i<${#ver1[@]}; i++)); do
+        if [[ -z ${ver2[i]} ]]; then
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
+        if ((10#${ver1[i]} > 10#${ver2[i]})); then
             echo gt
             return
         fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
+        if ((10#${ver1[i]} < 10#${ver2[i]})); then
             echo lt
             return
         fi
@@ -1944,9 +1948,9 @@ function compare_versions {
 # Prints the version specified in the pom.xml file in the directory given by
 # the argument
 function get_version_from_pom {
-  python -c "import xml.etree.ElementTree as ET; \
-    print(ET.parse(open('$1/pom.xml')).getroot().find( \
-    '{http://maven.apache.org/POM/4.0.0}version').text)"
+    python -c "import xml.etree.ElementTree as ET; \
+        print(ET.parse(open('$1/pom.xml')).getroot().find( \
+        '{http://maven.apache.org/POM/4.0.0}version').text)"
 }
 
 # download_file
@@ -1958,8 +1962,6 @@ function get_version_from_pom {
 #  Uses global variables:
 #  - OFFLINE
 #  - DOWNLOAD_FILE_TIMEOUT
-# note(trebskit) maybe this function will enter upstream devstack in case it does
-#                we should remove it from here
 function download_file {
     local url=$1
     local file=$2
@@ -1967,11 +1969,11 @@ function download_file {
     # If in OFFLINE mode check if file already exists
     if [[ ${OFFLINE} == "True" ]] && [[ ! -f ${file} ]]; then
         die $LINENO "You are running in OFFLINE mode but
-                     the target file \"$file\" was not found"
+                        the target file \"$file\" was not found"
     fi
 
     local curl_z_flag=""
-    if [[ -f ${file} ]]; then
+    if [[ -f "${file}" ]]; then
         # If the file exists tell cURL to download only if newer version
         # is available
         curl_z_flag="-z $file"
