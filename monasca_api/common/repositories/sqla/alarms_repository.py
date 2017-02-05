@@ -1,6 +1,5 @@
-# Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -510,17 +509,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(a.c.state_updated_at >= bindparam('b_state_updated_at'))
 
             if 'metric_name' in query_parms:
-                subquery_md = (select([md])
-                               .where(md.c.name == bindparam('b_metric_name'))
-                               .distinct()
-                               .alias('md_'))
-                subquery = (select([a.c.id])
-                            .select_from(am.join(a, a.c.id == am.c.alarm_id)
-                                         .join(mdd, mdd.c.id == am.c.metric_definition_dimensions_id)
-                                         .join(subquery_md, subquery_md.c.id == mdd.c.metric_definition_id))
-                            .distinct())
-                query = query.where(a.c.id.in_(subquery))
-                parms['b_metric_name'] = query_parms['metric_name'].encode('utf8')
+                query = query.where(a.c.id.in_(self.get_a_am_query))
+                parms['b_md_name'] = query_parms['metric_name'].encode('utf8')
 
             if 'metric_dimensions' in query_parms:
                 sub_query = select([a.c.id])

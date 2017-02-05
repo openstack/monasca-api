@@ -230,29 +230,37 @@ class TestAlarmsCount(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.count_alarms("?group_by=state,severity")
         self._verify_counts_format(response_body, group_by=['state', 'severity'])
 
-    # test with filter parameters
-    @test.attr(type='gate')
-    def test_filter_params(self):
-        resp, response_body = self.monasca_client.list_alarms("?severity=low")
+    def run_count_test(self, query_string):
+        resp, response_body = self.monasca_client.list_alarms(query_string)
         self.assertEqual(200, resp.status)
         expected_count = len(response_body['elements'])
+        # Make sure something was found
+        self.assertTrue(expected_count > 0)
 
-        resp, response_body = self.monasca_client.count_alarms("?severity=LOW")
+        resp, response_body = self.monasca_client.count_alarms(query_string)
         self.assertEqual(200, resp.status)
         self._verify_counts_format(response_body, expected_length=1)
         self.assertEqual(expected_count, response_body['counts'][0][0])
+
+    # test filter by severity
+    @test.attr(type='gate')
+    def test_filter_severity(self):
+        self.run_count_test("?severity=LOW")
+
+    # test filter by state
+    @test.attr(type='gate')
+    def test_filter_state(self):
+        self.run_count_test("?state=ALARM")
+
+    # test filter by metric name
+    @test.attr(type='gate')
+    def test_filter_metric_name(self):
+        self.run_count_test("?metric_name=test_metric_01")
 
     # test with multiple metric dimensions
     @test.attr(type='gate')
     def test_filter_multiple_dimensions(self):
-        resp, response_body = self.monasca_client.list_alarms("?metric_dimensions=hostname:test_1,unique:1")
-        self.assertEqual(200, resp.status)
-        expected_count = len(response_body['elements'])
-
-        resp, response_body = self.monasca_client.count_alarms("?metric_dimensions=hostname:test_1,unique:1")
-        self.assertEqual(200, resp.status)
-        self._verify_counts_format(response_body, expected_length=1)
-        self.assertEqual(expected_count, response_body['counts'][0][0])
+        self.run_count_test("?metric_dimensions=hostname:test_1,unique:1")
 
     # test with filter and group_by parameters
     @test.attr(type='gate')
