@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -733,6 +733,25 @@ class TestNotificationMethods(base.BaseMonascaTest):
         resp, response_body = self.monasca_client.\
             delete_notification_method(response_body['id'])
         self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_patch_notification_method_with_invalid_id(self):
+        id = data_utils.rand_name()
+        name = data_utils.rand_name('notification-')
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.patch_notification_method,
+                          id, name)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_update_notification_method_with_invalid_id(self):
+        id = data_utils.rand_name()
+        name = data_utils.rand_name('notification-')
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.update_notification_method, id,
+                          name=name, type='EMAIL',
+                          address='bob@thebridge.org', period=0)
 
     @test.attr(type="gate")
     @test.attr(type=['negative'])

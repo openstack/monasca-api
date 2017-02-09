@@ -721,6 +721,27 @@ class TestAlarms(base.BaseMonascaTest):
                           self.monasca_client.delete_alarm, id)
 
     @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_patch_alarm_with_invalid_id(self):
+        id = data_utils.rand_name()
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.patch_alarm, id=id,
+                          lifecycle_state="OPEN")
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_update_alarm_with_invalid_id(self):
+        alarm_id = data_utils.rand_name()
+        updated_state = "ALARM"
+        updated_lifecycle_state = "OPEN"
+        updated_link = "http://somesite.com"
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.update_alarm,
+                          id=alarm_id, state=updated_state,
+                          lifecycle_state=updated_lifecycle_state,
+                          link=updated_link)
+
+    @test.attr(type="gate")
     def test_create_alarms_with_match_by(self):
         # Create an alarm definition with no match_by
         name = data_utils.rand_name('alarm_definition_1')

@@ -53,6 +53,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
+    @resource.resource_try_catch_block
     def on_post(self, req, res):
         helpers.validate_authorization(req, self._default_authorized_roles)
 
@@ -81,6 +82,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_201
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_definition_id=None):
         if alarm_definition_id is None:
             helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
@@ -127,6 +129,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_definition_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -164,6 +167,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_patch(self, req, res, alarm_definition_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -208,6 +212,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_delete(self, req, res, alarm_definition_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -236,7 +241,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                     "An alarm definition with the name {} already exists with id {}"
                     .format(name, found_definition_id))
 
-    @resource.resource_try_catch_block
     def _alarm_definition_show(self, tenant_id, id):
 
         alarm_definition_row = (
@@ -280,7 +284,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         return result
 
-    @resource.resource_try_catch_block
     def _alarm_definition_delete(self, tenant_id, id):
 
         sub_alarm_definition_rows = (
@@ -300,7 +303,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         self._send_alarm_event(u'alarm-deleted', tenant_id, id,
                                alarm_metric_rows, sub_alarm_rows, None, None)
 
-    @resource.resource_try_catch_block
     def _alarm_definition_list(self, tenant_id, name, dimensions, severity, req_uri, sort_by,
                                offset, limit):
 
@@ -358,7 +360,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             LOG.debug(ex)
             raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
-    @resource.resource_try_catch_block
     def _alarm_definition_update_or_patch(self, tenant_id,
                                           definition_id,
                                           name,
@@ -478,7 +479,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         return sub_alarm_def_update_dict
 
-    @resource.resource_try_catch_block
     def _alarm_definition_create(self, tenant_id, name, expression,
                                  description, severity, match_by,
                                  alarm_actions, undetermined_actions,

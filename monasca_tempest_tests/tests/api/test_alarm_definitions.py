@@ -914,6 +914,43 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.fail("Failed test_create_and_delete_alarm_definition: "
                   "cannot find the alarm definition just created.")
 
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_get_alarm_defintion_with_invalid_id(self):
+        def_id = data_utils.rand_name()
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.get_alarm_definition, def_id)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_delete_alarm_defintion_with_invalid_id(self):
+        def_id = data_utils.rand_name()
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.delete_alarm_definition, def_id)
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_patch_alarm_defintion_with_invalid_id(self):
+        def_id = data_utils.rand_name()
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.patch_alarm_definition,
+                          id=def_id, name='Test')
+
+    @test.attr(type="gate")
+    @test.attr(type=['negative'])
+    def test_update_alarm_defintion_with_invalid_id(self):
+        def_id = data_utils.rand_name()
+
+        updated_name = data_utils.rand_name('updated_name')
+        updated_description = 'updated description'
+        updated_expression = "max(cpu.system_perc) < 0"
+        self.assertRaises(exceptions.NotFound,
+                          self.monasca_client.update_alarm_definition,
+                          def_id, updated_name, updated_expression,
+                          updated_description, True, ['device'],
+                          'LOW', [], [],
+                          [])
+
     def _create_alarm_definitions(self, expression, number_of_definitions):
         self.rule = {'expression': 'mem_total_mb > 0'}
         if expression is None:

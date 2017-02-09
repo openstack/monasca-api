@@ -49,6 +49,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
+    @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -75,6 +76,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_patch(self, req, res, alarm_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -100,6 +102,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
+    @resource.resource_try_catch_block
     def on_delete(self, req, res, alarm_id):
 
         helpers.validate_authorization(req, self._default_authorized_roles)
@@ -108,6 +111,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         res.status = falcon.HTTP_204
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
         helpers.validate_authorization(req, self._get_alarms_authorized_roles)
 
@@ -174,7 +178,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         except Exception as e:
             raise HTTPUnprocessableEntityError("Unprocessable Entity", str(e))
 
-    @resource.resource_try_catch_block
     def _alarm_update(self, tenant_id, alarm_id, new_state, lifecycle_state,
                       link):
 
@@ -211,7 +214,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                     link, lifecycle_state,
                                                     time_ms)
 
-    @resource.resource_try_catch_block
     def _alarm_patch(self, tenant_id, alarm_id, new_state, lifecycle_state,
                      link):
 
@@ -248,7 +250,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                     link, lifecycle_state,
                                                     time_ms)
 
-    @resource.resource_try_catch_block
     def _alarm_delete(self, tenant_id, id):
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
@@ -263,7 +264,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                alarm_definition_id, alarm_metric_rows,
                                sub_alarm_rows, None, None)
 
-    @resource.resource_try_catch_block
     def _alarm_show(self, req_uri, tenant_id, alarm_id):
 
         alarm_rows = self._alarms_repo.get_alarm(tenant_id, alarm_id)
@@ -310,7 +310,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         return alarm
 
-    @resource.resource_try_catch_block
     def _alarm_list(self, req_uri, tenant_id, query_parms, offset, limit):
 
         alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms,
@@ -385,6 +384,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res):
         helpers.validate_authorization(req, self._get_alarms_authorized_roles)
         query_parms = falcon.uri.parse_query_string(req.query_string)
@@ -420,7 +420,6 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         res.body = helpers.dumpit_utf8(result)
         res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _alarms_count(self, req_uri, tenant_id, query_parms, offset, limit):
 
         count_data = self._alarms_repo.get_alarms_count(tenant_id, query_parms, offset, limit)
@@ -490,6 +489,7 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
+    @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
 
         if alarm_id is None:
@@ -517,7 +517,6 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
             res.body = helpers.dumpit_utf8(result)
             res.status = falcon.HTTP_200
 
-    @resource.resource_try_catch_block
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, query_parms, req_uri, offset,
                             limit):
@@ -542,7 +541,6 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
 
         return helpers.paginate(result, req_uri, limit)
 
-    @resource.resource_try_catch_block
     def _alarm_history(self, tenant_id, alarm_id, req_uri, offset, limit):
 
         result = self._metrics_repo.alarm_history(tenant_id, alarm_id, offset,
