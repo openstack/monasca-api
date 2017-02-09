@@ -1,5 +1,6 @@
 #
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,16 +35,16 @@ validNotificationPeriods:
 
 kafka:
   brokerUris:
-    - "127.0.0.1:9092"
+    - "%KAFKA_HOST%:9092"
   zookeeperUris:
     - "127.0.0.1:2181"
   healthCheckTopic: healthcheck
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: "jdbc:mysql://127.0.0.1:3306/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
-  user: "monapi"
-  password: "password"
+  url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
+  user: "%MONASCA_API_DATABASE_USER%"
+  password: "%DATABASE_PASSWORD%"
   maxWaitForConnection: 1s
   validationQuery: "/* MyService Health Check */ SELECT 1"
   minSize: 8
@@ -51,8 +52,26 @@ mysql:
   checkConnectionWhileIdle: false
   checkConnectionOnBorrow: true
 
+# Possible options for dataSourceClassName are:
+# - com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+# - org.postgresql.ds.PGPoolingDataSource
+# HINT: dataSourceUrl is relevant only for mysql
+hibernate:
+  supportEnabled: %MONASCA_DATABASE_USE_ORM%
+  providerClass: com.zaxxer.hikari.hibernate.HikariConnectionProvider
+  dataSourceClassName: %MONASCA_API_DATABASE_ENGINE%
+  dataSourceUrl: jdbc:mysql://%MYSQL_HOST%:%MYSQL_PORT%/mon
+  serverName: %DATABASE_HOST%
+  portNumber: %DATABASE_PORT%
+  databaseName: mon
+  user: %MONASCA_API_DATABASE_USER%
+  password: %DATABASE_PASSWORD%
+  initialConnections: 25
+  maxConnections: 100
+  autoConfig: validate
+
 databaseConfiguration:
-  databaseType: "influxdb"
+  databaseType: "%MONASCA_METRICS_DB%"
 
 # Uncomment if databaseType is influxDB
 influxDB:
@@ -61,7 +80,7 @@ influxDB:
   maxHttpConnections: 100
   gzip: true
   name: "mon"
-  url: "http://127.0.0.1:8086"
+  url: "http://%INFLUXDB_HOST%:%INFLUXDB_PORT%"
   user: "mon_api"
   password: "password"
 
@@ -70,7 +89,7 @@ influxDB:
 # As of 7/10 there is a bug in the monasca-api that requires this section even if databaseType is set to influxdb
 vertica:
   driverClass: com.vertica.jdbc.Driver
-  url: "jdbc:vertica://localhost:5433/mon"
+  url: "jdbc:vertica://%VERTICA_HOST%:5433/mon"
   user: "mon_api"
   password: "password"
   maxWaitForConnection: 1s
@@ -89,8 +108,8 @@ vertica:
 
 middleware:
   enabled: true
-  serverVIP: "127.0.0.1"
-  serverPort: 5000
+  serverVIP: "%KEYSTONE_SERVICE_HOST%"
+  serverPort: %KEYSTONE_SERVICE_PORT%
   useHttps: False
   truststore: "None"
   truststorePassword: "None"
@@ -111,7 +130,7 @@ middleware:
   adminRole: admin
   adminAuthMethod: password
   adminUser: "admin"
-  adminPassword: "secretadmin"
+  adminPassword: "%ADMIN_PASSWORD%"
   adminProjectId:
   adminProjectName: "admin"
   adminToken:
@@ -122,12 +141,12 @@ server:
   applicationConnectors:
     - type: http
       port: 8070
-      bindHost: 127.0.0.1
+      bindHost: %SERVICE_HOST%
       maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
   adminConnectors:
     - type: http
       port: 8081
-      bindHost: 127.0.0.1
+      bindHost: %SERVICE_HOST%
   requestLog:
    timeZone: UTC
    appenders:

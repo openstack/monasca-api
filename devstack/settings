@@ -1,5 +1,6 @@
 #
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015 Hewlett Packard Enterprise Development LP
+# Copyright 2017 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,6 +109,7 @@ NVM_VERSION=${NVM_VERSION:-"0.32.1"}
 
 # Path settings
 MONASCA_BASE=${DEST}
+MONASCA_SCHEMA_DIR=${DEST}/monasca/schema
 
 # Repository settings
 MONASCA_API_REPO=${MONASCA_API_REPO:-${GIT_BASE}/openstack/monasca-api.git}
@@ -153,6 +155,13 @@ MONASCA_GRAFANA_DATASOURCE_DIR=${MONASCA_BASE}/monasca-grafana-datasource
 GRAFANA_REPO=${GRAFANA_REPO:-"https://github.com/twc-openstack/grafana.git"}
 GRAFANA_BRANCH=${GRAFANA_BRANCH:-"master-keystone"}
 GRAFANA_DIR=${MONASCA_BASE}/grafana
+
+# Database settings
+MONASCA_DATABASE_USE_ORM=false
+
+MONASCA_API_DATABASE_USER="monapi"
+MONASCA_THRESH_DATABASE_USER="thresh"
+MONASCA_NOTIFICATION_DATABASE_USER="notification"
 
 # Other settings
 DOWNLOAD_FILE_TIMEOUT=${DOWNLOAD_FILE_TIMEOUT:-30}
