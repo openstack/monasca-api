@@ -1,5 +1,6 @@
 # Copyright 2015 Cray
 # Copyright 2016 FUJITSU LIMITED
+# Copyright 2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -657,7 +658,7 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
         self.assertEqual(res, expected)
 
         query_parms = {'metric_name': 'cpu.idle_perc',
-                       'metric_dimensions': ['flavor_id:222']}
+                       'metric_dimensions': {'flavor_id': '222'}}
         res = self.repo.get_alarms(tenant_id=tenant_id,
                                    query_parms=query_parms,
                                    limit=1000)
@@ -668,7 +669,8 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
         self.assertEqual(res, expected)
 
         query_parms = {'metric_name': 'cpu.idle_perc',
-                       'metric_dimensions': ['service:monitoring', 'hostname:roland']}
+                       'metric_dimensions': {'service': 'monitoring',
+                                             'hostname': 'roland'}}
         res = self.repo.get_alarms(tenant_id=tenant_id,
                                    query_parms=query_parms,
                                    limit=1000)
@@ -689,7 +691,7 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
 
         alarm_def_id = self.alarm1['alarm_definition']['id']
         query_parms = {'metric_name': 'cpu.idle_perc',
-                       'metric_dimensions': ['service:monitoring'],
+                       'metric_dimensions': {'service': 'monitoring'},
                        'alarm_definition_id': alarm_def_id}
         res = self.repo.get_alarms(tenant_id=tenant_id,
                                    query_parms=query_parms,
@@ -735,7 +737,7 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
         self.assertEqual(res, expected)
 
         query_parms = {'metric_name': 'cpu.idle_perc',
-                       'metric_dimensions': ['service:monitoring'],
+                       'metric_dimensions': {'service': 'monitoring'},
                        'state': 'UNDETERMINED'}
         res = self.repo.get_alarms(tenant_id=tenant_id,
                                    query_parms=query_parms,
@@ -748,7 +750,7 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
 
         time_now = datetime.datetime.now().isoformat() + 'Z'
         query_parms = {'metric_name': 'cpu.idle_perc',
-                       'metric_dimensions': ['service:monitoring'],
+                       'metric_dimensions': {'service': 'monitoring'},
                        'state': 'UNDETERMINED',
                        'state_updated_start_time': time_now}
         res = self.repo.get_alarms(tenant_id=tenant_id,

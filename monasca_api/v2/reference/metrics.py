@@ -14,6 +14,7 @@
 
 import falcon
 from monasca_common.simport import simport
+from monasca_common.validation import metrics as metric_validation
 from oslo_config import cfg
 from oslo_log import log
 
@@ -23,7 +24,6 @@ from monasca_api.common.messaging import (
 from monasca_api.common.messaging.message_formats import (
     metrics as metrics_message)
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
-from monasca_api.v2.common import validation
 from monasca_api.v2.reference import helpers
 from monasca_api.v2.reference import resource
 
@@ -70,29 +70,6 @@ class Metrics(metrics_api_v2.MetricsV2API):
             raise falcon.HTTPInternalServerError('Service unavailable',
                                                  ex.message)
 
-    def _validate_metrics(self, metrics):
-
-        try:
-            if isinstance(metrics, list):
-                for metric in metrics:
-                    self._validate_single_metric(metric)
-            else:
-                self._validate_single_metric(metrics)
-        except Exception as ex:
-            LOG.exception(ex)
-            raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
-
-    def _validate_single_metric(self, metric):
-        validation.metric_name(metric['name'])
-        assert isinstance(metric['timestamp'], (int, float)), "Timestamp must be a number"
-        assert isinstance(metric['value'], (int, long, float)), "Value must be a number"
-        if "dimensions" in metric:
-            for dimension_key in metric['dimensions']:
-                validation.dimension_key(dimension_key)
-                validation.dimension_value(metric['dimensions'][dimension_key])
-        if "value_meta" in metric:
-                validation.validate_value_meta(metric['value_meta'])
-
     def _send_metrics(self, metrics):
         try:
             self._message_queue.send_message(metrics)
@@ -120,7 +97,12 @@ class Metrics(metrics_api_v2.MetricsV2API):
         helpers.validate_authorization(req,
                                        self._post_metrics_authorized_roles)
         metrics = helpers.read_http_resource(req)
-        self._validate_metrics(metrics)
+        try:
+            metric_validation.validate(metrics)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise HTTPUnprocessableEntityError("Unprocessable Entity", ex.message)
+
         tenant_id = (
             helpers.get_x_tenant_or_tenant_id(req,
                                               self._delegate_authorized_roles))

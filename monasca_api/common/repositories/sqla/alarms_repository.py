@@ -317,16 +317,16 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
                 sub_query_md_base = select([md.c.dimension_set_id]).select_from(md)
 
-                for i, metric_dimension in enumerate(query_parms['metric_dimensions']):
+                for i, metric_dimension in enumerate(query_parms['metric_dimensions'].items()):
+
                     md_name = "b_md_name_{}".format(i)
 
                     values_cond = None
                     values_cond_flag = False
 
-                    parsed_dimension = metric_dimension.split(':')
-                    if parsed_dimension and len(parsed_dimension) > 1:
-                        if '|' in parsed_dimension[1]:
-                            values = parsed_dimension[1].encode('utf8').split('|')
+                    if metric_dimension and metric_dimension[1]:
+                        if '|' in metric_dimension[1]:
+                            values = metric_dimension[1].encode('utf8').split('|')
                             sub_values_cond = []
                             for j, value in enumerate(values):
                                 sub_md_value = "b_md_value_{}_{}".format(i, j)
@@ -338,7 +338,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                             md_value = "b_md_value_{}".format(i)
                             values_cond = (md.c.value == bindparam(md_value))
                             values_cond_flag = True
-                            parms[md_value] = parsed_dimension[1]
+                            parms[md_value] = metric_dimension[1]
 
                     sub_query_md = (sub_query_md_base
                                     .where(md.c.name == bindparam(md_name)))
@@ -355,7 +355,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                             sub_query_md.c.dimension_set_id ==
                                             mdd.c.metric_dimension_set_id))
 
-                    parms[md_name] = parsed_dimension[0].encode('utf8')
+                    parms[md_name] = metric_dimension[0].encode('utf8')
 
                     sub_query = (sub_query
                                  .select_from(sub_query_from)
@@ -521,7 +521,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
                 sub_query_md_base = select([md.c.dimension_set_id]).select_from(md)
 
-                for i, metric_dimension in enumerate(query_parms['metric_dimensions']):
+                for i, metric_dimension in enumerate(query_parms['metric_dimensions'].items()):
                     md_name = "b_md_name_{}".format(i)
                     md_value = "b_md_value_{}".format(i)
 
@@ -531,14 +531,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                     .distinct()
                                     .alias('md_{}'.format(i)))
 
-                    parsed_dimension = metric_dimension.split(':')
                     sub_query_from = (sub_query_from
                                       .join(sub_query_md,
                                             sub_query_md.c.dimension_set_id ==
                                             mdd.c.metric_dimension_set_id))
 
-                    parms[md_name] = parsed_dimension[0].encode('utf8')
-                    parms[md_value] = parsed_dimension[1].encode('utf8')
+                    parms[md_name] = metric_dimension[0].encode('utf8')
+                    parms[md_value] = metric_dimension[1].encode('utf8')
 
                     sub_query = (sub_query
                                  .select_from(sub_query_from)

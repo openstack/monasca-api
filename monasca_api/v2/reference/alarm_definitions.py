@@ -16,6 +16,7 @@ import re
 
 import falcon
 from monasca_common.simport import simport
+from monasca_common.validation import metrics as metric_validation
 from oslo_config import cfg
 from oslo_log import log
 import pyparsing
@@ -354,7 +355,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             schema_alarms.validate(alarm_definition, require_all=require_all)
             if 'match_by' in alarm_definition:
                 for name in alarm_definition['match_by']:
-                    validation.dimension_key(name)
+                    metric_validation.validate_dimension_key(name)
 
         except Exception as ex:
             LOG.debug(ex)
