@@ -1,6 +1,7 @@
 # Monasca DevStack Plugin
 
-The Monasca DevStack plugin works on Ubuntu 16.04 (Xenial) though note issues and workarounds noted below under 'Using Vagrant' if using a virtualbox vm image.
+The Monasca DevStack plugin currently only works on Ubuntu 16.04 (Xenial).
+More Linux Distributions will be supported in the future.
 
 Running the Monasca DevStack plugin requires a machine with 10GB of RAM.
 
@@ -71,13 +72,6 @@ To enable Horizon and the Monasca UI add `horizon`
 
 Vagrant can be used to deploy a VM with Devstack and Monasca running in it using the Vagrantfile. After installing Vagrant, just run the command `vagrant up` as usual in the `../monasca-api/devstack` directory.
 
-N.B. If you are running with virtualbox you may find that the `./stack.sh` fails with the filesystem becoming read only.  There is a work around:
-
- 1. vagrant up --no-provision && vagrant halt
- 2. open virtualbox gui
- 3. open target vm settings and change storage controller from SCSI to SATA
- 4. vagrant up
-
 ## Enable Vertica as the Metrics DB using Vagrant
 
 Monasca supports using both InfluxDB and Vertica for storing metrics and alarm state history.
@@ -89,7 +83,7 @@ A free Community Edition (CE) installer is available for download.
 To enable Vertica, do the following:
 
 1. Register and download the Vertica Debian installer from `https://my.vertica.com/download/vertica/community-edition/` and put it in your home directory.
-Unfortunately, there isn't a URL that the DevStack installer can automatically use, so it must be downloaded seperately, and put in a location where the installer can find it when it runs.
+Unfortunately, there isn't a URL that the DevStack installer can automatically use, so it must be downloaded separately, and put in a location where the installer can find it when it runs.
 The installer assumes this location is your home directory.
 When using Vagrant, your home directory will normally be mounted inside the VM as "/vagrant_home".
 

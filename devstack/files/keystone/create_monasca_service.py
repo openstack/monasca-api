@@ -187,7 +187,7 @@ def main(argv):
     service_host = argv[0]
     url = 'http://' + service_host + ':35357/v3'
 
-    # FIXME(clenimar): to date, devstack doesn't set domain-related enviroment
+    # FIXME(clenimar): to date, devstack doesn't set domain-related environment
     # variables. That's why we need that little workaround when getting those
     # from sys.argv.
     kwargs = {
