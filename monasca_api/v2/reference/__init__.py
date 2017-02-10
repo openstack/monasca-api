@@ -1,6 +1,6 @@
 # Copyright 2014 IBM Corp.
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -66,29 +66,27 @@ messaging_group = cfg.OptGroup(name='messaging', title='messaging')
 cfg.CONF.register_group(messaging_group)
 cfg.CONF.register_opts(messaging_opts, messaging_group)
 
+base_sqla_path = 'monasca_api.common.repositories.sqla.'
 repositories_opts = [
-    cfg.StrOpt('metrics_driver', default='influxdb_metrics_repo',
+    cfg.StrOpt('metrics_driver',
+               default='monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository',
                help='The repository driver to use for metrics'),
     cfg.StrOpt('alarm_definitions_driver',
-               default='mysql_alarm_definitions_repo',
+               default=base_sqla_path + 'alarm_definitions_repository:AlarmDefinitionsRepository',
                help='The repository driver to use for alarm definitions'),
-    cfg.StrOpt('alarms_driver', default='mysql_alarms_repo',
+    cfg.StrOpt('alarms_driver',
+               default=base_sqla_path + 'alarms_repository:AlarmsRepository',
                help='The repository driver to use for alarms'),
-    cfg.StrOpt('streams_driver', default='mysql_streams_repo',
-               help='The repository driver to use for streams'),
-    cfg.StrOpt('events_driver', default='mysql_events_repo',
-               help='The repository driver to use for events'),
-    cfg.StrOpt('transforms_driver', default='mysql_transforms_repo',
-               help='The repository driver to use for transforms'),
-    cfg.StrOpt('notifications_driver', default='mysql_notifications_repo',
+    cfg.StrOpt('notifications_driver',
+               default=base_sqla_path + 'notifications_repository:NotificationsRepository',
                help='The repository driver to use for notifications'),
-    cfg.StrOpt('notification_method_type_driver', default='mysql_notifications_repo',
+    cfg.StrOpt('notification_method_type_driver',
+               default=base_sqla_path + 'notification_method_type_repository:NotificationMethodTypeRepository',
                help='The repository driver to use for notifications')]
 
 repositories_group = cfg.OptGroup(name='repositories', title='repositories')
 cfg.CONF.register_group(repositories_group)
 cfg.CONF.register_opts(repositories_opts, repositories_group)
-
 
 kafka_opts = [cfg.StrOpt('uri', help='Address to kafka server. For example: '
                                      'uri=192.168.1.191:9092'),
@@ -142,16 +140,6 @@ cassandra_group = cfg.OptGroup(name='cassandra', title='cassandra')
 cfg.CONF.register_group(cassandra_group)
 cfg.CONF.register_opts(cassandra_opts, cassandra_group)
 
-mysql_opts = [cfg.StrOpt('database_name'),
-              cfg.StrOpt('hostname'),
-              cfg.StrOpt('username'),
-              cfg.StrOpt('password', secret=True)]
-
-mysql_group = cfg.OptGroup(name='mysql', title='mysql')
-
-cfg.CONF.register_group(mysql_group)
-cfg.CONF.register_opts(mysql_opts, mysql_group)
-
 sql_opts = [cfg.StrOpt('url', default=None),
             cfg.StrOpt('host', default=None),
             cfg.StrOpt('username', default=None),
@@ -161,7 +149,6 @@ sql_opts = [cfg.StrOpt('url', default=None),
             cfg.StrOpt('database', default=None),
             cfg.StrOpt('query', default=None)]
 sql_group = cfg.OptGroup(name='database', title='sql')
-
 
 cfg.CONF.register_group(sql_group)
 cfg.CONF.register_opts(sql_opts, sql_group)

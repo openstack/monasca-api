@@ -1,5 +1,6 @@
 # Copyright 2014 Hewlett-Packard
 # Copyright 2016 FUJITSU LIMITED
+# (C) Copyright 2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -34,20 +35,13 @@ class SQLRepository(object):
 
             self.conf = cfg.CONF
             url = None
-            if self.conf.mysql.database_name is not None:
-                settings_db = (self.conf.mysql.username,
-                               self.conf.mysql.password,
-                               self.conf.mysql.hostname,
-                               self.conf.mysql.database_name)
-                url = make_url("mysql+pymysql://%s:%s@%s/%s" % settings_db)
+            if self.conf.database.url is not None:
+                url = make_url(self.conf.database.url)
             else:
-                if self.conf.database.url is not None:
-                    url = make_url(self.conf.database.url)
-                else:
-                    database_conf = dict(self.conf.database)
-                    if 'url' in database_conf:
-                        del database_conf['url']
-                    url = URL(**database_conf)
+                database_conf = dict(self.conf.database)
+                if 'url' in database_conf:
+                    del database_conf['url']
+                url = URL(**database_conf)
 
             from sqlalchemy import create_engine
             self._db_engine = create_engine(url, pool_recycle=3600)
