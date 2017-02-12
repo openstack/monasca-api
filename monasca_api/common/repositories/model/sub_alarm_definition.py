@@ -118,6 +118,14 @@ class SubAlarmDefinition(object):
                 # Convert to float to handle cases like 0.0 == 0
                 hash(float(self.threshold)))
 
+    def __repr__(self):
+
+        result = 'id={},alarm_definition_id={},function={},metric_name={},dimensions={}'\
+            .format(self.id, self.alarm_definition_id, self.function, self.metric_name, self.dimensions)
+        result += ',operator={},period={},periods={},determinstic={}'\
+            .format(self.operator, self.period, self.periods, self.deterministic)
+        return result
+
     def __eq__(self, other):
 
         if id(self) == id(other):
@@ -140,9 +148,6 @@ class SubAlarmDefinition(object):
 
     def same_key_fields(self, other):
 
-        # compare everything but operator, threshold and deterministic
+        # The metrics matched can't change
         return (self.metric_name == other.metric_name and
-                self.dimensions == other.dimensions and
-                self.function == other.function and
-                self.period == other.period and
-                self.periods == other.periods)
+                self.dimensions == other.dimensions)

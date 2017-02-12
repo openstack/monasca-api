@@ -1,6 +1,6 @@
 # Copyright 2015 Cray
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -22,12 +22,28 @@ from oslo_config import fixture as fixture_config
 from sqlalchemy import delete, MetaData, insert, bindparam, select, func
 import testtools
 
+from monasca_api.common.repositories import exceptions
+from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.common.repositories.sqla import models
+from monasca_api.expression_parser import alarm_expr_parser
 
 CONF = cfg.CONF
+ALARM_DEF_123_FIELDS = {'actions_enabled': False,
+                        'alarm_actions': u'29387234,77778687',
+                        'description': None,
+                        'expression': u'AVG(hpcs.compute{flavor_id=777, '
+                        'image_id=888, metric_name=cpu, device=1}) > 10',
+                        'id': u'123',
+                        'match_by': u'flavor_id,image_id',
+                        'name': u'90% CPU',
+                        'ok_actions': None,
+                        'severity': u'LOW',
+                        'undetermined_actions': None}
+TENANT_ID = 'bob'
 
 
 class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
+
     @classmethod
     def setUpClass(cls):
         from sqlalchemy import engine_from_config
@@ -248,8 +264,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                       ' metric_name=cpu}) > 10')
         description = ''
         match_by = ['flavor_id', 'image_id']
-        from monasca_api.expression_parser.alarm_expr_parser import AlarmExprParser
-        sub_expr_list = (AlarmExprParser(expression).sub_expr_list)
+        sub_expr_list = (alarm_expr_parser.AlarmExprParser(expression).sub_expr_list)
         alarm_actions = ['29387234', '77778687']
         alarmA_id = self.repo.create_alarm_definition('555',
                                                       '90% CPU',
@@ -286,8 +301,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                               ' AVG(hpcs.compute) < 100'])
         description = ''
         match_by = ['flavor_id', 'image_id']
-        from monasca_api.expression_parser.alarm_expr_parser import AlarmExprParser
-        sub_expr_list = (AlarmExprParser(expression).sub_expr_list)
+        sub_expr_list = (alarm_expr_parser.AlarmExprParser(expression).sub_expr_list)
         alarm_actions = ['29387234', '77778687']
         self.repo.update_or_patch_alarm_definition('bob', '234',
                                                    '90% CPU', expression,
@@ -443,7 +457,6 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
                                                    match_by, None,
                                                    False)
 
-        from monasca_api.common.repositories import exceptions
         self.assertRaises(exceptions.InvalidUpdateException,
                           self.repo.update_or_patch_alarm_definition,
                           'bob', '234',
@@ -710,3 +723,122 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
         alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
                                                     limit=1)
         self.assertEqual(alarmDef1, expected)
+
+    def test_should_patch_name(self):
+        self.run_patch_test(name=u'90% CPU New')
+
+    def test_should_patch_description(self):
+        self.run_patch_test(description=u'New Description')
+
+    def test_should_patch_severity(self):
+        self.run_patch_test(severity=u'CRITICAL')
+
+    def test_should_patch_actions_enabled(self):
+        self.run_patch_test(actions_enabled=False)
+
+    def test_should_patch_ok_actions(self):
+        self.run_patch_test(ok_actions=[u'29387234'])
+
+    def test_should_patch_alarm_actions(self):
+        self.run_patch_test(alarm_actions=[u'29387234'])
+
+    def test_should_patch_undetermined_actions(self):
+        self.run_patch_test(undetermined_actions=[u'29387234', u'77778687'])
+
+    def test_should_patch_match_by(self):
+        # match_by can't change, so make sure old value works
+        self.run_patch_test(match_by=[u'flavor_id', u'image_id'])
+
+    def test_should_patch_expression_no_change(self):
+        # match_by can't change, so make sure old value works
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'])
+
+    def test_should_patch_expression_threshold_change(self):
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(' 10', ' 20'))
+
+    def test_should_patch_expression_function_change(self):
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace('AVG', 'MAX'))
+
+    def test_should_patch_expression_operation_change(self):
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace('>', '<'))
+
+    def test_should_patch_expression_period_change(self):
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(')', ', 120)'))
+
+    def test_should_patch_expression_periods_change(self):
+        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(' 10', ' 10 times 2'))
+
+    def test_patch_fails_change_match_by(self):
+        self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test, match_by=u'device')
+
+    def test_patch_fails_change_metric_name(self):
+        self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
+                          expression=ALARM_DEF_123_FIELDS['expression'].replace('hpcs.compute',
+                                                                                'new_metric_name'))
+
+    def test_patch_fails_change_metric_dimensions(self):
+        self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
+                          expression=ALARM_DEF_123_FIELDS['expression'].replace('image_id=888',
+                                                                                'image_id=42'))
+
+    def test_patch_fails_change_num_sub_expressions(self):
+        self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
+                          expression=ALARM_DEF_123_FIELDS['expression']
+                          .replace(' 10', ' 10 and MAX(cpu.idle_perc) < 10'))
+
+    def run_patch_test(self, name=None, expression=None, description=None, actions_enabled=None,
+                       alarm_actions=None, ok_actions=None, undetermined_actions=None,
+                       match_by=None, severity=None):
+        if expression:
+            sub_expr_list = (alarm_expr_parser.AlarmExprParser(expression).sub_expr_list)
+        else:
+            sub_expr_list = None
+        updates = self.repo.update_or_patch_alarm_definition(TENANT_ID, '123',
+                                                             name, expression,
+                                                             sub_expr_list, actions_enabled,
+                                                             description, alarm_actions,
+                                                             ok_actions, undetermined_actions,
+                                                             match_by, severity,
+                                                             patch=True)
+
+        alarm_def_row = (ALARM_DEF_123_FIELDS['id'],
+                         name if name else ALARM_DEF_123_FIELDS['name'],
+                         description if description else ALARM_DEF_123_FIELDS['description'],
+                         expression if expression else ALARM_DEF_123_FIELDS['expression'],
+                         ALARM_DEF_123_FIELDS['match_by'],  # match-by can't change
+                         severity if severity else ALARM_DEF_123_FIELDS['severity'],
+                         actions_enabled if actions_enabled else ALARM_DEF_123_FIELDS['actions_enabled'],
+                         u','.join(alarm_actions) if alarm_actions else ALARM_DEF_123_FIELDS['alarm_actions'],
+                         u','.join(ok_actions) if ok_actions else ALARM_DEF_123_FIELDS['ok_actions'],
+                         (u','.join(undetermined_actions) if undetermined_actions else
+                          ALARM_DEF_123_FIELDS['undetermined_actions']))
+
+        sad = self.default_sads[0]
+        if expression and ALARM_DEF_123_FIELDS['expression'] != expression:
+            sub_expr = sub_expr_list[0]
+            sub_alarm_def = sub_alarm_definition.SubAlarmDefinition(
+                row={'id': '',
+                     'alarm_definition_id': sad['alarm_definition_id'],
+                     'function': sub_expr.normalized_func,
+                     'metric_name': sub_expr.metric_name,
+                     'dimensions': u'device=1,image_id=888,flavor_id=777,metric_name=cpu',
+                     'operator': sub_expr.normalized_operator,
+                     'threshold': sub_expr.threshold,
+                     'period': sub_expr.period,
+                     'is_deterministic': sub_expr.deterministic,
+                     'periods': sub_expr.periods})
+            expected_sub_alarm_maps = {'changed': {u'111': sub_alarm_def}, 'new': {}, 'old': {}, 'unchanged': {}}
+        else:
+            sub_alarm_def = sub_alarm_definition.SubAlarmDefinition(
+                row={'id': sad['id'],
+                     'alarm_definition_id': sad['alarm_definition_id'],
+                     'function': sad['function'],
+                     'metric_name': sad['metric_name'],
+                     'dimensions': u'device=1,image_id=888,flavor_id=777,metric_name=cpu',
+                     'operator': sad['operator'],
+                     'threshold': sad['threshold'],
+                     'period': sad['period'],
+                     'is_deterministic': sad['is_deterministic'],
+                     'periods': sad['periods']})
+            expected_sub_alarm_maps = {'changed': {}, 'new': {}, 'old': {}, 'unchanged': {u'111': sub_alarm_def}}
+        self.assertEqual((alarm_def_row, expected_sub_alarm_maps), updates)
