@@ -1,4 +1,4 @@
-# (C) Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -297,18 +297,17 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                 """
             sub_select_parms = []
             i = 0
-            for metric_dimension in query_parms['metric_dimensions']:
-                parsed_dimension = metric_dimension.split(':')
-                if len(parsed_dimension) == 1:
+            for metric_dimension in query_parms['metric_dimensions'].items():
+                if not metric_dimension[1]:
                     values = None
                     value_sql = ""
-                elif '|' in parsed_dimension[1]:
-                    values = parsed_dimension[1].encode('utf8').split('|')
+                elif '|' in metric_dimension[1]:
+                    values = metric_dimension[1].encode('utf8').split('|')
                     value_sql = " and ("
                     value_sql += " or ".join(["value = %s" for j in xrange(len(values))])
                     value_sql += ') '
                 else:
-                    values = [parsed_dimension[1]]
+                    values = [metric_dimension[1]]
                     value_sql = " and value = %s "
                 sub_select_clause += """
                     inner join (select distinct dimension_set_id
@@ -317,8 +316,8 @@ class AlarmsRepository(mysql_repository.MySQLRepository,
                     on md{}.dimension_set_id = mdd.metric_dimension_set_id
                     """.format(value_sql, i, i)
                 i += 1
-                sub_select_parms.append(parsed_dimension[0].encode('utf8'))
-                if len(parsed_dimension) > 1 and values:
+                sub_select_parms.append(metric_dimension[0].encode('utf8'))
+                if len(metric_dimension) > 1 and values:
                     sub_select_parms.extend(values)
 
             sub_select_clause += ")"

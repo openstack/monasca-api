@@ -14,45 +14,13 @@
 
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
-import json
 import re
-
-invalid_chars = "<>={}(),\"\\\\|;&"
-restricted_chars = re.compile('[' + invalid_chars + ']')
 
 VALID_ALARM_STATES = ["ALARM", "OK", "UNDETERMINED"]
 
 VALID_ALARM_DEFINITION_SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
-VALUE_META_MAX_NUMBER = 16
-
-VALUE_META_MAX_LENGTH = 2048
-
-VALUE_META_NAME_MAX_LENGTH = 255
-
 EMAIL_PATTERN = '^.+@.+$'
-
-
-def metric_name(name):
-    assert isinstance(name, (str, unicode)), "Metric name must be a string"
-    assert len(name) <= 255, "Metric name must be 255 characters or less"
-    assert len(name) >= 1, "Metric name cannot be empty"
-    assert not restricted_chars.search(name), "Invalid characters in metric name " + name
-
-
-def dimension_key(dkey):
-    assert isinstance(dkey, (str, unicode)), "Dimension key must be a string"
-    assert len(dkey) <= 255, "Dimension key must be 255 characters or less"
-    assert len(dkey) >= 1, "Dimension key cannot be empty"
-    assert dkey[0] != '_', "Dimension key cannot start with underscore (_)"
-    assert not restricted_chars.search(dkey), "Invalid characters in dimension name " + dkey
-
-
-def dimension_value(value):
-    assert isinstance(value, (str, unicode)), "Dimension value must be a string"
-    assert len(value) <= 255, "Dimension value must be 255 characters or less"
-    assert len(value) >= 1, "Dimension value cannot be empty"
-    assert not restricted_chars.search(value), "Invalid characters in dimension value " + value
 
 
 def validate_alarm_state(state):
@@ -90,29 +58,6 @@ def validate_sort_by(sort_by_list, allowed_sort_by):
             raise HTTPUnprocessableEntityError("Unprocessable Entity",
                                                "sort_by value {} must be 'asc' or 'desc'".format(
                                                    sort_by_values[1]))
-
-
-def validate_value_meta(value_meta):
-    if not value_meta:
-        return
-
-    value_meta_string = json.dumps(value_meta)
-    # entries
-    assert len(value_meta) <= VALUE_META_MAX_NUMBER, "ValueMeta entries must be {} or less".format(
-        VALUE_META_MAX_NUMBER)
-    # total length
-    assert len(value_meta_string) <= VALUE_META_MAX_LENGTH, \
-        "ValueMeta name value combinations must be {} characters or less".format(
-        VALUE_META_MAX_LENGTH)
-    for name in value_meta:
-        # name
-        assert isinstance(name, (str, unicode)), "ValueMeta name must be a string"
-        assert len(name) <= VALUE_META_NAME_MAX_LENGTH, "ValueMeta name must be {} characters or less".format(
-            VALUE_META_NAME_MAX_LENGTH)
-        assert len(name) >= 1, "ValueMeta name cannot be empty"
-        # value
-        assert isinstance(value_meta[name], (str, unicode)), "ValueMeta value must be a string"
-        assert len(value_meta[name]) >= 1, "ValueMeta value cannot be empty"
 
 
 def validate_email_address(email):

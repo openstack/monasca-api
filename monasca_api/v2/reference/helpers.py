@@ -1,5 +1,5 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# (C) Copyright 2014,2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014,2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -17,6 +17,7 @@ import datetime
 import json
 
 import falcon
+from monasca_common.validation import metrics as metric_validation
 from oslo_log import log
 from oslo_utils import timeutils
 import simplejson
@@ -24,9 +25,6 @@ import six
 import six.moves.urllib.parse as urlparse
 
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
-from monasca_api.v2.common.schemas import dimensions_schema
-from monasca_api.v2.common.schemas import exceptions as schemas_exceptions
-from monasca_api.v2.common.schemas import metric_name_schema
 
 LOG = log.getLogger(__name__)
 
@@ -141,37 +139,38 @@ def get_query_name(req, name_required=False):
         raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
 
-def get_query_dimensions(req):
+def get_query_dimensions(req, param_key='dimensions'):
     """Gets and parses the query param dimensions.
 
     :param req: HTTP request object.
+    :param dimensions_param: param name for dimensions, default='dimensions'
     :return: Returns the dimensions as a JSON object
     :raises falcon.HTTPBadRequest: If dimensions are malformed.
     """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         dimensions = {}
-        if 'dimensions' in params:
-            dimensions_param = params['dimensions']
+        if param_key not in params:
+            return dimensions
 
-            if isinstance(dimensions_param, basestring):
-                dimensions_str_array = dimensions_param.split(',')
-            elif isinstance(dimensions_param, list):
-                dimensions_str_array = []
-                for sublist in dimensions_param:
-                    dimensions_str_array.extend(sublist.split(","))
+        dimensions_param = params[param_key]
+        if isinstance(dimensions_param, basestring):
+            dimensions_str_array = dimensions_param.split(',')
+        elif isinstance(dimensions_param, list):
+            dimensions_str_array = []
+            for sublist in dimensions_param:
+                dimensions_str_array.extend(sublist.split(","))
+        else:
+            raise Exception("Error parsing dimensions, unknown format")
+
+        for dimension in dimensions_str_array:
+            dimension_name_value = dimension.split(':')
+            if len(dimension_name_value) == 2:
+                dimensions[dimension_name_value[0]] = dimension_name_value[1]
+            elif len(dimension_name_value) == 1:
+                dimensions[dimension_name_value[0]] = ""
             else:
-                raise Exception("Error parsing dimensions, unknown format")
-
-            for dimension in dimensions_str_array:
-                dimension_name_value = dimension.split(':')
-                if len(dimension_name_value) == 2:
-                    dimensions[dimension_name_value[0]] = dimension_name_value[
-                        1]
-                elif len(dimension_name_value) == 1:
-                    dimensions[dimension_name_value[0]] = ""
-                else:
-                    raise Exception('Dimensions are malformed')
+                raise Exception('Dimensions are malformed')
         return dimensions
     except Exception as ex:
         LOG.debug(ex)
@@ -284,9 +283,11 @@ def validate_query_name(name):
     :param name: Query param name.
     :raises falcon.HTTPBadRequest: If name is not valid.
     """
+    if not name:
+        return
     try:
-        metric_name_schema.validate(name)
-    except schemas_exceptions.ValidationException as ex:
+        metric_validation.validate_name(name)
+    except Exception as ex:
         LOG.debug(ex)
         raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
@@ -298,8 +299,19 @@ def validate_query_dimensions(dimensions):
     :raises falcon.HTTPBadRequest: If dimensions are not valid.
     """
     try:
-        dimensions_schema.validate(dimensions)
-    except schemas_exceptions.ValidationException as ex:
+
+        for key, value in dimensions.items():
+            if key.startswith('_'):
+                raise Exception("Dimension key {} may not start with '_'".format(key))
+            metric_validation.validate_dimension_key(key)
+            if value:
+                if '|' in value:
+                    values = value.split('|')
+                    for v in values:
+                        metric_validation.validate_dimension_value(key, v)
+                else:
+                    metric_validation.validate_dimension_value(key, value)
+    except Exception as ex:
         LOG.debug(ex)
         raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
 
