@@ -13,6 +13,7 @@
 # under the License.
 
 import time
+import urllib
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
@@ -227,7 +228,13 @@ class TestAlarmsCount(base.BaseMonascaTest):
             if alarm['state'] is 'ALARM' and alarm['severity'] is 'LOW':
                 alarm_low_count += 1
 
-        resp, response_body = self.monasca_client.count_alarms("?group_by=state,severity")
+        # Using urlencode mimics the CLI behavior. Without the urlencode, falcon
+        # treats group_by as a list, with the urlencode it treats group_by as
+        # a string. The API needs to handle both.
+        # test_with_all_group_by_params tests multiple group_by without
+        # urlencode
+        query_params = urllib.urlencode([('group_by', 'state,severity')])
+        resp, response_body = self.monasca_client.count_alarms("?" + query_params)
         self._verify_counts_format(response_body, group_by=['state', 'severity'])
 
     def run_count_test(self, query_string):

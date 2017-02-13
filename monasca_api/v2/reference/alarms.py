@@ -380,7 +380,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
         if 'group_by' in query_parms:
             if not isinstance(query_parms['group_by'], list):
-                query_parms['group_by'] = [query_parms['group_by']]
+                query_parms['group_by'] = query_parms['group_by'].split(',')
             self._validate_group_by(query_parms['group_by'])
 
         query_parms['metric_dimensions'] = helpers.get_query_dimensions(req, 'metric_dimensions')
