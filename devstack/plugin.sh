@@ -754,12 +754,6 @@ function download_monasca_libraries {
 
     (cd "${MONASCA_COMMON_DIR}"/java ; sudo mvn clean install -DskipTests)
 
-    (cd "${MONASCA_COMMON_DIR}"; python setup.py sdist)
-    MONASCA_COMMON_SRC_DIST=$(ls -td "$MONASCA_COMMON_DIR"/dist/monasca-common*.tar.gz | head -1)
-
-    (cd "${MONASCA_STATSD_DIR}"; python setup.py sdist)
-    MONASCA_STATSD_SRC_DIST=$(ls -td "$MONASCA_STATSD_DIR"/dist/monasca-statsd*.tar.gz | head -1)
-
     GIT_DEPTH=$GIT_DEPTH_OLD
 }
 
@@ -867,9 +861,9 @@ function install_monasca_api_python {
 
     PIP_VIRTUAL_ENV=/opt/monasca-api
 
-    (cd /opt/monasca-api ; sudo ./bin/pip install $MONASCA_COMMON_SRC_DIST)
+    setup_install $MONASCA_COMMON_DIR
 
-    (cd /opt/monasca-api ; sudo ./bin/pip install $MONASCA_STATSD_SRC_DIST)
+    setup_install $MONASCA_STATSD_DIR
 
     pip_install gunicorn
 
@@ -887,10 +881,7 @@ function install_monasca_api_python {
       pip_install PyMySQL
     fi
 
-    (cd "${MONASCA_API_DIR}" ; sudo python setup.py sdist)
-    MONASCA_API_SRC_DIST=$(ls -td "${MONASCA_API_DIR}"/dist/monasca-api-*.tar.gz)
-
-    (cd /opt/monasca-api ; ./bin/pip install $MONASCA_API_SRC_DIST)
+    setup_install $MONASCA_API_DIR
 
     unset PIP_VIRTUAL_ENV
 
@@ -1099,9 +1090,6 @@ function install_monasca_persister_python {
     echo_summary "Install Monasca monasca_persister_python"
 
     git_clone $MONASCA_PERSISTER_REPO $MONASCA_PERSISTER_DIR $MONASCA_PERSISTER_BRANCH
-    (cd "${MONASCA_PERSISTER_DIR}"; sudo python setup.py sdist)
-
-    MONASCA_PERSISTER_SRC_DIST=$(ls -td "${MONASCA_PERSISTER_DIR}"/dist/monasca-persister-*.tar.gz | head -1)
 
     sudo mkdir -p /opt/monasca-persister || true
 
@@ -1111,9 +1099,9 @@ function install_monasca_persister_python {
 
     PIP_VIRTUAL_ENV=/opt/monasca-persister
 
-    (cd /opt/monasca-persister ; sudo ./bin/pip install $MONASCA_COMMON_SRC_DIST)
+    setup_install $MONASCA_COMMON_DIR
 
-    (cd /opt/monasca-persister ; ./bin/pip install $MONASCA_PERSISTER_SRC_DIST)
+    setup_install $MONASCA_PERSISTER_DIR
 
     if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
 
@@ -1254,9 +1242,6 @@ function install_monasca_notification {
     apt_get -y install build-essential
 
     git_clone $MONASCA_NOTIFICATION_REPO $MONASCA_NOTIFICATION_DIR $MONASCA_NOTIFICATION_BRANCH
-    (cd "${MONASCA_NOTIFICATION_DIR}" ; sudo python setup.py sdist)
-
-    MONASCA_NOTIFICATION_SRC_DIST=$(ls -td "${MONASCA_NOTIFICATION_DIR}"/dist/monasca-notification-*.tar.gz | head -1)
 
     PIP_VIRTUAL_ENV=/opt/monasca
 
@@ -1273,11 +1258,11 @@ function install_monasca_notification {
       pip_install sqlalchemy
     fi
 
-    (cd /opt/monasca ; sudo ./bin/pip install $MONASCA_COMMON_SRC_DIST)
+    setup_install $MONASCA_COMMON_DIR
 
-    (cd /opt/monasca ; sudo ./bin/pip install $MONASCA_STATSD_SRC_DIST)
+    setup_install $MONASCA_STATSD_DIR
 
-    (cd /opt/monasca ; ./bin/pip install $MONASCA_NOTIFICATION_SRC_DIST)
+    setup_install $MONASCA_NOTIFICATION_DIR
 
     unset PIP_VIRTUAL_ENV
 
@@ -1557,9 +1542,9 @@ function install_monasca_keystone_client {
 
     PIP_VIRTUAL_ENV=/opt/monasca
 
-    (cd /opt/monasca ; sudo ./bin/pip install python-keystoneclient)
+    pip_install python-keystoneclient
 
-    (cd /opt/monasca ; sudo ./bin/pip install keystoneauth1)
+    pip_install keystoneauth1
 
     unset PIP_VIRTUAL_ENV
 
@@ -1710,7 +1695,7 @@ function install_monasca_horizon_ui {
     git_clone $MONASCA_UI_REPO $MONASCA_UI_DIR $MONASCA_UI_BRANCH
     (cd "${MONASCA_UI_DIR}" ; sudo python setup.py sdist)
 
-    sudo pip install python-monascaclient
+    pip_install python-monascaclient
 
     sudo ln -sf "${MONASCA_UI_DIR}"/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
 
