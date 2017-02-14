@@ -127,7 +127,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
             if 'sort_by' in query_parms:
                 if isinstance(query_parms['sort_by'], basestring):
-                    query_parms['sort_by'] = [query_parms['sort_by']]
+                    query_parms['sort_by'] = query_parms['sort_by'].split(',')
 
                 allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'alarm_definition_name',
                                    'state', 'severity', 'lifecycle_state', 'link',

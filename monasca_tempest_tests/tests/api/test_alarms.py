@@ -13,6 +13,7 @@
 # under the License.
 
 import time
+import urllib
 
 import six.moves.urllib.parse as urlparse
 
@@ -515,6 +516,27 @@ class TestAlarms(base.BaseMonascaTest):
                 "Created_timestamps are not in sorted order {} came before {}".format(last_timestamp,
                                                                                       element['created_timestamp'])
             last_timestamp = element['created_timestamp']
+
+        # Set link and lifecycle_state to sort in opposite order
+        self.monasca_client.patch_alarm(elements[0]['id'], lifecycle_state='3', link='2')
+        self.monasca_client.patch_alarm(elements[1]['id'], lifecycle_state='2', link='2')
+        self.monasca_client.patch_alarm(elements[2]['id'], lifecycle_state='4', link='1')
+        for iter in range(2):
+            sort_by_params = 'link,lifecycle_state'
+            if iter == 1:
+                query_parms = urllib.urlencode([('sort_by', sort_by_params)])
+            else:
+                query_parms = 'sort_by=' + sort_by_params
+            resp, response_body = self.monasca_client.list_alarms(
+                '?metric_name=' + expected_metric['name'] + '&' + query_parms)
+            elements = response_body['elements']
+            self.assertEqual(3, len(elements))
+            self.assertEqual('1', elements[0]['link'])
+            self.assertEqual('4', elements[0]['lifecycle_state'])
+            self.assertEqual('2', elements[1]['link'])
+            self.assertEqual('2', elements[1]['lifecycle_state'])
+            self.assertEqual('2', elements[2]['link'])
+            self.assertEqual('3', elements[2]['lifecycle_state'])
 
         allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'alarm_definition_name',
                            'state', 'severity', 'lifecycle_state', 'link',
