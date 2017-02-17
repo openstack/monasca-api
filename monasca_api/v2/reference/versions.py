@@ -15,12 +15,10 @@
 import json
 
 import falcon
-from oslo_log import log
 
 from monasca_api.api import versions_api
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
-LOG = log.getLogger(__name__)
 VERSIONS = {
     'v2.0': {
         'id': 'v2.0',
