@@ -110,7 +110,7 @@ sporadicMetricNamespaces:
 database:
   driverClass: %MONASCA_THRESH_DATABASE_ENGINE%
   url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?useSSL=true"
-  user: "%MONASCA_THRESH_DATABASE_USER%"
+  user: "%DATABASE_USER%"
   password: "%DATABASE_PASSWORD%"
   properties:
       ssl: false

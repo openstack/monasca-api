@@ -32,18 +32,18 @@ database:
 # repo_driver: monasca_notification.common.repositories.mysql.mysql_repo:MysqlRepo
   repo_driver: %MONASCA_NOTIFICATION_DATABASE_DRIVER%
   orm:
-    url: %MONASCA_NOTIFICATION_DATABASE_ENGINE%://%MONASCA_NOTIFICATION_DATABASE_USER%:%DATABASE_PASSWORD%@%DATABASE_HOST%:%DATABASE_PORT%/mon
+    url: %MONASCA_NOTIFICATION_DATABASE_ENGINE%://%DATABASE_USER%:%DATABASE_PASSWORD%@%DATABASE_HOST%:%DATABASE_PORT%/mon
 
 mysql:
     host: %DATABASE_HOST%
-    user: %MONASCA_NOTIFICATION_DATABASE_USER%
+    user: %DATABASE_USER%
     passwd: %DATABASE_PASSWORD%
     db: mon
 
 postgresql:
   host: %DATABASE_HOST%
   port: %DATABASE_PORT%
-  user: %MONASCA_NOTIFICATION_DATABASE_USER%
+  user: %DATABASE_USER%
   password: %DATABASE_PASSWORD%
   database: mon
 

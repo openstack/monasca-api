@@ -43,7 +43,7 @@ kafka:
 mysql:
   driverClass: com.mysql.jdbc.Driver
   url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
-  user: "%MONASCA_API_DATABASE_USER%"
+  user: "%DATABASE_USER%"
   password: "%DATABASE_PASSWORD%"
   maxWaitForConnection: 1s
   validationQuery: "/* MyService Health Check */ SELECT 1"
@@ -64,7 +64,7 @@ hibernate:
   serverName: %DATABASE_HOST%
   portNumber: %DATABASE_PORT%
   databaseName: mon
-  user: %MONASCA_API_DATABASE_USER%
+  user: %DATABASE_USER%
   password: %DATABASE_PASSWORD%
   initialConnections: 25
   maxConnections: 100
