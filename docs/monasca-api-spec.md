@@ -1321,7 +1321,7 @@ None.
 * offset (timestamp, optional)
 * limit (integer, optional)
 * merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of measurements.
-* group_by (string, optional) - list of columns to group the metrics to be returned. For now, the only valid value is '*'.
+* group_by (string, optional) - list of columns to group the metrics to be returned.
 
 #### Request Body
 None.
@@ -1503,7 +1503,7 @@ None.
 * offset (timestamp, optional)
 * limit (integer, optional)
 * merge_metrics (boolean, optional) - allow multiple metrics to be combined into a single list of statistics.
-* group_by (string, optional) - list of columns to group the metrics to be returned. For now, the only valid value is '*'.
+* group_by (string, optional) - list of columns to group the metrics to be returned.
 
 #### Request Body
 None.
