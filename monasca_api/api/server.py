@@ -1,5 +1,6 @@
 # Copyright 2014 IBM Corp
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -60,7 +61,10 @@ cfg.CONF.register_opts(dispatcher_opts, dispatcher_group)
 LOG = log.getLogger(__name__)
 
 
-def launch(conf, config_file="/etc/monasca/api-config.conf"):
+def launch(conf):
+    # use default, but try to access one passed from conf first
+    config_file = conf.get('config_file', "/etc/monasca/api-config.conf")
+
     log.register_options(cfg.CONF)
     log.set_defaults()
     cfg.CONF(args=[],
@@ -130,9 +134,33 @@ def launch(conf, config_file="/etc/monasca/api-config.conf"):
     return app
 
 
+def get_wsgi_app(config_base_path=None, **kwargs):
+
+    # allow to override names of the configuration files
+    config_file = kwargs.get('config_file', 'api-config.conf')
+    paste_file = kwargs.get('paste_file', 'api-config.ini')
+
+    if config_base_path is None:
+        # allow monasca-api to be run in dev mode from __main__
+        config_base_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), '../../etc')
+
+    config_file = os.path.join(config_base_path, config_file)
+    global_conf = {'config_file': config_file}
+
+    LOG.debug('Initializing WSGI application using configuration from %s',
+              config_base_path)
+
+    return (
+        paste.deploy.loadapp(
+            'config:%s' % paste_file,
+            relative_to=config_base_path,
+            global_conf=global_conf
+        )
+    )
+
+
 if __name__ == '__main__':
-    wsgi_app = (
-        paste.deploy.loadapp('config:etc/api-config.ini',
-                             relative_to=os.getcwd()))
+    wsgi_app = get_wsgi_app()
     httpd = simple_server.make_server('127.0.0.1', 8070, wsgi_app)
     httpd.serve_forever()

@@ -103,6 +103,7 @@ located::
 
     /etc/monasca/api-config.ini
     /etc/monasca/api-config.conf
+    /etc/monasca/api-logging.conf
 
 Once the configurations are modified to match your environment, you can start
 up the server by following the following instructions.
@@ -123,8 +124,51 @@ from the root directory of this project
 To run all the unit test cases, run the following command from the root
 directory of this project
 
-    $ tox -e py27   (or -e py26, -e py33)
+    $ tox -e py27
 
+### Start the Server -- for Apache
+
+To start the server using Apache: create a modwsgi file,
+create a modwsgi configuration file, and enable the wsgi module
+in Apache.
+
+The modwsgi configuration file may look something like this, and the site will need to be enabled:
+
+```apache
+    Listen 8070
+
+    <VirtualHost *:8070>
+
+        WSGIDaemonProcess monasca-api processes=4 threads=1 socket-timeout=120 user=mon-api group=monasca python-path=/usr/local/lib/python2.7/site-packages
+        WSGIProcessGroup monasca-api
+        WSGIApplicationGroup monasca-api
+        WSGIScriptAlias / /usr/local/lib/python2.7/site-packages/monasca_log_api/api/wsgi/monasca_api.py
+
+        WSGIPassAuthorization On
+
+        LogLevel info
+        ErrorLog /var/log/monasca-api/wsgi.log
+        CustomLog /var/log/monasca-api/wsgi-access.log combined
+
+        <Directory /usr/local/lib/python2.7/site-packages/monasca_log_api>
+          Require all granted
+        </Directory>
+
+        SetEnv no-gzip 1
+
+    </VirtualHost>
+
+```
+
+The wsgi file may look something like this:
+
+```py
+
+    from monasca_log_api.api import server
+
+    application = server.get_wsgi_app(config_base_path='/etc/monasca')
+
+```
 
 # License
 
