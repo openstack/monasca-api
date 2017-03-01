@@ -17,7 +17,6 @@ import unittest
 
 from mock import Mock
 
-from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 import monasca_api.v2.reference.helpers as helpers
 
 
@@ -92,12 +91,23 @@ class TestGetQueryDimension(unittest.TestCase):
         result = helpers.get_query_dimensions(req)
         self.assertEqual(result, {"Dimension_multi_value": "one|two|three"})
 
-    def test_malformed_dimension_extra_colons(self):
+    def test_dimension_with_multi_colons(self):
         req = Mock()
-        req.query_string = ("foo=bar&dimensions=Dimension:Value1:Value2")
+        req.query_string = ("foo=bar&dimensions=url:http://192.168.10.4:5601,"
+                            "hostname:monasca,component:kibana,service:monitoring")
 
-        self.assertRaises(
-            HTTPUnprocessableEntityError, helpers.get_query_dimensions, req)
+        result = helpers.get_query_dimensions(req)
+        self.assertEqual(result, {"url": "http://192.168.10.4:5601",
+                                  "hostname": "monasca",
+                                  "component": "kibana",
+                                  "service": "monitoring"})
+
+    def test_empty_dimension(self):
+        req = Mock()
+        req.query_string = ("foo=bar&dimensions=")
+
+        result = helpers.get_query_dimensions(req)
+        self.assertEqual(result, {})
 
 
 class TestGetOldQueryParams(unittest.TestCase):
