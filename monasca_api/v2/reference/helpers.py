@@ -164,13 +164,11 @@ def get_query_dimensions(req, param_key='dimensions'):
             raise Exception("Error parsing dimensions, unknown format")
 
         for dimension in dimensions_str_array:
-            dimension_name_value = dimension.split(':')
+            dimension_name_value = dimension.split(':', 1)
             if len(dimension_name_value) == 2:
                 dimensions[dimension_name_value[0]] = dimension_name_value[1]
             elif len(dimension_name_value) == 1:
                 dimensions[dimension_name_value[0]] = ""
-            else:
-                raise Exception('Dimensions are malformed')
         return dimensions
     except Exception as ex:
         LOG.debug(ex)
