@@ -17,7 +17,7 @@ import time
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest import test
 from urllib import urlencode
 

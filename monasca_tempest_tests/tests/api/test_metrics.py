@@ -18,7 +18,7 @@ import time
 
 from six.moves import range as xrange
 
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions
 from tempest import test
 
