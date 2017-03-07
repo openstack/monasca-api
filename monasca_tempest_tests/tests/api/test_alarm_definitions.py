@@ -15,7 +15,7 @@
 import time
 
 import six.moves.urllib.parse as urlparse
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions
 from tempest import test
 

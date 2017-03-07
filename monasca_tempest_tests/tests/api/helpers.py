@@ -15,8 +15,7 @@ import datetime
 import time
 
 import six.moves.urllib.parse as urlparse
-
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 
 NUM_ALARM_DEFINITIONS = 2
 NUM_MEASUREMENTS = 100
