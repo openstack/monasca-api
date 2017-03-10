@@ -14,7 +14,7 @@
 
 import time
 
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest import test
 
 from monasca_tempest_tests.tests.api import base
