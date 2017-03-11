@@ -16,6 +16,7 @@
 
 from oslo_config import cfg
 from oslo_config import types
+from oslo_db import options
 
 
 """Configurations for reference implementation
@@ -88,6 +89,7 @@ repositories_group = cfg.OptGroup(name='repositories', title='repositories')
 cfg.CONF.register_group(repositories_group)
 cfg.CONF.register_opts(repositories_opts, repositories_group)
 
+
 kafka_opts = [cfg.StrOpt('uri', help='Address to kafka server. For example: '
                                      'uri=192.168.1.191:9092'),
               cfg.StrOpt('metrics_topic', default='metrics',
@@ -140,15 +142,33 @@ cassandra_group = cfg.OptGroup(name='cassandra', title='cassandra')
 cfg.CONF.register_group(cassandra_group)
 cfg.CONF.register_opts(cassandra_opts, cassandra_group)
 
-sql_opts = [cfg.StrOpt('url', default=None),
-            cfg.StrOpt('host', default=None),
-            cfg.StrOpt('username', default=None),
-            cfg.StrOpt('password', default=None, secret=True),
-            cfg.StrOpt('drivername', default=None),
-            cfg.IntOpt('port', default=None),
-            cfg.StrOpt('database', default=None),
-            cfg.StrOpt('query', default=None)]
-sql_group = cfg.OptGroup(name='database', title='sql')
 
-cfg.CONF.register_group(sql_group)
-cfg.CONF.register_opts(sql_opts, sql_group)
+def register_database_opts():
+    # Update the default QueuePool parameters. These can be tweaked by the
+    # conf variables - max_pool_size, max_overflow and pool_timeout
+
+    options.set_defaults(cfg.CONF, connection='sqlite://',
+                         sqlite_db='', max_pool_size=10,
+                         max_overflow=20, pool_timeout=10)
+
+    # register old value
+    url_opt = cfg.StrOpt(name='url',
+                         default=cfg.CONF.database.connection,
+                         required=False,
+                         deprecated_for_removal=True,
+                         deprecated_since='1.6.0',
+                         deprecated_reason=(
+                             'Please use database.connection option,'
+                             'database.url is scheduled for removal '
+                             'in Pike release')
+                         )
+
+    cfg.CONF.register_opts([url_opt], group='database')
+    cfg.CONF.set_override(name='connection', group='database',
+                          override=cfg.CONF.database.url)
+
+register_database_opts()
+
+
+# support URL as an option till Pike is released
+# TODO(trebskit) remove in Pike release
