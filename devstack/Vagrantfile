@@ -20,7 +20,7 @@ Vagrant.configure(2) do |config|
       config.proxy.https = ENV["https_proxy"]
     end
     if ENV["no_proxy"]
-      config.proxy.no_proxy = ENV["no_proxy"] + ',192.168.10.6,10.0.2.15'
+      config.proxy.no_proxy = ENV["no_proxy"] + ',192.168.10.6,10.0.2.15,127.0.0.1'
     end
 
   end
