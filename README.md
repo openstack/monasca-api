@@ -142,7 +142,7 @@ The modwsgi configuration file may look something like this, and the site will n
         WSGIDaemonProcess monasca-api processes=4 threads=1 socket-timeout=120 user=mon-api group=monasca python-path=/usr/local/lib/python2.7/site-packages
         WSGIProcessGroup monasca-api
         WSGIApplicationGroup monasca-api
-        WSGIScriptAlias / /usr/local/lib/python2.7/site-packages/monasca_log_api/api/wsgi/monasca_api.py
+        WSGIScriptAlias / /usr/local/lib/python2.7/site-packages/monasca_api/api/wsgi/monasca_api.py
 
         WSGIPassAuthorization On
 
@@ -150,7 +150,7 @@ The modwsgi configuration file may look something like this, and the site will n
         ErrorLog /var/log/monasca-api/wsgi.log
         CustomLog /var/log/monasca-api/wsgi-access.log combined
 
-        <Directory /usr/local/lib/python2.7/site-packages/monasca_log_api>
+        <Directory /usr/local/lib/python2.7/site-packages/monasca_api>
           Require all granted
         </Directory>
 
@@ -164,7 +164,7 @@ The wsgi file may look something like this:
 
 ```py
 
-    from monasca_log_api.api import server
+    from monasca_api.api import server
 
     application = server.get_wsgi_app(config_base_path='/etc/monasca')
 
