@@ -71,6 +71,36 @@ Vagrant.configure(2) do |config|
     fi
 
     git clone https://git.openstack.org/openstack-dev/devstack -b master --depth 1
+
+    # If using vagrant-cachier, restore cached downloads of 3rd-party dependencies
+    if [ -d "/tmp/vagrant-cache" ]; then
+        if [ -d "/tmp/vagrant-cache/downloads" ]; then
+          echo "Restoring downloads"
+          cp /tmp/vagrant-cache/downloads/* devstack/files
+        fi
+        if [ -f "/tmp/vagrant-cache/pip-cache.tar.gz" ]; then
+          echo "Restoring ~/.cache"
+          tar xzf /tmp/vagrant-cache/pip-cache.tar.gz -C ~
+        fi
+        if [ -f "/tmp/vagrant-cache/nvm-cache.tar.gz" ]; then
+          echo "Restoring ~/.nvm/.cache"
+          mkdir -p ~/.nvm
+          tar xzf /tmp/vagrant-cache/nvm-cache.tar.gz -C ~/.nvm
+        fi
+        if [ -f "/tmp/vagrant-cache/npm-pkgs.tar.gz" ]; then
+          echo "Restoring ~/.npm"
+          tar xzf /tmp/vagrant-cache/npm-pkgs.tar.gz -C ~
+        fi
+        if [ -f "/tmp/vagrant-cache/root-pip-cache.tar.gz" ]; then
+          echo "Restoring ~root/.cache"
+          sudo tar xzf /tmp/vagrant-cache/root-pip-cache.tar.gz -C ~root
+        fi
+        if [ -f "/tmp/vagrant-cache/root-m2-cache.tar.gz" ]; then
+          echo "Restoring ~root/.m2"
+          sudo tar xzf /tmp/vagrant-cache/root-m2-cache.tar.gz -C ~root
+        fi
+    fi
+
     cd devstack
     echo '[[local|localrc]]
 
@@ -126,6 +156,16 @@ enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
 
 ' > local.conf
     ./stack.sh
+    # Cache downloaded files for future runs
+    if [ -d "/tmp/vagrant-cache" ]; then
+        mkdir -p /tmp/vagrant-cache/downloads
+        cp files/*gz files/*.deb /tmp/vagrant-cache/downloads
+        tar czf /tmp/vagrant-cache/pip-cache.tar.gz -C ~ .cache
+        tar czf /tmp/vagrant-cache/nvm-cache.tar.gz -C ~/.nvm .cache
+        tar czf /tmp/vagrant-cache/npm-pkgs.tar.gz -C ~ .npm
+        sudo tar czf /tmp/vagrant-cache/root-pip-cache.tar.gz -C ~root .cache
+        sudo tar czf /tmp/vagrant-cache/root-m2-cache.tar.gz -C ~root .m2
+    fi
   SHELL
 
 end
