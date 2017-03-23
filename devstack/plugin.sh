@@ -87,6 +87,7 @@ function pre_install_monasca {
         install_storm
     fi
 
+    install_monasca_virtual_env
     install_monasca_$MONASCA_METRICS_DB
 }
 
@@ -94,7 +95,6 @@ function install_monasca {
 
     echo_summary "Installing Monasca"
 
-    install_monasca_virtual_env
     download_monasca_libraries
 
     if is_service_enabled monasca-persister; then
@@ -465,14 +465,6 @@ function install_monasca_vertica {
     # Bring back Ubuntu version
     sudo mv /etc/debian_version.org /etc/debian_version
 
-    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_metrics.sql
-
-    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_alarms.sql
-
-    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/roles.sql
-
-    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/users.sql
-
     # Copy Vertica JDBC driver to /opt/monasca
     # sudo cp ${FILES}/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
     sudo cp /vagrant_home/vertica-jdbc-${VERTICA_VERSION}.jar /opt/monasca/vertica-jdbc-${VERTICA_VERSION}.jar
@@ -646,6 +638,13 @@ function install_schema_metric_database_influxdb {
     sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
     sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
     sudo $MONASCA_SCHEMA_DIR/influxdb_setup.py
+}
+
+function install_schema_metric_database_vertica {
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_metrics.sql
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_alarms.sql
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/roles.sql
+    /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/users.sql
 }
 
 function install_schema_kafka_topics {
