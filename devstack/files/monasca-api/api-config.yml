@@ -42,7 +42,7 @@ kafka:
 
 mysql:
   driverClass: com.mysql.jdbc.Driver
-  url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
+  url: "jdbc:mysql://%DATABASE_HOST%:%DATABASE_PORT%/mon?connectTimeout=5000&autoReconnect=true&useSSL=true&useLegacyDatetimeCode=false&serverTimezone=UTC&characterEncoding=utf8"
   user: "%DATABASE_USER%"
   password: "%DATABASE_PASSWORD%"
   maxWaitForConnection: 1s

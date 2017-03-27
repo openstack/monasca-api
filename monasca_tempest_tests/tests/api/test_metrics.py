@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,6 +18,7 @@
 import time
 
 from six.moves import range as xrange
+from six.moves import urllib_parse as urlparse
 
 from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions
@@ -28,14 +30,6 @@ from monasca_tempest_tests.tests.api import helpers
 
 
 class TestMetrics(base.BaseMonascaTest):
-
-    @classmethod
-    def resource_setup(cls):
-        super(TestMetrics, cls).resource_setup()
-
-    @classmethod
-    def resource_cleanup(cls):
-        super(TestMetrics, cls).resource_cleanup()
 
     @test.attr(type='gate')
     def test_create_metric(self):
@@ -66,6 +60,48 @@ class TestMetrics(base.BaseMonascaTest):
             elements = response_body['elements']
             for element in elements:
                 if str(element['name']) == name:
+                    self._verify_list_measurements_element(element, key, value)
+                    measurement = element['measurements'][0]
+                    self._verify_list_measurements_measurement(
+                        measurement, metric, value_meta_key, value_meta_value)
+                    return
+            time.sleep(constants.RETRY_WAIT_SECS)
+            if i == constants.MAX_RETRIES - 1:
+                error_msg = "Failed test_create_metric: " \
+                            "timeout on waiting for metrics: at least " \
+                            "one metric is needed. Current number of " \
+                            "metrics = 0"
+                self.fail(error_msg)
+
+    @test.attr(type='gate')
+    def test_create_metric_with_multibyte_character(self):
+        name = data_utils.rand_name('ｎａｍｅ').decode('utf8')
+        key = data_utils.rand_name('ｋｅｙ').decode('utf8')
+        value = data_utils.rand_name('ｖａｌｕｅ').decode('utf8')
+        timestamp = int(round(time.time() * 1000))
+        time_iso = helpers.timestamp_to_iso(timestamp)
+        end_timestamp = int(round((time.time() + 3600 * 24) * 1000))
+        end_time_iso = helpers.timestamp_to_iso(end_timestamp)
+        value_meta_key = data_utils.rand_name('value_meta_ｋｅｙ').decode('utf8')
+        value_meta_value = data_utils.rand_name('value_meta_ｖａｌｕｅ').decode('utf8')
+        metric = helpers.create_metric(name=name,
+                                       dimensions={key: value},
+                                       timestamp=timestamp,
+                                       value=1.23,
+                                       value_meta={
+                                           value_meta_key: value_meta_value
+                                       })
+        resp, response_body = self.monasca_client.create_metrics(metric)
+        self.assertEqual(204, resp.status)
+        query_param = '?name=' + urlparse.quote(name.encode('utf8')) + \
+                      '&start_time=' + time_iso + '&end_time=' + end_time_iso
+        for i in xrange(constants.MAX_RETRIES):
+            resp, response_body = self.monasca_client.\
+                list_measurements(query_param)
+            self.assertEqual(200, resp.status)
+            elements = response_body['elements']
+            for element in elements:
+                if element['name'] == name:
                     self._verify_list_measurements_element(element, key, value)
                     measurement = element['measurements'][0]
                     self._verify_list_measurements_measurement(
@@ -547,7 +583,10 @@ class TestMetrics(base.BaseMonascaTest):
                          set(['timestamp', 'value', 'value_meta']))
         self.assertTrue(str(element['id']) is not None)
         if test_key is not None and test_value is not None:
-            self.assertEqual(str(element['dimensions'][test_key]), test_value)
+            self.assertEqual(
+                element['dimensions'][test_key].encode('utf-8'),
+                test_value.encode('utf-8')
+            )
 
     def _verify_list_measurements_measurement(self, measurement,
                                               test_metric, test_vm_key,
@@ -570,7 +609,10 @@ class TestMetrics(base.BaseMonascaTest):
             self.fail(error_msg)
         self.assertEqual(measurement[1], test_metric['value'])
         if test_vm_key is not None and test_vm_value is not None:
-            self.assertEqual(str(measurement[2][test_vm_key]), test_vm_value)
+            self.assertEqual(
+                measurement[2][test_vm_key].encode('utf-8'),
+                test_vm_value.encode('utf-8')
+            )
 
     def _verify_list_metrics_element(self, element, test_key=None,
                                      test_value=None, test_name=None):

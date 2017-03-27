@@ -32,6 +32,7 @@ from monasca_api.v2.reference import alarms
 
 import oslo_config.fixture
 import oslotest.base as oslotest
+import six
 
 CONF = oslo_config.cfg.CONF
 
@@ -204,6 +205,7 @@ class TestAlarmsStateHistory(AlarmTestBase):
 
 
 class TestAlarmDefinition(AlarmTestBase):
+
     def setUp(self):
         super(TestAlarmDefinition, self).setUp()
 
@@ -688,6 +690,45 @@ class TestAlarmDefinition(AlarmTestBase):
                 'X-Roles': 'admin',
                 'X-Tenant-Id': TENANT_ID,
             })
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertThat(response, RESTResponseEquals(expected_data))
+
+    def test_get_alarm_definitions_with_multibyte_character(self):
+        def_name = 'ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ'
+        if six.PY2:
+            def_name = def_name.decode('utf8')
+
+        expected_data = {
+            u'alarm_actions': [], u'ok_actions': [],
+            u'description': None, u'match_by': [u'hostname'],
+            u'actions_enabled': True, u'undetermined_actions': [],
+            u'deterministic': False,
+            u'expression': u'max(test.metric{hostname=host}) gte 1',
+            u'id': u'00000001-0001-0001-0001-000000000001',
+            u'severity': u'LOW', u'name': def_name
+        }
+
+        self.alarm_def_repo_mock.return_value.get_alarm_definition.return_value = {
+            'alarm_actions': None,
+            'ok_actions': None,
+            'description': None,
+            'match_by': u'hostname',
+            'name': def_name,
+            'actions_enabled': 1,
+            'undetermined_actions': None,
+            'expression': u'max(test.metric{hostname=host}) gte 1',
+            'id': u'00000001-0001-0001-0001-000000000001',
+            'severity': u'LOW'
+        }
+
+        response = self.simulate_request(
+            '/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
+            headers={
+                'X-Roles': 'admin',
+                'X-Tenant-Id': TENANT_ID,
+            }
+        )
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
