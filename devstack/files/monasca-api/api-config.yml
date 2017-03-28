@@ -140,13 +140,13 @@ middleware:
 server:
   applicationConnectors:
     - type: http
-      port: 8070
-      bindHost: %SERVICE_HOST%
+      port: %MONASCA_API_SERVICE_PORT%
+      bindHost: %MONASCA_API_SERVICE_HOST%
       maxRequestHeaderSize: 16KiB  # Allow large headers used by keystone tokens
   adminConnectors:
     - type: http
-      port: 8081
-      bindHost: %SERVICE_HOST%
+      port: %MONASCA_API_ADMIN_PORT%
+      bindHost: %MONASCA_API_SERVICE_HOST%
   requestLog:
    timeZone: UTC
    appenders:
