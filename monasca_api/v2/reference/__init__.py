@@ -148,8 +148,8 @@ def register_database_opts():
     # conf variables - max_pool_size, max_overflow and pool_timeout
 
     options.set_defaults(cfg.CONF, connection='sqlite://',
-                         sqlite_db='', max_pool_size=10,
-                         max_overflow=20, pool_timeout=10)
+                         max_pool_size=10, max_overflow=20,
+                         pool_timeout=10)
 
     # register old value
     url_opt = cfg.StrOpt(name='url',
