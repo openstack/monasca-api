@@ -74,7 +74,7 @@ FROM metric_dimension GROUP BY metric_dimension.dimension_set_id''')
         self.assertEqual(expected, query)
 
     def test_postgres(self):
-        from sqlalchemy.dialects import postgres as diale_
+        from sqlalchemy.dialects import postgresql as diale_
         dialect = diale_.dialect()
         query = str(self.group_concat_md.compile(dialect=dialect))
 
