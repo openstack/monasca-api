@@ -212,19 +212,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return select_stmt
 
-    def _build_select_metric_map_query(self, tenant_id, region, parms):
-
-        select_stmt = """
-          select metric_map
-          from metric_map
-          where tenant_id = %s and region = %s
-          """
-
-        parms.append(tenant_id.encode('utf8'))
-        parms.append(region.encode('utf8'))
-
-        return select_stmt
-
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
                          limit, merge_metrics_flag):
