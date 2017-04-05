@@ -55,7 +55,7 @@ class TestMetricsNames(base.BaseMonascaTest):
 
         query_param = '?start_time=' + time_iso
         returned_name_set = set()
-        for i in xrange(constants.MAX_RETRIES):
+        for i in range(constants.MAX_RETRIES):
             resp, response_body = cls.monasca_client.list_metrics(query_param)
             elements = response_body['elements']
             for element in elements:
@@ -92,7 +92,7 @@ class TestMetricsNames(base.BaseMonascaTest):
         elements = response_body['elements']
         num_names = len(elements)
 
-        for limit in xrange(1, num_names):
+        for limit in range(1, num_names):
             start_index = 0
             params = [('limit', limit)]
             offset = None
@@ -115,7 +115,7 @@ class TestMetricsNames(base.BaseMonascaTest):
 
                 expected_elements = elements[start_index:start_index + limit]
                 expected_names = \
-                    [expected_elements[i]['name'] for i in xrange(
+                    [expected_elements[i]['name'] for i in range(
                         len(expected_elements))]
 
                 self.assertEqual(expected_names, new_elements)
@@ -158,5 +158,5 @@ class TestMetricsNames(base.BaseMonascaTest):
             self.fail("No metric names returned")
 
         metric_names = [str(response_body['elements'][i]['name']) for i in
-                        xrange(response_names_length)]
+                        range(response_names_length)]
         return metric_names

@@ -33,7 +33,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
         super(TestAlarmTransitions, cls).resource_cleanup()
 
     def _wait_for_alarm_creation(self, definition_id):
-        for x in xrange(WAIT_SECS):
+        for x in range(WAIT_SECS):
             time.sleep(1)
             resp, resp_body = self.monasca_client.list_alarms(
                 query_params="?alarm_definition_id=" + definition_id)
@@ -47,7 +47,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
         return alarm_id, initial_state
 
     def _wait_for_alarm_transition(self, alarm_id, expected_state):
-        for x in xrange(WAIT_SECS):
+        for x in range(WAIT_SECS):
             time.sleep(1)
             resp, resp_body = self.monasca_client.get_alarm(alarm_id)
             self.assertEqual(200, resp.status)

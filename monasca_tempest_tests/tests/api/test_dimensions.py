@@ -71,7 +71,7 @@ class TestDimensions(base.BaseMonascaTest):
 
         param = '?start_time=' + time_iso
         returned_name_set = set()
-        for i in xrange(constants.MAX_RETRIES):
+        for i in range(constants.MAX_RETRIES):
             resp, response_body = cls.monasca_client.list_metrics(
                 param)
             elements = response_body['elements']
@@ -95,7 +95,7 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertTrue({'links', 'elements'} == set(response_body))
         response_values_length = len(response_body['elements'])
         values = [str(response_body['elements'][i]['dimension_value'])
-                  for i in xrange(response_values_length)]
+                  for i in range(response_values_length)]
         self.assertEqual(values, self._dim_values)
 
     @decorators.attr(type='gate')
@@ -107,7 +107,7 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertTrue({'links', 'elements'} == set(response_body))
         response_values_length = len(response_body['elements'])
         values = [str(response_body['elements'][i]['dimension_value'])
-                  for i in xrange(response_values_length)]
+                  for i in range(response_values_length)]
         self.assertEqual(values, self._dim_values_for_metric1)
 
     @decorators.attr(type='gate')
@@ -117,7 +117,7 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
         num_dim_values = len(elements)
-        for limit in xrange(1, num_dim_values):
+        for limit in range(1, num_dim_values):
             start_index = 0
             params = [('limit', limit)]
             offset = None
@@ -143,12 +143,12 @@ class TestDimensions(base.BaseMonascaTest):
                     self.fail("No dimension names returned")
                 new_elements = [str(response_body['elements'][i]
                                     ['dimension_value']) for i in
-                                xrange(response_values_length)]
+                                range(response_values_length)]
                 self.assertEqual(num_expected_elements, len(new_elements))
 
                 expected_elements = elements[start_index:start_index + limit]
                 expected_dimension_values = \
-                    [expected_elements[i]['dimension_value'] for i in xrange(
+                    [expected_elements[i]['dimension_value'] for i in range(
                         len(expected_elements))]
                 self.assertEqual(expected_dimension_values, new_elements)
                 start_index += num_expected_elements
@@ -170,7 +170,7 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertTrue({'links', 'elements'} == set(response_body))
         response_names_length = len(response_body['elements'])
         names = [str(response_body['elements'][i]['dimension_name']) for i
-                 in xrange(response_names_length)]
+                 in range(response_names_length)]
         self.assertEqual(names, self._dim_names)
 
     @decorators.attr(type='gate')
@@ -186,7 +186,7 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         elements = response_body['elements']
         num_dim_names = len(elements)
-        for limit in xrange(1, num_dim_names):
+        for limit in range(1, num_dim_names):
             start_index = 0
             params = [('limit', limit)]
             offset = None
@@ -211,12 +211,12 @@ class TestDimensions(base.BaseMonascaTest):
                     self.fail("No dimension names returned")
                 new_elements = [str(response_body['elements'][i]
                                     ['dimension_name']) for i in
-                                xrange(response_names_length)]
+                                range(response_names_length)]
                 self.assertEqual(num_expected_elements, len(new_elements))
 
                 expected_elements = elements[start_index:start_index + limit]
                 expected_dimension_names = \
-                    [expected_elements[i]['dimension_name'] for i in xrange(
+                    [expected_elements[i]['dimension_name'] for i in range(
                         len(expected_elements))]
                 self.assertEqual(expected_dimension_names, new_elements)
                 start_index += num_expected_elements
@@ -239,5 +239,5 @@ class TestDimensions(base.BaseMonascaTest):
         self.assertTrue(set(['links', 'elements']) == set(response_body))
         response_names_length = len(response_body['elements'])
         names = [str(response_body['elements'][i]['dimension_name']) for i
-                 in xrange(response_names_length)]
+                 in range(response_names_length)]
         self.assertEqual(names, dimension_names)

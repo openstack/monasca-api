@@ -43,7 +43,7 @@ class TestMeasurements(base.BaseMonascaTest):
         cls._value = value
         cls._start_timestamp = start_timestamp
 
-        for i in xrange(NUM_MEASUREMENTS):
+        for i in range(NUM_MEASUREMENTS):
             metric = helpers.create_metric(
                 name=name1,
                 timestamp=start_timestamp + (i * 10),
@@ -89,7 +89,7 @@ class TestMeasurements(base.BaseMonascaTest):
         queries.append('?name={}&start_time={}&end_time={}&merge_metrics=true'.
                        format(name2, start_time, end_time))
 
-        for timer in xrange(constants.MAX_RETRIES):
+        for timer in range(constants.MAX_RETRIES):
             responses = map(cls.monasca_client.list_measurements, queries)
             resp_first = responses[0][0]
             response_body_first = responses[0][1]
@@ -209,7 +209,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self._verify_list_measurements_meas_len(measurements=measurements,
                                                 test_len=4)
 
-        for measurement_index in xrange(1, len(measurements) - 3):
+        for measurement_index in range(1, len(measurements) - 3):
             max_limit = len(measurements) - measurement_index
 
             # Get first offset from api
@@ -227,7 +227,7 @@ class TestMeasurements(base.BaseMonascaTest):
 
             first_index = measurement_index + 1
 
-            for limit in xrange(1, max_limit):
+            for limit in range(1, max_limit):
                 last_index = measurement_index + limit + 1
                 expected_measurements = measurements[first_index:last_index]
 
@@ -243,7 +243,7 @@ class TestMeasurements(base.BaseMonascaTest):
                 new_measurements = response_body['elements'][0]['measurements']
 
                 self.assertEqual(limit, len(new_measurements))
-                for i in xrange(len(expected_measurements)):
+                for i in range(len(expected_measurements)):
                     self.assertEqual(expected_measurements[i],
                                      new_measurements[i])
 
@@ -348,7 +348,7 @@ class TestMeasurements(base.BaseMonascaTest):
                        format(self._names_list[0], self._start_time,
                               self._end_time))
         responses = map(self.monasca_client.list_measurements, queries)
-        for i in xrange(2):
+        for i in range(2):
             self._verify_list_measurements(responses[i][0], responses[i][1])
 
     @decorators.attr(type="gate")
@@ -364,7 +364,7 @@ class TestMeasurements(base.BaseMonascaTest):
                        '}&merge_metrics=false'.
                        format(self._names_list[0], self._start_time,
                               self._end_time))
-        for i in xrange(2):
+        for i in range(2):
             self.assertRaises(exceptions.Conflict,
                               self.monasca_client.list_measurements,
                               queries[i])

@@ -33,15 +33,15 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
     def resource_setup(cls):
         super(TestAlarmsStateHistoryOneTransition, cls).resource_setup()
 
-        for i in xrange(MIN_HISTORY):
+        for i in range(MIN_HISTORY):
             alarm_definition = helpers.create_alarm_definition(
                 name=data_utils.rand_name('alarm_state_history' + str(i + 1)),
                 expression="min(name-" + str(i + 1) + ") < " + str(i + 1))
             cls.monasca_client.create_alarm_definitions(alarm_definition)
 
         num_transitions = 0
-        for timer in xrange(constants.MAX_RETRIES):
-            for i in xrange(MIN_HISTORY):
+        for timer in range(constants.MAX_RETRIES):
+            for i in range(MIN_HISTORY):
                 # Create some metrics to prime the system and waiting for the
                 # alarms to be created and then for them to change state.
                 # MIN_HISTORY number of Alarms State History are needed.
@@ -202,12 +202,12 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             elements_set2 = response_body['elements']
             self.assertEqual(number_of_alarms, len(elements_set2))
-            for index in xrange(MIN_HISTORY - 1):
+            for index in range(MIN_HISTORY - 1):
                 self.assertEqual(elements_set1[index], elements_set2[index])
-            for index in xrange(MIN_HISTORY - 1):
+            for index in range(MIN_HISTORY - 1):
                 alarm_history = elements_set2[index]
                 max_limit = len(elements_set2) - index
-                for limit in xrange(1, max_limit):
+                for limit in range(1, max_limit):
                     first_index = index + 1
                     last_index = first_index + limit
                     expected_elements = elements_set2[first_index:last_index]
@@ -219,7 +219,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
                     self.assertEqual(200, resp.status)
                     new_elements = response_body['elements']
                     self.assertEqual(limit, len(new_elements))
-                    for i in xrange(len(expected_elements)):
+                    for i in range(len(expected_elements)):
                         self.assertEqual(expected_elements[i], new_elements[i])
         else:
             error_msg = ("Failed test_list_alarms_state_history_with_offset "

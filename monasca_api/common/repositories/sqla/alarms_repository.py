@@ -281,7 +281,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
             if 'severity' in query_parms:
                 severities = query_parms['severity'].split('|')
                 query = query.where(
-                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
                     parms['b_severity' + str(i)] = s.encode('utf8')
 
@@ -492,7 +492,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
             if 'severity' in query_parms:
                 severities = query_parms['severity'].split('|')
                 query = query.where(
-                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in xrange(len(severities))))
+                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
                     parms['b_severity' + str(i)] = s.encode('utf8')
 

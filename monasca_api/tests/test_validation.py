@@ -333,7 +333,7 @@ class TestAlarmDefinitionValidation(unittest.TestCase):
 
     def _create_string_of_length(self, length):
         s = ''
-        for i in xrange(0, length):
+        for i in range(0, length):
             s += str(i % 10)
         return s
 

@@ -47,7 +47,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
             expression=expression,
             severity='LOW',
             match_by=['hostname', 'unique']))
-        for i in xrange(100):
+        for i in range(100):
             metrics_to_send.append(helpers.create_metric(
                 name='test_metric_01',
                 dimensions={'hostname': 'test_' + str(i % num_hosts),
@@ -64,7 +64,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
             expression=expression,
             severity='MEDIUM',
             match_by=['hostname', 'unique']))
-        for i in xrange(75):
+        for i in range(75):
             metrics_to_send.append(helpers.create_metric(
                 name='test_metric_02',
                 dimensions={'hostname': 'test_' + str(i % num_hosts),
@@ -88,7 +88,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
             expression=expression,
             severity='HIGH',
             match_by=['hostname', 'unique']))
-        for i in xrange(50):
+        for i in range(50):
             metrics_to_send.append(helpers.create_metric(
                 name='test_metric_03',
                 dimensions={'hostname': 'test_' + str(i % num_hosts),
@@ -106,7 +106,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
             expression=expression,
             severity='CRITICAL',
             match_by=['hostname', 'unique']))
-        for i in xrange(25):
+        for i in range(25):
             metrics_to_send.append(helpers.create_metric(
                 name='test_metric_undet',
                 dimensions={'hostname': 'test_' + str(i % num_hosts),
@@ -138,7 +138,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
         while time.time() < time_out:
             setup_complete = True
             alarm_count = 0
-            for i in xrange(len(cls.alarm_definition_ids)):
+            for i in range(len(cls.alarm_definition_ids)):
                 resp, response_body = cls.monasca_client.list_alarms(
                     '?alarm_definition_id=' + cls.alarm_definition_ids[i])
                 if resp.status != 200:
@@ -178,7 +178,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
         else:
             expected_length = len(response_body['counts'])
 
-        for i in xrange(expected_length):
+        for i in range(expected_length):
             self.assertEqual(len(expected_columns), len(response_body['counts'][i]))
 
     # test with no params

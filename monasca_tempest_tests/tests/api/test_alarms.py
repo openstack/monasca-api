@@ -169,7 +169,7 @@ class TestAlarms(base.BaseMonascaTest):
         # Ensure the new Alarm Definition gets to the Threshold Engine
         time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
 
-        for i in xrange(constants.MAX_RETRIES):
+        for i in range(constants.MAX_RETRIES):
             resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
             self.assertEqual(204, resp.status)
             resp, response_body = self.monasca_client.list_alarms('?metric_name=' + metric_name)
@@ -214,7 +214,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(201, resp.status)
         # Ensure the new Alarm Definition gets to the Threshold Engine
         time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
-        for i in xrange(constants.MAX_RETRIES):
+        for i in range(constants.MAX_RETRIES):
             resp, alarm_def_result = self.monasca_client.create_metrics(metrics)
             self.assertEqual(204, resp.status)
             resp, response_body = self.monasca_client.list_alarms('?metric_name=' + metric_name)
@@ -614,7 +614,7 @@ class TestAlarms(base.BaseMonascaTest):
 
         # Ensure the new Alarm Definition gets to the Threshold Engine
         time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
-        for i in xrange(3):
+        for i in range(3):
             hostname = data_utils.rand_name('host')
             metric_1['dimensions']['hostname'] = hostname
             metric_2['dimensions']['hostname'] = hostname
@@ -827,10 +827,10 @@ class TestAlarms(base.BaseMonascaTest):
                                           expect_num_elements=2)
         elements = response_body['elements']
         hostnames = []
-        for i in xrange(2):
+        for i in range(2):
             self.assertEqual(len(elements[i]['metrics']), 2)
-        for i in xrange(2):
-            for j in xrange(2):
+        for i in range(2):
+            for j in range(2):
                 hostnames.append(elements[i]['metrics'][j]['dimensions'][
                     'hostname'])
         self.assertEqual(hostnames[0], hostnames[1])
@@ -858,11 +858,11 @@ class TestAlarms(base.BaseMonascaTest):
                                           expect_num_elements=4)
         elements = response_body['elements']
         dimensions = []
-        for i in xrange(4):
+        for i in range(4):
             self.assertEqual(len(elements[i]['metrics']), 1)
             dimensions.append(elements[i]['metrics'][0]['dimensions'])
-        for i in xrange(4):
-            for j in xrange(4):
+        for i in range(4):
+            for j in range(4):
                 if i != j:
                     self.assertNotEqual(dimensions[i], dimensions[j])
 
@@ -943,7 +943,7 @@ class TestAlarms(base.BaseMonascaTest):
         key = data_utils.rand_name('key')
         value = data_utils.rand_name('value')
         alarm_definition_ids = []
-        for i in xrange(num):
+        for i in range(num):
             # create an alarm definition
             expression = "max(" + metric_name + ") > 0"
             name = data_utils.rand_name('name-1')
@@ -957,8 +957,8 @@ class TestAlarms(base.BaseMonascaTest):
         # Ensure the new Alarm Definitions get to the Threshold Engine
         time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
         # create some metrics
-        for j in xrange(num):
-            for i in xrange(constants.MAX_RETRIES):
+        for j in range(num):
+            for i in range(constants.MAX_RETRIES):
                 self.monasca_client.create_metrics(expected_metric)
                 time.sleep(constants.RETRY_WAIT_SECS)
                 query_param = '?alarm_definition_id=' + \
@@ -1044,7 +1044,7 @@ class TestAlarms(base.BaseMonascaTest):
 
     def _wait_for_alarms(self, num, alarm_definition_id):
         query_param = '?alarm_definition_id=' + str(alarm_definition_id)
-        for i in xrange(constants.MAX_RETRIES):
+        for i in range(constants.MAX_RETRIES):
             time.sleep(constants.RETRY_WAIT_SECS)
             resp, response_body = self.monasca_client.\
                 list_alarms(query_param)

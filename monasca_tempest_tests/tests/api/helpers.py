@@ -162,7 +162,7 @@ def get_expected_elements_inner_offset_limit(all_elements, offset, limit, inner_
         if total_statistics >= limit:
             break
 
-    for i in xrange(len(expected_elements)):
+    for i in range(len(expected_elements)):
         expected_elements[i]['id'] = str(i)
 
     return expected_elements

@@ -35,7 +35,7 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
             name=data_utils.rand_name('alarm_state_history'),
             expression="min(name-1) < 1.0")
         cls.monasca_client.create_alarm_definitions(alarm_definition)
-        for timer in xrange(constants.MAX_RETRIES):
+        for timer in range(constants.MAX_RETRIES):
             # create some metrics to prime the system and create
             # MIN_HISTORY alarms
             metric = helpers.create_metric(
@@ -55,7 +55,7 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
 
         time.sleep(constants.MAX_RETRIES)
 
-        for timer in xrange(constants.MAX_RETRIES * 2):
+        for timer in range(constants.MAX_RETRIES * 2):
             metric = helpers.create_metric(
                 name="name-1", dimensions={'key2': 'value2'}, value=2.0)
             cls.monasca_client.create_metrics(metric)
