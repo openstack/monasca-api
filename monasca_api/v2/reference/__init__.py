@@ -32,6 +32,7 @@ need to have a bit more re-engineering to get it right.
 """
 global_opts = [cfg.StrOpt('region', help='Region that API is running in'),
                cfg.ListOpt('valid_notification_periods', default=[0, 60],
+                           item_type=int,
                            help='Valid periods for notification methods')
                ]
 
