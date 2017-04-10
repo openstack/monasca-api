@@ -248,7 +248,7 @@ class TestNotificationValidation(unittest.TestCase):
         with self.assertRaises(schemas_exceptions.ValidationException) as ve:
             schemas_notifications.parse_and_validate(notification, valid_periods)
         ex = ve.exception
-        self.assertEqual("10 is not a valid period", ex.message)
+        self.assertEqual("10 is not a valid period, not in [0, 60]", ex.message)
 
     def test_validation_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
