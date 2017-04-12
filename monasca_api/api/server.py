@@ -15,7 +15,6 @@
 # under the License.
 
 import os
-from wsgiref import simple_server
 
 import falcon
 from monasca_common.simport import simport
@@ -161,6 +160,7 @@ def get_wsgi_app(config_base_path=None, **kwargs):
 
 
 if __name__ == '__main__':
+    from wsgiref import simple_server
     wsgi_app = get_wsgi_app()
     httpd = simple_server.make_server('127.0.0.1', 8070, wsgi_app)
     httpd.serve_forever()
