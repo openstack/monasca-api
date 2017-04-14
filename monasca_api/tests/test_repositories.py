@@ -143,6 +143,7 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
         }
 
         repo = influxdb_repo.MetricsRepository()
+        mock_client.query.reset_mock()
 
         result = repo.list_dimension_values(
             "38dc2a2549f94d2e9a4fa1cc45a4970c",
@@ -151,6 +152,11 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             "hostname")
 
         self.assertEqual(result, [{u'dimension_value': u'custom_host'}])
+
+        mock_client.query.assert_called_once_with(
+            'show tag values from "custom_metric" with key = "hostname"'
+            ' where _tenant_id = \'38dc2a2549f94d2e9a4fa1cc45a4970c\''
+            '  and _region = \'useast\' ')
 
     @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
     def test_list_dimension_names(self, influxdb_client_mock):
