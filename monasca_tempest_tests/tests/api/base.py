@@ -42,7 +42,7 @@ class BaseMonascaTest(tempest.test.BaseTestCase):
             ['monasca-user', 'anotherrole', 'admin']).credentials
         cls.os = clients.Manager(credentials=credentials)
         cls.monasca_client = cls.os.monasca_client
-        cls.tenants_client = cls.os.tenants_client
+        cls.projects_client = cls.os.projects_client
 
     @staticmethod
     def cleanup_resources(method, list_of_ids):
