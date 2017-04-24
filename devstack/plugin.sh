@@ -1588,7 +1588,7 @@ function create_metric_accounts {
     get_or_add_user_project_role "monasca-user" "admin" "admin"
     get_or_add_user_project_role "monasca-user" "demo" "demo"
 
-    get_or_add_user_project_role "admin" "admin" "mini-mon"
+    get_or_add_user_project_role "admin" "mini-mon" "mini-mon"
 
     get_or_add_user_project_role "monasca-agent" "monasca-agent" "mini-mon"
 
