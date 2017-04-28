@@ -418,7 +418,7 @@ Alarm 1 - Metrics: cpu.idle_perc{service=monitoring,hostname=mini-mon}
 
 Alarm Definition 2:
 ```
-Alarm 1 - Metrics: cpu.idle_perc{service=monitoring,hostname=mini-mon}
+Alarm 1 - Metrics: cpu.idle_perc{service=monitoring,hostname=devstack}
 ```
 
 Now, when a measurement for the metric cpu.idle_perc{service=monitoring,hostname=devstack} is received, the two Alarm Definitions define different behaviors. Since the value for the hostname dimension is different from the value for the existing Alarm from Alarm Definition 2, and Alarm Definition 2 has specified a match_by parameter on `hostname`, a new Alarm will be created.  Alarm Definition 1 does not have a value for match_by, so this metric is added to the existing Alarm. This gives us the following set of Alarm Definitions and Alarms:
