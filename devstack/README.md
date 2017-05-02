@@ -72,6 +72,9 @@ To enable Horizon and the Monasca UI add `horizon`
 
 Vagrant can be used to deploy a VM with Devstack and Monasca running in it using the Vagrantfile. After installing Vagrant, just run the command `vagrant up` as usual in the `../monasca-api/devstack` directory.
 
+To use local repositories in the devstack install, commit your changes to the master branch of the local repo, then modify the '_REPO' variable in the settings file that corresponds to the local repo to use ```file://my/local/repo/location```.
+To use a local instance of the monasca-api repo, change the ```enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api``` to ```enable_plugin monasca-api file://my/repo/is/here```. Both of these settings will only take effect on a rebuild of the devstack VM.
+
 ## Enable Vertica as the Metrics DB using Vagrant
 
 Monasca supports using both InfluxDB and Vertica for storing metrics and alarm state history.
