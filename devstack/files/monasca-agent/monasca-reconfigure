@@ -2,14 +2,19 @@
 '/opt/monasca-agent/bin/monasca-setup' \
     -u 'monasca-agent' \
     -p 'password' \
-     -s 'monitoring'  \
-    --keystone_url 'http://127.0.0.1:35357/v3' \
+    -s '%MONASCA_SERVICE_TYPE%'  \
+    \
+    --keystone_url '%KEYSTONE_AUTH_URI%' \
     --project_name 'mini-mon' \
-     --monasca_url 'http://127.0.0.1:8070/v2.0'  \
-     \
-     --check_frequency '15'  \
-     \
-     --log_level 'WARN'  \
+    --project_domain_name '%SERVICE_DOMAIN_NAME%' \
+    --user_domain_name '%SERVICE_DOMAIN_NAME%' \
+    \
+    --service_type '%MONASCA_SERVICE_TYPE%' \
+    --endpoint_type 'public' \
+    --region_name '%REGION_NAME%' \
+    \
+    --check_frequency '15'  \
+    --log_level 'DEBUG'  \
     --overwrite \
     --system_only \
     --monasca_statsd_port %MONASCA_STATSD_PORT%

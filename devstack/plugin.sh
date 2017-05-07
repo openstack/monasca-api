@@ -93,6 +93,11 @@ MONASCA_API_URI_V2=${MONASCA_API_BASE_URI}/v2.0
 # Files inside this directory will be visible in gates log
 MON_API_GATE_CONFIGURATION_DIR=/etc/monasca-api
 
+# monasca_service_type, used in:
+# keystone endpoint creation
+# configuration files
+MONASCA_SERVICE_TYPE=monitoring
+
 function pre_install_monasca {
     echo_summary "Pre-Installing Monasca Components"
     find_nearest_apache_mirror
@@ -1503,7 +1508,7 @@ function create_metric_accounts {
     get_or_add_user_project_role "monasca-read-only-user" "monasca-read-only-user" "mini-mon"
 
     # crate service
-    get_or_create_service "monasca" "monitoring" "Monasca Monitoring Service"
+    get_or_create_service "monasca" "${MONASCA_SERVICE_TYPE}" "Monasca Monitoring Service"
 
     # create endpoint
     get_or_create_endpoint \
@@ -1517,8 +1522,8 @@ function create_metric_accounts {
 function install_keystone_client {
     PIP_VIRTUAL_ENV=/opt/monasca
 
-    pip_install_gr python-keystoneclient
-    pip_install_gr keystoneauth1
+    install_keystoneclient
+    install_keystoneauth
 
     unset PIP_VIRTUAL_ENV
 }
@@ -1572,13 +1577,12 @@ function install_monasca_agent {
 
     sudo chmod 0750 /usr/local/bin/monasca-reconfigure
 
-    if [[ ${SERVICE_HOST} ]]; then
-
-        sudo sed -i "s/--monasca_url 'http:\/\/127\.0\.0\.1:8070\/v2\.0'/--monasca_url 'http:\/\/${SERVICE_HOST}:8070\/v2\.0'/" /usr/local/bin/monasca-reconfigure
-        sudo sed -i "s/--keystone_url 'http:\/\/127\.0\.0\.1:35357\/v3'/--keystone_url 'http:\/\/${SERVICE_HOST}:35357\/v3'/" /usr/local/bin/monasca-reconfigure
-    fi
     sudo sed -e "
         s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+        s|%MONASCA_SERVICE_TYPE%|$MONASCA_SERVICE_TYPE|g;
+        s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
+        s|%SERVICE_DOMAIN_NAME%|$SERVICE_DOMAIN_NAME|g;
+        s|%REGION_NAME%|$REGION_NAME|g;
     " -i /usr/local/bin/monasca-reconfigure
 }
 
