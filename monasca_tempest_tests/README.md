@@ -11,7 +11,7 @@ Currently the devstack environment is needed to run the tests. Instructions on s
    ```
 2. Create a virtualenv for running the Tempest tests and activate it. For example in the Tempest root dir
 
-    ```    
+    ```
     virtualenv .venv
     source .venv/bin/activate
     ```
@@ -19,7 +19,6 @@ Currently the devstack environment is needed to run the tests. Instructions on s
 
     ```
     pip install -r requirements.txt -r test-requirements.txt
-    pip install nose
     ```
 4. Create ```etc/tempest.conf``` in the Tempest root dir by running the following command:
 
@@ -29,7 +28,7 @@ Currently the devstack environment is needed to run the tests. Instructions on s
 
     Add the following sections to ```tempest.conf``` for testing using the devstack environment.
 
-   ```
+    ```
     [identity]
 
     auth_version = v3
@@ -47,7 +46,6 @@ Currently the devstack environment is needed to run the tests. Instructions on s
     admin_username = admin
     admin_password = secretadmin
     admin_domain_name = Default
-
     ```
 
     Edit the variable values in the identity section to match your particular environment.
@@ -89,7 +87,6 @@ The Monasca Tempest Tests can be run using a variety of methods including:
 
     ```
     testr list-tests monasca_tempest_tests > monasca_tempest_tests
-
     ```
 
 3. Run the tests using testr:
@@ -122,6 +119,11 @@ entry point for running Tempest tests.
 
 ## Running/Debugging the Monasca Tempest Tests in PyCharm
 
+You need to install `nose` for running tests from PyCharm:
+```
+pip install nose
+```
+
 Assuming that you have already created a PyCharm project for the ```monasca-api``` do the following:
 
 1. In PyCharm, Edit Configurations and add a new Python tests configuration by selecting Python tests->Nosetests.
@@ -146,7 +148,6 @@ Assuming that you have already created a PyCharm project for the ```monasca-api`
 
     ```
     pip install -r requirements.txt -r test-requirements.txt
-    pip install nose
     ```
 3. If you want to test changes in monasca-api code on your local machine, change directory to monasca-api and install the latest monasca-api code:
 
@@ -155,7 +156,7 @@ Assuming that you have already created a PyCharm project for the ```monasca-api`
     python setup.py install
     ```
    Or if you want to use the current monasca api in devstack:
-   
+
    ```
    cd /opt/stack/monasca-api
    python setup.py install
@@ -168,7 +169,7 @@ Assuming that you have already created a PyCharm project for the ```monasca-api`
    testr init
    ostestr --serial --regex monasca_tempest_tests
    ```
-   
+
 # References
 This section provides a few additional references that might be useful:
 * [Tempest - The OpenStack Integration Test Suite](http://docs.openstack.org/developer/tempest/overview.html#quickstart)
