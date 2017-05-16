@@ -36,10 +36,10 @@ class Alarming(object):
         super(Alarming, self).__init__()
 
         self.events_message_queue = simport.load(
-            cfg.CONF.messaging.driver)('events')
+            cfg.CONF.messaging.driver)(cfg.CONF.kafka.events_topic)
 
         self.alarm_state_transitions_message_queue = simport.load(
-            cfg.CONF.messaging.driver)('alarm-state-transitions')
+            cfg.CONF.messaging.driver)(cfg.CONF.kafka.alarm_state_transitions_topic)
 
     def _send_alarm_transitioned_event(self, tenant_id, alarm_id,
                                        alarm_definition_row,

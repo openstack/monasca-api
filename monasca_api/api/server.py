@@ -51,7 +51,9 @@ dispatcher_opts = [cfg.StrOpt('versions', default=None,
                    cfg.StrOpt('dimension_names', default=None,
                               help='Dimension names'),
                    cfg.StrOpt('notification_method_types', default=None,
-                              help='notification_method_types methods')]
+                              help='notification_method_types methods'),
+                   cfg.StrOpt('healthchecks', default=None,
+                              help='Health checks endpoint')]
 
 dispatcher_group = cfg.OptGroup(name='dispatcher', title='dispatcher')
 cfg.CONF.register_group(dispatcher_group)
@@ -128,6 +130,9 @@ def launch(conf):
     notification_method_types = simport.load(
         cfg.CONF.dispatcher.notification_method_types)()
     app.add_route("/v2.0/notification-methods/types", notification_method_types)
+
+    healthchecks = simport.load(cfg.CONF.dispatcher.healthchecks)()
+    app.add_route("/healthcheck", healthchecks)
 
     LOG.debug('Dispatcher drivers have been added to the routes!')
     return app
