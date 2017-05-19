@@ -16,8 +16,8 @@ import time
 from urllib import urlencode
 
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
@@ -87,7 +87,7 @@ class TestDimensions(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestDimensions, cls).resource_cleanup()
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_values_without_metric_name(self):
         param = '?dimension_name=' + self._dim_names[0]
         resp, response_body = self.monasca_client.list_dimension_values(param)
@@ -98,7 +98,7 @@ class TestDimensions(base.BaseMonascaTest):
                   for i in xrange(response_values_length)]
         self.assertEqual(values, self._dim_values)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_values_with_metric_name(self):
         parms = '?metric_name=' + self._test_metric1['name']
         parms += '&dimension_name=' + self._dim_names[0]
@@ -110,7 +110,7 @@ class TestDimensions(base.BaseMonascaTest):
                   for i in xrange(response_values_length)]
         self.assertEqual(values, self._dim_values_for_metric1)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_values_limit_and_offset(self):
         param = '?dimension_name=' + self._dim_names[0]
         resp, response_body = self.monasca_client.list_dimension_values(param)
@@ -157,13 +157,13 @@ class TestDimensions(base.BaseMonascaTest):
                 # Get the next set
                 offset = self._get_offset(response_body)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_list_dimension_values_no_dimension_name(self):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_dimension_values)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_names(self):
         resp, response_body = self.monasca_client.list_dimension_names()
         self.assertEqual(200, resp.status)
@@ -173,14 +173,14 @@ class TestDimensions(base.BaseMonascaTest):
                  in xrange(response_names_length)]
         self.assertEqual(names, self._dim_names)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_names_with_metric_name(self):
         self._test_list_dimension_names_with_metric_name(
             self._test_metric1['name'], self._dim_names_metric1)
         self._test_list_dimension_names_with_metric_name(
             self._test_metric2['name'], self._dim_names_metric2)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_dimension_names_limit_and_offset(self):
         resp, response_body = self.monasca_client.list_dimension_names()
         self.assertEqual(200, resp.status)
@@ -225,8 +225,8 @@ class TestDimensions(base.BaseMonascaTest):
                 # Get the next set
                 offset = self._get_offset(response_body)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_list_dimension_names_with_wrong_metric_name(self):
         self._test_list_dimension_names_with_metric_name(
             'wrong_metric_name', [])

@@ -21,8 +21,8 @@ from six.moves import range as xrange
 from six.moves import urllib_parse as urlparse
 
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
@@ -31,7 +31,7 @@ from monasca_tempest_tests.tests.api import helpers
 
 class TestMetrics(base.BaseMonascaTest):
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_metric(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
@@ -73,7 +73,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_metric_with_multibyte_character(self):
         name = data_utils.rand_name('ｎａｍｅ').decode('utf8')
         key = data_utils.rand_name('ｋｅｙ').decode('utf8')
@@ -115,7 +115,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_metrics(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
@@ -174,24 +174,24 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_no_name(self):
         metric = helpers.create_metric(name=None)
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_empty_name(self):
         metric = helpers.create_metric(name='')
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_empty_value_in_dimensions(self):
         name = data_utils.rand_name('name')
         metric = helpers.create_metric(name=name,
@@ -200,8 +200,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_empty_key_in_dimensions(self):
         name = data_utils.rand_name('name')
         metric = helpers.create_metric(name=name,
@@ -210,7 +210,7 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_metric_with_no_dimensions(self):
         name = data_utils.rand_name('name')
         timestamp = int(round(time.time() * 1000))
@@ -252,7 +252,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_metric_with_colon_in_dimension_value(self):
         name = data_utils.rand_name('name')
         key = 'url'
@@ -288,8 +288,8 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_no_timestamp(self):
         metric = helpers.create_metric()
         metric['timestamp'] = None
@@ -297,8 +297,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_no_value(self):
         timestamp = int(round(time.time() * 1000))
         metric = helpers.create_metric(timestamp=timestamp,
@@ -307,8 +307,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_METRIC_NAME_LENGTH + 1)
         metric = helpers.create_metric(long_name)
@@ -316,8 +316,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_invalid_chars_in_name(self):
         for invalid_char in constants.INVALID_CHARS:
             metric = helpers.create_metric(invalid_char)
@@ -325,8 +325,8 @@ class TestMetrics(base.BaseMonascaTest):
                               self.monasca_client.create_metrics,
                               metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_invalid_chars_in_dimensions(self):
         for invalid_char in constants.INVALID_CHARS:
             metric = helpers.create_metric('name-1', {'key-1': invalid_char})
@@ -339,8 +339,8 @@ class TestMetrics(base.BaseMonascaTest):
                               self.monasca_client.create_metrics,
                               metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_dimension_key_exceeds_max_length(self):
         long_key = "x" * (constants.MAX_DIMENSION_KEY_LENGTH + 1)
         metric = helpers.create_metric('name-1', {long_key: 'value-1'})
@@ -348,8 +348,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_dimension_value_exceeds_max_length(self):
         long_value = "x" * (constants.MAX_DIMENSION_VALUE_LENGTH + 1)
         metric = helpers.create_metric('name-1', {'key-1': long_value})
@@ -357,8 +357,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_value_meta_name_exceeds_max_length(self):
         long_value_meta_name = "x" * (constants.MAX_VALUE_META_NAME_LENGTH + 1)
         value_meta_dict = {long_value_meta_name: "value_meta_value"}
@@ -367,8 +367,8 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_with_value_meta_exceeds_max_length(self):
         value_meta_name = "x"
         long_value_meta_value = "y" * constants.MAX_VALUE_META_TOTAL_LENGTH
@@ -378,7 +378,7 @@ class TestMetrics(base.BaseMonascaTest):
                           self.monasca_client.create_metrics,
                           metric)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics(self):
         resp, response_body = self.monasca_client.list_metrics()
         self.assertEqual(200, resp.status)
@@ -389,7 +389,7 @@ class TestMetrics(base.BaseMonascaTest):
                                           test_value=None, test_name=None)
         self.assertTrue(set(['id', 'name', 'dimensions']) == set(element))
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_with_dimensions(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
@@ -414,7 +414,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_dimension_query_multi_value_with_diff_names(self):
         metrics, name, key_service, values = \
             self._create_metrics_with_different_dimensions(same_name=False)
@@ -424,7 +424,7 @@ class TestMetrics(base.BaseMonascaTest):
                       values[1]
         self._verify_dimensions(query_param, metric_dimensions)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_dimension_query_no_value_with_diff_names(self):
         metrics, name, key_service, values = \
             self._create_metrics_with_different_dimensions(same_name=False)
@@ -433,7 +433,7 @@ class TestMetrics(base.BaseMonascaTest):
         query_param = '?dimensions=' + key_service
         self._verify_dimensions(query_param, metric_dimensions)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_dimension_query_multi_value_with_same_name(self):
         # Skip the test for now due to InfluxDB Inconsistency
         return
@@ -445,7 +445,7 @@ class TestMetrics(base.BaseMonascaTest):
                       values[0] + '|' + values[1]
         self._verify_dimensions(query_param, metric_dimensions)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_dimension_query_no_value_with_same_name(self):
         # Skip the test for now due to InfluxDB Inconsistency
         return
@@ -456,7 +456,7 @@ class TestMetrics(base.BaseMonascaTest):
         query_param = '?name=' + name + '&dimensions=' + key_service
         self._verify_dimensions(query_param, metric_dimensions)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_with_name(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
@@ -483,7 +483,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_with_project(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')
@@ -515,7 +515,7 @@ class TestMetrics(base.BaseMonascaTest):
                             "metrics = 0"
                 self.fail(error_msg)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_with_offset_limit(self):
         name = data_utils.rand_name()
         key1 = data_utils.rand_name()
@@ -626,7 +626,7 @@ class TestMetrics(base.BaseMonascaTest):
         if test_name is not None:
             self.assertEqual(str(element['name']), test_name)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_with_time_args(self):
         name = data_utils.rand_name('name')
         key = data_utils.rand_name('key')

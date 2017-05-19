@@ -18,8 +18,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 NUM_MEASUREMENTS = 50
 ONE_SECOND = 1000
@@ -113,7 +113,7 @@ class TestMeasurements(base.BaseMonascaTest):
         cls._start_time = start_time
         cls._end_time = end_time
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements(self):
         query_parms = '?name=' + str(self._names_list[0]) + \
                       '&merge_metrics=true' + \
@@ -133,22 +133,22 @@ class TestMeasurements(base.BaseMonascaTest):
             self._verify_list_measurements_measurement(measurement, i)
             i += 1
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_no_start_time(self):
         query_parms = '?name=' + str(self._names_list[0])
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_measurements, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_no_name(self):
         query_parms = '?start_time=' + str(self._start_time) + '&end_time=' + \
                       str(self._end_time)
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_measurements, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_dimensions(self):
         query_parms = '?name=' + self._names_list[0] + '&start_time=' + \
                       str(self._start_time) + '&end_time=' + \
@@ -166,7 +166,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self._verify_list_measurements_measurement(
             measurement=measurement, test_value=NUM_MEASUREMENTS)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_endtime(self):
         time_iso = helpers.timestamp_to_iso(
             self._start_timestamp + ONE_SECOND * 2)
@@ -184,8 +184,8 @@ class TestMeasurements(base.BaseMonascaTest):
         self._verify_list_measurements_meas_len(measurements=measurements,
                                                 test_len=NUM_MEASUREMENTS)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_endtime_equals_starttime(self):
         query_parms = '?name=' + str(self._names_list[0]) + \
                       '&merge_metrics=true' \
@@ -194,7 +194,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertRaises(exceptions.BadRequest,
                           self.monasca_client.list_measurements, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_offset_limit(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&merge_metrics=true&start_time=' + self._start_time + \
@@ -247,7 +247,7 @@ class TestMeasurements(base.BaseMonascaTest):
                     self.assertEqual(expected_measurements[i],
                                      new_measurements[i])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_merge_metrics(self):
         query_parms = '?name=' + str(self._names_list[0]) + \
                       '&merge_metrics=true' + \
@@ -257,7 +257,7 @@ class TestMeasurements(base.BaseMonascaTest):
             query_parms)
         self.assertEqual(200, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_group_by_one(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&group_by=key2' + \
@@ -273,7 +273,7 @@ class TestMeasurements(base.BaseMonascaTest):
             self.assertEqual(1, len(measurements['dimensions'].keys()))
             self.assertEqual([u'key2'], measurements['dimensions'].keys())
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_group_by_multiple(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&group_by=key2,key3' + \
@@ -289,7 +289,7 @@ class TestMeasurements(base.BaseMonascaTest):
             self.assertEqual(2, len(measurements['dimensions'].keys()))
             self.assertEqual({u'key2', u'key3'}, set(measurements['dimensions'].keys()))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_group_by_all(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&group_by=*' + \
@@ -302,7 +302,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertEqual(len(elements), 4)
         self._verify_list_measurements_elements(elements, None, None)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_group_by_and_merge(self):
         query_parms = '?name=' + str(self._names_list[1]) + \
                       '&group_by=*' + \
@@ -316,8 +316,8 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertEqual(len(elements), 4)
         self._verify_list_measurements_elements(elements, None, None)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_LIST_MEASUREMENTS_NAME_LENGTH + 1)
         query_parms = '?name=' + str(long_name) + '&merge_metrics=true' + \
@@ -326,8 +326,8 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_measurements, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_no_merge_metrics(self):
         query_parms = '?name=' + str(self._names_list[0]) + \
                       '&start_time=' + str(self._start_time) + '&end_time=' \
@@ -335,7 +335,7 @@ class TestMeasurements(base.BaseMonascaTest):
         self.assertRaises(exceptions.Conflict,
                           self.monasca_client.list_measurements, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_with_duplicate_query_param_merges_positive(
             self):
         queries = []
@@ -351,8 +351,8 @@ class TestMeasurements(base.BaseMonascaTest):
         for i in xrange(2):
             self._verify_list_measurements(responses[i][0], responses[i][1])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_measurements_with_duplicate_query_param_merges_negative(
             self):
         queries = []

@@ -20,8 +20,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 from urllib import urlencode
 
 NUM_MEASUREMENTS = 100
@@ -118,7 +118,7 @@ class TestStatistics(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestStatistics, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics(self):
         query_parms = '?name=' + str(self._test_name) + \
                       '&statistics=' + urlparse.quote('avg,sum,min,max,count') + \
@@ -137,8 +137,8 @@ class TestStatistics(base.BaseMonascaTest):
         self._verify_column_and_statistics(
             column, num_statistics_method, statistics, self.metric_values)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_no_name(self):
         query_parms = '?merge_metrics=true&statistics=avg&start_time=' + \
                       str(self._start_time_iso) + '&end_time=' + \
@@ -146,23 +146,23 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_no_statistics(self):
         query_parms = '?name=' + str(self._test_name) + '&start_time=' + str(
             self._start_time_iso) + '&end_time=' + str(self._end_time_iso)
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_no_start_time(self):
         query_parms = '?name=' + str(self._test_name) + '&statistics=avg'
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_invalid_statistics(self):
         query_parms = '?name=' + str(self._test_name) + '&statistics=abc' + \
                       '&start_time=' + str(self._start_time_iso) + \
@@ -170,7 +170,7 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_dimensions(self):
         query_parms = '?name=' + str(self._test_name) + '&statistics=avg' \
                       '&start_time=' + str(self._start_time_iso) + \
@@ -183,8 +183,8 @@ class TestStatistics(base.BaseMonascaTest):
         dimensions = response_body['elements'][0]['dimensions']
         self.assertEqual(dimensions[self._test_key], self._test_value1)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_end_time_equals_start_time(self):
         query_parms = '?name=' + str(self._test_name) + \
                       '&merge_metrics=true&statistics=avg&' \
@@ -194,7 +194,7 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertRaises(exceptions.BadRequest,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_period(self):
         query_parms = '?name=' + str(self._test_name) + \
                       '&merge_metrics=true&statistics=avg&' \
@@ -208,7 +208,7 @@ class TestStatistics(base.BaseMonascaTest):
         len_statistics = len(response_body['elements'][0]['statistics'])
         self.assertEqual(time_diff / 1000, len_statistics)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_offset_limit(self):
         start_timestamp = int(time.time() * 1000)
         name = data_utils.rand_name()
@@ -302,7 +302,7 @@ class TestStatistics(base.BaseMonascaTest):
                 # Get the next set
                 offset = self._get_offset(response_body)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_group_by_one(self):
         query_parms = '?name=' + self._group_by_metric_name + \
                       '&group_by=key2' + \
@@ -318,7 +318,7 @@ class TestStatistics(base.BaseMonascaTest):
             self.assertEqual(1, len(statistics['dimensions'].keys()))
             self.assertEqual([u'key2'], statistics['dimensions'].keys())
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_group_by_multiple(self):
         query_parms = '?name=' + self._group_by_metric_name + \
                       '&group_by=key2,key3' + \
@@ -334,7 +334,7 @@ class TestStatistics(base.BaseMonascaTest):
             self.assertEqual(2, len(statistics['dimensions'].keys()))
             self.assertEqual({u'key2', u'key3'}, set(statistics['dimensions'].keys()))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_group_by_all(self):
         query_parms = '?name=' + self._group_by_metric_name + \
                       '&group_by=*' + \
@@ -347,7 +347,7 @@ class TestStatistics(base.BaseMonascaTest):
         elements = response_body['elements']
         self.assertEqual(len(elements), 4)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_with_group_by_offset_limit(self):
         query_parms = '?name=' + str(self._group_by_metric_name) + \
                       '&group_by=key2' + \
@@ -383,8 +383,8 @@ class TestStatistics(base.BaseMonascaTest):
                 self.assertEqual(200, resp.status)
                 self.assertEqual(expected_elements, response_body['elements'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_no_merge_metrics(self):
         key = data_utils.rand_name('key')
         value = data_utils.rand_name('value')
@@ -418,8 +418,8 @@ class TestStatistics(base.BaseMonascaTest):
             time.sleep(constants.RETRY_WAIT_SECS)
         self._check_timeout(i, constants.MAX_RETRIES, elements, 3)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_statistics_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_LIST_STATISTICS_NAME_LENGTH + 1)
         query_parms = '?name=' + str(long_name) + '&merge_metrics=true' + \
@@ -428,7 +428,7 @@ class TestStatistics(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_statistics, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_response_body_statistic_result_type(self):
         query_parms = '?name=' + str(self._test_name) + '&period=100000' + \
                       '&statistics=avg' + '&merge_metrics=true' + \

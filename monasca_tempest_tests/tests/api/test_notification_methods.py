@@ -20,8 +20,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 DEFAULT_EMAIL_ADDRESS = 'john.doe@domain.com'
 
@@ -36,7 +36,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestNotificationMethods, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
@@ -48,7 +48,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_email_notification_method_with_lower_case_type(self):
         notification = helpers.create_notification(name='lower case email notification',
                                                    type='email')
@@ -61,7 +61,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_email_notification_method_with_mixed_case_type(self):
         notification = helpers.create_notification(name='mixed case email notification',
                                                    type='EmAil')
@@ -74,7 +74,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method_period_not_defined(self):
         notification = helpers.create_notification(period=None)
         resp, response_body = self.monasca_client.create_notifications(
@@ -86,7 +86,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_webhook_notification_method_with_non_zero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -102,7 +102,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method_webhook_test_tld(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -118,7 +118,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method_webhook_test_tld_and_port(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -134,32 +134,32 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_no_name(self):
         notification = helpers.create_notification(name=None)
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_no_type(self):
         notification = helpers.create_notification(type=None)
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_no_address(self):
         notification = helpers.create_notification(address=None)
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_NOTIFICATION_METHOD_NAME_LENGTH + 1)
         notification = helpers.create_notification(name=long_name)
@@ -167,8 +167,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_address_exceeds_max_length(self):
         long_address = "x" * (
             constants.MAX_NOTIFICATION_METHOD_ADDRESS_LENGTH + 1)
@@ -177,16 +177,16 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_email_address(self):
         notification = helpers.create_notification(address="name@")
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_scheme_webhook(self):
         notification = helpers.create_notification(type="WEBHOOK",
                                                    address="ftp://localhost")
@@ -194,8 +194,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_webhook_address(self):
         notification = helpers.create_notification(type="WEBHOOK",
                                                    address="localhost:123")
@@ -205,7 +205,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
 
     # The below tests are making sure that we accept passing in case insensitive types and that we still validate the
     # address if the types are case insensitive
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method_webhook_with_lower_case_type(self):
         notification = helpers.create_notification(type='webhook',
                                                    address='http://mytest.test:4533')
@@ -218,7 +218,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_notification_method_webhook_with_mixed_case_type(self):
         notification = helpers.create_notification(type='webHooK',
                                                    address='http://mytest.test:4533')
@@ -231,8 +231,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_email_address_type_all_lower_case(self):
         notification = helpers.create_notification(type="email",
                                                    address="name@")
@@ -240,8 +240,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_email_address_type_all_mixed_case(self):
         notification = helpers.create_notification(type="EmAil",
                                                    address="name@")
@@ -249,8 +249,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_webhook_address_type_mixed_case(self):
         notification = helpers.create_notification(type="WebHook",
                                                    address="localhost:123")
@@ -258,8 +258,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_webhook_address_type_lower_case(self):
         notification = helpers.create_notification(type="webhook",
                                                    address="localhost:123")
@@ -267,40 +267,40 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_type(self):
         notification = helpers.create_notification(type='random')
         self.assertRaises((exceptions.BadRequest, exceptions.NotFound, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_float_period(self):
         notification = helpers.create_notification(period=1.2)
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_method_with_invalid_string_period(self):
         notification = helpers.create_notification(period='random')
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_email_notification_method_with_invalid_non_zero_period(self):
         notification = helpers.create_notification(period=60)
         self.assertRaises((exceptions.BadRequest, exceptions.UnprocessableEntity),
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_pagerduty_notification_method_with_invalid_non_zero_period(self):
         notification = helpers.create_notification(type='PAGERDUTY',
                                                    address='test03@localhost',
@@ -309,8 +309,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_webhook_notification_method_with_invalid_period(self):
         notification = helpers.create_notification(type='WEBHOOK',
                                                    address='http://localhost/test01',
@@ -319,7 +319,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.create_notifications,
                           notification)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_methods(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
@@ -344,7 +344,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_methods_sort_by(self):
         notifications = [helpers.create_notification(
             name='notification sort by 01',
@@ -414,7 +414,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
         for notification in notifications:
             self.monasca_client.delete_notification_method(notification['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_methods_multiple_sort_by(self):
         notifications = [helpers.create_notification(
             name='notification sort by 01',
@@ -449,15 +449,15 @@ class TestNotificationMethods(base.BaseMonascaTest):
         for element in response_body['elements']:
             self.monasca_client.delete_notification_method(element['id'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_notification_methods_invalid_sort_by(self):
         query_parms = '?sort_by=random'
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_notification_methods,
                           query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_methods_with_offset_limit(self):
         name1 = data_utils.rand_name('notification')
         name2 = data_utils.rand_name('notification')
@@ -541,7 +541,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id4)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_get_notification_method(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
@@ -554,8 +554,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_get_notification_method_with_invalid_id(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
@@ -569,7 +569,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(response_body['id'])
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_notification_method_name(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -590,7 +590,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_notification_method_type(self):
         type = 'EMAIL'
         notification = helpers.create_notification(type=type)
@@ -612,7 +612,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_notification_method_address(self):
         address = DEFAULT_EMAIL_ADDRESS
         notification = helpers.create_notification(address=address)
@@ -634,8 +634,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_name_exceeds_max_length(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -653,8 +653,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_invalid_type(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -670,8 +670,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_address_exceeds_max_length(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -689,8 +689,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_with_no_address(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -707,7 +707,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_and_delete_notification_method(self):
         notification = helpers.create_notification()
         resp, response_body = self.monasca_client.create_notifications(
@@ -718,8 +718,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_delete_notification_method_with_invalid_id(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -734,8 +734,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(response_body['id'])
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_notification_method_with_invalid_id(self):
         id = data_utils.rand_name()
         name = data_utils.rand_name('notification-')
@@ -743,8 +743,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           self.monasca_client.patch_notification_method,
                           id, name)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_with_invalid_id(self):
         id = data_utils.rand_name()
         name = data_utils.rand_name('notification-')
@@ -753,8 +753,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
                           name=name, type='EMAIL',
                           address='bob@thebridge.org', period=0)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_email_notification_method_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -770,8 +770,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_webhook_notification_method_to_email_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -790,8 +790,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_webhook_notification_method_to_pagerduty_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -810,8 +810,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_notification_method_with_non_int_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -827,8 +827,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_webhook_notification_method_with_invalid_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -847,7 +847,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_notification_method_name(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -865,7 +865,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_notification_method_type(self):
         type = 'EMAIL'
         notification = helpers.create_notification(type=type)
@@ -884,7 +884,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_notification_method_address(self):
         address = DEFAULT_EMAIL_ADDRESS
         notification = helpers.create_notification(address=address)
@@ -902,7 +902,7 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_notification_method_address_period(self):
         type = 'WEBHOOK'
         notification = helpers.create_notification(
@@ -940,8 +940,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_notification_method_name_exceeds_max_length(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -958,8 +958,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_notification_method_invalid_type(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -973,8 +973,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_notification_method_address_exceeds_max_length(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -990,8 +990,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_email_notification_method_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -1005,8 +1005,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_webhook_notification_method_to_email_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -1023,8 +1023,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_webhook_notification_method_to_pagerduty_with_nonzero_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,
@@ -1041,8 +1041,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_notification_method_with_non_int_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name)
@@ -1056,8 +1056,8 @@ class TestNotificationMethods(base.BaseMonascaTest):
             self.monasca_client.delete_notification_method(id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_webhook_notification_method_with_invalid_period(self):
         name = data_utils.rand_name('notification-')
         notification = helpers.create_notification(name=name,

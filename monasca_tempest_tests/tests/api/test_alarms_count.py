@@ -18,8 +18,8 @@ import urllib
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 
 GROUP_BY_ALLOWED_PARAMS = {'alarm_definition_id', 'name', 'state', 'severity',
@@ -182,7 +182,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
             self.assertEqual(len(expected_columns), len(response_body['counts'][i]))
 
     # test with no params
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_count(self):
         resp, response_body = self.monasca_client.count_alarms()
         self.assertEqual(200, resp.status)
@@ -190,7 +190,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self.assertEqual(250, response_body['counts'][0][0])
 
     # test with each group_by parameter singularly
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_group_by_singular(self):
         resp, response_body = self.monasca_client.list_alarms("?state=ALARM")
         self.assertEqual(200, resp.status)
@@ -213,14 +213,14 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self._verify_counts_format(response_body, group_by=['name'], expected_length=4)
 
     # test with group by a parameter that is not allowed
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_group_by_not_allowed(self):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.count_alarms, "?group_by=not_allowed")
 
     # test with a few group_by fields
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_group_by_multiple(self):
         resp, response_body = self.monasca_client.list_alarms()
         alarm_low_count = 0
@@ -250,27 +250,27 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self.assertEqual(expected_count, response_body['counts'][0][0])
 
     # test filter by severity
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_filter_severity(self):
         self.run_count_test("?severity=LOW")
 
     # test filter by state
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_filter_state(self):
         self.run_count_test("?state=ALARM")
 
     # test filter by metric name
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_filter_metric_name(self):
         self.run_count_test("?metric_name=test_metric_01")
 
     # test with multiple metric dimensions
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_filter_multiple_dimensions(self):
         self.run_count_test("?metric_dimensions=hostname:test_1,unique:1")
 
     # test with filter and group_by parameters
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_filter_and_group_by_params(self):
         resp, response_body = self.monasca_client.list_alarms("?state=ALARM")
         self.assertEqual(200, resp.status)
@@ -284,7 +284,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
         self._verify_counts_format(response_body, group_by=['severity'])
         self.assertEqual(expected_count, response_body['counts'][0][0])
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_with_all_group_by_params(self):
         resp, response_body = self.monasca_client.list_alarms()
         self.assertEqual(200, resp.status)
@@ -300,7 +300,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
                                                                                   len(response_body['counts']))
         assert expected_num_count <= len(response_body['counts']), msg
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_limit(self):
         resp, response_body = self.monasca_client.count_alarms(
             "?group_by=metric_name,dimension_name,dimension_value")
@@ -316,7 +316,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
                                    group_by=['metric_name', 'dimension_name', 'dimension_value'],
                                    expected_length=1)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_offset(self):
         resp, response_body = self.monasca_client.count_alarms(
             "?group_by=metric_name,dimension_name,dimension_value")
@@ -332,13 +332,13 @@ class TestAlarmsCount(base.BaseMonascaTest):
                                    group_by=['metric_name', 'dimension_name', 'dimension_value'],
                                    expected_length=expected_counts)
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_invalid_offset(self):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.count_alarms, "?group_by=metric_name&offset=not_an_int")
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_limit_and_offset(self):
         resp, response_body = self.monasca_client.count_alarms(
             "?group_by=metric_name,dimension_name,dimension_value")

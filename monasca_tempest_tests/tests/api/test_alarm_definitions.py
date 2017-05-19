@@ -17,8 +17,8 @@ import time
 
 import six.moves.urllib.parse as urlparse
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
@@ -30,7 +30,7 @@ NUM_ALARM_DEFINITIONS = 2
 
 class TestAlarmDefinitions(base.BaseMonascaTest):
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarm_definition(self):
         # Create an alarm definition
         name = data_utils.rand_name('alarm_definition')
@@ -43,7 +43,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self._verify_create_alarm_definitions(resp, response_body,
                                               alarm_definition)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarm_definition_with_notification(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -76,7 +76,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
         self._delete_notification(notification_id)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarm_definition_with_multiple_notifications(self):
         notification_name1 = data_utils.rand_name('notification-')
         notification_type1 = 'EMAIL'
@@ -115,7 +115,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self._delete_notification(notification_id1)
         self._delete_notification(notification_id2)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarm_definition_with_url_in_expression(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -140,7 +140,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition)
         self._delete_notification(notification_id)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_deterministic_alarm_definition(self):
         name = data_utils.rand_name('log.error')
         expression = "count(log.error{},deterministic) > 0"
@@ -160,7 +160,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition,
                                               deterministic=True)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_non_deterministic_alarm_definition_compound_mixed_expr(self):
         name = data_utils.rand_name('log.error.and.disk.used_perc')
         expression = ('max(disk.used_perc{hostname=node_1}) > 99.0 AND '
@@ -181,7 +181,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition,
                                               deterministic=False)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_create_deterministic_alarm_definition_compound_expr(self):
         name = data_utils.rand_name('log.error.nodes_1_2')
         expression = ('count(log.error{hostname=node_2},deterministic) > 0 '
@@ -203,8 +203,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                               alarm_definition,
                                               deterministic=True)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_special_chars_in_expression(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -229,8 +229,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_name_exceeds_max_length(self):
         long_name = "x" * (constants.MAX_ALARM_DEFINITION_NAME_LENGTH + 1)
         expression = "max(cpu.system_perc) > 0"
@@ -240,8 +240,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_description_exceeds_max_length(self):
         name = data_utils.rand_name('alarm_definition')
         long_description = "x" * (constants.
@@ -253,8 +253,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_invalid_severity(self):
         invalid_severity = "INVALID"
         name = data_utils.rand_name('alarm_definition')
@@ -268,8 +268,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_alarm_actions_exceeds_max_length(
             self):
         name = data_utils.rand_name('alarm_definition')
@@ -285,8 +285,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_ok_actions_exceeds_max_length(self):
         name = data_utils.rand_name('alarm_definition')
         expression = "max(cpu.system_perc) > 0"
@@ -301,8 +301,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           self.monasca_client.create_alarm_definitions,
                           alarm_definition)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_with_undeterm_actions_exceeds_max_length(
             self):
         name = data_utils.rand_name('alarm_definition')
@@ -321,7 +321,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     # List
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions(self):
         expression = "avg(cpu_utilization{service=compute}) >= 1234"
         response_body_list = self._create_alarm_definitions(
@@ -337,7 +337,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_multibyte_character(self):
         name = data_utils.rand_name('ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ').decode('utf8')
         description = 'ｄｅｓｃｒｉｐｔｉｏｎ'.decode('utf8')
@@ -361,7 +361,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_name(self):
         name = data_utils.rand_name('alarm_definition')
         alarm_definition = helpers.create_alarm_definition(
@@ -382,7 +382,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_dimensions(self):
         # Create an alarm definition with random dimensions
         name = data_utils.rand_name('alarm_definition')
@@ -406,7 +406,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_multiple_dimensions(self):
         # Create an alarm definition with random dimensions
         name = data_utils.rand_name('alarm_definition')
@@ -435,7 +435,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_severity(self):
         name = data_utils.rand_name('alarm_definition')
         expression = 'avg(cpu_utilization) >= 1000'
@@ -468,14 +468,14 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarm_definitions_by_severity_invalid_severity(self):
         query_parms = '?severity=false_severity'
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarm_definitions, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_multiple_severity(self):
         name = data_utils.rand_name('alarm_definition')
         expression = 'avg(cpu_utilization{alarm=severity}) >= 1000'
@@ -521,8 +521,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarm_definitions_by_severity_multiple_values_invalid_severity(self):
         query_parms = '?severity=false_severity|MEDIUM'
         self.assertRaises(exceptions.UnprocessableEntity,
@@ -536,7 +536,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarm_definitions, query_parms)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_alarm_definitions_sort_by(self):
         key = data_utils.rand_name('key')
         value = data_utils.rand_name('value')
@@ -618,7 +618,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             for i, element in enumerate(response_body['elements']):
                 self.assertEqual(alarm_definitions[-i - 1]['id'], element['id'])
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_alarm_definitions_multiple_sort_by(self):
         key = data_utils.rand_name('key')
         value = data_utils.rand_name('value')
@@ -656,14 +656,14 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         for i, element in enumerate(response_body['elements']):
             self.assertEqual(alarm_definitions[expected_order[i]]['id'], element['id'])
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_list_alarm_definitions_invalid_sort_by(self):
         query_parms = '?sort_by=random'
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarm_definitions, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definitions_with_offset_limit(self):
         helpers.delete_alarm_definitions(self.monasca_client)
         expression = "max(cpu.system_perc) > 0"
@@ -704,7 +704,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     # Get
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_get_alarm_definition(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -717,7 +717,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_get_alarm_definition_with_multibyte_character(self):
         # Create an alarm definition
         name = data_utils.rand_name('ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ').decode('utf8')
@@ -741,7 +741,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     # Update
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_alarm_definition(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -776,8 +776,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         links = response_body['links']
         self._verify_list_alarm_definitions_links(links)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_alarm_definition_with_a_different_match_by(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -791,8 +791,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           description, 'true', updated_match_by, 'LOW', None,
                           None, None)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_alarm_definition_with_no_ok_actions(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -806,7 +806,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             response_body_list[0]['id'], name, expression, description,
             'true', updated_match_by, 'LOW', None, None)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_notification_in_alarm_definition(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -842,7 +842,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     # Patch
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_alarm_definition(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -861,8 +861,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self._verify_update_patch_alarm_definition(response_body, patched_name,
                                                    None, None, None)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_alarm_definition_with_a_different_match_by(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -873,7 +873,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                           id=response_body_list[0]['id'],
                           match_by=patched_match_by)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_actions_in_alarm_definition(self):
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -909,8 +909,8 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
                                                    None, notification_id)
         self._delete_notification(notification_id)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_alarm_definition_with_invalid_actions(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -932,7 +932,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
 
     # Delete
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_and_delete_alarm_definition(self):
         response_body_list = self._create_alarm_definitions(
             expression=None, number_of_definitions=1)
@@ -952,30 +952,30 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
         self.fail("Failed test_create_and_delete_alarm_definition: "
                   "cannot find the alarm definition just created.")
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_get_alarm_defintion_with_invalid_id(self):
         def_id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound,
                           self.monasca_client.get_alarm_definition, def_id)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_delete_alarm_defintion_with_invalid_id(self):
         def_id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound,
                           self.monasca_client.delete_alarm_definition, def_id)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_alarm_defintion_with_invalid_id(self):
         def_id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound,
                           self.monasca_client.patch_alarm_definition,
                           id=def_id, name='Test')
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_alarm_defintion_with_invalid_id(self):
         def_id = data_utils.rand_name()
 

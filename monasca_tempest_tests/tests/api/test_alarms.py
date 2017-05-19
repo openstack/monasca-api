@@ -21,8 +21,8 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 
 class TestAlarms(base.BaseMonascaTest):
@@ -35,7 +35,7 @@ class TestAlarms(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestAlarms, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -50,7 +50,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.fail("Failed test_list_alarms: cannot find the alarm just "
                   "created.")
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_alarm_definition_id(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -62,7 +62,7 @@ class TestAlarms(base.BaseMonascaTest):
         metric = element['metrics'][0]
         self._verify_metric_in_alarm(metric, expected_metric)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_metric_name(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -76,7 +76,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_definition_ids[0], element[
             'alarm_definition']['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_metric_dimensions(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -92,23 +92,23 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_definition_ids[0],
                          element['alarm_definition']['id'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarms_by_metric_dimensions_key_exceeds_max_length(self):
         key = 'x' * (constants.MAX_ALARM_METRIC_DIMENSIONS_KEY_LENGTH + 1)
         query_parms = '?metric_dimensions=' + key
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarms, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarms_by_metric_dimensions_value_exceeds_max_length(self):
         value = 'x' * (constants.MAX_ALARM_METRIC_DIMENSIONS_VALUE_LENGTH + 1)
         query_parms = '?metric_dimensions=key:' + value
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarms, query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_multiple_metric_dimensions(self):
         metric = helpers.create_metric(
             name=data_utils.rand_name("multi-dimension"),
@@ -145,7 +145,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_def_id,
                          element['alarm_definition']['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_metric_dimensions_no_value(self):
         metric_name = data_utils.rand_name('metric')
         match_by_key = data_utils.rand_name('key')
@@ -193,7 +193,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertIn(metric_2['dimensions'], dimension_sets)
         self.assertNotIn(metric_3['dimensions'], dimension_sets)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_metric_dimensions_multi_value(self):
         metric_name = data_utils.rand_name('metric')
         match_by_key = data_utils.rand_name('key')
@@ -238,7 +238,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertIn(metric_2['dimensions'], dimension_sets)
         self.assertNotIn(metric_3['dimensions'], dimension_sets)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_state(self):
         helpers.delete_alarm_definitions(self.monasca_client)
         self._create_alarms_for_test_alarms(num=3)
@@ -261,7 +261,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(200, resp.status)
         self.assertEqual(len0, len1 + len2 + len3)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_severity(self):
         metric_name = data_utils.rand_name("severity-metric")
         alarm_defs = []
@@ -319,14 +319,14 @@ class TestAlarms(base.BaseMonascaTest):
         for alarm in response_body['elements']:
             self.assertEqual('CRITICAL', alarm['alarm_definition']['severity'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarms_by_severity_invalid_severity(self):
         query_parms = '?severity=false_severity'
         self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
                           query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_severity_multiple_values(self):
         metric_name = data_utils.rand_name("severity-metric")
         alarm_defs = []
@@ -378,8 +378,8 @@ class TestAlarms(base.BaseMonascaTest):
         for alarm in response_body['elements']:
             self.assertIn(alarm['alarm_definition']['severity'], ['HIGH', 'CRITICAL'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_list_alarms_by_severity_multiple_values_invalid_severity(self):
         query_parms = '?severity=false_severity|MEDIUM'
         self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
@@ -393,7 +393,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertRaises(exceptions.UnprocessableEntity, self.monasca_client.list_alarms,
                           query_parms)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_lifecycle_state(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -413,7 +413,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_definition_ids[0],
                          element['alarm_definition']['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_link(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -433,7 +433,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_definition_ids[0],
                          element['alarm_definition']['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_state_updated_start_time(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -455,7 +455,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(alarm_definition_ids[0],
                          element['alarm_definition']['id'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_by_offset_limit(self):
         definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
         resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
@@ -482,7 +482,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(str(offset + limit), next_offset)
         self.assertEqual(str(limit), next_limit)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_get_alarm(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -497,7 +497,7 @@ class TestAlarms(base.BaseMonascaTest):
         metric = element['metrics'][0]
         self._verify_metric_in_alarm(metric, expected_metric)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_sort_by(self):
         alarm_definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
         resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
@@ -558,7 +558,7 @@ class TestAlarms(base.BaseMonascaTest):
                                                                           sort_by_field)
                 last_sort_by = sort_by_field
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_alarms_sort_by_asc_desc(self):
         alarm_definition_ids, expected_metric = self._create_alarms_for_test_alarms(num=3)
         resp, response_body = self.monasca_client.list_alarms('?metric_name=' + expected_metric['name'])
@@ -593,7 +593,7 @@ class TestAlarms(base.BaseMonascaTest):
                                                                                           element['created_timestamp'])
             last_timestamp = element['created_timestamp']
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_sort_by_offset_limit(self):
         metric_1 = {'name': data_utils.rand_name('sorting-metric-1'),
                     'dimensions': {
@@ -661,20 +661,20 @@ class TestAlarms(base.BaseMonascaTest):
         elements = response_body['elements']
         self.assertEqual(2, len(elements))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_invalid_sort_by(self):
         query_parms = '?sort_by=not_valid_field'
         self.assertRaises(exceptions.UnprocessableEntity,
                           self.monasca_client.list_alarms, query_parms)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_get_alarm_with_invalid_id(self):
         alarm_id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound, self.monasca_client.get_alarm,
                           alarm_id)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_update_alarm(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -700,7 +700,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(updated_lifecycle_state, element['lifecycle_state'])
         self.assertEqual(updated_link, element['link'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_patch_alarm(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -720,7 +720,7 @@ class TestAlarms(base.BaseMonascaTest):
                                           expect_num_elements=1)
         self.assertEqual(patch_link, response_body['elements'][0]['link'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_delete_alarm(self):
         alarm_definition_ids, expected_metric \
             = self._create_alarms_for_test_alarms(num=1)
@@ -735,23 +735,23 @@ class TestAlarms(base.BaseMonascaTest):
         self._verify_list_alarms_elements(resp, response_body,
                                           expect_num_elements=0)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_delete_alarm_with_invalid_id(self):
         id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound,
                           self.monasca_client.delete_alarm, id)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_patch_alarm_with_invalid_id(self):
         id = data_utils.rand_name()
         self.assertRaises(exceptions.NotFound,
                           self.monasca_client.patch_alarm, id=id,
                           lifecycle_state="OPEN")
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_update_alarm_with_invalid_id(self):
         alarm_id = data_utils.rand_name()
         updated_state = "ALARM"
@@ -763,7 +763,7 @@ class TestAlarms(base.BaseMonascaTest):
                           lifecycle_state=updated_lifecycle_state,
                           link=updated_link)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarms_with_match_by(self):
         # Create an alarm definition with no match_by
         name = data_utils.rand_name('alarm_definition_1')
@@ -806,7 +806,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(len(elements[1]['metrics']), 1)
         self.assertNotEqual(elements[0]['metrics'], elements[1]['metrics'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarms_with_sub_expressions_and_match_by(self):
         # Create an alarm definition with sub-expressions and match_by
         name = data_utils.rand_name('alarm_definition_3')
@@ -837,7 +837,7 @@ class TestAlarms(base.BaseMonascaTest):
         self.assertEqual(hostnames[2], hostnames[3])
         self.assertNotEqual(hostnames[0], hostnames[2])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_create_alarms_with_match_by_list(self):
         # Create an alarm definition with match_by as a list
         name = data_utils.rand_name('alarm_definition')
@@ -866,7 +866,7 @@ class TestAlarms(base.BaseMonascaTest):
                 if i != j:
                     self.assertNotEqual(dimensions[i], dimensions[j])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_verify_deterministic_alarm(self):
         metric_name = data_utils.rand_name('log.fancy')
         metric_dimensions = {'service': 'monitoring',

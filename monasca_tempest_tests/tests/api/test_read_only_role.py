@@ -13,8 +13,8 @@
 
 import time
 
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from monasca_tempest_tests import clients
 from monasca_tempest_tests.tests.api import base
@@ -35,7 +35,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestReadOnlyRole, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_success(self):
         resp, response_body = self.monasca_client.list_alarms()
         #
@@ -46,7 +46,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/alarms'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_metrics_success(self):
         resp, response_body = self.monasca_client.list_metrics()
         #
@@ -57,7 +57,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/metrics'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_definition_success(self):
         resp, response_body = self.monasca_client.list_alarm_definitions()
         #
@@ -68,7 +68,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/alarm-definitions'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_methods_success(self):
         resp, response_body = self.monasca_client.list_notification_methods()
         #
@@ -79,7 +79,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/notification-methods'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_count_success(self):
         resp, response_body = self.monasca_client.count_alarms()
         #
@@ -90,7 +90,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, response_body['counts'][0][0])
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/alarms/count'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_state_history_success(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         #
@@ -101,7 +101,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith('/v2.0/alarms/state-history'))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_dimension_values_success(self):
         parms = '?dimension_name=foo'
         resp, response_body = self.monasca_client.list_dimension_values(parms)
@@ -114,7 +114,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith(url))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_dimension_names_success(self):
         resp, response_body = self.monasca_client.list_dimension_names()
         #
@@ -126,7 +126,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue(response_body['links'][0]['href'].endswith(url))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_measurements_success(self):
         start_timestamp = int(time.time() * 1000)
         start_time = str(helpers.timestamp_to_iso(start_timestamp))
@@ -140,7 +140,7 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue('/v2.0/metrics/measurements' in response_body['links'][0]['href'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_statistics_success(self):
         start_timestamp = int(time.time() * 1000)
         start_time = str(helpers.timestamp_to_iso(start_timestamp))
@@ -155,28 +155,28 @@ class TestReadOnlyRole(base.BaseMonascaTest):
         self.assertEqual(0, len(response_body['elements']))
         self.assertTrue('/v2.0/metrics/statistics' in response_body['links'][0]['href'])
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_delete_alarms_fails(self):
         self.assertRaises(exceptions.Unauthorized,
                           self.monasca_client.delete_alarm, "foo")
 
-    @test.attr(type='gate')
-    @test.attr(type=['negative'])
+    @decorators.attr(type='gate')
+    @decorators.attr(type=['negative'])
     def test_create_metric_fails(self):
         self.assertRaises(exceptions.Unauthorized,
                           self.monasca_client.create_metrics,
                           None)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_alarm_definition_fails(self):
         self.assertRaises(exceptions.Unauthorized,
                           self.monasca_client.create_alarm_definitions,
                           None)
 
-    @test.attr(type="gate")
-    @test.attr(type=['negative'])
+    @decorators.attr(type="gate")
+    @decorators.attr(type=['negative'])
     def test_create_notification_fails(self):
         notif = helpers.create_notification()
         self.assertRaises(exceptions.Unauthorized,
