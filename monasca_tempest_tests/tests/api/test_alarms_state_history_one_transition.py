@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from oslo_utils import timeutils
 from tempest.lib.common.utils import data_utils
-from tempest import test
+from tempest.lib import decorators
 
 NUM_ALARM_DEFINITIONS = 3
 MIN_HISTORY = 3
@@ -64,7 +64,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestAlarmsStateHistoryOneTransition, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         self.assertEqual(200, resp.status)
@@ -83,7 +83,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
                                  'timestamp', 'sub_alarms'])
                             == set(element))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history_with_dimensions(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements = response_body['elements']
@@ -109,7 +109,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
                         "to test."
             self.fail(error_msg)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history_with_start_time(self):
         # 1, get all histories
         resp, all_response_body = self.monasca_client.\
@@ -136,7 +136,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
         expected_elements.remove(min_element)
         self.assertEqual(expected_elements, selected_elements)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history_with_end_time(self):
         # 1, get all histories
         resp, all_response_body = self.monasca_client.\
@@ -163,7 +163,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
         expected_elements.remove(max_element)
         self.assertEqual(expected_elements, selected_elements)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history_with_start_end_time(self):
         # 1, get all histories
         resp, all_response_body = self.monasca_client.\
@@ -190,7 +190,7 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
         # 3. compare #1 and #2
         self.assertEqual(all_elements, selected_elements)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarms_state_history_with_offset_limit(self):
         resp, response_body = self.monasca_client.list_alarms_state_history()
         elements_set1 = response_body['elements']

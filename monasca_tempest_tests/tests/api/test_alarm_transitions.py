@@ -1,4 +1,4 @@
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,11 +14,10 @@
 
 import time
 
-from tempest.lib.common.utils import data_utils
-from tempest import test
-
 from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import helpers
+from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 
 WAIT_SECS = 10
 
@@ -63,7 +62,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
         resp, resp_body = self.monasca_client.create_metrics([metric])
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_alarm_max_function(self):
         metric_def = {
             'name': data_utils.rand_name("max_test"),
@@ -91,7 +90,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
         self._wait_for_alarm_transition(alarm_id, "ALARM")
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_alarm_max_with_deterministic(self):
         metric_def = {
             'name': data_utils.rand_name("max_deterministic_test"),
@@ -118,7 +117,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
         self._wait_for_alarm_transition(alarm_id, "ALARM")
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_alarm_last_function(self):
         metric_def = {
             'name': data_utils.rand_name("last_test"),
@@ -149,7 +148,7 @@ class TestAlarmTransitions(base.BaseMonascaTest):
 
         self._wait_for_alarm_transition(alarm_id, "OK")
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_alarm_last_with_deterministic(self):
         metric_def = {
             'name': data_utils.rand_name("last_deterministic_test"),

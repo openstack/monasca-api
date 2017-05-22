@@ -1,4 +1,4 @@
-# (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,7 +18,7 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
-from tempest import test
+from tempest.lib import decorators
 from urllib import urlencode
 
 
@@ -70,13 +70,13 @@ class TestMetricsNames(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestMetricsNames, cls).resource_cleanup()
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_names(self):
         resp, response_body = self.monasca_client.list_metrics_names()
         metric_names = self._verify_response(resp, response_body)
         self.assertEqual(metric_names, self._expected_names_list)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_names_with_dimensions(self):
         query_params = '?dimensions=' + self._dimensions_param
         resp, response_body = self.monasca_client.list_metrics_names(
@@ -85,7 +85,7 @@ class TestMetricsNames(base.BaseMonascaTest):
         self.assertEqual(metric_names,
                          self._test_metric_names_with_same_dim)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_names_with_limit_offset(self):
         resp, response_body = self.monasca_client.list_metrics_names()
         self.assertEqual(200, resp.status)
@@ -125,7 +125,7 @@ class TestMetricsNames(base.BaseMonascaTest):
                 # Get the next set
                 offset = self._get_offset(response_body)
 
-    @test.attr(type='gate')
+    @decorators.attr(type='gate')
     def test_list_metrics_names_with_offset_not_in_metrics_names_list(self):
         offset1 = 'tempest-abc'
         offset2 = 'tempest-name111'

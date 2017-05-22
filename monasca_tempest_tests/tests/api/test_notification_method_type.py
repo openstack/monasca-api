@@ -1,4 +1,4 @@
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,7 +13,7 @@
 # under the License.
 
 from monasca_tempest_tests.tests.api import base
-from tempest import test
+from tempest.lib import decorators
 
 
 class TestNotificationMethodType(base.BaseMonascaTest):
@@ -26,7 +26,7 @@ class TestNotificationMethodType(base.BaseMonascaTest):
     def resource_cleanup(cls):
         super(TestNotificationMethodType, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_notification_method_type(self):
         resp, response_body = (self.monasca_client.
                                list_notification_method_types())

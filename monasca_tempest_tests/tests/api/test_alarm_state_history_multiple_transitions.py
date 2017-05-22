@@ -1,4 +1,4 @@
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,7 +18,7 @@ from monasca_tempest_tests.tests.api import base
 from monasca_tempest_tests.tests.api import constants
 from monasca_tempest_tests.tests.api import helpers
 from tempest.lib.common.utils import data_utils
-from tempest import test
+from tempest.lib import decorators
 
 MIN_HISTORY = 2
 
@@ -78,7 +78,7 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
         super(TestAlarmStateHistoryMultipleTransitions, cls).\
             resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_state_history(self):
         # Get the alarm state history for a specific alarm by ID
         resp, response_body = self.monasca_client.list_alarms_state_history()
@@ -111,7 +111,7 @@ class TestAlarmStateHistoryMultipleTransitions(base.BaseMonascaTest):
                         "alarm state history is needed."
             self.fail(error_msg)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_list_alarm_state_history_with_offset_limit(self):
         # Get the alarm state history for a specific alarm by ID
         resp, response_body = self.monasca_client.list_alarms_state_history()
