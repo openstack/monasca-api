@@ -122,7 +122,7 @@ LOG_COLOR=False
 DEST=/opt/stack
 
 disable_all_services
-enable_service zookeeper rabbit key tempest horizon
+enable_service rabbit key tempest horizon
 
 # Uncomment one of the following lines to use either MySQL or PostgreSQL
 # as RDB (relational database) backend for monasca.

@@ -44,6 +44,10 @@ set -o xtrace
 ERREXIT=$(set +o | grep errexit)
 set -o errexit
 
+# source lib/*
+source ${MONASCA_API_DIR}/devstack/lib/zookeeper
+# source lib/*
+
 # Set default implementations to python
 export MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
 export MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
@@ -81,11 +85,9 @@ MONASCA_API_URI_V2=${MONASCA_API_BASE_URI}/v2.0
 
 function pre_install_monasca {
     echo_summary "Pre-Installing Monasca Components"
-    install_git
-    install_maven
-    install_openjdk_8_jdk
     find_nearest_apache_mirror
     install_kafka
+    install_zookeeper
 
     if is_service_enabled monasca-storm; then
         install_storm
@@ -96,7 +98,6 @@ function pre_install_monasca {
 }
 
 function find_nearest_apache_mirror {
-    install_jq
     apache_mirror=`curl -s 'https://www.apache.org/dyn/closer.cgi?as_json=1' | jq --raw-output '.preferred'`
 }
 
@@ -167,8 +168,6 @@ function extra_monasca {
     install_keystone_client
 
     install_monasca_agent
-
-    install_monasca_default_alarms
 
     if is_service_enabled horizon; then
 
@@ -241,9 +240,6 @@ function clean_monasca {
 
     unstack_monasca
 
-    clean_monasca_default_alarms
-    clean_keystone_client
-
     if is_service_enabled horizon; then
 
         clean_monasca_horizon_ui
@@ -278,8 +274,6 @@ function clean_monasca {
 
     clean_monasca_common
 
-    clean_maven
-
     clean_schema
 
     clean_cli_creds
@@ -288,7 +282,7 @@ function clean_monasca {
 
     clean_kafka
 
-    clean_openjdk_8_jdk
+    clean_zookeeper
 
     clean_monasca_virtual_env
 
@@ -707,55 +701,6 @@ function clean_schema {
 
 }
 
-function install_openjdk_8_jdk {
-
-    echo_summary "Install Monasca openjdk_8_jdk"
-
-    apt_get -y install openjdk-8-jdk
-
-}
-
-function clean_openjdk_8_jdk {
-
-    echo_summary "Clean Monasca openjdk_8_jdk"
-
-    apt_get -y purge openjdk-8-jdk
-
-    apt_get -y autoremove
-
-}
-
-function install_maven {
-
-    echo_summary "Install Monasca Maven"
-
-    apt_get -y remove maven2
-    apt_get -y install maven
-}
-
-function clean_maven {
-
-    echo_summary "Clean Monasca Maven"
-
-    apt_get -y purge maven
-}
-
-function install_git {
-
-    echo_summary "Install git"
-
-    apt_get -y install git
-
-}
-
-function install_jq {
-
-    echo_summary "Install jq"
-
-    apt_get -y install jq
-
-}
-
 function download_monasca_libraries {
     echo_summary "Download Monasca monasca_common and monasca_statsd"
 
@@ -865,8 +810,6 @@ function install_monasca_api_java {
 function install_monasca_api_python {
 
     echo_summary "Install Monasca monasca_api_python"
-
-    apt_get -y install python-dev
 
     sudo mkdir -p /opt/monasca-api
 
@@ -1032,7 +975,6 @@ function clean_monasca_api_python {
     if is_service_enabled postgresql; then
         apt_get -y purge libpq-dev
     elif is_service_enabled mysql; then
-        apt_get -y purge libpq-dev
         apt_get -y purge libmysqlclient-dev
     fi
 
@@ -1261,9 +1203,6 @@ function install_monasca_notification {
 
     echo_summary "Install Monasca monasca_notification"
 
-    apt_get -y install python-dev
-    apt_get -y install build-essential
-
     git_clone $MONASCA_NOTIFICATION_REPO $MONASCA_NOTIFICATION_DIR $MONASCA_NOTIFICATION_BRANCH
 
     PIP_VIRTUAL_ENV=/opt/monasca
@@ -1272,8 +1211,7 @@ function install_monasca_notification {
         apt_get -y install libpq-dev
         pip_install_gr psycopg2
     elif is_service_enabled mysql; then
-        apt_get -y install python-mysqldb
-        apt_get -y install libmysqlclient-dev
+        apt_get -y install python-mysqldb libmysqlclient-dev
         pip_install_gr PyMySQL
         pip_install_gr mysql-python
     fi
@@ -1348,8 +1286,6 @@ function install_monasca_notification {
 
     sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
 
-    apt_get -y install mailutils
-
 }
 
 function clean_monasca_notification {
@@ -1369,10 +1305,6 @@ function clean_monasca_notification {
     sudo rm -rf /opt/monasca/monasca-notification
 
     sudo rm /var/log/upstart/monasca-notification.log*
-
-    apt_get -y purge build-essential
-    apt_get -y purge python-dev
-    apt_get -y purge mailutils
 
     if is_service_enabled postgresql; then
         apt_get -y purge libpq-dev
@@ -1607,8 +1539,6 @@ function create_metric_accounts {
 }
 
 function install_keystone_client {
-    apt_get -y install python-dev
-
     PIP_VIRTUAL_ENV=/opt/monasca
 
     pip_install_gr python-keystoneclient
@@ -1617,19 +1547,11 @@ function install_keystone_client {
     unset PIP_VIRTUAL_ENV
 }
 
-function clean_keystone_client {
-    apt_get -y purge python-dev
-}
-
 function install_monasca_agent {
 
     echo_summary "Install Monasca monasca_agent"
 
-    apt_get -y install python-dev
-    apt_get -y install python-yaml
-    apt_get -y install build-essential
-    apt_get -y install libxml2-dev
-    apt_get -y install libxslt1-dev
+    apt_get -y install python-yaml libxml2-dev libxslt1-dev
 
     # clients needs to be downloaded without git_clone wrapper
     # because of the GIT_DEPTH flag that affects python package version
@@ -1720,19 +1642,7 @@ function clean_monasca_agent {
 
     apt_get -y purge libxslt1-dev
     apt_get -y purge libxml2-dev
-    apt_get -y purge build-essential
     apt_get -y purge python-yaml
-    apt_get -y purge python-dev
-
-}
-
-function install_monasca_default_alarms {
-:
-
-}
-
-function clean_monasca_default_alarms {
-:
 
 }
 

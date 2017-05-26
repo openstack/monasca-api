@@ -44,7 +44,7 @@ enable_service monasca
 #
 
 # devstack zookeeper
-enable_service zookeeper
+enable_service monasca-zookeeper
 
 # Monasca databases
 # MySQL is already enabled in devstack
@@ -53,7 +53,7 @@ enable_service monasca-influxdb
 # Apache Storm
 enable_service monasca-storm
 
-# monasca-kafka depends on devstack-dlm-zookeeper
+# monasca-kafka depends on monasca-zookeeper
 enable_service monasca-kafka
 
 #
@@ -161,6 +161,7 @@ MONASCA_DATABASE_USE_ORM=false
 
 # Other settings
 DOWNLOAD_FILE_TIMEOUT=${DOWNLOAD_FILE_TIMEOUT:-30}
+PLUGIN_FILES=$MONASCA_API_DIR/devstack/files
 
 # Public configuration
 ## monasca-statsd
