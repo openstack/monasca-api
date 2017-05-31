@@ -23,5 +23,10 @@ from monasca_common.repositories.exceptions import RepositoryException
 class MultipleMetricsException(RepositoryException):
     pass
 
+
+class UnsupportedDriverException(Exception):
+    pass
+
+
 __all__ = (AlreadyExistsException, DoesNotExistException, InvalidUpdateException,
-           RepositoryException, MultipleMetricsException)
+           RepositoryException, MultipleMetricsException, UnsupportedDriverException)

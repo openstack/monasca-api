@@ -58,6 +58,9 @@ Document Version: v2.0
       - [Status code](#status-code-1)
       - [Response Body](#response-body-1)
       - [Response Examples](#response-examples-1)
+- [Health Check](#heltchcheck)
+  - [Complex check](#complex_check)
+  - [Simple check](#simple_check)
 - [Metrics](#metrics)
   - [Create Metric](#create-metric)
     - [POST /v2.0/metrics](#post-v20metrics)
@@ -972,6 +975,35 @@ Returns a JSON version object with details about the specified version.
 }
 ```
 ___
+
+# Healthcheck
+The Monasca ApI comes with a built-in healthcheck mechanism. It is available in two flavours, both accessible
+under `/healthcheck` endopoint.
+
+## Complex check
+The complex check not only returns a response with success code if Monasca API is up and running by it also verifies if
+dependant components , such as __Kafka__, __Alarm database__ (MariadDB/MySQL, PostgreSQL), __Metrics database__ (Cassandra, InfluxdDB)
+are healthy too.
+
+Monasca API will respond with following codes:
+* 200 - both API and external components are healthy.
+* 503 - API is running but problems with peripheral components have been spotted.
+
+Example: `curl -XGET 192.168.10.6:8070/healthcheck`
+
+### Peripheral checks
+* __Kafka__ is considered healthy if connection to broker can be established and configured topics can be found.
+* __Alarm Database__ (MariaDB/MySQL, PostgreSQL) is considered healthy if connection to database can be established
+  and sample query can be executed.
+* __Time Series Database__ (TSDB) is considered healthy if: `InfluxDB` is set health check is verified according to the
+InfluxDB documentation ([/ping](https://docs.influxdata.com/influxdb/v1.1/tools/api/)), `Cassandra` is set health check is verified through new connection to the database.
+
+## Simple check
+The simple check only returns response only if Monasca API is up and running. It does not return any data
+because it is accessible only for `HEAD` request. If the Monasca Api is up and running the following response code:
+`204` is expected.
+
+Example: `curl -XHEAD 192.168.10.6:8070/healtcheck`
 
 # Metrics
 The metrics resource allows metrics to be created and queried. The `X-Auth-Token` is used to derive the tenant that submits metrics. Metrics are stored and scoped to the tenant that submits them, or if the `tenant_id` query parameter is specified and the tenant has the `monitoring-delegate` role, the metrics are stored using the specified tenant ID.  Note that several of the GET methods also support the tenant_id query parameter, but the `monasca-admin` role is required to get cross-tenant metrics, statistics, etc..
