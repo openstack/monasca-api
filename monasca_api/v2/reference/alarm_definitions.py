@@ -522,7 +522,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         result = (
             {u'alarm_actions': alarm_actions, u'ok_actions': ok_actions,
              u'description': description, u'match_by': match_by,
-             u'severity': severity, u'actions_enabled': u'true',
+             u'severity': severity, u'actions_enabled': True,
              u'undetermined_actions': undetermined_actions,
              u'expression': expression, u'id': alarm_definition_id,
              u'deterministic': is_definition_deterministic(expression),
