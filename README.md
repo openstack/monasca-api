@@ -7,24 +7,24 @@ Team and repository tags
 
 # Overview
 
-`monasca-api` is a RESTful API server that is designed with a layered architecture [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
+`monasca-api` is a RESTful API server that is designed with a [layered architecture](http://en.wikipedia.org/wiki/Multilayered_architecture).
 
 The full API Specification can be found in [docs/monasca-api-spec.md](docs/monasca-api-spec.md)
 
 ## Java Build
 
-Requires monasca-common from https://git.openstack.org/openstack/monasca-common. First clone this repository and then do mvn install. Then return to monasca-api and:
+Requires [monasca-common](https://github.com/openstack/monasca-common). First clone this repository and then do mvn install. Then return to monasca-api and:
 
     $ cd java
     $ mvn clean package
 
 # StackForge Java Build
 
-There is a pom.xml in the base directory that should only be used for the StackForge build. The StackForge build is a rather strange build because of the limitations of the current StackForge java jobs and infrastructure. We have found that the API runs faster if built with maven 3 but the StackForge nodes only have maven 2. This build checks the version of maven and if not maven 3, it downloads a version of maven 3 and uses it. This build depends on jars that are from monasca-common. That StrackForge build uploads the completed jars to http://tarballs.openstack.org/ci/monasca-common, but they are just regular jars, and not in a maven repository and sometimes zuul takes a long time to do the upload. Hence, the first thing the maven build from the base project does is invoke build_common.sh in the common directory. This script clones monasca-common and then invokes maven 3 to build monasca-common in the common directory and install the jars in the local maven repository.
+There is a pom.xml in the base directory that should only be used for the StackForge build. The StackForge build is a rather strange build because of the limitations of the current StackForge java jobs and infrastructure. We have found that the API runs faster if built with maven 3 but the StackForge nodes only have maven 2. This build checks the version of maven and if not maven 3, it downloads a version of maven 3 and uses it. This build depends on jars that are from monasca-common. That StrackForge build uploads the completed jars to http://tarballs.openstack.org/ci/monasca-common, but they are just regular jars, and not in a maven repository and sometimes zuul takes a long time to do the upload. Hence, the first thing the maven build from the base project does is invoke [build_common.sh](/common/build_common.sh) in the common directory. This script clones monasca-common and then invokes maven 3 to build monasca-common in the common directory and install the jars in the local maven repository.
 
 Since this is all rather complex, that part of the build only works on StackForge so follow the simple instruction above if you are building your own monasca-api.
 
-Currently this build is executed on the bare-precise nodes in StackForge and they only have maven 2. So, this build must be kept compatible with Maven 2. If another monasca-common jar is added as a dependency to java/pom.xml, it must also be added to download/download.sh.
+Currently this build is executed on the bare-precise nodes in StackForge and they only have maven 2. So, this build must be kept compatible with Maven 2. If another monasca-common jar is added as a dependency to [/java/pom.xml](/java/pom.xml), it must also be added to download/download.sh.
 
 Combining monasca-common, monasca-thresh, monasca-api and monasca-persister into one build would vastly simplify the builds but that is a future task.`
 
@@ -58,10 +58,10 @@ For secure operation of the Monasca API, the API must be configured to use Keyst
 ### Keystone Roles
 
 The Monasca API has two levels of access:
-# Full access - user can read/write metrics and Alarm Definitions and Alarms
-# Agent access - user can only write metrics
+* Full access - user can read/write metrics and Alarm Definitions and Alarms
+* Agent access - user can only write metrics
 
-The reason for the "Agent access" level is because the Monasca Agent must be configured to use a Keystone user. Since the user and password are configured onto the all of the systems running the Monasca Agent, this user is most in danger of being compromised. If this user is limited to only writing metrics, then the damage can be limited.
+The reason for the "Agent access" level is because the Monasca Agent must be configured to use a Keystone user. Since the user and password are configured on all of the systems running the Monasca Agent, this user is most in danger of being compromised. If this user is limited to only writing metrics, then the damage can be limited.
 
 To configure the user to have full access, the user must have a role that is listed in defaultAuthorizedRoles. To configure a user to have only "Agent access", the user must have a role in agentAuthorizedRoles and none of the roles in defaultAuthorizedRoles.
 
@@ -105,7 +105,7 @@ located::
     /etc/monasca/api-config.conf
     /etc/monasca/api-logging.conf
 
-Once the configurations are modified to match your environment, you can start
+Once the configuration files are modified to match your environment, you can start
 up the server by following the following instructions.
 
 To start the server, run the following command:
