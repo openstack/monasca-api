@@ -1,6 +1,6 @@
 # Copyright 2015 Robin Hood
 # Copyright 2016 FUJITSU LIMITED
-# (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ def create_a_model(metadata=None):
                  Column('state', String(20)),
                  Column('lifecycle_state', String(50)),
                  Column('link', String(512)),
+                 Column('inhibited', Boolean),
+                 Column('silenced', Boolean),
                  Column('created_at', DateTime),
                  Column('state_updated_at', DateTime),
                  Column('updated_at', DateTime))

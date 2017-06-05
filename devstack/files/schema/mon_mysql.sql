@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
+* (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 * Copyright 2017 FUJITSU LIMITED
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +43,8 @@ CREATE TABLE `alarm` (
   `state` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `lifecycle_state` varchar(50) DEFAULT NULL,
   `link` varchar(512) DEFAULT NULL,
+  `inhibited` tinyint(1) NOT NULL DEFAULT '0',
+  `silenced` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `state_updated_at` datetime,
   `updated_at` datetime NOT NULL,

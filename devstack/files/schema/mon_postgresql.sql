@@ -1,5 +1,6 @@
 ---
 -- # Copyright 2017 FUJITSU LIMITED
+-- # (C) Copyright 2017 Hewlett Packard Enterprise Development LP
 ---
 
 SET statement_timeout = 0;
@@ -38,6 +39,8 @@ CREATE TABLE alarm (
     updated_at timestamp without time zone NOT NULL,
     lifecycle_state character varying(50),
     link character varying(512),
+    inhibited boolean NOT NULL DEFAULT FALSE,
+    silenced boolean NOT NULL DEFAULT FALSE,
     state character varying(20) NOT NULL,
     state_updated_at timestamp without time zone,
     alarm_definition_id character varying(36) NOT NULL

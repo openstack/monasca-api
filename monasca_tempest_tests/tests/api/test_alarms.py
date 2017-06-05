@@ -1053,17 +1053,18 @@ class TestAlarms(base.BaseMonascaTest):
                 break
 
     def _verify_alarm_keys(self, response_body):
-        self.assertTrue(set(['id',
-                             'links',
-                             'alarm_definition',
-                             'metrics',
-                             'state',
-                             'lifecycle_state',
-                             'link',
-                             'state_updated_timestamp',
-                             'updated_timestamp',
-                             'created_timestamp']) ==
-                        set(response_body))
+        expected_keys = ['id',
+                         'links',
+                         'alarm_definition',
+                         'metrics',
+                         'state',
+                         'lifecycle_state',
+                         'link',
+                         'state_updated_timestamp',
+                         'updated_timestamp',
+                         'created_timestamp']
+        for key in expected_keys:
+            self.assertIn(key, response_body)
 
     def _verify_metric_in_alarm(self, metric, expected_metric):
         self.assertEqual(metric['dimensions'], expected_metric['dimensions'])

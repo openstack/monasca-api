@@ -267,6 +267,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                          u'state': alarm_row['state'],
                          u'lifecycle_state': alarm_row['lifecycle_state'],
                          u'link': alarm_row['link'],
+                         u'inhibited': alarm_row['inhibited'],
+                         u'silenced': alarm_row['silenced'],
                          u'state_updated_timestamp':
                              alarm_row['state_updated_timestamp'].isoformat() +
                              'Z',
@@ -322,6 +324,8 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                          u'state': alarm_row['state'],
                          u'lifecycle_state': alarm_row['lifecycle_state'],
                          u'link': alarm_row['link'],
+                         u'inhibited': alarm_row['inhibited'],
+                         u'silenced': alarm_row['silenced'],
                          u'state_updated_timestamp':
                              alarm_row['state_updated_timestamp'].isoformat() +
                              'Z',
