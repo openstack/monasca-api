@@ -3,3 +3,4 @@
 
 maven
 openjdk-8-jdk
+libssl-dev [platform:dpkg]
