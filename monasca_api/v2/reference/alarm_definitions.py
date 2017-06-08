@@ -131,7 +131,11 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
             res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
-    def on_put(self, req, res, alarm_definition_id):
+    def on_put(self, req, res, alarm_definition_id=None):
+
+        if not alarm_definition_id:
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               'Alarm definition ID not provided')
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
@@ -169,7 +173,11 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
-    def on_patch(self, req, res, alarm_definition_id):
+    def on_patch(self, req, res, alarm_definition_id=None):
+
+        if not alarm_definition_id:
+            raise HTTPUnprocessableEntityError('Unprocessable Entity',
+                                               'Alarm definition ID not provided')
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 

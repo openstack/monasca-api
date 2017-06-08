@@ -414,6 +414,26 @@ class TestAlarmDefinition(AlarmTestBase):
         result_def = json.loads(result[0])
         self.assertEqual(result_def, expected_def)
 
+    def test_alarm_definition_patch_no_id(self):
+        alarm_def = {
+            u'name': u'Test Alarm Definition Updated',
+        }
+
+        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                              method="PATCH", body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+
+    def test_alarm_definition_update_no_id(self):
+        alarm_def = {
+            u'name': u'Test Alarm Definition Updated',
+        }
+
+        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                              method="PUT", body=json.dumps(alarm_def))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+
     def test_alarm_definition_patch(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         description = u'Non-ASCII character: \u2603'
