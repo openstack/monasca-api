@@ -1,4 +1,5 @@
 # Copyright 2017 FUJITSU LIMITED
+# (C) Copyright 2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -147,8 +148,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         self.assertTrue(result.healthy)
         self.assertEqual('OK', result.message)
 
-    @mock.patch('monasca_api.healthcheck.metrics_db_check.cluster.Cluster')
-    def test_should_fail_cassandra_unavailable(self, cluster):
+    @mock.patch('monasca_api.healthcheck.metrics_db_check.importutils.try_import')
+    def test_should_fail_cassandra_unavailable(self, try_import):
         messaging_conf = {
             'metrics_driver': 'cassandra.metrics_repository:MetricsRepository'
         }
@@ -159,17 +160,40 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         self._conf.config(group='repositories', **messaging_conf)
         self._conf.config(group='cassandra', **cassandra_conf)
 
+        cluster = mock.Mock()
         cas_mock = mock.Mock()
-        cluster.side_effect = cl.NoHostAvailable(message='Host unavailable',
-                                                 errors='Unavailable')
-        cluster.return_value = cas_mock
+        cas_mock.side_effect = cl.NoHostAvailable(message='Host unavailable',
+                                                  errors='Unavailable')
+        cluster.Cluster = cas_mock
+        try_import.return_value = cluster
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
 
         self.assertFalse(result.healthy)
 
-    @mock.patch('monasca_api.healthcheck.metrics_db_check.cluster.Cluster')
+    @mock.patch('monasca_api.healthcheck.metrics_db_check.importutils.try_import')
+    def test_should_fail_cassandra_no_driver(self, try_import):
+        messaging_conf = {
+            'metrics_driver': 'cassandra.metrics_repository:MetricsRepository'
+        }
+        cassandra_conf = {
+            'cluster_ip_addresses': 'localhost',
+            'keyspace': 'test'
+        }
+        self._conf.config(group='repositories', **messaging_conf)
+        self._conf.config(group='cassandra', **cassandra_conf)
+
+        # Simulate cassandra driver not available
+        try_import.return_value = None
+
+        db_health = tdc.MetricsDbCheck()
+        db_health.cluster = None
+        result = db_health.health_check()
+
+        self.assertFalse(result.healthy)
+
+    @mock.patch('monasca_api.healthcheck.metrics_db_check.importutils.try_import')
     def test_should_pass_cassandra_is_available(self, _):
         messaging_conf = {
             'metrics_driver': 'cassandra.metrics_repository:MetricsRepository'
