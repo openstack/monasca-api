@@ -13,60 +13,70 @@ To run Monasca in DevStack, do the following three steps.
 
 1. Clone the DevStack repo.
 
-    git clone https://git.openstack.org/openstack-dev/devstack
+```
+git clone https://git.openstack.org/openstack-dev/devstack
+```
 
 2. Add the following to the DevStack local.conf file in the root of the devstack directory. You may
    need to create the local.conf if it does not already exist.
 
-    \# BEGIN DEVSTACK LOCAL.CONF CONTENTS
+# BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
-    [[local|localrc]]
-    DATABASE_PASSWORD=secretdatabase
-    RABBIT_PASSWORD=secretrabbit
-    ADMIN_PASSWORD=secretadmin
-    SERVICE_PASSWORD=secretservice
-    SERVICE_TOKEN=111222333444
+```
+[[local|localrc]]
+DATABASE_PASSWORD=secretdatabase
+RABBIT_PASSWORD=secretrabbit
+ADMIN_PASSWORD=secretadmin
+SERVICE_PASSWORD=secretservice
+SERVICE_TOKEN=111222333444
 
-    LOGFILE=$DEST/logs/stack.sh.log
-    LOGDIR=$DEST/logs
-    LOG_COLOR=False
+LOGFILE=$DEST/logs/stack.sh.log
+LOGDIR=$DEST/logs
+LOG_COLOR=False
 
-    \# The following two variables allow switching between Java and Python for the implementations
-    \# of the Monasca API and the Monasca Persister. If these variables are not set, then the
-    \# default is to install the Python implementations of both the Monasca API and the Monasca Persister.
+# The following two variables allow switching between Java and Python for the implementations
+# of the Monasca API and the Monasca Persister. If these variables are not set, then the
+# default is to install the Python implementations of both the Monasca API and the Monasca Persister.
 
-    \# Uncomment one of the following two lines to choose Java or Python for the Monasca API.
-    MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
-    \# MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+# Uncomment one of the following two lines to choose Java or Python for the Monasca API.
+MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
+# MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
 
-    \# Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
-    MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
-    \# MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
+# Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
+MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
+# MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
-    \# Uncomment one of the following two lines to choose either InfluxDB or Vertica.
-    MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
-    \# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
+# Uncomment one of the following two lines to choose either InfluxDB or Vertica.
+MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
+# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
 
-    \# This line will enable all of Monasca.
-    enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
+# This line will enable all of Monasca.
+enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
+```
 
-    \# END DEVSTACK LOCAL.CONF CONTENTS
+# END DEVSTACK LOCAL.CONF CONTENTS
 
 3.   Run './stack.sh' from the root of the devstack directory.
 
 If you want to run Monasca with the bare mininum of OpenStack components
 you can add the following two lines to the local.conf file.
 
-    disable_all_services
-    enable_service rabbit mysql key
+```
+disable_all_services
+enable_service rabbit mysql key
+```
 
 If you also want the Tempest tests to be installed then add `tempest`
 
-    enable_service rabbit mysql key tempest
+```
+enable_service rabbit mysql key tempest
+```
 
 To enable Horizon and the Monasca UI add `horizon`
 
-    enable_service rabbit mysql key horizon tempest
+```
+enable_service rabbit mysql key horizon tempest
+```
 
 # Using Vagrant
 
@@ -92,8 +102,8 @@ When using Vagrant, your home directory will normally be mounted inside the VM a
 
 2. Modify the environment variable `MONASCA_METRICS_DB` in the `local.conf`, `settings` or `Vagrantfile` file from influxdb to vertica as follows:
 
-    MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
-
+```
+MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
 ```
 
 ## Using PostgreSQL or MySQL
@@ -102,11 +112,13 @@ Monasca supports using both PostgreSQL and MySQL and so does this devstack plugi
 Enable either ```postgresql``` or ```mysql``` to use either of them.
 
 To setup environment with MySQL use:
+
 ```sh
 enable_service mysql
 ```
 
 Alternatively, for PostgreSQL, use:
+
 ```
 enable_service postgresql
 ```
