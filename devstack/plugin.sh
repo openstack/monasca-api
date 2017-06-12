@@ -46,6 +46,7 @@ set -o errexit
 
 # source lib/*
 source ${MONASCA_API_DIR}/devstack/lib/zookeeper
+source ${MONASCA_API_DIR}/devstack/lib/ui
 # source lib/*
 
 # Set default implementations to python
@@ -125,6 +126,7 @@ function install_monasca {
         sudo systemctl enable monasca-api
     fi
 
+    install_ui
     install_cli_creds
 }
 
@@ -133,13 +135,13 @@ function post_config_monasca {
     #(trebskit) Installing should happen in post-config phase
     # at this point databases is already configured
     install_schema
+    configure_ui
     configure_screen
 }
 
 function configure_screen {
     if [[ -n ${SCREEN_LOGDIR} ]]; then
         sudo ln -sf /var/log/influxdb/influxd.log ${SCREEN_LOGDIR}/screen-influxdb.log || true
-
         sudo ln -sf /var/log/monasca/api/monasca-api.log ${SCREEN_LOGDIR}/screen-monasca-api.log || true
 
         sudo ln -sf /var/log/monasca/persister/persister.log ${SCREEN_LOGDIR}/screen-monasca-persister.log || true
@@ -170,15 +172,9 @@ function extra_monasca {
     install_monasca_agent
 
     if is_service_enabled horizon; then
-
-        install_monasca_horizon_ui
-
         install_node_nvm
-
         install_go
-
         install_monasca_grafana
-
     fi
 
     start_monasca_services
@@ -239,19 +235,13 @@ function clean_monasca {
     set +o errexit
 
     unstack_monasca
+    clean_ui
 
     if is_service_enabled horizon; then
-
-        clean_monasca_horizon_ui
-
         clean_node_nvm
-
         clean_monasca_grafana
-
         clean_go
-
     fi
-
 
     if is_service_enabled monasca-agent; then
         clean_monasca_agent
@@ -1636,49 +1626,6 @@ function clean_monasca_agent {
     apt_get -y purge libxslt1-dev
     apt_get -y purge libxml2-dev
     apt_get -y purge python-yaml
-
-}
-
-function install_monasca_horizon_ui {
-
-    echo_summary "Install Monasca Horizon UI"
-
-    git_clone $MONASCA_UI_REPO $MONASCA_UI_DIR $MONASCA_UI_BRANCH
-    (cd "${MONASCA_UI_DIR}" ; sudo python setup.py sdist)
-
-    pip_install_gr python-monascaclient
-
-    sudo ln -sf "${MONASCA_UI_DIR}"/monitoring/enabled/_50_admin_add_monitoring_panel.py "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
-
-    sudo ln -sf "${MONASCA_UI_DIR}"/monitoring "${MONASCA_BASE}"/horizon/monitoring
-
-    if [[ ${SERVICE_HOST} ]]; then
-
-        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': \"http:\/\/${SERVICE_HOST}:3000\", }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
-
-    else
-
-        sudo sed -i "s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': 'http://localhost:3000', }#g" "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
-
-    fi
-
-    sudo python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
-
-    sudo python "${MONASCA_BASE}"/horizon/manage.py compress --force
-
-    restart_service apache2
-
-}
-
-function clean_monasca_horizon_ui {
-
-    echo_summary "Clean Monasca Horizon UI"
-
-    sudo rm -f "${MONASCA_BASE}"/horizon/openstack_dashboard/local/enabled/_50_admin_add_monitoring_panel.py
-
-    sudo rm -f "${MONASCA_BASE}"/horizon/monitoring
-
-    sudo rm -rf "${MONASCA_UI_DIR}"
 
 }
 
