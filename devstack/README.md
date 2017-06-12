@@ -20,9 +20,9 @@ git clone https://git.openstack.org/openstack-dev/devstack
 2. Add the following to the DevStack local.conf file in the root of the devstack directory. You may
    need to create the local.conf if it does not already exist.
 
+```
 # BEGIN DEVSTACK LOCAL.CONF CONTENTS
 
-```
 [[local|localrc]]
 DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
@@ -52,9 +52,9 @@ MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 
 # This line will enable all of Monasca.
 enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
-```
 
 # END DEVSTACK LOCAL.CONF CONTENTS
+```
 
 3.   Run './stack.sh' from the root of the devstack directory.
 
@@ -82,7 +82,7 @@ enable_service rabbit mysql key horizon tempest
 
 Vagrant can be used to deploy a VM with Devstack and Monasca running in it using the Vagrantfile. After installing Vagrant, just run the command `vagrant up` as usual in the `../monasca-api/devstack` directory.
 
-To use local repositories in the devstack install, commit your changes to the master branch of the local repo, then modify the '_REPO' variable in the settings file that corresponds to the local repo to use ```file://my/local/repo/location```.
+To use local repositories in the devstack install, commit your changes to the master branch of the local repo, then modify the `_REPO` variable in the settings file that corresponds to the local repo to use ```file://my/local/repo/location```.
 To use a local instance of the monasca-api repo, change the ```enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api``` to ```enable_plugin monasca-api file://my/repo/is/here```. Both of these settings will only take effect on a rebuild of the devstack VM.
 
 ## Enable Vertica as the Metrics DB using Vagrant
