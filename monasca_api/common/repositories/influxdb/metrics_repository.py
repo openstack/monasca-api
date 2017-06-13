@@ -724,9 +724,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def _build_offset_clause(self, offset):
-
         if offset:
-            offset_clause = " and time > '{}'".format(offset)
+            # offset may be given as a timestamp or as epoch time in ms
+            if str(offset).isdigit():
+                # epoch time
+                offset_clause = " and time > {}ms".format(offset)
+            else:
+                # timestamp
+                offset_clause = " and time > '{}'".format(offset)
         else:
             offset_clause = ""
 
