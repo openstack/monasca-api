@@ -434,6 +434,13 @@ class TestAlarmDefinition(AlarmTestBase):
 
         self.assertEqual(self.srmock.status, falcon.HTTP_422)
 
+    def test_alarm_definition_delete_no_id(self):
+
+        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
+                              method="DELETE")
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+
     def test_alarm_definition_patch(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         description = u'Non-ASCII character: \u2603'
