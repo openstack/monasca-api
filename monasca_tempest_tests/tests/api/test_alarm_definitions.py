@@ -1088,7 +1088,7 @@ class TestAlarmDefinitions(base.BaseMonascaTest):
             self.assertEqual(alarm_definition['match_by'],
                              response_body['match_by'])
         else:
-            self.assertEqual([], response_body['match_by'])
+            self.assertEmpty(response_body['match_by'])
         if 'severity' in alarm_definition:
             self.assertEqual(alarm_definition['severity'],
                              str(response_body['severity']))
