@@ -422,7 +422,7 @@ class TestAlarmDefinition(AlarmTestBase):
         self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
                               method="PATCH", body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_alarm_definition_update_no_id(self):
         alarm_def = {
@@ -432,14 +432,14 @@ class TestAlarmDefinition(AlarmTestBase):
         self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
                               method="PUT", body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_alarm_definition_delete_no_id(self):
 
         self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
                               method="DELETE")
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_alarm_definition_patch(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []

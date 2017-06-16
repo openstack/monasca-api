@@ -24,6 +24,7 @@ import pyparsing
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions
 import monasca_api.expression_parser.alarm_expr_parser
+from monasca_api.v2.common.exceptions import HTTPBadRequestError
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 from monasca_api.v2.common.schemas import (
     alarm_definition_request_body_schema as schema_alarms)
@@ -134,8 +135,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
     def on_put(self, req, res, alarm_definition_id=None):
 
         if not alarm_definition_id:
-            raise HTTPUnprocessableEntityError('Unprocessable Entity',
-                                               'Alarm definition ID not provided')
+            raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
@@ -176,8 +176,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
     def on_patch(self, req, res, alarm_definition_id=None):
 
         if not alarm_definition_id:
-            raise HTTPUnprocessableEntityError('Unprocessable Entity',
-                                               'Alarm definition ID not provided')
+            raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
         helpers.validate_authorization(req, self._default_authorized_roles)
 
@@ -225,8 +224,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
     def on_delete(self, req, res, alarm_definition_id=None):
 
         if not alarm_definition_id:
-            raise HTTPUnprocessableEntityError('Unprocessable Entity',
-                                               'Alarm definition ID not provided')
+            raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
         helpers.validate_authorization(req, self._default_authorized_roles)
         self._alarm_definition_delete(req.project_id, alarm_definition_id)

@@ -1,4 +1,4 @@
-# (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright 2015,2016,2017 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,3 +18,8 @@ from falcon.http_error import HTTPError
 class HTTPUnprocessableEntityError(HTTPError):
     def __init__(self, title, description, **kwargs):
         HTTPError.__init__(self, '422 Unprocessable Entity', title, description, **kwargs)
+
+
+class HTTPBadRequestError(HTTPError):
+    def __init__(self, title, description, **kwargs):
+        HTTPError.__init__(self, '400 Bad Request', title, description, **kwargs)
