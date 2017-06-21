@@ -1,4 +1,5 @@
 # Copyright 2017 FUJITSU LIMITED
+# (C) Copyright 2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,9 +15,9 @@
 
 import requests
 
-from cassandra import cluster
 from oslo_config import cfg
 from oslo_log import log
+from oslo_utils import importutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.healthcheck import base
@@ -42,11 +43,19 @@ class MetricsDbCheck(base.BaseHealthCheck):
     Otherwise unhealthy status is returned with explanation.
     """
 
-    def health_check(self):
+    def __init__(self):
+        # Try to import cassandra. Not a problem if it can't be imported as long
+        # as the metrics db is influx
+        self._cluster = importutils.try_import('cassandra.cluster', None)
         metric_driver = CONF.repositories.metrics_driver
-        db = self._detected_database_type(metric_driver)
+        self._db = self._detected_database_type(metric_driver)
+        if self._db == 'cassandra' and self._cluster is None:
+            # Should not happen, but log if it does somehow
+            LOG.error("Metrics Database is Cassandra but cassandra.cluster"
+                      "not importable. Unable to do health check")
 
-        if db == 'influxdb':
+    def health_check(self):
+        if self._db == 'influxdb':
             status = self._check_influxdb_status()
         else:
             status = self._check_cassandra_status()
@@ -63,8 +72,7 @@ class MetricsDbCheck(base.BaseHealthCheck):
             raise exceptions.UnsupportedDriverException(
                 'Driver {0} is not supported by Healthcheck'.format(driver))
 
-    @staticmethod
-    def _check_influxdb_status():
+    def _check_influxdb_status(self):
         uri = 'http://{0}:{1}/ping'.format(CONF.influxdb.ip_address,
                                            CONF.influxdb.port)
         try:
@@ -75,10 +83,11 @@ class MetricsDbCheck(base.BaseHealthCheck):
         return resp.ok, 'OK' if resp.ok else 'Error: {0}'.format(
             resp.status_code)
 
-    @staticmethod
-    def _check_cassandra_status():
+    def _check_cassandra_status(self):
+        if self._cluster is None:
+            return False, "Cassandra driver not imported"
         try:
-            cassandra = cluster.Cluster(
+            cassandra = self._cluster.Cluster(
                 CONF.cassandra.cluster_ip_addresses.split(',')
             )
             session = cassandra.connect(CONF.cassandra.keyspace)
