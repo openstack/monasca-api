@@ -168,7 +168,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                         severity,
                                                         patch=False)
 
-        helpers.add_links_to_resource(result, req.uri)
+        helpers.add_links_to_resource(
+            result, re.sub('/' + alarm_definition_id, '', req.uri))
         res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
@@ -216,7 +217,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                         severity,
                                                         patch=True)
 
-        helpers.add_links_to_resource(result, req.uri)
+        helpers.add_links_to_resource(
+            result, re.sub('/' + alarm_definition_id, '', req.uri))
         res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
