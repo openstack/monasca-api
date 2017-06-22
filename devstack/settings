@@ -166,6 +166,7 @@ MONASCA_DATABASE_USE_ORM=false
 # Other settings
 DOWNLOAD_FILE_TIMEOUT=${DOWNLOAD_FILE_TIMEOUT:-30}
 PLUGIN_FILES=$MONASCA_API_DIR/devstack/files
+# APACHE_MIRROR=  # force specific APACHE_MIRROR if the one that got picked fails
 
 # Public configuration
 ## monasca-statsd

@@ -317,7 +317,7 @@ function install_kafka {
     echo_summary "Install Monasca Kafka"
 
     local kafka_tarball=kafka_${KAFKA_VERSION}.tgz
-    local kafka_tarball_url=${apache_mirror}kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
+    local kafka_tarball_url=${APACHE_MIRROR}kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
     local kafka_tarball_dest=${FILES}/${kafka_tarball}
 
     download_file ${kafka_tarball_url} ${kafka_tarball_dest}
@@ -1297,7 +1297,7 @@ function install_storm {
     echo_summary "Install Monasca Storm"
 
     local storm_tarball=apache-storm-${STORM_VERSION}.tar.gz
-    local storm_tarball_url=${apache_mirror}storm/apache-storm-${STORM_VERSION}/${storm_tarball}
+    local storm_tarball_url=${APACHE_MIRROR}storm/apache-storm-${STORM_VERSION}/${storm_tarball}
     local storm_tarball_dest=${FILES}/${storm_tarball}
 
     download_file ${storm_tarball_url} ${storm_tarball_dest}
@@ -1839,8 +1839,13 @@ function install_gate_config_holder {
 }
 
 function find_nearest_apache_mirror {
-    apache_mirror=`curl -s 'https://www.apache.org/dyn/closer.cgi?as_json=1' | jq --raw-output '.preferred'`
+    if [ -z $APACHE_MIRROR ]; then
+        local mirror;
+        mirror=`curl -s 'https://www.apache.org/dyn/closer.cgi?as_json=1' | jq --raw-output '.preferred'`
+        APACHE_MIRROR=$mirror
+    fi
 }
+
 
 # check for service enabled
 if is_service_enabled monasca; then

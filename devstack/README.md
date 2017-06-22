@@ -133,6 +133,15 @@ a.k.a.
 enable_service postgresql
 ```
 
+## Enforcing Apache mirror
+
+If, for any reason, ```APACHE_MIRROR``` that is picked is not working, you can
+enforce it in following way:
+
+```sh
+APACHE_MIRROR=http://www-us.apache.org/dist/
+```
+
 # License
 
 (c) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
