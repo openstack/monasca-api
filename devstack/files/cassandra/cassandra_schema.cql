@@ -41,6 +41,6 @@ create table monasca.alarm_state_history (
     reason_data text,
     sub_alarms text,
     time_stamp timestamp,
-primary key ((tenant_id), alarm_id, time_stamp)
+primary key ((tenant_id, alarm_id), time_stamp)
 );
 
