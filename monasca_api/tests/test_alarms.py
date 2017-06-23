@@ -381,7 +381,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'ok_actions': [],
             u'description': u'Non-ASCII character: \u2603',
             u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
-                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                                 u'00000001-0001-0001-0001-000000000001',
                         u'rel': u'self'}],
             u'match_by': [u'hostname'],
             u'name': u'Test Alarm',
@@ -495,7 +495,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'ok_actions': [],
             u'description': description,
             u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
-                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                                 u'00000001-0001-0001-0001-000000000001',
                         u'rel': u'self'}],
             u'match_by': [match_by],
             u'name': new_name,
@@ -597,7 +597,7 @@ class TestAlarmDefinition(AlarmTestBase):
             u'ok_actions': [],
             u'description': u'Non-ASCII character: \u2603',
             u'links': [{u'href': u'http://falconframework.org/v2.0/alarm-definitions/'
-                                 u'00000001-0001-0001-0001-000000000001/00000001-0001-0001-0001-000000000001',
+                                 u'00000001-0001-0001-0001-000000000001',
                         u'rel': u'self'}],
             u'match_by': [u'hostname'],
             u'name': u'Test Alarm',
