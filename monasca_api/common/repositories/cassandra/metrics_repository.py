@@ -215,7 +215,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
-                         limit, merge_metrics_flag):
+                         limit, merge_metrics_flag, group_by):
 
         try:
 
@@ -258,7 +258,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def _get_measurements(self, tenant_id, region, name, dimensions,
                           start_timestamp, end_timestamp, offset, limit,
-                          merge_metrics_flag):
+                          merge_metrics_flag, group_by):
 
         metric_list = self.list_metrics(tenant_id, region, name,
                                         dimensions, None, None,
@@ -374,7 +374,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def metrics_statistics(self, tenant_id, region, name, dimensions,
                            start_timestamp, end_timestamp, statistics,
-                           period, offset, limit, merge_metrics_flag):
+                           period, offset, limit, merge_metrics_flag, group_by):
 
         try:
 
