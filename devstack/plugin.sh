@@ -510,16 +510,6 @@ function install_monasca_cassandra {
     export CQLSH_NO_BUNDLED=true
     pip_install_gr cassandra-driver
 
-    if [[ ${SERVICE_HOST} ]]; then
-
-        /usr/bin/cqlsh ${SERVICE_HOST} -f "${MONASCA_API_DIR}"/devstack/files/cassandra/cassandra_schema.cql
-
-    else
-
-        /usr/bin/cqlsh -f "${MONASCA_API_DIR}"/devstack/files/cassandra/cassandra_schema.cql
-
-    fi
-
 }
 
 function clean_monasca_influxdb {
@@ -648,6 +638,15 @@ function install_schema_metric_database_vertica {
     /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/mon_alarms.sql
     /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/roles.sql
     /opt/vertica/bin/vsql -U dbadmin -w password < "${MONASCA_API_DIR}"/devstack/files/vertica/users.sql
+}
+
+function install_schema_metric_database_cassandra {
+    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/cassandra/cassandra_schema.cql $MONASCA_SCHEMA_DIR/cassandra_schema.cql
+    if [[ ${SERVICE_HOST} ]]; then
+        /usr/bin/cqlsh ${SERVICE_HOST} -f $MONASCA_SCHEMA_DIR/cassandra_schema.cql
+    else
+        /usr/bin/cqlsh -f $MONASCA_SCHEMA_DIR/cassandra_schema.cql
+    fi
 }
 
 function install_schema_kafka_topics {
