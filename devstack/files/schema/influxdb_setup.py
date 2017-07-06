@@ -46,6 +46,7 @@ def format_response(req):
     try:
         json_value = json.loads(req.read())
         if (len(json_value['results'][0]) > 0 and
+           'series' in json_value['results'][0] and
            'values' in json_value['results'][0]['series'][0]):
             return json_value['results'][0]['series'][0]['values']
         else:
