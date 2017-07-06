@@ -89,7 +89,7 @@ enable_service monasca-cli
 # to deploy either the Java or Python API without having to
 # also set the INFLUXDB_VERSION when switching between the two.
 INFLUXDB_JAVA_VERSION=${INFLUXDB_JAVA_VERSION:-0.9.5}
-INFLUXDB_PYTHON_VERSION=${INFLUXDB_PYTHON_VERSION:-1.1.5}
+INFLUXDB_PYTHON_VERSION=${INFLUXDB_PYTHON_VERSION:-1.2.4}
 
 # To set the same version of InfluxDB for both languages use the
 # following variable. This will override both the Java and Python
