@@ -61,17 +61,25 @@ cfg.CONF.register_opts(dispatcher_opts, dispatcher_group)
 
 LOG = log.getLogger(__name__)
 
+_CONF_LOADED = False
+
 
 def launch(conf):
-    # use default, but try to access one passed from conf first
-    config_file = conf.get('config_file', "/etc/monasca/api-config.conf")
+    global _CONF_LOADED
+    if not _CONF_LOADED:
+        # use default, but try to access one passed from conf first
+        config_file = conf.get('config_file', "/etc/monasca/api-config.conf")
 
-    log.register_options(cfg.CONF)
-    log.set_defaults()
-    cfg.CONF(args=[],
-             project='monasca_api',
-             default_config_files=[config_file])
-    log.setup(cfg.CONF, 'monasca_api')
+        log.register_options(cfg.CONF)
+        log.set_defaults()
+        cfg.CONF(args=[],
+                 project='monasca_api',
+                 default_config_files=[config_file])
+        log.setup(cfg.CONF, 'monasca_api')
+        LOG.debug('Configuration loaded successfully')
+        _CONF_LOADED = True
+    else:
+        LOG.debug('Configuration has already been loaded')
 
     app = falcon.API(request_type=request.Request)
 
