@@ -18,6 +18,7 @@ import falcon
 from monasca_common.simport import simport
 from oslo_config import cfg
 from oslo_log import log
+import six
 
 from monasca_api.api import alarms_api_v2
 from monasca_api.common.repositories import exceptions
@@ -126,7 +127,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 query_parms['severity'] = query_parms['severity'].upper()
 
             if 'sort_by' in query_parms:
-                if isinstance(query_parms['sort_by'], basestring):
+                if isinstance(query_parms['sort_by'], six.string_types):
                     query_parms['sort_by'] = query_parms['sort_by'].split(',')
 
                 allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'alarm_definition_name',

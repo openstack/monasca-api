@@ -20,6 +20,7 @@ from monasca_common.validation import metrics as metric_validation
 from oslo_config import cfg
 from oslo_log import log
 import pyparsing
+import six
 
 from monasca_api.api import alarm_definitions_api_v2
 from monasca_api.common.repositories import exceptions
@@ -96,7 +97,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                 severity = severity.upper()
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
-                if isinstance(sort_by, basestring):
+                if isinstance(sort_by, six.string_types):
                     sort_by = sort_by.split(',')
 
                 allowed_sort_by = {'id', 'name', 'severity',

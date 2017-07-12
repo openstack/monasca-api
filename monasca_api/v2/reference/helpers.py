@@ -169,7 +169,7 @@ def get_query_dimensions(req, param_key='dimensions'):
             return dimensions
 
         dimensions_param = params[param_key]
-        if isinstance(dimensions_param, basestring):
+        if isinstance(dimensions_param, six.string_types):
             dimensions_str_array = dimensions_param.split(',')
         elif isinstance(dimensions_param, list):
             dimensions_str_array = []
