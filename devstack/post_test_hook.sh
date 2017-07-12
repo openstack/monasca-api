@@ -66,7 +66,7 @@ function set_tempest_conf {
 
 }
 
-function  function_exists {
+function function_exists {
     declare -f -F $1 > /dev/null
 }
 

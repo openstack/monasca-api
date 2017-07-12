@@ -45,8 +45,8 @@ ERREXIT=$(set +o | grep errexit)
 set -o errexit
 
 # source lib/*
-source ${MONASCA_API_DIR}/devstack/lib/zookeeper
-source ${MONASCA_API_DIR}/devstack/lib/ui
+source ${MONASCA_API_DIR}/devstack/lib/zookeeper.sh
+source ${MONASCA_API_DIR}/devstack/lib/ui.sh
 # source lib/*
 
 # Set default implementations to python
