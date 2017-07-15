@@ -36,6 +36,9 @@ is_monasca_notification_enabled() {
 
 # NOTE(trebskit) ref: stack_install_service from devstack
 install_monasca-notification() {
+    if ! is_monasca_notification_enabled; then
+        return
+    fi
     echo_summary "Installing monasca-notification"
 
     git_clone ${MONASCA_NOTIFICATION_REPO} ${MONASCA_NOTIFICATION_DIR} \
@@ -61,7 +64,7 @@ install_monasca-notification() {
     fi
 }
 
-configure_monasca_notification() {
+configure_monasca-notification() {
     if ! is_monasca_notification_enabled; then
         return
     fi
@@ -109,21 +112,21 @@ configure_monasca_notification() {
 
 }
 
-start_monasca_notification(){
+start_monasca-notification(){
     if is_monasca_notification_enabled; then
         echo_summary "Starting monasca-notification"
         run_process "monasca-notification" "$MONASCA_NOTIFICATION_BIN_DIR/monasca-notification $MONASCA_NOTIFICATION_CONF"
     fi
 }
 
-stop_monasca_notification(){
+stop_monasca-notification(){
     if is_monasca_notification_enabled; then
         echo_summary "Stopping monasca-notification"
         stop_process "monasca-notification" || true
     fi
 }
 
-clean_monasca_notification() {
+clean_monasca-notification() {
     if ! is_monasca_notification_enabled; then
         return
     fi
@@ -141,6 +144,5 @@ clean_monasca_notification() {
         apt_get -y purge python-mysqldb
     fi
 }
-
 
 ${_XTRACE_MON_NOTIFICATION}

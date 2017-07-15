@@ -40,7 +40,7 @@ metricConfiguration:
 #Kafka settings.
 kafkaConfig:
 # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
-  zookeeperConnect: "127.0.0.1:2181"
+  zookeeperConnect: "%ZOOKEEPER_HOST%:2181"
   socketTimeoutMs: 30000
   socketReceiveBufferBytes : 65536
   fetchMessageMaxBytes: 1048576
@@ -60,8 +60,7 @@ verticaMetricRepoConfig:
   maxCacheSize: 2000000
 
 databaseConfiguration:
-# vertica | influxdb
-  databaseType: influxdb
+  databaseType: %MONASCA_PERSISTER_DB_TYPE%
 
 # Uncomment if databaseType is influxdb
 influxDbConfiguration:
@@ -70,7 +69,7 @@ influxDbConfiguration:
   maxHttpConnections: 100
   gzip: true
   name: "mon"
-  url: "http://127.0.0.1:8086"
+  url: "http://%INFLUXDB_HOST%:8086"
   user: "mon_persister"
   password: "password"
 
@@ -78,7 +77,7 @@ influxDbConfiguration:
 # Uncomment if databaseType is vertica
 dataSourceFactory:
   driverClass: com.vertica.jdbc.Driver
-  url: "jdbc:vertica://localhost:5433/mon"
+  url: "jdbc:vertica://%VERTICA_HOST%:5433/mon"
   user: "mon_persister"
   password: "password"
   properties:
@@ -120,8 +119,8 @@ logging:
     - type: file
       threshold: INFO
       archive: true
-      currentLogFilename: "/var/log/monasca/persister/monasca-persister.log"
-      archivedLogFilenamePattern: "/var/log/monasca/persister/monasca-persister.log-%d.log.gz"
+      currentLogFilename: "%MONASCA_PERSISTER_LOG_DIR%/monasca-persister.log"
+      archivedLogFilenamePattern: "%MONASCA_PERSISTER_LOG_DIR%/monasca-persister.log-%d.log.gz"
       archivedFileCount: 5
       # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
       timeZone: UTC
@@ -129,9 +128,9 @@ logging:
 server:
   applicationConnectors:
     - type: http
-      port: 8090
-      bindHost: 127.0.0.1
+      port: %MONASCA_PERSISTER_APP_PORT%
+      bindHost: %MONASCA_PERSISTER_BIND_HOST%
   adminConnectors:
     - type: http
-      port: 8091
-      bindHost: 127.0.0.1
+      port: %MONASCA_PERSISTER_ADMIN_PORT%
+      bindHost: %MONASCA_PERSISTER_BIND_HOST%
