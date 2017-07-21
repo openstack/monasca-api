@@ -126,17 +126,33 @@ configure_monasca_persister_python() {
     # ensure fresh installation of configuration files
     rm -rf ${MONASCA_PERSISTER_CONF} ${MONASCA_PERSISTER_LOGGING_CONF}
 
-    install -m 600 ${MONASCA_PERSISTER_DIR}/etc/monasca/persister.conf ${MONASCA_PERSISTER_CONF}
+    $MONASCA_PERSISTER_BIN_DIR/oslo-config-generator \
+            --config-file $MONASCA_PERSISTER_DIR/config-generator/persister.conf \
+            --output-file /tmp/persister.conf
+
     install -m 600 ${MONASCA_PERSISTER_DIR}/etc/monasca/persister-logging.conf ${MONASCA_PERSISTER_LOGGING_CONF}
+
+    install -m 600 /tmp/persister.conf ${MONASCA_PERSISTER_CONF} && rm -rf /tmp/persister.conf
 
     iniset "$MONASCA_PERSISTER_CONF" DEFAULT log_config_append ${MONASCA_PERSISTER_LOGGING_CONF}
 
-    iniset "$MONASCA_PERSISTER_CONF" zookeeper uri "${SERVICE_HOST}:2181"
-    iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history uri "${SERVICE_HOST}:9092"
-    iniset "$MONASCA_PERSISTER_CONF" kafka_metrics uri "${SERVICE_HOST}:9092"
+    iniset "$MONASCA_PERSISTER_CONF" kafka num_processors 1
+
+    iniset "$MONASCA_PERSISTER_CONF" kafka_metrics uri $SERVICE_HOST:9092
+    iniset "$MONASCA_PERSISTER_CONF" kafka_metrics group_id 1_metrics
+    iniset "$MONASCA_PERSISTER_CONF" kafka_metrics topic metrics
+
+    iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history uri $SERVICE_HOST:9092
+    iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history group_id 1_alarm-state-transitions
+    iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history topic alarm-state-transitions
+
+    iniset "$MONASCA_PERSISTER_CONF" zookeeper uri $SERVICE_HOST:2181
 
     if [[ "${MONASCA_METRICS_DB,,}" == 'influxdb' ]]; then
+        iniset "$MONASCA_PERSISTER_CONF" influxdb database_name mon
         iniset "$MONASCA_PERSISTER_CONF" influxdb ip_address ${SERVICE_HOST}
+        iniset "$MONASCA_PERSISTER_CONF" influxdb port 8086
+        iniset "$MONASCA_PERSISTER_CONF" influxdb password password
         iniset "$MONASCA_PERSISTER_CONF" repositories metrics_driver ${M_REPO_DRIVER_INFLUX}
         iniset "$MONASCA_PERSISTER_CONF" repositories alarm_state_history_driver ${AH_REPO_DRIVER_INFLUX}
     else
