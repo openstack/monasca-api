@@ -1311,6 +1311,10 @@ function install_monasca_grafana {
     sudo chown -R grafana:grafana /var/lib/grafana /var/log/grafana
 
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/grafana/grafana.ini /etc/grafana/grafana.ini
+    sudo sed -e "
+        s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
+    " -i /etc/grafana/grafana.ini
+
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/grafana/grafana-server /etc/init.d/grafana-server
     sudo sed -i "s#/usr/sbin#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana/grafana/bin#g" /etc/init.d/grafana-server
     sudo sed -i "s#/usr/share#"${MONASCA_BASE}"/grafana-build/src/github.com/grafana#g" /etc/init.d/grafana-server
