@@ -76,8 +76,9 @@ def validate_authorization(req, authorized_roles):
     different set of roles).
 
     :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
-    request header.
+                request header.
     :param authorized_roles: List of authorized roles to check against.
+
     :raises falcon.HTTPUnauthorized
     """
     roles = req.roles
@@ -103,7 +104,8 @@ def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
 
     :param req: HTTP request object.
     :param delegate_authorized_roles: List of authorized roles that have
-    delegate privileges.
+                                      delegate privileges.
+
     :returns: Returns the cross tenant or tenant ID.
     """
     if any(x in set(delegate_authorized_roles) for x in req.roles):

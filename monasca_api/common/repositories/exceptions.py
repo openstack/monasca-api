@@ -28,5 +28,11 @@ class UnsupportedDriverException(Exception):
     pass
 
 
-__all__ = (AlreadyExistsException, DoesNotExistException, InvalidUpdateException,
-           RepositoryException, MultipleMetricsException, UnsupportedDriverException)
+__all__ = (
+    'AlreadyExistsException',
+    'DoesNotExistException',
+    'InvalidUpdateException',
+    'RepositoryException',
+    'MultipleMetricsException',
+    'UnsupportedDriverException'
+)
