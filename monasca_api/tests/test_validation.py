@@ -1,5 +1,6 @@
 # (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,11 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import unittest
-
 import falcon
 import mock
 
+from monasca_api.tests import base
 import monasca_api.v2.common.exceptions as common_exceptions
 import monasca_api.v2.common.schemas.alarm_definition_request_body_schema as schemas_alarm_defs
 import monasca_api.v2.common.schemas.exceptions as schemas_exceptions
@@ -26,7 +26,7 @@ import monasca_api.v2.common.validation as validation
 import monasca_api.v2.reference.helpers as helpers
 
 
-class TestStateValidation(unittest.TestCase):
+class TestStateValidation(base.BaseTestCase):
 
     VALID_STATES = "OK", "ALARM", "UNDETERMINED"
 
@@ -43,7 +43,7 @@ class TestStateValidation(unittest.TestCase):
                           validation.validate_alarm_state, 'BOGUS')
 
 
-class TestSeverityValidation(unittest.TestCase):
+class TestSeverityValidation(base.BaseTestCase):
 
     VALID_SEVERITIES = "LOW", "MEDIUM", "HIGH", "CRITICAL"
 
@@ -71,7 +71,7 @@ class TestSeverityValidation(unittest.TestCase):
                           '|'.join([self.VALID_SEVERITIES[0], 'BOGUS']))
 
 
-class TestRoleValidation(unittest.TestCase):
+class TestRoleValidation(base.BaseTestCase):
 
     def test_role_valid(self):
         req_roles = 'role0', 'rOlE1'
@@ -116,7 +116,7 @@ class TestRoleValidation(unittest.TestCase):
             helpers.validate_authorization, req, authorized_roles)
 
 
-class TestTimestampsValidation(unittest.TestCase):
+class TestTimestampsValidation(base.BaseTestCase):
 
     def test_valid_timestamps(self):
         start_time = '2015-01-01T00:00:00Z'
@@ -153,7 +153,7 @@ class TestTimestampsValidation(unittest.TestCase):
             start_timestamp, end_timestamp)
 
 
-class TestConvertTimeString(unittest.TestCase):
+class TestConvertTimeString(base.BaseTestCase):
 
     def test_valid_date_time_string(self):
         date_time_string = '2015-01-01T00:00:00Z'
@@ -183,7 +183,7 @@ class TestConvertTimeString(unittest.TestCase):
 valid_periods = [0, 60]
 
 
-class TestNotificationValidation(unittest.TestCase):
+class TestNotificationValidation(base.BaseTestCase):
 
     def test_validation_for_email(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com"}
@@ -194,16 +194,16 @@ class TestNotificationValidation(unittest.TestCase):
 
     def test_validation_exception_for_invalid_email_address(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
-        self.assertEqual("Address name@ is not of correct format", ex.message)
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
+        self.assertEqual("Address name@ is not of correct format", str(ex))
 
     def test_validation_exception_for_invalid_period_for_email(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com", "period": "60"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Period can only be set with webhooks", ex.message)
 
     def test_validation_for_webhook(self):
@@ -223,31 +223,31 @@ class TestNotificationValidation(unittest.TestCase):
 
     def test_validation_exception_for_webhook_no_scheme(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Address //somedomain.com does not have URL scheme", ex.message)
 
     def test_validation_exception_for_webhook_no_netloc(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Address http:// does not have network location", ex.message)
 
     def test_validation_exception_for_webhook_invalid_scheme(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "ftp://somedomain.com"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Address ftp://somedomain.com scheme is not in ['http', 'https']", ex.message)
 
     def test_validation_exception_for_webhook_invalid_period(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
                         "period": "10"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("10 is not a valid period, not in [0, 60]", ex.message)
 
     def test_validation_for_pagerduty(self):
@@ -261,9 +261,9 @@ class TestNotificationValidation(unittest.TestCase):
     def test_validation_exception_for_invalid_period_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
                         "address": "nzH2LVRdMzun11HNC2oD", "period": 60}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Period can only be set with webhooks", ex.message)
 
     def test_validation_for_max_name_address(self):
@@ -283,7 +283,8 @@ class TestNotificationValidation(unittest.TestCase):
         notification = {"name": name, "type": "WEBHOOK", "address": "http://somedomain.com"}
         self.assertRaises(
             schemas_exceptions.ValidationException,
-            schemas_notifications.parse_and_validate, notification, valid_periods)
+            schemas_notifications.parse_and_validate,
+            notification, valid_periods)
 
     def test_validation_exception_for_exceeded_address_length(self):
         address = "http://" + "A" * 503 + ".io"
@@ -296,30 +297,31 @@ class TestNotificationValidation(unittest.TestCase):
     def test_validation_exception_for_invalid_period_float(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
                         "period": 1.2}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("expected int for dictionary value @ data['period']", ex.message)
 
     def test_validation_exception_for_invalid_period_non_int(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "//somedomain.com",
                         "period": "zero"}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods)
         self.assertEqual("Period zero must be a valid integer", ex.message)
 
     def test_validation_exception_for_missing_period(self):
         notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain."}
-        with self.assertRaises(schemas_exceptions.ValidationException) as ve:
-            schemas_notifications.parse_and_validate(notification, valid_periods, require_all=True)
-        ex = ve.exception
+        ex = self.assertRaises(schemas_exceptions.ValidationException,
+                               schemas_notifications.parse_and_validate,
+                               notification, valid_periods, require_all=True)
         self.assertEqual("Period is required", ex.message)
 
 
-class TestAlarmDefinitionValidation(unittest.TestCase):
+class TestAlarmDefinitionValidation(base.BaseTestCase):
 
     def setUp(self):
+        super(TestAlarmDefinitionValidation, self).setUp()
         self.full_alarm_definition = (
             {"name": self._create_string_of_length(255),
              "expression": "min(cpu.idle_perc) < 10",

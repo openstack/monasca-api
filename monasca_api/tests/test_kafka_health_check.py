@@ -13,12 +13,11 @@
 # under the License.
 
 import mock
-from oslo_config import fixture as oo_cfg
-from oslotest import base
 
 from monasca_common.kafka_lib import client
 
 from monasca_api.healthcheck import kafka_check as kc
+from monasca_api.tests import base
 from monasca_api.v2.reference import cfg
 
 CONF = cfg.CONF
@@ -43,8 +42,7 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
 
     def setUp(self):
         super(TestKafkaHealthCheckLogic, self).setUp()
-        self._conf = self.useFixture(oo_cfg.Config(CONF))
-        self._conf.config(group='kafka', **self.mocked_config)
+        self.conf_default(group='kafka', **self.mocked_config)
 
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_fail_kafka_unavailable(self, kafka_client):

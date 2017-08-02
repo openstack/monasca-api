@@ -13,12 +13,11 @@
 # under the License.
 
 import falcon
-from falcon import testing
 import mock
-from oslo_config import fixture as oo_cfg
 
 from monasca_api.healthcheck import base
 from monasca_api import healthchecks
+from monasca_api.tests import base as test_base
 from monasca_api.v2.reference import cfg
 from monasca_common.rest import utils
 
@@ -26,10 +25,7 @@ CONF = cfg.CONF
 ENDPOINT = '/healthcheck'
 
 
-class TestHealthChecks(testing.TestBase):
-    def setUp(self):
-        super(TestHealthChecks, self).setUp()
-        self.conf = self.useFixture(oo_cfg.Config(CONF))
+class TestHealthChecks(test_base.BaseApiTestCase):
 
     def set_route(self):
         self.resources = healthchecks.HealthChecks()

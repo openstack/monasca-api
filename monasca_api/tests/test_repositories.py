@@ -1,5 +1,6 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,27 +17,25 @@
 import binascii
 from collections import namedtuple
 from datetime import datetime
-import unittest
 
 from mock import patch
 
-import monasca_api.common.repositories.cassandra.metrics_repository as cassandra_repo
-import monasca_api.common.repositories.influxdb.metrics_repository as influxdb_repo
-
 from oslo_config import cfg
-from oslo_config import fixture as fixture_config
 from oslo_utils import timeutils
-import testtools
+
+from monasca_api.common.repositories.cassandra import metrics_repository \
+    as cassandra_repo
+from monasca_api.common.repositories.influxdb import metrics_repository \
+    as influxdb_repo
+from monasca_api.tests import base
 
 CONF = cfg.CONF
 
 
-class TestRepoMetricsInfluxDB(unittest.TestCase):
+class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
-    def setUp(self):
-        super(TestRepoMetricsInfluxDB, self).setUp()
-
-    @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.client.InfluxDBClient")
     def test_measurement_list(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
@@ -82,7 +81,8 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             measurements
         )
 
-    @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.client.InfluxDBClient")
     def test_list_metrics(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
@@ -130,7 +130,8 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             },
         }])
 
-    @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.client.InfluxDBClient")
     def test_list_dimension_values(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
@@ -158,7 +159,8 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
             ' where _tenant_id = \'38dc2a2549f94d2e9a4fa1cc45a4970c\''
             '  and _region = \'useast\' ')
 
-    @patch("monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient")
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.client.InfluxDBClient")
     def test_list_dimension_names(self, influxdb_client_mock):
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
@@ -184,17 +186,15 @@ class TestRepoMetricsInfluxDB(unittest.TestCase):
                          ])
 
 
-class TestRepoMetricsCassandra(testtools.TestCase):
+class TestRepoMetricsCassandra(base.BaseTestCase):
 
     def setUp(self):
         super(TestRepoMetricsCassandra, self).setUp()
+        self.conf_default(cluster_ip_addresses='127.0.0.1',
+                          group='cassandra')
 
-        self._fixture_config = self.useFixture(
-            fixture_config.Config(cfg.CONF))
-        self._fixture_config.config(cluster_ip_addresses='127.0.0.1',
-                                    group='cassandra')
-
-    @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
     def test_list_metrics(self, cassandra_connect_mock):
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_session_mock.execute.return_value = [[
@@ -234,7 +234,8 @@ class TestRepoMetricsCassandra(testtools.TestCase):
                 u'hosttype': u'native'
             }}], result)
 
-    @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
     def test_list_metric_names(self, cassandra_connect_mock):
 
         Metric_map = namedtuple('Metric_map', 'metric_map')
@@ -278,7 +279,8 @@ class TestRepoMetricsCassandra(testtools.TestCase):
             }
         ], result)
 
-    @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
     def test_measurement_list(self, cassandra_connect_mock):
 
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
@@ -335,7 +337,8 @@ class TestRepoMetricsCassandra(testtools.TestCase):
             measurements
         )
 
-    @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
     def test_metrics_statistics(self, cassandra_connect_mock):
 
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
@@ -390,7 +393,8 @@ class TestRepoMetricsCassandra(testtools.TestCase):
             }
         ], result)
 
-    @patch("monasca_api.common.repositories.cassandra.metrics_repository.Cluster.connect")
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
     def test_alarm_history(self, cassandra_connect_mock):
 
         AlarmHistory = namedtuple('AlarmHistory', 'alarm_id, time_stamp, metrics, '

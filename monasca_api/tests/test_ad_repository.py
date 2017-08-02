@@ -1,5 +1,5 @@
 # Copyright 2015 Cray
-# Copyright 2016 FUJITSU LIMITED
+# Copyright 2016-2017 FUJITSU LIMITED
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,15 +18,14 @@ import datetime
 
 import fixtures
 from oslo_config import cfg
-from oslo_config import fixture as fixture_config
 from oslo_db.sqlalchemy.engines import create_engine
 from sqlalchemy import delete, MetaData, insert, bindparam, select, func
-import testtools
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.common.repositories.sqla import models
 from monasca_api.expression_parser import alarm_expr_parser
+from monasca_api.tests import base
 
 CONF = cfg.CONF
 ALARM_DEF_123_FIELDS = {'actions_enabled': False,
@@ -43,12 +42,11 @@ ALARM_DEF_123_FIELDS = {'actions_enabled': False,
 TENANT_ID = 'bob'
 
 
-class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
+class TestAlarmDefinitionRepoDB(base.BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
         engine = create_engine('sqlite://')
-
         qry = open('monasca_api/tests/sqlite_alarm.sql', 'r').read()
         sconn = engine.raw_connection()
         c = sconn.cursor()
@@ -59,69 +57,65 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
 
         def _fake_engine_from_config(*args, **kw):
             return cls.engine
+
         cls.fixture = fixtures.MonkeyPatch(
             'sqlalchemy.create_engine', _fake_engine_from_config)
         cls.fixture.setUp()
-
         metadata = MetaData()
 
         cls.aa = models.create_aa_model(metadata)
         cls._delete_aa_query = delete(cls.aa)
-        cls._insert_aa_query = (insert(cls.aa)
-                                .values(
-                                    alarm_definition_id=bindparam('alarm_definition_id'),
-                                    alarm_state=bindparam('alarm_state'),
-                                    action_id=bindparam('action_id')))
+        cls._insert_aa_query = (insert(cls.aa).values(
+            alarm_definition_id=bindparam('alarm_definition_id'),
+            alarm_state=bindparam('alarm_state'),
+            action_id=bindparam('action_id')))
 
         cls.ad = models.create_ad_model(metadata)
         cls._delete_ad_query = delete(cls.ad)
-        cls._insert_ad_query = (insert(cls.ad)
-                                .values(
-                                    id=bindparam('id'),
-                                    tenant_id=bindparam('tenant_id'),
-                                    name=bindparam('name'),
-                                    severity=bindparam('severity'),
-                                    expression=bindparam('expression'),
-                                    match_by=bindparam('match_by'),
-                                    actions_enabled=bindparam('actions_enabled'),
-                                    created_at=bindparam('created_at'),
-                                    updated_at=bindparam('updated_at'),
-                                    deleted_at=bindparam('deleted_at')))
+        cls._insert_ad_query = (insert(cls.ad).values(
+            id=bindparam('id'),
+            tenant_id=bindparam('tenant_id'),
+            name=bindparam('name'),
+            severity=bindparam('severity'),
+            expression=bindparam('expression'),
+            match_by=bindparam('match_by'),
+            actions_enabled=bindparam('actions_enabled'),
+            created_at=bindparam('created_at'),
+            updated_at=bindparam('updated_at'),
+            deleted_at=bindparam('deleted_at')))
+
         cls.sad = models.create_sad_model(metadata)
         cls._delete_sad_query = delete(cls.sad)
-        cls._insert_sad_query = (insert(cls.sad)
-                                 .values(
-                                     id=bindparam('id'),
-                                     alarm_definition_id=bindparam('alarm_definition_id'),
-                                     function=bindparam('function'),
-                                     metric_name=bindparam('metric_name'),
-                                     operator=bindparam('operator'),
-                                     threshold=bindparam('threshold'),
-                                     period=bindparam('period'),
-                                     periods=bindparam('periods'),
-                                     is_deterministic=bindparam('is_deterministic'),
-                                     created_at=bindparam('created_at'),
-                                     updated_at=bindparam('updated_at')))
+        cls._insert_sad_query = (insert(cls.sad).values(
+            id=bindparam('id'),
+            alarm_definition_id=bindparam('alarm_definition_id'),
+            function=bindparam('function'),
+            metric_name=bindparam('metric_name'),
+            operator=bindparam('operator'),
+            threshold=bindparam('threshold'),
+            period=bindparam('period'),
+            periods=bindparam('periods'),
+            is_deterministic=bindparam('is_deterministic'),
+            created_at=bindparam('created_at'),
+            updated_at=bindparam('updated_at')))
 
         cls.sadd = models.create_sadd_model(metadata)
         cls._delete_sadd_query = delete(cls.sadd)
-        cls._insert_sadd_query = (insert(cls.sadd)
-                                  .values(
-                                      sub_alarm_definition_id=bindparam('sub_alarm_definition_id'),
-                                      dimension_name=bindparam('dimension_name'),
-                                      value=bindparam('value')))
+        cls._insert_sadd_query = (insert(cls.sadd).values(
+            sub_alarm_definition_id=bindparam('sub_alarm_definition_id'),
+            dimension_name=bindparam('dimension_name'),
+            value=bindparam('value')))
 
         cls.nm = models.create_nm_model(metadata)
         cls._delete_nm_query = delete(cls.nm)
-        cls._insert_nm_query = (insert(cls.nm)
-                                .values(
-                                    id=bindparam('id'),
-                                    tenant_id=bindparam('tenant_id'),
-                                    name=bindparam('name'),
-                                    type=bindparam('type'),
-                                    address=bindparam('address'),
-                                    created_at=bindparam('created_at'),
-                                    updated_at=bindparam('updated_at')))
+        cls._insert_nm_query = (insert(cls.nm).values(
+            id=bindparam('id'),
+            tenant_id=bindparam('tenant_id'),
+            name=bindparam('name'),
+            type=bindparam('type'),
+            address=bindparam('address'),
+            created_at=bindparam('created_at'),
+            updated_at=bindparam('updated_at')))
 
     @classmethod
     def tearDownClass(cls):
@@ -129,11 +123,7 @@ class TestAlarmDefinitionRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
 
     def setUp(self):
         super(TestAlarmDefinitionRepoDB, self).setUp()
-
-        self._fixture_config = self.useFixture(
-            fixture_config.Config(cfg.CONF))
-        self._fixture_config.config(connection='sqlite://',
-                                    group='database')
+        self.conf_default(connection='sqlite://', group='database')
 
         from monasca_api.common.repositories.sqla import alarm_definitions_repository as adr
         self.repo = adr.AlarmDefinitionsRepository()

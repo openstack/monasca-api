@@ -1,5 +1,6 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,14 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import unittest
-
 from mock import Mock
 
-import monasca_api.v2.reference.helpers as helpers
+from monasca_api.tests import base
+from monasca_api.v2.reference import helpers
 
 
-class TestGetQueryDimension(unittest.TestCase):
+class TestGetQueryDimension(base.BaseTestCase):
 
     def test_no_dimensions(self):
         req = Mock()
@@ -110,7 +110,7 @@ class TestGetQueryDimension(unittest.TestCase):
         self.assertEqual(result, {})
 
 
-class TestGetOldQueryParams(unittest.TestCase):
+class TestGetOldQueryParams(base.BaseTestCase):
 
     def test_old_query_params(self):
         uri = Mock()

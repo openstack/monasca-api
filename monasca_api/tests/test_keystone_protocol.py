@@ -13,9 +13,9 @@
 # under the License.
 
 import mock
-from oslotest import base
 
 from monasca_api.healthcheck import keystone_protocol
+from monasca_api.tests import base
 
 _CONF = {}
 

@@ -13,10 +13,9 @@
 # under the License.
 
 import mock
-from oslo_config import fixture as oo_cfg
-from oslotest import base
 
 from monasca_api.healthcheck import alarms_db_check as rdc
+from monasca_api.tests import base
 from monasca_api.v2.reference import cfg
 
 CONF = cfg.CONF
@@ -29,14 +28,9 @@ class TestMetricsDbHealthCheckLogic(base.BaseTestCase):
         'connection': db_connection
     }
 
-    def __init__(self, *args, **kwargs):
-        super(TestMetricsDbHealthCheckLogic, self).__init__(*args, **kwargs)
-        self._conf = None
-
     def setUp(self):
         super(TestMetricsDbHealthCheckLogic, self).setUp()
-        self._conf = self.useFixture(oo_cfg.Config(CONF))
-        self._conf.config(group='database', **self.mocked_config)
+        self.conf_default(group='database', **self.mocked_config)
 
     @mock.patch('monasca_api.healthcheck.alarms_db_check.'
                 'sql_repository.get_engine')

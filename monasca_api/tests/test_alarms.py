@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015 Cray Inc.
 # (C) Copyright 2015,2017 Hewlett Packard Enterprise Development LP
-# Copyright 2016 FUJITSU LIMITED
+# Copyright 2016-2017 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -25,14 +25,13 @@ import testtools.matchers as matchers
 
 from mock import Mock
 
+import oslo_config.fixture
+import six
+
 from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.tests import base
 from monasca_api.v2.reference import alarm_definitions
 from monasca_api.v2.reference import alarms
-
-import oslo_config.fixture
-import oslotest.base as oslotest
-import six
 
 CONF = oslo_config.cfg.CONF
 
@@ -79,32 +78,6 @@ ALARM_HISTORY = OrderedDict((
     # Only present in data returned from API:
     (u"id", u"1420070400000"),
 ))
-
-
-class MonascaApiConfigFixture(oslo_config.fixture.Config):
-
-    def setUp(self):
-        super(MonascaApiConfigFixture, self).setUp()
-
-        # [messaging]
-        self.conf.set_override(
-            'driver',
-            'monasca_api.common.messaging.kafka_publisher:KafkaPublisher',
-            group='messaging')
-
-        # [repositories]
-        self.conf.set_override(
-            'alarms_driver',
-            'monasca_api.common.repositories.sqla.alarms_repository:AlarmsRepository',
-            group='repositories')
-        self.conf.set_override(
-            'alarm_definitions_driver',
-            'monasca_api.common.repositories.alarm_definitions_repository:AlarmDefinitionsRepository',
-            group='repositories')
-        self.conf.set_override(
-            'metrics_driver',
-            'monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository',
-            group='repositories')
 
 
 class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
@@ -160,9 +133,7 @@ class RESTResponseEquals(object):
         return matchers.Equals(self.expected_data).match(response_data)
 
 
-class AlarmTestBase(falcon.testing.TestBase, oslotest.BaseTestCase):
-
-    api_class = base.MockedAPI
+class AlarmTestBase(base.BaseApiTestCase):
 
     def setUp(self):
         super(AlarmTestBase, self).setUp()
@@ -170,7 +141,26 @@ class AlarmTestBase(falcon.testing.TestBase, oslotest.BaseTestCase):
         self.useFixture(fixtures.MockPatch(
             'monasca_api.common.messaging.kafka_publisher.KafkaPublisher'))
 
-        self.CONF = self.useFixture(MonascaApiConfigFixture(CONF)).conf
+        # [messaging]
+        self.conf_override(
+            driver='monasca_api.common.messaging.'
+                   'kafka_publisher:KafkaPublisher',
+            group='messaging')
+
+        # [repositories]
+        self.conf_override(
+            alarms_driver='monasca_api.common.repositories.sqla.'
+                          'alarms_repository:AlarmsRepository',
+            group='repositories')
+        self.conf_override(
+            alarm_definitions_driver='monasca_api.common.repositories.'
+                                     'alarm_definitions_repository:'
+                                     'AlarmDefinitionsRepository',
+            group='repositories')
+        self.conf_override(
+            metrics_driver='monasca_api.common.repositories.influxdb.'
+                           'metrics_repository:MetricsRepository',
+            group='repositories')
 
 
 class TestAlarmsStateHistory(AlarmTestBase):
@@ -179,9 +169,11 @@ class TestAlarmsStateHistory(AlarmTestBase):
         super(TestAlarmsStateHistory, self).setUp()
 
         self.useFixture(InfluxClientAlarmHistoryResponseFixture(
-            'monasca_api.common.repositories.influxdb.metrics_repository.client.InfluxDBClient'))
+            'monasca_api.common.repositories.influxdb.'
+            'metrics_repository.client.InfluxDBClient'))
         self.useFixture(fixtures.MockPatch(
-            'monasca_api.common.repositories.sqla.alarms_repository.AlarmsRepository'))
+            'monasca_api.common.repositories.sqla.'
+            'alarms_repository.AlarmsRepository'))
 
         self.alarms_resource = alarms.AlarmsStateHistory()
         self.api.add_route(
@@ -210,7 +202,8 @@ class TestAlarmDefinition(AlarmTestBase):
         super(TestAlarmDefinition, self).setUp()
 
         self.alarm_def_repo_mock = self.useFixture(fixtures.MockPatch(
-            'monasca_api.common.repositories.alarm_definitions_repository.AlarmDefinitionsRepository'
+            'monasca_api.common.repositories.'
+            'alarm_definitions_repository.AlarmDefinitionsRepository'
         )).mock
 
         self.alarm_definition_resource = alarm_definitions.AlarmDefinitions()

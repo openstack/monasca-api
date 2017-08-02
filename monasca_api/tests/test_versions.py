@@ -1,4 +1,5 @@
 # Copyright 2015 Hewlett-Packard
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,12 +17,12 @@ import datetime
 import json
 
 import falcon
-import falcon.testing as testing
 
+from monasca_api.tests import base
 from monasca_api.v2.reference import versions
 
 
-class TestVersions(testing.TestBase):
+class TestVersions(base.BaseApiTestCase):
 
     def before(self):
         self.versions_resource = versions.Versions()

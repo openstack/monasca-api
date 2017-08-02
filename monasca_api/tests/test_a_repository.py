@@ -19,17 +19,17 @@ import time
 
 import fixtures
 from oslo_config import cfg
-from oslo_config import fixture as fixture_config
 from oslo_db.sqlalchemy.engines import create_engine
-import testtools
 
+from monasca_api.tests import base
 from sqlalchemy import delete, MetaData, insert, bindparam
 from monasca_api.common.repositories.sqla import models
 
 CONF = cfg.CONF
 
 
-class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
+class TestAlarmRepoDB(base.BaseTestCase):
+
     @classmethod
     def setUpClass(cls):
         engine = create_engine('sqlite://')
@@ -171,10 +171,7 @@ class TestAlarmRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
     def setUp(self):
         super(TestAlarmRepoDB, self).setUp()
 
-        self._fixture_config = self.useFixture(
-            fixture_config.Config(cfg.CONF))
-        self._fixture_config.config(connection='sqlite://',
-                                    group='database')
+        self.conf_override(connection='sqlite://', group='database')
 
         from monasca_api.common.repositories.sqla import alarms_repository as ar
         self.repo = ar.AlarmsRepository()

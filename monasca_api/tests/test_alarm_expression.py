@@ -1,4 +1,5 @@
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2017 Fujitsu LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,12 +14,12 @@
 # under the License.
 
 import pyparsing
-import unittest
 
 from monasca_api.expression_parser import alarm_expr_parser
+from monasca_api.tests import base
 
 
-class TestAlarmExpression(unittest.TestCase):
+class TestAlarmExpression(base.BaseTestCase):
 
     good_simple_expression = "max(cpu.idle_perc{hostname=fred}, 60) > 10 times 4"
 

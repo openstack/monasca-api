@@ -1,5 +1,5 @@
 # Copyright 2015 Cray
-# Copyright 2016 FUJITSU LIMITED
+# Copyright 2016-2017 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,37 +13,37 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import fixtures
-import testtools
-
 from sqlalchemy import select, MetaData, text, asc
+
 from monasca_api.common.repositories.sqla import models
+from monasca_api.tests import base
 
 
-class TestModelsDB(testtools.TestCase, fixtures.TestWithFixtures):
-    @classmethod
-    def setUpClass(cls):
+class TestModelsDB(base.BaseTestCase):
+
+    def setUp(self):
+        super(TestModelsDB, self).setUp()
         metadata = MetaData()
 
         md = models.create_md_model(metadata)
         gc_columns = [md.c.name + text("'='") + md.c.value]
-        cls.group_concat_md = (select([md.c.dimension_set_id,
+        self.group_concat_md = (select([md.c.dimension_set_id,
                                        models.group_concat(gc_columns).label('dimensions')])
-                               .select_from(md)
-                               .group_by(md.c.dimension_set_id))
+                                .select_from(md)
+                                .group_by(md.c.dimension_set_id))
 
-        cls.group_concat_md_order = (select([md.c.dimension_set_id,
+        self.group_concat_md_order = (select([md.c.dimension_set_id,
                                              models.group_concat(gc_columns,
                                                                  order_by=[md.c.name.asc()]).label('dimensions')])
-                                     .select_from(md)
-                                     .group_by(md.c.dimension_set_id))
+                                      .select_from(md)
+                                      .group_by(md.c.dimension_set_id))
 
-        cls.order_by_field = (select([md.c.dimension_set_id])
-                              .select_from(md)
-                              .order_by(asc(models.field_sort(md.c.dimension_set_id, map(text,
-                                                                                         ["'A'",
-                                                                                          "'B'",
-                                                                                          "'C'"])))))
+        self.order_by_field = (select([md.c.dimension_set_id])
+                               .select_from(md)
+                               .order_by(asc(models.field_sort(md.c.dimension_set_id, map(text,
+                                                                                          ["'A'",
+                                                                                           "'B'",
+                                                                                           "'C'"])))))
 
     def test_oracle(self):
         from sqlalchemy.dialects import oracle

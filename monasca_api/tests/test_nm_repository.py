@@ -1,5 +1,5 @@
 # Copyright 2015 Cray
-# Copyright 2016 FUJITSU LIMITED
+# Copyright 2016-2017 FUJITSU LIMITED
 # (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -21,14 +21,14 @@ from oslo_config import cfg
 from oslo_config import fixture as fixture_config
 from oslo_db.sqlalchemy.engines import create_engine
 from sqlalchemy import delete, MetaData, insert, bindparam
-import testtools
 
 from monasca_api.common.repositories.sqla import models
+from monasca_api.tests import base
 
 CONF = cfg.CONF
 
 
-class TestNotificationMethodRepoDB(testtools.TestCase, fixtures.TestWithFixtures):
+class TestNotificationMethodRepoDB(base.BaseTestCase):
     @classmethod
     def setUpClass(cls):
         engine = create_engine('sqlite://')

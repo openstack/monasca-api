@@ -1,4 +1,4 @@
-# Copyright 2016 FUJITSU LIMITED
+# Copyright 2016-2017 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,20 +13,17 @@
 # under the License.
 
 from mock import mock
-from oslo_config import fixture as oo_cfg
-from oslo_context import fixture as oo_ctx
-
-from falcon import testing
 
 from monasca_api.api.core import request
+from monasca_api.tests import base
 from monasca_api.v2.common import exceptions
 
 
-class TestRequest(testing.TestBase):
+class TestRequest(base.BaseApiTestCase):
 
     def test_use_context_from_request(self):
         req = request.Request(
-            testing.create_environ(
+            self.create_environ(
                 path='/',
                 headers={
                     'X_AUTH_TOKEN': '111',
@@ -43,16 +40,12 @@ class TestRequest(testing.TestBase):
         self.assertEqual(['terminator', 'predator'], req.roles)
 
 
-class TestRequestLimit(testing.TestBase):
-    def setUp(self):
-        super(TestRequestLimit, self).setUp()
-        self.useFixture(oo_cfg.Config())
-        self.useFixture(oo_ctx.ClearRequestContext())
+class TestRequestLimit(base.BaseApiTestCase):
 
     def test_valid_limit(self):
         expected_limit = 10
         req = request.Request(
-            testing.create_environ(
+            self.create_environ(
                 path='/',
                 query_string='limit=%d' % expected_limit,
                 headers={
@@ -67,7 +60,7 @@ class TestRequestLimit(testing.TestBase):
 
     def test_invalid_limit(self):
         req = request.Request(
-            testing.create_environ(
+            self.create_environ(
                 path='/',
                 query_string='limit=abc',
                 headers={
@@ -92,7 +85,7 @@ class TestRequestLimit(testing.TestBase):
     @mock.patch('monasca_api.common.repositories.constants.PAGE_LIMIT')
     def test_default_limit(self, page_limit):
         req = request.Request(
-            testing.create_environ(
+            self.create_environ(
                 path='/',
                 headers={
                     'X_AUTH_TOKEN': '111',

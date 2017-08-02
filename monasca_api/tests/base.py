@@ -1,5 +1,5 @@
 # Copyright 2015 kornicameister@gmail.com
-# Copyright 2015 FUJITSU LIMITED
+# Copyright 2015-2017 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,6 +14,11 @@
 # under the License.
 
 import falcon
+from falcon import testing
+from oslo_config import cfg
+from oslo_config import fixture as oo_cfg
+from oslo_context import fixture as oo_ctx
+from oslotest import base as oslotest_base
 
 from monasca_api.api.core import request
 
@@ -33,4 +38,47 @@ class MockedAPI(falcon.API):
             response_type=falcon.Response,
             middleware=None,
             router=None
+        )
+
+
+class ConfigFixture(oo_cfg.Config):
+    """Mocks configuration"""
+
+    def __init__(self):
+        super(ConfigFixture, self).__init__(cfg.CONF)
+
+    def setUp(self):
+        super(ConfigFixture, self).setUp()
+
+
+class BaseTestCase(oslotest_base.BaseTestCase):
+
+    def setUp(self):
+        super(BaseTestCase, self).setUp()
+        self.useFixture(ConfigFixture())
+        self.useFixture(oo_ctx.ClearRequestContext())
+
+    @staticmethod
+    def conf_override(**kw):
+        """Override flag variables for a test."""
+        group = kw.pop('group', None)
+        for k, v in kw.items():
+            cfg.CONF.set_override(k, v, group)
+
+    @staticmethod
+    def conf_default(**kw):
+        """Override flag variables for a test."""
+        group = kw.pop('group', None)
+        for k, v in kw.items():
+            cfg.CONF.set_default(k, v, group)
+
+
+class BaseApiTestCase(BaseTestCase, testing.TestBase):
+    api_class = MockedAPI
+
+    @staticmethod
+    def create_environ(*args, **kwargs):
+        return testing.create_environ(
+            *args,
+            **kwargs
         )

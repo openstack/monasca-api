@@ -17,11 +17,10 @@ from cassandra import cluster as cl
 import requests
 
 import mock
-from oslo_config import fixture as oo_cfg
-from oslotest import base
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.healthcheck import metrics_db_check as tdc
+from monasca_api.tests import base
 from monasca_api.v2.reference import cfg
 
 CONF = cfg.CONF
@@ -39,8 +38,7 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
 
     def setUp(self):
         super(TestMetricsDbHealthCheck, self).setUp()
-        self._conf = self.useFixture(oo_cfg.Config(CONF))
-        self._conf.config(group='cassandra', **self.cassandra_conf)
+        self.conf_default(group='cassandra', **self.cassandra_conf)
 
     def test_should_detect_influxdb_db(self):
         db_health = tdc.MetricsDbCheck()
@@ -75,8 +73,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         messaging_conf = {
             'metrics_driver': 'influxdb.metrics_repository:MetricsRepository'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='influxdb', **influxdb_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='influxdb', **influxdb_conf)
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
@@ -97,8 +95,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         messaging_conf = {
             'metrics_driver': 'influxdb.metrics_repository:MetricsRepository'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='influxdb', **influxdb_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='influxdb', **influxdb_conf)
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
@@ -118,8 +116,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         messaging_conf = {
             'metrics_driver': 'influxdb.metrics_repository:MetricsRepository'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='influxdb', **influxdb_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='influxdb', **influxdb_conf)
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
@@ -139,8 +137,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         messaging_conf = {
             'metrics_driver': 'influxdb.metrics_repository:MetricsRepository'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='influxdb', **influxdb_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='influxdb', **influxdb_conf)
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
@@ -157,8 +155,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
             'cluster_ip_addresses': 'localhost',
             'keyspace': 'test'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='cassandra', **cassandra_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='cassandra', **cassandra_conf)
 
         cluster = mock.Mock()
         cas_mock = mock.Mock()
@@ -181,8 +179,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
             'cluster_ip_addresses': 'localhost',
             'keyspace': 'test'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='cassandra', **cassandra_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='cassandra', **cassandra_conf)
 
         # Simulate cassandra driver not available
         try_import.return_value = None
@@ -202,8 +200,8 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
             'cluster_ip_addresses': 'localhost',
             'keyspace': 'test'
         }
-        self._conf.config(group='repositories', **messaging_conf)
-        self._conf.config(group='cassandra', **cassandra_conf)
+        self.conf_override(group='repositories', **messaging_conf)
+        self.conf_override(group='cassandra', **cassandra_conf)
 
         db_health = tdc.MetricsDbCheck()
         result = db_health.health_check()
