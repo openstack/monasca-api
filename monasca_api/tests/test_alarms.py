@@ -90,21 +90,21 @@ class MonascaApiConfigFixture(oslo_config.fixture.Config):
         self.conf.set_override(
             'driver',
             'monasca_api.common.messaging.kafka_publisher:KafkaPublisher',
-            group='messaging', enforce_type=True)
+            group='messaging')
 
         # [repositories]
         self.conf.set_override(
             'alarms_driver',
             'monasca_api.common.repositories.sqla.alarms_repository:AlarmsRepository',
-            group='repositories', enforce_type=True)
+            group='repositories')
         self.conf.set_override(
             'alarm_definitions_driver',
             'monasca_api.common.repositories.alarm_definitions_repository:AlarmDefinitionsRepository',
-            group='repositories', enforce_type=True)
+            group='repositories')
         self.conf.set_override(
             'metrics_driver',
             'monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository',
-            group='repositories', enforce_type=True)
+            group='repositories')
 
 
 class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
