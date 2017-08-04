@@ -1,3 +1,4 @@
+Adrian Czarnecki <adrian.czarnecki@ts.fujitsu.com>
 Andrea Adams <aadams@hpe.com>
 Andreas Jaeger <aj@suse.com>
 Angelo Mendonca <angelomendonca@gmail.com>
@@ -29,6 +30,7 @@ Flávio Ramalho <flaviosr@lsd.ufcg.edu.br>
 Ghanshyam <ghanshyam.mann@nectechnologies.in>
 Habeeb Mohammed <habeeb.mohammed@hpe.com>
 Haiwei Xu <xu-haiwei@mxw.nes.nec.co.jp>
+Hangdong Zhang <hdzhang@fiberhome.com>
 Hironori Shiina <shiina.hironori@jp.fujitsu.com>
 Igor Natanael <igornsa@lsd.ufcg.edu.br>
 Jakub Wachowski <jakub.wachowski@ts.fujitsu.com>
@@ -52,6 +54,7 @@ Michael James Hoppal <michael.jam.hoppal@hp.com>
 Michal Zielonka <michal.zielonka@ts.fujitsu.com>
 Monty Taylor <mordred@inaugust.com>
 Nam Nguyen Hoai <namnh@vn.fujitsu.com>
+OpenStack Release Bot <infra-root@openstack.org>
 Pradeep Kumar Velusamy <PradeepKumar.V@cognizant.com>
 Rob Raymond <rob.raymond@hp.com>
 Rodolfo Alonso Hernandez <rodolfo.alonso.hernandez@intel.com>
@@ -90,6 +93,7 @@ liu-sheng <liusheng@huawei.com>
 liyingjun <yingjun.li@kylin-cloud.com>
 loooosy <syluo5695@fiberhome.com>
 melissaml <ma.lei@99cloud.net>
+mhoppal <michael.jam.hoppal@hpe.com>
 oiskam1 <oiskam1@yandex.ru>
 pallavi <pallavi.s@nectechnologies.in>
 raymondr <raymondr@users.noreply.github.com>

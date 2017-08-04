@@ -1,0 +1,6 @@
+---
+other:
+  - |
+    Removed maintaining the example of configuration file. The file was
+    removed from the tree, however it can be generated using oslo.config
+    generator feature. Devstack plugin has been also migrated to use it.

@@ -789,28 +789,45 @@ function configure_monasca_api_python {
 
         sudo chmod 0775 /var/log/monasca/api
 
+        # create configuration files in target locations
         rm -rf $MONASCA_API_CONF $MONASCA_API_PASTE_INI $MONASCA_API_LOGGING_CONF
+        $MONASCA_API_BIN_DIR/oslo-config-generator \
+            --config-file $MONASCA_API_DIR/config-generator/api-config.conf \
+            --output-file /tmp/api.conf
+
+        install -m 600 /tmp/api.conf $MONASCA_API_CONF && rm -rf /tmp/api.conf
+        install -m 600 $MONASCA_API_DIR/etc/api-logging.conf $MONASCA_API_LOGGING_CONF
+        install -m 600 $MONASCA_API_DIR/etc/api-config.ini $MONASCA_API_PASTE_INI
+        # create configuration files in target locations
+
         local dbAlarmUrl
         local dbMetricDriver
-
         if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
             dbMetricDriver="monasca_api.common.repositories.cassandra.metrics_repository:MetricsRepository"
         else
             dbMetricDriver="monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository"
         fi
         dbAlarmUrl=`database_connection_url mon`
-        if [[ "$MONASCA_API_CONF_DIR" != "$MONASCA_API_DIR/etc/monasca" ]]; then
-            install -m 600 $MONASCA_API_DIR/etc/api-config.conf $MONASCA_API_CONF
-            install -m 600 $MONASCA_API_DIR/etc/api-logging.conf $MONASCA_API_LOGGING_CONF
-            install -m 600 $MONASCA_API_DIR/etc/api-config.ini $MONASCA_API_PASTE_INI
-        fi
+
+        # default settings
+        iniset "$MONASCA_API_CONF" DEFAULT region $REGION_NAME
+        iniset "$MONASCA_API_CONF" DEFAULT log_config_append $MONASCA_API_LOGGING_CONF
+
+        # logging
+        iniset "$MONASCA_API_LOGGING_CONF" handler_file args "('$MONASCA_API_LOG_DIR/monasca-api.log', 'a', 104857600, 5)"
+
+        # messaging
+        iniset "$MONASCA_API_CONF" messaging driver "monasca_api.common.messaging.kafka_publisher:KafkaPublisher"
+        iniset "$MONASCA_API_CONF" kafka uri "$SERVICE_HOST:9092"
+
+        # databases
         iniset "$MONASCA_API_CONF" database connection $dbAlarmUrl
         iniset "$MONASCA_API_CONF" repositories metrics_driver $dbMetricDriver
         iniset "$MONASCA_API_CONF" cassandra cluster_ip_addresses $SERVICE_HOST
         iniset "$MONASCA_API_CONF" influxdb ip_address $SERVICE_HOST
         iniset "$MONASCA_API_CONF" influxdb port 8086
-        iniset "$MONASCA_API_CONF" kafka uri "$SERVICE_HOST:9092"
 
+        # keystone & security
         configure_auth_token_middleware $MONASCA_API_CONF "admin" $MONASCA_API_CACHE_DIR
         iniset "$MONASCA_API_CONF" keystone_authtoken region_name $REGION_NAME
         iniset "$MONASCA_API_CONF" keystone_authtoken project_name "admin"
@@ -818,11 +835,15 @@ function configure_monasca_api_python {
         iniset "$MONASCA_API_CONF" keystone_authtoken identity_uri "http://$SERVICE_HOST:35357"
         iniset "$MONASCA_API_CONF" keystone_authtoken auth_uri "http://$SERVICE_HOST:5000"
 
+        iniset "$MONASCA_API_CONF" security default_authorized_roles "user, domainuser, domainadmin, monasca-user"
+        iniset "$MONASCA_API_CONF" security agent_authorized_roles "monasca-agent"
+        iniset "$MONASCA_API_CONF" security read_only_authorized_roles "monasca-read-only-user"
+        iniset "$MONASCA_API_CONF" security delegate_authorized_roles "admin"
+
+        # server setup
         iniset "$MONASCA_API_PASTE_INI" server:main host $MONASCA_API_SERVICE_HOST
         iniset "$MONASCA_API_PASTE_INI" server:main port $MONASCA_API_SERVICE_PORT
         iniset "$MONASCA_API_PASTE_INI" server:main workers $API_WORKERS
-
-        iniset "$MONASCA_API_LOGGING_CONF" handler_file args "('$MONASCA_API_LOG_DIR/monasca-api.log', 'a', 104857600, 5)"
 
         # link configuration for the gate
         ln -sf $MONASCA_API_CONF $MON_API_GATE_CONFIGURATION_DIR

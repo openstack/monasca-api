@@ -36,9 +36,8 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    # TODO(trebskit) enable as soon as we get configgen in place
-    # 'oslo_config.sphinxconfiggen'
-    # 'oslo_config.sphinxext',
+    'oslo_config.sphinxconfiggen',
+    'oslo_config.sphinxext',
     'openstackdocstheme',
 ]
 
@@ -51,6 +50,11 @@ bug_project = u'863'
 bug_tag = u''
 copyright = u'2014-present, OpenStack Foundation'
 author = u'OpenStack Foundation'
+
+# sample config
+config_generator_config_file = [
+    ('config-generator/api-config.conf', '_static/api-config')
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

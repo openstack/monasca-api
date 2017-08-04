@@ -14,11 +14,11 @@
 
 import mock
 
+from monasca_api import config
 from monasca_api.healthcheck import alarms_db_check as rdc
 from monasca_api.tests import base
-from monasca_api.v2.reference import cfg
 
-CONF = cfg.CONF
+CONF = config.CONF
 
 
 class TestMetricsDbHealthCheckLogic(base.BaseTestCase):

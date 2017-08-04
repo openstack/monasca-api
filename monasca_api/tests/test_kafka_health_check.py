@@ -16,11 +16,11 @@ import mock
 
 from monasca_common.kafka_lib import client
 
+from monasca_api import config
 from monasca_api.healthcheck import kafka_check as kc
 from monasca_api.tests import base
-from monasca_api.v2.reference import cfg
 
-CONF = cfg.CONF
+CONF = config.CONF
 
 
 class TestKafkaHealthCheckLogic(base.BaseTestCase):

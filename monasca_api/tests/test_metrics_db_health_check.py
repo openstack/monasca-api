@@ -19,11 +19,11 @@ import requests
 import mock
 
 from monasca_api.common.repositories import exceptions
+from monasca_api import config
 from monasca_api.healthcheck import metrics_db_check as tdc
 from monasca_api.tests import base
-from monasca_api.v2.reference import cfg
 
-CONF = cfg.CONF
+CONF = config.CONF
 
 
 class TestMetricsDbHealthCheck(base.BaseTestCase):

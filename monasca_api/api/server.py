@@ -23,63 +23,14 @@ from oslo_log import log
 import paste.deploy
 
 from monasca_api.api.core import request
-
-dispatcher_opts = [cfg.StrOpt('versions', default=None,
-                              help='Versions'),
-                   cfg.StrOpt('version_2_0', default=None,
-                              help='Version 2.0'),
-                   cfg.StrOpt('metrics', default=None,
-                              help='Metrics'),
-                   cfg.StrOpt('metrics_measurements', default=None,
-                              help='Metrics measurements'),
-                   cfg.StrOpt('metrics_statistics', default=None,
-                              help='Metrics statistics'),
-                   cfg.StrOpt('metrics_names', default=None,
-                              help='Metrics names'),
-                   cfg.StrOpt('alarm_definitions', default=None,
-                              help='Alarm definitions'),
-                   cfg.StrOpt('alarms', default=None,
-                              help='Alarms'),
-                   cfg.StrOpt('alarms_count', default=None,
-                              help='Alarms Count'),
-                   cfg.StrOpt('alarms_state_history', default=None,
-                              help='Alarms state history'),
-                   cfg.StrOpt('notification_methods', default=None,
-                              help='Notification methods'),
-                   cfg.StrOpt('dimension_values', default=None,
-                              help='Dimension values'),
-                   cfg.StrOpt('dimension_names', default=None,
-                              help='Dimension names'),
-                   cfg.StrOpt('notification_method_types', default=None,
-                              help='notification_method_types methods'),
-                   cfg.StrOpt('healthchecks', default=None,
-                              help='Health checks endpoint')]
-
-dispatcher_group = cfg.OptGroup(name='dispatcher', title='dispatcher')
-cfg.CONF.register_group(dispatcher_group)
-cfg.CONF.register_opts(dispatcher_opts, dispatcher_group)
+from monasca_api import config
 
 LOG = log.getLogger(__name__)
-
-_CONF_LOADED = False
+CONF = config.CONF
 
 
 def launch(conf):
-    global _CONF_LOADED
-    if not _CONF_LOADED:
-        # use default, but try to access one passed from conf first
-        config_file = conf.get('config_file', "/etc/monasca/api-config.conf")
-
-        log.register_options(cfg.CONF)
-        log.set_defaults()
-        cfg.CONF(args=[],
-                 project='monasca_api',
-                 default_config_files=[config_file])
-        log.setup(cfg.CONF, 'monasca_api')
-        LOG.debug('Configuration loaded successfully')
-        _CONF_LOADED = True
-    else:
-        LOG.debug('Configuration has already been loaded')
+    config.parse_args()
 
     app = falcon.API(request_type=request.Request)
 

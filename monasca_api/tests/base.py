@@ -21,6 +21,8 @@ from oslo_context import fixture as oo_ctx
 from oslotest import base as oslotest_base
 
 from monasca_api.api.core import request
+from monasca_api import conf
+from monasca_api import config
 
 
 class MockedAPI(falcon.API):
@@ -45,10 +47,21 @@ class ConfigFixture(oo_cfg.Config):
     """Mocks configuration"""
 
     def __init__(self):
-        super(ConfigFixture, self).__init__(cfg.CONF)
+        super(ConfigFixture, self).__init__(config.CONF)
 
     def setUp(self):
         super(ConfigFixture, self).setUp()
+        self.addCleanup(self._clean_config_loaded_flag)
+        conf.register_opts()
+        self._set_defaults()
+        config.parse_args(argv=[])  # prevent oslo from parsing test args
+
+    @staticmethod
+    def _clean_config_loaded_flag():
+        config._CONF_LOADED = False
+
+    def _set_defaults(self):
+        self.conf.set_default('user', 'monasca', 'influxdb')
 
 
 class BaseTestCase(oslotest_base.BaseTestCase):

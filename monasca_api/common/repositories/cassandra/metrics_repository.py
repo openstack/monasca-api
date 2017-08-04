@@ -38,13 +38,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         try:
 
             self.conf = cfg.CONF
-
             self._cassandra_cluster = Cluster(
-                self.conf.cassandra.cluster_ip_addresses.split(','))
-
+                self.conf.cassandra.cluster_ip_addresses
+            )
             self.cassandra_session = self._cassandra_cluster.connect(
-                self.conf.cassandra.keyspace)
-
+                self.conf.cassandra.keyspace
+            )
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
