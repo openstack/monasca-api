@@ -7,7 +7,7 @@ Running the Monasca DevStack plugin requires a machine with 10GB of RAM.
 
 Directions for installing and running Devstack can be found here:
 
-    http://docs.openstack.org/developer/devstack/
+    https://docs.openstack.org/devstack/latest/
 
 To run Monasca in DevStack, do the following three steps.
 
