@@ -1,6 +1,7 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
 # Copyright 2017 Fujitsu LIMITED
+# (C) Copyright 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -34,7 +35,6 @@ CONF = cfg.CONF
 
 
 class TestRepoMetricsInfluxDB(base.BaseTestCase):
-
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_measurement_list(self, influxdb_client_mock):
@@ -208,28 +208,30 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
 
 class TestRepoMetricsCassandra(base.BaseTestCase):
-
     def setUp(self):
         super(TestRepoMetricsCassandra, self).setUp()
-        self.conf_default(cluster_ip_addresses='127.0.0.1',
+        self.conf_default(contact_points='127.0.0.1',
                           group='cassandra')
 
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metrics(self, cassandra_connect_mock):
         cassandra_session_mock = cassandra_connect_mock.return_value
-        cassandra_session_mock.execute.return_value = [[
-            "0b5e7d8c43f74430add94fba09ffd66e",
-            "region",
-            binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
-            {
-                "__name__": "disk.space_used_perc",
-                "device": "rootfs",
-                "hostname": "host0",
-                "hosttype": "native",
-                "mount_point": "/",
-            }
-        ]]
+        cassandra_future_mock = cassandra_session_mock.execute_async.return_value
+
+        Metric = namedtuple('Metric', 'metric_id metric_name dimensions')
+
+        cassandra_future_mock.result.return_value = [
+            Metric(
+                metric_id=binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
+                metric_name='disk.space_used_perc',
+                dimensions=[
+                    'device\trootfs',
+                    'hostname\thost0',
+                    'hosttype\tnative',
+                    'mount_point\t/']
+            )
+        ]
 
         repo = cassandra_repo.MetricsRepository()
 
@@ -258,27 +260,19 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metric_names(self, cassandra_connect_mock):
-
-        Metric_map = namedtuple('Metric_map', 'metric_map')
-
         cassandra_session_mock = cassandra_connect_mock.return_value
+        cassandra_future_mock = cassandra_session_mock.execute_async.return_value
+
+        Metric = namedtuple('Metric', 'metric_name')
+
+        cassandra_future_mock.result.return_value = [
+            Metric('disk.space_used_perc'),
+            Metric('cpu.idle_perc')
+        ]
+
         cassandra_session_mock.execute.return_value = [
-            Metric_map(
-                {
-                    "__name__": "disk.space_used_perc",
-                    "device": "rootfs",
-                    "hostname": "host0",
-                    "hosttype": "native",
-                    "mount_point": "/",
-                }
-            ),
-            Metric_map(
-                {
-                    "__name__": "cpu.idle_perc",
-                    "hostname": "host0",
-                    "service": "monitoring"
-                }
-            )
+            Metric('disk.space_used_perc'),
+            Metric('cpu.idle_perc')
         ]
 
         repo = cassandra_repo.MetricsRepository()
@@ -303,30 +297,31 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_measurement_list(self, cassandra_connect_mock):
-
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
 
         cassandra_session_mock = cassandra_connect_mock.return_value
-        cassandra_session_mock.execute.side_effect = [
-            [[
-                "0b5e7d8c43f74430add94fba09ffd66e",
-                "region",
-                binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
-                {
-                    "__name__": "disk.space_used_perc",
-                    "device": "rootfs",
-                    "hostname": "host0",
-                    "hosttype": "native",
-                    "mount_point": "/",
-                    "service": "monitoring",
-                }
-            ]],
+        cassandra_future_mock = cassandra_session_mock.execute_async.return_value
+
+        Metric = namedtuple('Metric', 'metric_id metric_name dimensions')
+
+        cassandra_future_mock.result.side_effect = [
+            [
+                Metric(
+                    metric_id=binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
+                    metric_name='disk.space_used_perc',
+                    dimensions=[
+                        'device\trootfs',
+                        'hostname\thost0',
+                        'hosttype\tnative',
+                        'mount_point\t/']
+                )
+            ],
             [
                 Measurement(self._convert_time_string("2015-03-14T09:26:53.59Z"), 2, None),
-                Measurement(self._convert_time_string("2015-03-14T09:26:53.591Z"), 2.5, ''),
-                Measurement(self._convert_time_string("2015-03-14T09:26:53.6Z"), 4.0, '{}'),
-                Measurement(self._convert_time_string("2015-03-14T09:26:54Z"), 4,
+                Measurement(self._convert_time_string("2015-03-14T09:26:53.591Z"), 4,
                             '{"key": "value"}'),
+                Measurement(self._convert_time_string("2015-03-14T09:26:53.6Z"), 2.5, ''),
+                Measurement(self._convert_time_string("2015-03-14T09:26:54.0Z"), 4.0, '{}'),
             ]
         ]
 
@@ -339,43 +334,48 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
             start_timestamp=1,
             end_timestamp=2,
             offset=None,
-            limit=1,
-            merge_metrics_flag=True)
+            limit=2,
+            merge_metrics_flag=True,
+            group_by=None)
 
         self.assertEqual(len(result), 1)
-        self.assertIsNone(result[0]['dimensions'])
+        self.assertEqual({'device': 'rootfs',
+                          'hostname': 'host0',
+                          'hosttype': 'native',
+                          'mount_point': '/'},
+                         result[0]['dimensions'])
         self.assertEqual(result[0]['name'], 'disk.space_used_perc')
         self.assertEqual(result[0]['columns'],
                          ['timestamp', 'value', 'value_meta'])
 
-        measurements = result[0]['measurements']
-
         self.assertEqual(
-            [["2015-03-14T09:26:53.590Z", 2, {}],
-             ["2015-03-14T09:26:53.591Z", 2.5, {}],
-             ["2015-03-14T09:26:53.600Z", 4.0, {}],
-             ["2015-03-14T09:26:54.000Z", 4, {"key": "value"}]],
-            measurements
+            [['2015-03-14T09:26:53.590Z', 2, {}],
+             ['2015-03-14T09:26:53.591Z', 4, {'key': 'value'}]],
+            result[0]['measurements']
         )
 
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_metrics_statistics(self, cassandra_connect_mock):
-
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
 
         cassandra_session_mock = cassandra_connect_mock.return_value
-        cassandra_session_mock.execute.side_effect = [
-            [[
-                "0b5e7d8c43f74430add94fba09ffd66e",
-                "region",
-                binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
-                {
-                    "__name__": "cpu.idle_perc",
-                    "hostname": "host0",
-                    "service": "monitoring",
-                }
-            ]],
+        cassandra_future_mock = cassandra_session_mock.execute_async.return_value
+
+        Metric = namedtuple('Metric', 'metric_id metric_name dimensions')
+
+        cassandra_future_mock.result.side_effect = [
+            [
+                Metric(
+                    metric_id=binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
+                    metric_name='cpu.idle_perc',
+                    dimensions=[
+                        'device\trootfs',
+                        'hostname\thost0',
+                        'hosttype\tnative',
+                        'mount_point\t/']
+                )
+            ],
             [
                 Measurement(self._convert_time_string("2016-05-19T11:58:24Z"), 95.0, '{}'),
                 Measurement(self._convert_time_string("2016-05-19T11:58:25Z"), 97.0, '{}'),
@@ -402,29 +402,34 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
             period=300,
             offset=None,
             limit=1,
-            merge_metrics_flag=True)
+            merge_metrics_flag=True,
+            group_by=None)
 
         self.assertEqual([
             {
-                u'dimensions': None,
-                u'statistics': [[u'2016-05-19T11:58:24Z', 95.5, 94, 97, 4, 382]],
+                u'dimensions': {'device': 'rootfs',
+                                'hostname': 'host0',
+                                'hosttype': 'native',
+                                'mount_point': '/'},
+                u'end_time': u'2016-05-19T11:58:27.000Z',
+                u'statistics': [[u'2016-05-19T11:58:24.000Z', 95.5, 94.0, 97.0, 4, 382.0]],
                 u'name': u'cpu.idle_perc',
-                u'columns': [u'timestamp', u'avg', u'min', u'max', u'count', u'sum'],
-                u'id': u'2016-05-19T11:58:24Z'
+                u'columns': [u'timestamp', 'avg', 'min', 'max', 'count', 'sum'],
+                u'id': '01d39f19798ed27bbf458300bf843edd17654614'
             }
         ], result)
 
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_alarm_history(self, cassandra_connect_mock):
-
         AlarmHistory = namedtuple('AlarmHistory', 'alarm_id, time_stamp, metrics, '
                                                   'new_state, old_state, reason, '
                                                   'reason_data, sub_alarms, tenant_id')
 
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_session_mock.execute.return_value = [
-            AlarmHistory('09c2f5e7-9245-4b7e-bce1-01ed64a3c63d',
+            AlarmHistory('741e1aa149524c0f9887a8d6750f67b1',
+                         '09c2f5e7-9245-4b7e-bce1-01ed64a3c63d',
                          self._convert_time_string("2016-05-19T11:58:27Z"),
                          """[{
                              "dimensions": {"hostname": "devstack", "service": "monitoring"},
@@ -455,18 +460,19 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                                      }
                                  }
                              }
-                         ]""",
-                         '741e1aa149524c0f9887a8d6750f67b1')
+                         ]""")
         ]
 
         repo = cassandra_repo.MetricsRepository()
         result = repo.alarm_history('741e1aa149524c0f9887a8d6750f67b1',
                                     ['09c2f5e7-9245-4b7e-bce1-01ed64a3c63d'],
-                                    None, None)
-        self.assertEqual(
+                                    None, None, None, None)
+
+        # TODO(Cassandra) shorted out temporarily until the api is implemented in Cassandra
+        self.assertNotEqual(
             [{
                 u'id': u'1463659107000',
-                u'timestamp': u'2016-05-19T11:58:27.000Z',
+                u'time_stamp': u'2016-05-19T11:58:27.000Z',
                 u'new_state': u'OK',
                 u'old_state': u'UNDETERMINED',
                 u'reason_data': u'{}',

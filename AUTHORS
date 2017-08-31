@@ -1,4 +1,5 @@
 Adrian Czarnecki <adrian.czarnecki@ts.fujitsu.com>
+Akira Yoshiyama <akirayoshiyama@gmail.com>
 Amir Mofakhar <amofakhar@op5.com>
 Andrea Adams <aadams@hpe.com>
 Andreas Jaeger <aj@suse.com>
@@ -9,6 +10,7 @@ Ben Motz <bmotz@cray.com>
 Bertrand Lallau <bertrand.lallau@thalesgroup.com>
 Brad Klein <bradley.klein@twcable.com>
 Cao Xuan Hoang <hoangcx@vn.fujitsu.com>
+Christoph Held <christoph.held@est.fujitsu.com>
 Clenimar Filemon <clenimar.filemon@gmail.com>
 Craig Bryant <craig.bryant@hp.com>
 Craig Bryant <craig.bryant@hpe.com>
@@ -28,6 +30,7 @@ Emma Foley <emma.l.foley@intel.com>
 Erickson Santos <erickson@lsd.ufcg.edu.br>
 Flavio Percoco <flaper87@gmail.com>
 Flávio Ramalho <flaviosr@lsd.ufcg.edu.br>
+Georgia-Anna Farmaki <georgia-anna.farmaki@est.fujitsu.com>
 Ghanshyam <ghanshyam.mann@nectechnologies.in>
 Habeeb Mohammed <habeeb.mohammed@hpe.com>
 Haiwei Xu <xu-haiwei@mxw.nes.nec.co.jp>
@@ -35,6 +38,8 @@ Hangdong Zhang <hdzhang@fiberhome.com>
 Hironori Shiina <shiina.hironori@jp.fujitsu.com>
 Igor Natanael <igornsa@lsd.ufcg.edu.br>
 Jakub Wachowski <jakub.wachowski@ts.fujitsu.com>
+James E. Blair <jeblair@redhat.com>
+James Gu <jgu@suse.com>
 Janonymous <janonymous.codevulture@gmail.com>
 Jeremy Stanley <fungi@yuggoth.org>
 Joachim Barheine <joachim.barheine@sap.com>
@@ -63,6 +68,7 @@ Roland Hochmuth <roland.hochmuth@hp.com>
 Ryan Bak <ryan.bak@twcable.com>
 Ryan Brandt <ryan.brandt@hp.com>
 SamKirsch10 <sam.kirsch@hp.com>
+Scott Grasley <scott.grasley@suse.com>
 Shinya Kawabata <s-kawabata@wx.jp.nec.com>
 Srinivas Sakhamuri <srini.openstack@gmail.com>
 Stefano Canepa <stefano.canepa@hp.com>
@@ -79,7 +85,9 @@ Vu Cong Tuan <tuanvc@vn.fujitsu.com>
 Witold Bedyk <witold.bedyk@est.fujitsu.com>
 Yushiro FURUKAWA <y.furukawa_2@jp.fujitsu.com>
 ZhiQiang Fan <aji.zqfan@gmail.com>
+Zuul <zuul@review.openstack.org>
 alpineriveredge <alpineriveredge@gmail.com>
+anilkumarthovi <anilkumar.thovi@cognizant.com>
 bklei <bradley.klein@twcable.com>
 cindy oneill <cindy.o-neill@hp.com>
 dieterly <deklan.dieterly@hpe.com>

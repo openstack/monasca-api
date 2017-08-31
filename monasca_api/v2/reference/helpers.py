@@ -1,5 +1,6 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # (C) Copyright 2014,2016-2017 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -553,7 +554,8 @@ def paginate_measurements(measurements, uri, limit):
         for measurement in measurements:
             if len(measurement['measurements']) >= limit:
 
-                new_offset = measurement['measurements'][limit - 1][0]
+                new_offset = ('_').join([measurement['id'],
+                                         measurement['measurements'][limit - 1][0]])
 
                 next_link = build_base_uri(parsed_uri)
 
@@ -636,10 +638,16 @@ def paginate_statistics(statistics, uri, limit):
                                 u'href': self_link.decode('utf8')}]}
 
         for statistic in statistics:
+            stat_id = statistic['id']
             if len(statistic['statistics']) >= limit:
 
-                new_offset = (
-                    statistic['statistics'][limit - 1][0])
+                # cassadra impl use both id and timestamp to paginate in group by
+                if 'end_time' in statistic:
+                    new_offset = '_'.join([stat_id, statistic['end_time']])
+                    del statistic['end_time']
+                else:
+                    new_offset = (
+                        statistic['statistics'][limit - 1][0])
 
                 next_link = build_base_uri(parsed_uri)
 
@@ -664,6 +672,8 @@ def paginate_statistics(statistics, uri, limit):
                 break
             else:
                 limit -= len(statistic['statistics'])
+                if 'end_time' in statistic:
+                    del statistic['end_time']
                 statistic_elements.append(statistic)
 
         resource[u'elements'] = statistic_elements

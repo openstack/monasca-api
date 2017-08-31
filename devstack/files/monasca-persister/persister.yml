@@ -1,5 +1,6 @@
 #
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# Copyright (c) 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,24 +19,26 @@
 name: monasca-persister
 
 alarmHistoryConfiguration:
-  batchSize: 100
+  batchSize: %MONASCA_PERSISTER_BATCH_SIZE%
   numThreads: 1
-  maxBatchTime: 15
+  maxBatchTime: %MONASCA_PERSISTER_MAX_BATCH_TIME%
+  commitBatchTime: %MONASCA_PERSISTER_COMMIT_BATCH_TIME%
 # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
   topic: alarm-state-transitions
   groupId: 1_alarm-state-transitions
   consumerId: "mini-mon"
-  clientId : 1
+  clientId: 1
 
 metricConfiguration:
-  batchSize: 100
-  numThreads: 1
-  maxBatchTime: 15
+  batchSize: %MONASCA_PERSISTER_BATCH_SIZE%
+  numThreads: %MONASCA_PERSISTER_METRIC_THREADS%
+  maxBatchTime: %MONASCA_PERSISTER_MAX_BATCH_TIME%
+  commitBatchTime: %MONASCA_PERSISTER_COMMIT_BATCH_TIME%
 # See http://kafka.apache.org/documentation.html#api for semantics and defaults.
   topic: metrics
   groupId: 1_metrics
   consumerId: "mini-mon"
-  clientId : 1
+  clientId: 1
 
 #Kafka settings.
 kafkaConfig:
@@ -55,6 +58,43 @@ kafkaConfig:
   zookeeperSessionTimeoutMs : 60000
   zookeeperConnectionTimeoutMs : 60000
   zookeeperSyncTimeMs: 2000
+
+# uncomment if database type is cassandra
+cassandraDbConfiguration:
+  contactPoints:
+    - %CASSANDRADB_HOST%
+  port: 9042
+  user: mon_persister
+  password: password
+  keyspace: monasca
+  localDataCenter: datacenter1
+  maxConnections: 5
+  maxRequests: 2048
+  # socket time out in milliseconds when creating a new connection
+  connectionTimeout: 5000
+  # how long the driver waits for a response from server. Must be
+  # longer than the server side timeouts in the cassandra.yaml
+  readTimeout: 60000
+
+  # number of retries in upsert query. The retry interval is exponential,
+  # i.e., 1, 2, 4, 8 ... seconds. Retry is blocking.
+  maxWriteRetries: 5
+  maxBatches: 250
+  maxDefinitionCacheSize: 2000000
+  #    ANY(0),
+  #    ONE(1),
+  #    TWO(2),
+  #    THREE(3),
+  #    QUORUM(4),
+  #    ALL(5),
+  #    LOCAL_QUORUM(6),
+  #    EACH_QUORUM(7),
+  #    SERIAL(8),
+  #    LOCAL_SERIAL(9),
+  #    LOCAL_ONE(10);
+  consistencyLevel: ONE
+  # number of days metric retention
+  retentionPolicy: 45
 
 verticaMetricRepoConfig:
   maxCacheSize: 2000000

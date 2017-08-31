@@ -1,4 +1,5 @@
 # (C) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+# (C) Copyright SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -133,36 +134,46 @@ def get_expected_elements_inner_offset_limit(all_elements, offset, limit, inner_
     total_statistics = 0
 
     if offset is None:
-        offset_id = 0
+        offset_id = None
         offset_time = ""
+        passed_offset = True
     else:
         offset_tuple = offset.split('_')
-        offset_id = int(offset_tuple[0]) if len(offset_tuple) > 1 else 0
+        offset_id = offset_tuple[0] if len(offset_tuple) > 1 else u'0'
         offset_time = offset_tuple[1] if len(offset_tuple) > 1 else offset_tuple[0]
+        passed_offset = False
 
     for element in all_elements:
-        element_id = int(element['id'])
-        if offset_id is not None and element_id < offset_id:
+        element_id = element['id']
+        if (not passed_offset) and element_id != offset_id:
             continue
         next_element = None
-        for value in element[inner_key]:
-            if (element_id == offset_id and value[0] > offset_time) or \
-                    element_id > offset_id:
 
+        for value in element[inner_key]:
+            if passed_offset or (element_id == offset_id and value[0] > offset_time):
+                if not passed_offset:
+                    passed_offset = True
                 if not next_element:
                     next_element = element.copy()
                     next_element[inner_key] = [value]
                 else:
                     next_element[inner_key].append(value)
                 total_statistics += 1
-            if total_statistics >= limit:
-                break
+                if total_statistics >= limit:
+                    break
+
         if next_element:
             expected_elements.append(next_element)
+
         if total_statistics >= limit:
             break
 
-    for i in range(len(expected_elements)):
-        expected_elements[i]['id'] = str(i)
+        if element_id == offset_id:
+            passed_offset = True
+
+    # if index is used in the element id, reset to start at zero
+    if expected_elements and expected_elements[0]['id'].isdigit():
+        for i in range(len(expected_elements)):
+            expected_elements[i]['id'] = str(i)
 
     return expected_elements

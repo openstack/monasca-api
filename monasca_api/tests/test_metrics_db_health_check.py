@@ -35,6 +35,7 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
         result = db_health.health_check()
 
         self.assertTrue(result.healthy)
+
         self.assertEqual(result.message, 'OK')
 
     @mock.patch("monasca_api.healthcheck.metrics_db_check.simport")

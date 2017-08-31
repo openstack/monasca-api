@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Copyright 2017 FUJITSU LIMITED
-#
+# (C) Copyright 2017 SUSE LLC
+
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -51,6 +52,18 @@ else
     MONASCA_PERSISTER_JAVA_OPTS="-Dfile.encoding=UTF-8 -Xmx128m"
     MONASCA_PERSISTER_JAR="/opt/monasca/monasca-persister.jar"
     MONASCA_PERSISTER_CMD="/usr/bin/java ${MONASCA_PERSISTER_JAVA_OPTS} -cp ${MONASCA_PERSISTER_JAR} monasca.persister.PersisterApplication server ${MONASCA_PERSISTER_CONF}"
+fi
+
+if [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+    MONASCA_PERSISTER_BATCH_SIZE=100
+    MONASCA_PERSISTER_MAX_BATCH_TIME=10
+    MONASCA_PERSISTER_METRIC_THREADS=2
+    MONASCA_PERSISTER_COMMIT_BATCH_TIME=10000
+else
+    MONASCA_PERSISTER_BATCH_SIZE=100
+    MONASCA_PERSISTER_MAX_BATCH_TIME=15
+    MONASCA_PERSISTER_METRIC_THREADS=10
+    MONASCA_PERSISTER_COMMIT_BATCH_TIME=0
 fi
 
 is_monasca_persister_enabled() {
@@ -141,10 +154,12 @@ configure_monasca_persister_python() {
     iniset "$MONASCA_PERSISTER_CONF" kafka_metrics uri $SERVICE_HOST:9092
     iniset "$MONASCA_PERSISTER_CONF" kafka_metrics group_id 1_metrics
     iniset "$MONASCA_PERSISTER_CONF" kafka_metrics topic metrics
+    iniset "$MONASCA_PERSISTER_CONF" kafka_metrics batch_size 30
 
     iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history uri $SERVICE_HOST:9092
     iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history group_id 1_alarm-state-transitions
     iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history topic alarm-state-transitions
+    iniset "$MONASCA_PERSISTER_CONF" kafka_alarm_history batch_size 1
 
     iniset "$MONASCA_PERSISTER_CONF" zookeeper uri $SERVICE_HOST:2181
 
@@ -155,9 +170,32 @@ configure_monasca_persister_python() {
         iniset "$MONASCA_PERSISTER_CONF" influxdb password password
         iniset "$MONASCA_PERSISTER_CONF" repositories metrics_driver ${M_REPO_DRIVER_INFLUX}
         iniset "$MONASCA_PERSISTER_CONF" repositories alarm_state_history_driver ${AH_REPO_DRIVER_INFLUX}
-    else
-        iniset "$MONASCA_PERSISTER_CONF" cassandra cluster_ip_addresses ${SERVICE_HOST}
+    elif [[ "${MONASCA_METRICS_DB,,}" == 'cassandra' ]]; then
+        iniset "$MONASCA_PERSISTER_CONF" cassandra contact_points ${SERVICE_HOST}
+        iniset "$MONASCA_PERSISTER_CONF" cassandra port 9042
+        # iniset "$MONASCA_PERSISTER_CONF" cassandra user monasca
+        # iniset "$MONASCA_PERSISTER_CONF" cassandra password password
         iniset "$MONASCA_PERSISTER_CONF" cassandra keyspace monasca
+        iniset "$MONASCA_PERSISTER_CONF" cassandra local_data_center datacenter1
+        iniset "$MONASCA_PERSISTER_CONF" cassandra connection_timeout 5
+        iniset "$MONASCA_PERSISTER_CONF" cassandra read_timeout 60
+        iniset "$MONASCA_PERSISTER_CONF" cassandra max_write_retries 5
+        iniset "$MONASCA_PERSISTER_CONF" cassandra max_batches 250
+        iniset "$MONASCA_PERSISTER_CONF" cassandra max_definition_cache_size 1000000
+        # consistency level names:
+        # ANY(0),
+        # ONE(1),
+        # TWO(2),
+        # THREE(3),
+        # QUORUM(4),
+        # ALL(5),
+        # LOCAL_QUORUM(6),
+        # EACH_QUORUM(7),
+        # SERIAL(8),
+        # LOCAL_SERIAL(9),
+        # LOCAL_ONE(10);
+        iniset "$MONASCA_PERSISTER_CONF" cassandra consistency_level ONE
+        iniset "$MONASCA_PERSISTER_CONF" cassandra retention_policy 45
         iniset "$MONASCA_PERSISTER_CONF" repositories metrics_driver ${M_REPO_DRIVER_CASSANDRA}
         iniset "$MONASCA_PERSISTER_CONF" repositories alarm_state_history_driver ${AH_REPO_DRIVER_CASSANDRA}
     fi
@@ -190,11 +228,16 @@ configure_monasca_persister_java() {
         s|%ZOOKEEPER_HOST%|${SERVICE_HOST}|g;
         s|%VERTICA_HOST%|${SERVICE_HOST}|g;
         s|%INFLUXDB_HOST%|${SERVICE_HOST}|g;
+        s|%CASSANDRADB_HOST%|${SERVICE_HOST}|g;
         s|%MONASCA_PERSISTER_DB_TYPE%|${MONASCA_METRICS_DB}|g;
         s|%MONASCA_PERSISTER_BIND_HOST%|${MONASCA_PERSISTER_BIND_HOST}|g;
         s|%MONASCA_PERSISTER_APP_PORT%|${MONASCA_PERSISTER_APP_PORT}|g;
         s|%MONASCA_PERSISTER_ADMIN_PORT%|${MONASCA_PERSISTER_ADMIN_PORT}|g;
         s|%MONASCA_PERSISTER_LOG_DIR%|${MONASCA_PERSISTER_LOG_DIR}|g;
+        s|%MONASCA_PERSISTER_BATCH_SIZE%|${MONASCA_PERSISTER_BATCH_SIZE}|g;
+        s|%MONASCA_PERSISTER_MAX_BATCH_TIME%|${MONASCA_PERSISTER_MAX_BATCH_TIME}|g;
+        s|%MONASCA_PERSISTER_COMMIT_BATCH_TIME%|${MONASCA_PERSISTER_COMMIT_BATCH_TIME}|g;
+        s|%MONASCA_PERSISTER_METRIC_THREADS%|${MONASCA_PERSISTER_METRIC_THREADS}|g;
     " -i ${MONASCA_PERSISTER_CONF}
 
     ln -sf ${MONASCA_PERSISTER_CONF} ${MONASCA_PERSISTER_GATE_CONFIG}

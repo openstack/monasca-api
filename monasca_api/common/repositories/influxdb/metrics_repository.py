@@ -555,13 +555,21 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         json_measurement_list = []
 
+        offset_id = 0
+        offset_timestamp = offset
+
+        if offset and "_" in offset:
+            offset_id_str, _, offset_timestamp = offset.partition('_')
+            offset_id = int(offset_id_str)
+
         try:
+            # the build query method apparently only considers offset timestamp.
             query = self._build_select_measurement_query(dimensions, name,
                                                          tenant_id,
                                                          region,
                                                          start_timestamp,
                                                          end_timestamp,
-                                                         offset, group_by,
+                                                         offset_timestamp, group_by,
                                                          limit)
 
             if not group_by and not merge_metrics_flag:
@@ -573,10 +581,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if not result:
                 return json_measurement_list
 
-            offset_id = 0
-            if offset is not None:
-                offset_tuple = offset.split('_')
-                offset_id = int(offset_tuple[0]) if len(offset_tuple) > 1 else 0
             index = offset_id
 
             for serie in result.raw['series']:

@@ -1,4 +1,5 @@
 # (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -75,9 +76,14 @@ class TestDimensions(base.BaseMonascaTest):
             resp, response_body = cls.monasca_client.list_metrics(
                 param)
             elements = response_body['elements']
+            metric_name1_count = 0
             for element in elements:
                 returned_name_set.add(str(element['name']))
-            if cls._test_metric_names.issubset(returned_name_set):
+                if (str(element['name']) == metric_name1):
+                    metric_name1_count += 1
+            # Java version of influxdb never returns both metric1 in the list but Python does.
+            if cls._test_metric_names.issubset(returned_name_set) \
+                    and (metric_name1_count == 2 or i == constants.MAX_RETRIES - 1):
                 return
             time.sleep(constants.RETRY_WAIT_SECS)
 

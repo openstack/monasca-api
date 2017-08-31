@@ -776,7 +776,7 @@ If no limit is specified in the request URL, then a server-wide configurable lim
 
 
 ## Offset
-Offsets can be either integer offsets, string offsets (including hexadecimal numbers), or timestamp offsets. The use of either integer, string, or timestamp is determined by the resource being queried.
+Offsets can be either identifier offsets, timestamp offsets or combinational offsets that have an identifier part and timestamp part. The identifier can be an integer or string (including hexadecimal numbers). The use of either integer, string, timestamp or combination is determined by the resource being queried.
 
 For example, an integer offset would look like this:
 
@@ -814,12 +814,16 @@ A dimension value offset would look as follows:
 offset=dimensionValue2
 
 ```
+A combinational offset with hexdecimal id would look as follows:
+```
+offset=01ce0acc66131296c8a17294f39aee44ea8963ec_2104-01-01T00:00:01Z
+```
 
-Different resources use different offset types because of the internal implementation of different resources depends on different types of mechanisms for indexing and identifying resources. The type and form of the offsets for each resource can be determined by referring to the examples in each resource section below.
+Different resources use different offset types because of the internal implementation of different resources depends on different types of mechanisms for indexing and identifying resources. For example, the offset in measurement resources contains both ID and timestamp. The type and form of the offsets for each resource can be determined by referring to the examples in each resource section below.
 
-The offset is determined by the ID of the last element in the result list. Users wishing to manually create a query URL can use the ID of the last element in the previously returned result set as the offset. The proceeding result set will return all elements with an ID greater than the offset up to the limit. The automatically generated offset in the next link does exactly this; it uses the ID in the last element.
+The offset is determined by the ID and/or timestamp values of the last element in the result list. Users wishing to manually create a query URL can use the ID and/or timestamp of the last element in the previously returned result set as the offset. The proceeding result set will return all elements with an ID greater than the ID in the offset, and if the offset is two-part, also all the elements with the same ID as that in the offset and having a timestamp later than the timestamp value in the offset. The automatically generated offset in the next link does exactly this; it uses the ID and/or timestamp in the last element.
 
-The offset can take the form of an integer, string, or timestamp, but the user should treat the offset as an opaque reference. When using offsets in manually generated URLs, users enter them as strings that look like integers, timestamps, or strings. Future releases may change the type and form of the offsets for each resource.
+The offset can take the form of an integer ID, string ID, timestamp, or a combination of both ID and timestamp, but the user should treat the offset as an opaque reference. When using offsets in manually generated URLs, users enter them as strings that look like integers, timestamps, or strings. Future releases may change the type and form of the offsets for each resource.
 
 ## Limit
 The Monasca API has a server-wide default limit that is applied. Users may specify their own limit in the URL, but the server-wide limit may not be exceeded. The Monasca server-wide limit is configured in the Monasca API config file as maxQueryLimit. Users may specify a limit up to the maxQueryLimit.
@@ -1394,12 +1398,12 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of m
         },
         {
             "rel": "next",
-            "href": "http://192.168.10.4:8070/v2.0/metrics/measurements?offset=2015-03-03T05%3A24%3A55Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2015-03-00T00%3A00%3A00Z"
+            "href": "http://192.168.10.4:8070/v2.0/metrics/measurements?offset=01ce0acc66131296c8a17294f39aee44ea8963ec_2015-03-03T05%3A24%3A55.123Z&name=cpu.system_perc&dimensions=hostname%3Adevstack&start_time=2015-03-00T00%3A00%3A00Z"
         }
     ],
     "elements": [
         {
-            "id": "2015-03-03T05:24:55Z",
+            "id": "01ce0acc66131296c8a17294f39aee44ea8963ec",
             "name": "http_status",
             "dimensions": {
                 "url": "http://localhost:8774/v2.0",

@@ -1,4 +1,5 @@
 # (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -238,7 +239,7 @@ class TestStatistics(base.BaseMonascaTest):
             resp, response_body = self.monasca_client.list_metrics(query_parms)
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
-            if elements:
+            if elements and len(elements) == num_metrics:
                 break
             else:
                 time.sleep(constants.RETRY_WAIT_SECS)

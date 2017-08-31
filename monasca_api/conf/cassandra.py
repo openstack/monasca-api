@@ -1,6 +1,7 @@
 # Copyright 2014 IBM Corp.
 # Copyright 2016-2017 FUJITSU LIMITED
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2017 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,7 +19,7 @@ from oslo_config import cfg
 from oslo_config import types
 
 cassandra_opts = [
-    cfg.ListOpt('cluster_ip_addresses',
+    cfg.ListOpt('contact_points',
                 default=['127.0.0.1'],
                 item_type=types.HostAddress(),
                 help='''
