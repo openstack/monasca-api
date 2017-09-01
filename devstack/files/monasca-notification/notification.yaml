@@ -56,6 +56,7 @@ notification_types:
         password: ""
         timeout: 15
         from_addr: "hpcs.mon@hp.com"
+        grafana_url: "%GRAFANA_URL%"
 
     webhook:
         timeout: 5

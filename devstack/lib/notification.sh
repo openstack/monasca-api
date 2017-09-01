@@ -102,6 +102,7 @@ configure_monasca-notification() {
         s|%KAFKA_HOST%|${SERVICE_HOST}|g;
         s|%MONASCA_STATSD_PORT%|${MONASCA_STATSD_PORT}|g;
         s|%MONASCA_NOTIFICATION_LOG_DIR%|${MONASCA_NOTIFICATION_LOG_DIR}|g;
+        s|%GRAFANA_URL%|http:\/\/${SERVICE_HOST}:3000|g;
     " -i ${MONASCA_NOTIFICATION_CONF}
 
     sudo install -d -o ${STACK_USER} ${MONASCA_NOTIFICATION_GATE_CFG_LINK}
