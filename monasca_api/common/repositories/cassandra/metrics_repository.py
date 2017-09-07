@@ -29,6 +29,7 @@ from monasca_common.rest import utils as rest_utils
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -36,13 +37,11 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def __init__(self):
 
         try:
-
-            self.conf = cfg.CONF
             self._cassandra_cluster = Cluster(
-                self.conf.cassandra.cluster_ip_addresses
+                CONF.cassandra.cluster_ip_addresses
             )
             self.cassandra_session = self._cassandra_cluster.connect(
-                self.conf.cassandra.keyspace
+                CONF.cassandra.keyspace
             )
         except Exception as ex:
             LOG.exception(ex)
@@ -744,3 +743,16 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
+
+    @staticmethod
+    def check_status():
+        try:
+            cluster = Cluster(
+                CONF.cassandra.cluster_ip_addresses
+            )
+            session = cluster.connect(CONF.cassandra.keyspace)
+            session.shutdown()
+        except Exception as ex:
+            LOG.exception(str(ex))
+            return False, str(ex)
+        return True, 'OK'

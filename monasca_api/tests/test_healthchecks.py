@@ -35,7 +35,9 @@ class TestHealthChecks(test_base.BaseApiTestCase):
         )
 
     @mock.patch('monasca_api.healthcheck.alarms_db_check.sql_repository.get_engine')
-    def test_should_return_200_for_head(self, _):
+    @mock.patch(
+        'monasca_api.healthcheck.metrics_db_check.MetricsDbCheck')
+    def test_should_return_200_for_head(self, metrics_db_check, _):
         self.set_route()
         self.simulate_request(ENDPOINT, method='HEAD')
         self.assertEqual(falcon.HTTP_NO_CONTENT, self.srmock.status)

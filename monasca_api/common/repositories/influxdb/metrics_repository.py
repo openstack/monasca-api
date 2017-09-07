@@ -21,6 +21,7 @@ from influxdb.exceptions import InfluxDBClientError
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
+import requests
 
 from monasca_common.rest import utils as rest_utils
 
@@ -29,6 +30,7 @@ from monasca_api.common.repositories import metrics_repository
 
 MEASUREMENT_NOT_FOUND_MSG = "measurement not found"
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -902,3 +904,16 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
+
+    @staticmethod
+    def check_status():
+        uri = 'http://{0}:{1}/ping'.format(CONF.influxdb.ip_address,
+                                           CONF.influxdb.port)
+        try:
+            resp = requests.head(url=uri)
+        except Exception as ex:
+            LOG.exception(str(ex))
+            return False, str(ex)
+
+        return resp.ok, 'OK' if resp.ok else 'Error: {0}'.format(
+            resp.status_code)

@@ -18,6 +18,7 @@ import binascii
 from collections import namedtuple
 from datetime import datetime
 
+import cassandra
 from mock import patch
 
 from oslo_config import cfg
@@ -184,6 +185,26 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                              {u'dimension_name': u'hostname'},
                              {u'dimension_name': u'service'}
                          ])
+
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.requests.head")
+    def test_check_status(self, head_mock):
+        head_mock.return_value.ok = True
+        head_mock.return_value.status_code = 204
+
+        result = influxdb_repo.MetricsRepository.check_status()
+
+        self.assertEqual(result, (True, 'OK'))
+
+    @patch("monasca_api.common.repositories.influxdb."
+           "metrics_repository.requests.head")
+    def test_check_status_server_error(self, head_mock):
+        head_mock.return_value.status_code = 500
+        head_mock.return_value.ok = False
+
+        result = influxdb_repo.MetricsRepository.check_status()
+
+        self.assertEqual(result, (False, 'Error: 500'))
 
 
 class TestRepoMetricsCassandra(base.BaseTestCase):
@@ -478,6 +499,26 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                     }
                 ]
             }], result)
+
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
+    def test_check_status(self, _):
+        repo = cassandra_repo.MetricsRepository()
+
+        result = repo.check_status()
+
+        self.assertEqual(result, (True, 'OK'))
+
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
+    def test_check_status_server_error(self, cassandra_connect_mock):
+        repo = cassandra_repo.MetricsRepository()
+        cassandra_connect_mock.side_effect = \
+            cassandra.DriverException("Cluster is already shut down")
+
+        result = repo.check_status()
+
+        self.assertEqual(result, (False, 'Cluster is already shut down'))
 
     @staticmethod
     def _convert_time_string(date_time_string):
