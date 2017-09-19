@@ -159,8 +159,7 @@ class TestAlarmsCount(base.BaseMonascaTest):
 
     @classmethod
     def resource_cleanup(cls):
-        for definition_id in cls.alarm_definition_ids:
-            cls.monasca_client.delete_alarm_definition(definition_id)
+        super(TestAlarmsCount, cls).resource_cleanup()
 
     def _verify_counts_format(self, response_body, group_by=None, expected_length=None):
         expected_keys = ['links', 'counts', 'columns']
