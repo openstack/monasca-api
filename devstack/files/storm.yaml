@@ -42,9 +42,13 @@ nimbus.thrift.port: 6627
 nimbus.childopts: -Xmx256m
 
 ### ui.* configs are for the master
-ui.host: 127.0.0.1
-ui.port: 8088
+ui.host: %STORM_UI_HOST%
+ui.port: %STORM_UI_PORT%
 ui.childopts: -Xmx768m
+
+### logviewer.* configs are for the master
+logviewer.port: %STORM_LOGVIEWER_PORT%
+logviewer.childopts: -Xmx128m
 
 ### drpc.* configs
 

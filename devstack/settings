@@ -54,6 +54,8 @@ enable_service monasca-influxdb
 enable_service monasca-storm
 enable_service monasca-storm-nimbus
 enable_service monasca-storm-supervisor
+disable_service monasca-storm-ui
+disable_service monasca-storm-logviewer
 
 # monasca-kafka depends on monasca-zookeeper
 enable_service monasca-kafka
@@ -188,3 +190,8 @@ MONASCA_API_CONF=${MONASCA_API_CONF:-$MONASCA_API_CONF_DIR/api-config.conf}
 MONASCA_API_PASTE_INI=${MONASCA_API_PASTE_INI:-$MONASCA_API_CONF_DIR/api-config.ini}
 MONASCA_API_LOGGING_CONF=${MONASCA_API_LOGGING_CONF:-$MONASCA_API_CONF_DIR/api-logging.conf}
 MONASCA_API_LOG_DIR=${MONASCA_API_LOG_DIR:-/var/log/monasca/api}
+
+## storm settings
+STORM_UI_HOST=${STORM_UI_HOST:-${SERVICE_HOST}}
+STORM_UI_PORT=${STORM_UI_PORT:-8089}
+STORM_LOGVIEWER_PORT=${STORM_LOGVIEWER_PORT:-8090}

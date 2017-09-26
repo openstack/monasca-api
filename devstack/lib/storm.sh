@@ -37,6 +37,8 @@ STORM_TARBALL_DEST="${FILES}/${STORM_TARBALL}"
 
 STORM_NIMBUS_CMD="${STORM_BIN} nimbus"
 STORM_SUPERVISOR_CMD="${STORM_BIN} supervisor"
+STORM_UI_CMD="${STORM_BIN} ui"
+STORM_LOGVIEWER_CMD="${STORM_BIN} logviewer"
 
 function is_storm_enabled {
     [[ ,${ENABLED_SERVICES} =~ ,"monasca-storm" ]] && return 0
@@ -45,17 +47,23 @@ function is_storm_enabled {
 
 function start_storm {
     if is_storm_enabled; then
-        echo_summary "Starting storm-{nimbus,supervisor}"
+        echo_summary "Starting storm"
+
         run_process "monasca-storm-nimbus" "${STORM_NIMBUS_CMD}" "${STORM_GROUP}" "${STORM_USER}"
         run_process "monasca-storm-supervisor" "${STORM_SUPERVISOR_CMD}" "${STORM_GROUP}" "${STORM_USER}"
+        run_process "monasca-storm-ui" "${STORM_UI_CMD}" "${STORM_GROUP}" "${STORM_USER}"
+        run_process "monasca-storm-logviewer" "${STORM_LOGVIEWER_CMD}" "${STORM_GROUP}" "${STORM_USER}"
     fi
 }
 
 function stop_storm {
     if is_storm_enabled; then
-        echo_summary "Stopping storm-{nimbus,supervisor}"
+        echo_summary "Stopping storm"
+
         stop_process "monasca-storm-nimbus"
         stop_process "monasca-storm-supervisor"
+        stop_process "monasca-storm-ui"
+        stop_process "monasca-storm-logviewer"
     fi
 }
 
@@ -84,6 +92,13 @@ function configure_storm {
         sudo cp -f "${MONASCA_API_DIR}"/devstack/files/storm.yaml "${STORM_CURRENT_DIR}/conf/storm.yaml"
         sudo chown "${STORM_USER}":"${STORM_GROUP}" "${STORM_CURRENT_DIR}/conf/storm.yaml"
         sudo chmod 0644 "${STORM_CURRENT_DIR}/conf/storm.yaml"
+
+        sudo sed -e "
+            s|%STORM_UI_HOST%|${STORM_UI_HOST}|g;
+            s|%STORM_UI_PORT%|${STORM_UI_PORT}|g;
+            s|%STORM_LOGVIEWER_PORT%|${STORM_LOGVIEWER_PORT}|g;
+        " -i "${STORM_CURRENT_DIR}/conf/storm.yaml"
+
     fi
 }
 
