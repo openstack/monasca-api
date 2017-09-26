@@ -308,9 +308,9 @@ function install_kafka {
 
     local kafka_tarball=kafka_${KAFKA_VERSION}.tgz
     local kafka_tarball_url=${APACHE_MIRROR}kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
-    local kafka_tarball_dest=${FILES}/${kafka_tarball}
 
-    download_file ${kafka_tarball_url} ${kafka_tarball_dest}
+    local kafka_tarball_dest
+    kafka_tarball_dest=`get_extra_file ${kafka_tarball_url}`
 
     sudo groupadd --system kafka || true
 
@@ -394,9 +394,9 @@ function install_monasca_influxdb {
 
     local influxdb_deb=influxdb_${INFLUXDB_VERSION}_amd64.deb
     local influxdb_deb_url=https://dl.influxdata.com/influxdb/releases/${influxdb_deb}
-    local influxdb_deb_dest=${FILES}/${influxdb_deb}
 
-    download_file ${influxdb_deb_url} ${influxdb_deb_dest}
+    local influxdb_deb_dest
+    influxdb_deb_dest=`get_extra_file ${influxdb_deb_url}`
 
     sudo dpkg --skip-same-version -i ${influxdb_deb_dest}
 
@@ -443,9 +443,9 @@ function install_monasca_vertica {
     # Download Vertica JDBC driver
     # local vertica_jar=vertica-jdbc-${VERTICA_VERSION}.jar
     # local vertica_jar_url=https://my.vertica.com/client_drivers/7.2.x/${VERTICA_VERSION}/${vertica_jar}
-    # local vertica_jar_dest=${FILES}/${vertica_jar}
-    #
-    # download_file ${vertica_jar_url} ${vertica_jar_dest}
+
+    # local vertica_jar_dest
+    # vertica_jar_dest=`get_extra_file ${vertica_jar_url}`
 
     # Current version of Vertica 8.0.0 doesn't support Ubuntu Xenial, so fake a version
     sudo cp -p /etc/debian_version /etc/debian_version.org
@@ -949,9 +949,9 @@ function install_storm {
 
     local storm_tarball=apache-storm-${STORM_VERSION}.tar.gz
     local storm_tarball_url=${APACHE_MIRROR}storm/apache-storm-${STORM_VERSION}/${storm_tarball}
-    local storm_tarball_dest=${FILES}/${storm_tarball}
 
-    download_file ${storm_tarball_url} ${storm_tarball_dest}
+    local storm_tarball_dest
+    storm_tarball_dest=`get_extra_file ${storm_tarball_url}`
 
     sudo groupadd --system storm || true
 
@@ -1270,8 +1270,9 @@ function install_node_nvm {
     echo_summary "Install Node ${NODE_JS_VERSION} with NVM ${NVM_VERSION}"
 
     local nvm_url=https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh
-    local nvm_dest=${FILES}/nvm_install.sh
-    download_file ${nvm_url} ${nvm_dest}
+
+    local nvm_dest
+    nvm_dest=`get_extra_file ${nvm_url}`
 
     set -i
     bash ${nvm_dest}
@@ -1370,9 +1371,9 @@ function install_go {
 
     local go_tarball=go${GO_VERSION}.linux-amd64.tar.gz
     local go_tarball_url=https://storage.googleapis.com/golang/${go_tarball}
-    local go_tarball_dest=${FILES}/${go_tarball}
 
-    download_file ${go_tarball_url} ${go_tarball_dest}
+    local go_tarball_dest
+    go_tarball_dest=`get_extra_file ${go_tarball_url}`
 
     sudo tar -C /usr/local -xzf ${go_tarball_dest}
     export PATH=$PATH:/usr/local/go/bin
@@ -1437,45 +1438,6 @@ function get_version_from_pom {
     python -c "import xml.etree.ElementTree as ET; \
         print(ET.parse(open('$1/pom.xml')).getroot().find( \
         '{http://maven.apache.org/POM/4.0.0}version').text)"
-}
-
-# download_file
-#  $1 - url to download
-#  $2 - location where to save url to
-#
-# Download file only when it not exists or there is newer version of it.
-#
-#  Uses global variables:
-#  - OFFLINE
-#  - DOWNLOAD_FILE_TIMEOUT
-function download_file {
-    local url=$1
-    local file=$2
-
-    # If in OFFLINE mode check if file already exists
-    if [[ ${OFFLINE} == "True" ]] && [[ ! -f ${file} ]]; then
-        die $LINENO "You are running in OFFLINE mode but
-                        the target file \"$file\" was not found"
-    fi
-
-    local curl_z_flag=""
-    if [[ -f "${file}" ]]; then
-        # If the file exists tell cURL to download only if newer version
-        # is available
-        curl_z_flag="-z $file"
-    fi
-
-    # yeah...downloading...devstack...hungry..om, om, om
-    local timeout=0
-
-    if [[ -n "${DOWNLOAD_FILE_TIMEOUT}" ]]; then
-        timeout=${DOWNLOAD_FILE_TIMEOUT}
-    fi
-
-    time_start "download_file"
-    _safe_permission_operation ${CURL_GET} -L $url --connect-timeout $timeout --retry 3 --retry-delay 5 -o $file $curl_z_flag
-    time_stop "download_file"
-
 }
 
 function install_monasca_common {
