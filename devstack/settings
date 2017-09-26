@@ -52,6 +52,8 @@ enable_service monasca-influxdb
 
 # Apache Storm
 enable_service monasca-storm
+enable_service monasca-storm-nimbus
+enable_service monasca-storm-supervisor
 
 # monasca-kafka depends on monasca-zookeeper
 enable_service monasca-kafka
