@@ -1,0 +1,85 @@
+- hosts: all
+  name: Autoconverted job legacy-tempest-dsvm-monasca-python-mysql-full from old job
+    gate-tempest-dsvm-monasca-python-mysql-full-ubuntu-xenial-nv
+  tasks:
+
+    - name: Ensure legacy workspace directory
+      file:
+        path: '{{ ansible_user_dir }}/workspace'
+        state: directory
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat > clonemap.yaml << EOF
+          clonemap:
+            - name: openstack-infra/devstack-gate
+              dest: devstack-gate
+          EOF
+          /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
+              git://git.openstack.org \
+              openstack-infra/devstack-gate
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat << 'EOF' >>"/tmp/dg-local.conf"
+          [[local|localrc]]
+          enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
+          MONASCA_API_IMPLEMENTATION_LANG="{{ lang }}"
+          MONASCA_PERSISTER_IMPLEMENTATION_LANG="{{ lang }}"
+
+          EOF
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          export PYTHONUNBUFFERED=true
+
+          export ENABLED_SERVICES=tempest
+
+          export DEVSTACK_GATE_NEUTRON=1
+          export DEVSTACK_GATE_EXERCISES=0
+
+          if [ "{{ database }}" == "postgresql" ]; then
+              export DEVSTACK_GATE_POSTGRES=1
+          else
+              export DEVSTACK_GATE_POSTGRES=0
+          fi
+
+          export PROJECTS="openstack/monasca-api $PROJECTS"
+          export PROJECTS="openstack/monasca-persister $PROJECTS"
+          export PROJECTS="openstack/monasca-common $PROJECTS"
+          export PROJECTS="openstack/monasca-agent $PROJECTS"
+          export PROJECTS="openstack/monasca-notification $PROJECTS"
+          export PROJECTS="openstack/monasca-thresh $PROJECTS"
+          export PROJECTS="openstack/monasca-statsd $PROJECTS"
+          export PROJECTS="openstack/python-monascaclient $PROJECTS"
+          export PROJECTS="openstack/monasca-grafana-datasource $PROJECTS"
+          export PROJECTS="openstack/monasca-ui $PROJECTS"
+
+          function pre_test_hook {
+              source $BASE/new/monasca-api/monasca_tempest_tests/contrib/gate_hook.sh
+          }
+          export -f pre_test_hook
+
+          function post_test_hook {
+              # Configure and run tempest on monasca-api installation
+              source $BASE/new/monasca-api/monasca_tempest_tests/contrib/post_test_hook.sh
+          }
+          export -f post_test_hook
+
+          cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
+          ./safe-devstack-vm-gate-wrap.sh
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
