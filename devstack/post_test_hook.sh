@@ -29,6 +29,9 @@ sudo cp $BASE/new/tempest/etc/logging.conf.sample $BASE/new/tempest/etc/logging.
 (cd $BASE/new/monasca-api/; sudo -EH pip install $REQS)
 (cd $BASE/new/monasca-api/; sudo -EH python setup.py install)
 
+sudo chown -R "${USER}":stack $BASE/new/monasca-api/
+sudo chown -R "${USER}":stack $BASE/new/tempest/
+
 (cd $BASE/new/tempest/; sudo -EH testr init)
 
 (cd $BASE/new/tempest/; sudo -EH sh -c 'testr list-tests monasca_tempest_tests > monasca_tempest_tests')
