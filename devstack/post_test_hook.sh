@@ -86,8 +86,8 @@ echo_summary "monasca's post_test_hook.sh was called..."
 export MONASCA_API_DIR="$BASE/new/monasca-api"
 export TEMPEST_DIR="$BASE/new/tempest"
 
-sudo chown -R jenkins:stack $MONASCA_API_DIR
-sudo chown -R jenkins:stack $TEMPEST_DIR
+sudo chown -R "${USER}":stack $MONASCA_API_DIR
+sudo chown -R "${USER}":stack $TEMPEST_DIR
 
 load_devstack_utilities
 setup_monasca_api

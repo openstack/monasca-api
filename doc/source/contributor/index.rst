@@ -27,11 +27,3 @@ Developer reference
    :maxdepth: 1
 
    code
-
-Changelog
----------
-
-.. toctree::
-   :maxdepth: 1
-
-   history
