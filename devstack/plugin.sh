@@ -752,7 +752,6 @@ function configure_monasca_api_python {
     if is_service_enabled monasca-api; then
         echo_summary "Configuring monasca-api python"
         sudo install -d -o $STACK_USER $MONASCA_API_CONF_DIR
-        create_api_cache_dir
 
         sudo mkdir -p /var/log/monasca || true
 
@@ -805,7 +804,7 @@ function configure_monasca_api_python {
         iniset "$MONASCA_API_CONF" influxdb port 8086
 
         # keystone & security
-        configure_auth_token_middleware $MONASCA_API_CONF "admin" $MONASCA_API_CACHE_DIR
+        configure_auth_token_middleware $MONASCA_API_CONF "admin"
         iniset "$MONASCA_API_CONF" keystone_authtoken region_name $REGION_NAME
         iniset "$MONASCA_API_CONF" keystone_authtoken project_name "admin"
         iniset "$MONASCA_API_CONF" keystone_authtoken password $ADMIN_PASSWORD
@@ -828,10 +827,6 @@ function configure_monasca_api_python {
         ln -sf $MONASCA_API_LOGGING_CONF $MON_API_GATE_CONFIGURATION_DIR
 
     fi
-}
-
-function create_api_cache_dir {
-    sudo install -m 700 -d -o $STACK_USER $MONASCA_API_CACHE_DIR
 }
 
 function start_monasca_api_python {
