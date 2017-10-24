@@ -26,7 +26,7 @@ function load_devstack_utilities {
 
 function setup_monasca_api {
 
-    local constraints="-c $REQUIREMENTS_DIR/upper-constraints.txt"
+    local constraints="-c /opt/stack/new/requirements/upper-constraints.txt"
 
     pushd $TEMPEST_DIR
     sudo -EH pip install $constraints -r requirements.txt -r test-requirements.txt
@@ -86,8 +86,8 @@ echo_summary "monasca's post_test_hook.sh was called..."
 export MONASCA_API_DIR="$BASE/new/monasca-api"
 export TEMPEST_DIR="$BASE/new/tempest"
 
-sudo chown -R "${USER}":stack $MONASCA_API_DIR
-sudo chown -R "${USER}":stack $TEMPEST_DIR
+sudo chown -R $USER:stack $MONASCA_API_DIR
+sudo chown -R $USER:stack $TEMPEST_DIR
 
 load_devstack_utilities
 setup_monasca_api
