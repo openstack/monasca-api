@@ -47,6 +47,7 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-j
 # MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
 # Uncomment one of the following two lines to choose either InfluxDB or Vertica.
+# default "influxdb" is selected as metric DB
 MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 # MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
 
