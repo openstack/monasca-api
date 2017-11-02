@@ -120,6 +120,8 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
     @classmethod
     def tearDownClass(cls):
         cls.fixture.cleanUp()
+        if hasattr(CONF, 'sql_engine'):
+            delattr(CONF, 'sql_engine')
 
     def setUp(self):
         super(TestAlarmDefinitionRepoDB, self).setUp()

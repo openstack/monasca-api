@@ -32,6 +32,11 @@ class TestMetricsDbHealthCheckLogic(base.BaseTestCase):
         super(TestMetricsDbHealthCheckLogic, self).setUp()
         self.conf_default(group='database', **self.mocked_config)
 
+    @classmethod
+    def tearDownClass(cls):
+        if hasattr(CONF, 'sql_engine'):
+            delattr(CONF, 'sql_engine')
+
     @mock.patch('monasca_api.healthcheck.alarms_db_check.'
                 'sql_repository.get_engine')
     def test_should_pass_db_ok(self, _):

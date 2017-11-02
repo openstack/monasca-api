@@ -27,6 +27,11 @@ ENDPOINT = '/healthcheck'
 
 class TestHealthChecks(test_base.BaseApiTestCase):
 
+    @classmethod
+    def tearDownClass(cls):
+        if hasattr(CONF, 'sql_engine'):
+            delattr(CONF, 'sql_engine')
+
     def set_route(self):
         self.resources = healthchecks.HealthChecks()
         self.api.add_route(

@@ -72,7 +72,9 @@ class SQLRepository(object):
         try:
             super(SQLRepository, self).__init__()
             self.conf = CONF
-            self._db_engine = get_engine()
+            if not hasattr(self.conf, 'sql_engine'):
+                self.conf.sql_engine = get_engine()
+            self._db_engine = self.conf.sql_engine
             self.metadata = sqlalchemy.MetaData()
 
         except Exception as ex:
