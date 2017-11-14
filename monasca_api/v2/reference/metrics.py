@@ -68,7 +68,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+                                                 str(ex))
 
     def _send_metrics(self, metrics):
         try:
@@ -76,7 +76,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
         except message_queue_exceptions.MessageQueueException as ex:
             LOG.exception(ex)
             raise falcon.HTTPServiceUnavailable('Service unavailable',
-                                                ex.message, 60)
+                                                str(ex), 60)
 
     def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset,
                       limit, start_timestamp, end_timestamp):
@@ -101,7 +101,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
             metric_validation.validate(metrics)
         except Exception as ex:
             LOG.exception(ex)
-            raise HTTPUnprocessableEntityError("Unprocessable Entity", ex.message)
+            raise HTTPUnprocessableEntityError("Unprocessable Entity", str(ex))
 
         tenant_id = (
             helpers.get_x_tenant_or_tenant_id(req,
@@ -152,7 +152,7 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+                                                 str(ex))
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
@@ -214,7 +214,7 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+                                                 str(ex))
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
@@ -279,7 +279,7 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+                                                 str(ex))
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
@@ -320,8 +320,7 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
 
         except Exception as ex:
             LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+            raise falcon.HTTPInternalServerError('Service unavailable', str(ex))
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
@@ -365,7 +364,7 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         except Exception as ex:
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 ex.message)
+                                                 str(ex))
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):

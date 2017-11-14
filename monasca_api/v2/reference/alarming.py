@@ -179,4 +179,4 @@ class Alarming(object):
             LOG.exception(ex)
             raise falcon.HTTPInternalServerError(
                 'Message queue service unavailable'.encode('utf8'),
-                ex.message.encode('utf8'))
+                str(ex).encode('utf8'))

@@ -300,7 +300,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             return json_metric_list
 
         except InfluxDBClientError as ex:
-            if ex.message.startswith(MEASUREMENT_NOT_FOUND_MSG):
+            if str(ex).startswith(MEASUREMENT_NOT_FOUND_MSG):
                 return []
             else:
                 LOG.exception(ex)
@@ -585,8 +585,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         except exceptions.RepositoryException as ex:
 
-            if (isinstance(ex.message, InfluxDBClientError) and
-                    ex.message.message.startswith(MEASUREMENT_NOT_FOUND_MSG)):
+            if (len(ex.args) and isinstance(ex.args[0], InfluxDBClientError) and
+                    str(ex.args[0]).startswith(MEASUREMENT_NOT_FOUND_MSG)):
 
                 return json_measurement_list
 
@@ -598,7 +598,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         except InfluxDBClientError as ex:
 
-            if ex.message.startswith(MEASUREMENT_NOT_FOUND_MSG):
+            if str(ex).startswith(MEASUREMENT_NOT_FOUND_MSG):
 
                 return json_measurement_list
 
@@ -696,8 +696,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         except exceptions.RepositoryException as ex:
 
-            if (isinstance(ex.message, InfluxDBClientError) and
-                    ex.message.message.startswith(MEASUREMENT_NOT_FOUND_MSG)):
+            if (len(ex.args) and isinstance(ex.args[0], InfluxDBClientError) and
+                    str(ex.args[0]).startswith(MEASUREMENT_NOT_FOUND_MSG)):
 
                 return json_statistics_list
 
@@ -709,7 +709,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         except InfluxDBClientError as ex:
 
-            if ex.message.startswith(MEASUREMENT_NOT_FOUND_MSG):
+            if str(ex).startswith(MEASUREMENT_NOT_FOUND_MSG):
 
                 return json_statistics_list
 

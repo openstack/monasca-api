@@ -133,7 +133,7 @@ def get_query_param(req, param_name, required=False, default_val=None):
                 return default_val
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_name(req, name_required=False):
@@ -153,7 +153,7 @@ def get_query_name(req, name_required=False):
                 return ''
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_dimensions(req, param_key='dimensions'):
@@ -189,7 +189,7 @@ def get_query_dimensions(req, param_key='dimensions'):
         return dimensions
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_starttime_timestamp(req, required=True):
@@ -204,7 +204,7 @@ def get_query_starttime_timestamp(req, required=True):
                 return None
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_endtime_timestamp(req, required=True):
@@ -219,7 +219,7 @@ def get_query_endtime_timestamp(req, required=True):
                 return None
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
@@ -255,7 +255,7 @@ def get_query_statistics(req):
             raise Exception("Missing statistics")
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_period(req):
@@ -274,7 +274,7 @@ def get_query_period(req):
             return None
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_group_by(req):
@@ -289,7 +289,7 @@ def get_query_group_by(req):
             return None
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def validate_query_name(name):
@@ -304,7 +304,7 @@ def validate_query_name(name):
         metric_validation.validate_name(name)
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def validate_query_dimensions(dimensions):
@@ -328,7 +328,7 @@ def validate_query_dimensions(dimensions):
                     metric_validation.validate_dimension_value(key, value)
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def paginate(resource, uri, limit):

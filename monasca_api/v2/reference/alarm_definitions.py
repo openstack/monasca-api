@@ -372,7 +372,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
         except Exception as ex:
             LOG.debug(ex)
-            raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+            raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
     def _alarm_definition_update_or_patch(self, tenant_id,
                                           definition_id,
@@ -620,7 +620,7 @@ def get_query_alarm_definition_name(alarm_definition, return_none=False):
                 raise Exception("Missing name")
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_alarm_definition_expression(alarm_definition,
@@ -636,7 +636,7 @@ def get_query_alarm_definition_expression(alarm_definition,
                 raise Exception("Missing expression")
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_query_alarm_definition_description(alarm_definition,
@@ -726,7 +726,7 @@ def get_query_alarm_definition_actions_enabled(alarm_definition,
                 return ''
     except Exception as ex:
         LOG.debug(ex)
-        raise HTTPUnprocessableEntityError('Unprocessable Entity', ex.message)
+        raise HTTPUnprocessableEntityError('Unprocessable Entity', str(ex))
 
 
 def get_comma_separated_str_as_list(comma_separated_str):
