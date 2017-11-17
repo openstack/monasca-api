@@ -31,8 +31,9 @@
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
           enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
-          MONASCA_API_IMPLEMENTATION_LANG="{{ lang }}"
-          MONASCA_PERSISTER_IMPLEMENTATION_LANG="{{ lang }}"
+          MONASCA_API_IMPLEMENTATION_LANG="{{ api_lang }}"
+          MONASCA_PERSISTER_IMPLEMENTATION_LANG="{{ persister_lang }}"
+          MONASCA_METRICS_DB="{{ tsdb }}"
 
           EOF
         executable: /bin/bash

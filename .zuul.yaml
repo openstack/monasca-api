@@ -23,14 +23,18 @@
     parent: monasca-tempest-base
     vars:
       database: mysql
-      lang: python
+      tsdb: influxdb
+      api_lang: python
+      persister_lang: python
 
 - job:
     name: monasca-tempest-python-postgresql
     parent: monasca-tempest-base
     vars:
       database: postgresql
-      lang: python
+      tsdb: influxdb
+      api_lang: python
+      persister_lang: python
     voting: false
 
 - job:
@@ -38,14 +42,38 @@
     parent: monasca-tempest-base
     vars:
       database: mysql
-      lang: java
+      tsdb: influxdb
+      api_lang: java
+      persister_lang: java
 
 - job:
     name: monasca-tempest-java-postgresql
     parent: monasca-tempest-base
     vars:
       database: postgresql
-      lang: java
+      tsdb: influxdb
+      api_lang: java
+      persister_lang: java
+    voting: false
+
+- job:
+    name: monasca-tempest-python-cassandra
+    parent: monasca-tempest-base
+    vars:
+      database: mysql
+      tsdb: cassandra
+      api_lang: python
+      persister_lang: python
+    voting: false
+
+- job:
+    name: monasca-tempest-java-cassandra
+    parent: monasca-tempest-base
+    vars:
+      database: mysql
+      tsdb: cassandra
+      api_lang: python
+      persister_lang: java
     voting: false
 
 - project:
@@ -56,6 +84,8 @@
         - monasca-tempest-python-postgresql
         - monasca-tempest-java-mysql
         - monasca-tempest-java-postgresql
+        - monasca-tempest-python-cassandra
+        - monasca-tempest-java-cassandra
     gate:
       jobs:
         - monasca-tempest-python-mysql
