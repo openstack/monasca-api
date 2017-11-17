@@ -11,8 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from monasca_api.version import version_info
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -41,8 +39,11 @@ master_doc = 'index'
 # General information about the project.
 repository_name = u'openstack/monasca-api'
 project = u'Monitoring API Release Notes'
-version = version_info.canonical_version_string()
-release = version_info.version_string_with_vcs()
+
+# Release notes do not need a version number in the title, they
+# cover multiple releases.
+version = ''
+release = ''
 bug_project = u'863'
 bug_tag = u''
 copyright = u'2014-present, OpenStack Foundation'
