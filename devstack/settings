@@ -169,6 +169,8 @@ MONASCA_DATABASE_USE_ORM=false
 DOWNLOAD_FILE_TIMEOUT=${DOWNLOAD_FILE_TIMEOUT:-30}
 PLUGIN_FILES=$MONASCA_API_DIR/devstack/files
 # APACHE_MIRROR=  # force specific APACHE_MIRROR if the one that got picked fails
+# Apache Kafka 0.9.0.1 is only available in Apache Archives
+APACHE_ARCHIVES=${APACHE_ARCHIVES:-"https://archive.apache.org/dist/"}
 
 # Public configuration
 ## monasca-statsd

@@ -284,7 +284,7 @@ function install_kafka {
     echo_summary "Install Monasca Kafka"
 
     local kafka_tarball=kafka_${KAFKA_VERSION}.tgz
-    local kafka_tarball_url=${APACHE_MIRROR}kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
+    local kafka_tarball_url=${APACHE_ARCHIVES}kafka/${BASE_KAFKA_VERSION}/${kafka_tarball}
 
     local kafka_tarball_dest
     kafka_tarball_dest=`get_extra_file ${kafka_tarball_url}`
