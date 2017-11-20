@@ -169,5 +169,8 @@ MONASCA_NOTIFICATION_DATABASE_USER="notification"
 # Other settings
 DOWNLOAD_FILE_TIMEOUT=${DOWNLOAD_FILE_TIMEOUT:-30}
 
+# Apache Kafka 0.9.0.1 is only available in Apache Archives
+APACHE_ARCHIVES=${APACHE_ARCHIVES:-"https://archive.apache.org/dist/"}
+
 # Public configuration
 MONASCA_STATSD_PORT=${MONASCA_STATSD_PORT:-8125}
