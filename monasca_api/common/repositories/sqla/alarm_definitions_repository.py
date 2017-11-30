@@ -288,7 +288,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 query_from = query_from.join(sad, sadi == ad.c.id)
 
                 i = 0
-                for n, v in dimensions.iteritems():
+                for n, v in dimensions.items():
                     bind_dimension_name = 'b_sadd_dimension_name_{}'.format(i)
                     bind_value = 'b_sadd_value_{}'.format(i)
                     sadd_ = (select([sadd.c.sub_alarm_definition_id])
@@ -575,7 +575,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
             parms = []
             for sub_alarm_definition_id, sub_alarm_def in (
-                    changed_sub_alarm_defs_by_id.iteritems()):
+                    changed_sub_alarm_defs_by_id.items()):
                 parms.append({'b_operator': sub_alarm_def.operator,
                               'b_threshold': sub_alarm_def.threshold,
                               'b_is_deterministic': sub_alarm_def.deterministic,

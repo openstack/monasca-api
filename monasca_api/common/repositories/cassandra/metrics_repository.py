@@ -55,7 +55,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         sub_dimensions = {}
 
         if dimensions:
-            for key, value in dimensions.iteritems():
+            for key, value in dimensions.items():
                 if not value:
                     sub_dimensions[key] = value
 
@@ -77,7 +77,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     extracted_dimensions = sub_dimensions.copy()
 
                     for dims in iter(or_dims_tuple):
-                        for k, v in dims.iteritems():
+                        for k, v in dims.items():
                             extracted_dimensions[k] = v
 
                     metrics = self._list_metrics(tenant_id, region, name,
@@ -142,7 +142,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 if include_metric_hash:
                     metric[u'metric_hash'] = metric_hash
 
-                for name, value in metric_map.iteritems():
+                for name, value in metric_map.items():
 
                     if name == '__name__':
 
@@ -175,7 +175,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         dimension_clause = ''
         if dimensions:
 
-            for name, value in dimensions.iteritems():
+            for name, value in dimensions.items():
                 if not value:
                     dimension_clause += ' and metric_map contains key %s '
 
@@ -353,7 +353,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             for row in rows:
 
                 metric_map = row.metric_map
-                for name, value in metric_map.iteritems():
+                for name, value in metric_map.items():
 
                     if name == '__name__':
                         value = urllib.unquote_plus(value)
@@ -693,7 +693,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             for row in rows:
 
                 metric_map = row.metric_map
-                for name, value in metric_map.iteritems():
+                for name, value in metric_map.items():
 
                     name = urllib.unquote_plus(name)
                     value = urllib.unquote_plus(value)
@@ -730,7 +730,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             for row in rows:
 
                 metric_map = row.metric_map
-                for name, value in metric_map.iteritems():
+                for name, value in metric_map.items():
 
                     name = urllib.unquote_plus(name)
                     dim_name = {u'dimension_name': name}

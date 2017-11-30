@@ -104,7 +104,7 @@ class SubAlarmDefinition(object):
     def __hash__(self):
 
         dimensions_str = "".join(sorted([name + value for name, value in
-                                         self.dimensions.iteritems()]))
+                                         self.dimensions.items()]))
 
         # don't use id to hash.
         return (hash(self.alarm_definition_id) ^
