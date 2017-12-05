@@ -21,6 +21,7 @@ from influxdb.exceptions import InfluxDBClientError
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
+import requests
 
 from monasca_common.rest import utils as rest_utils
 
@@ -41,43 +42,69 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 self.conf.influxdb.ip_address, self.conf.influxdb.port,
                 self.conf.influxdb.user, self.conf.influxdb.password,
                 self.conf.influxdb.database_name)
-            self._init_serie_builders()
+            self._version = None
+            self._init_version()
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _init_serie_builders(self):
+        self._serie_builders_version_map = {
+            'to_0.11.0': (self._build_serie_dimension_values_to_v0_11_0,
+                          self._build_serie_metric_list_to_v0_11_0),
+            'from_0.11.0': (self._build_serie_dimension_values_from_v0_11_0,
+                            self._build_serie_metric_list_from_v0_11_0)}
+
+    def _build_serie_dimension_values(self, *args, **kwargs):
+        if self._version:
+            f = self._serie_builders_version_map[self._version][0]
+            return f(*args, **kwargs)
+        else:
+            self._init_version()
+            if self._version:
+                f = self._serie_builders_version_map[self._version][0]
+                return f(*args, **kwargs)
+            LOG.error('influxdb is not available, giving up')
+            raise exceptions.RepositoryException('Repository not available')
+
+    def _build_serie_metric_list(self, *args, **kwargs):
+        if self._version:
+            f = self._serie_builders_version_map[self._version][1]
+            return f(*args, **kwargs)
+        else:
+            self._init_version()
+            if self._version:
+                f = self._serie_builders_version_map[self._version][1]
+                return f(*args, **kwargs)
+            LOG.error('influxdb is not available, giving up')
+            raise exceptions.RepositoryException('Repository not available')
+
+    def _init_version(self):
         '''Initializes functions for serie builders that are specific to different versions
         of InfluxDB.
+
+        In InfluxDB v0.11.0 the SHOW SERIES output changed. See,
+        https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
         '''
         try:
             influxdb_version = self._get_influxdb_version()
             if influxdb_version < version.StrictVersion('0.11.0'):
-                self._init_serie_builders_to_v0_11_0()
+                self._version = 'to_0.11.0'
+                LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
             else:
-                self._init_serie_builders_from_v0_11_0()
+                self._version = 'from_0.11.0'
+                LOG.info('Initialize InfluxDB serie builders >=  v0.11.0')
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ConnectTimeout):
+            # these errors mean that the backend is not ready yet, we shall try
+            # to build series on each request
+            LOG.warning('influxdb is not ready yet')
         except Exception as ex:
             LOG.exception(ex)
             # Initialize the serie builders to v0_11_0. Not sure when SHOW DIAGNOSTICS added
             # support for a version string so to address backward compatibility initialize
             # InfluxDB serie builders <  v0.11.0
-            self._init_serie_builders_to_v0_11_0()
-
-    def _init_serie_builders_to_v0_11_0(self):
-        '''Initialize function for InfluxDB serie builders <  v0.11.0
-        '''
-        LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
-        self._build_serie_dimension_values = self._build_serie_dimension_values_to_v0_11_0
-        self._build_serie_metric_list = self._build_serie_metric_list_to_v0_11_0
-
-    def _init_serie_builders_from_v0_11_0(self):
-        '''Initialize function for InfluxDB serie builders >= v0.11.0.
-        In InfluxDB v0.11.0 the SHOW SERIES output changed. See,
-        https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
-        '''
-        LOG.info('Initialize InfluxDB serie builders >=  v0.11.0')
-        self._build_serie_dimension_values = self._build_serie_dimension_values_from_v0_11_0
-        self._build_serie_metric_list = self._build_serie_metric_list_from_v0_11_0
+            self._version = 'to_0.11.0'
+            LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
 
     def _get_influxdb_version(self):
         '''If Version found in the result set, return the InfluxDB Version,
