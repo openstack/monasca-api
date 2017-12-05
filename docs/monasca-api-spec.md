@@ -386,7 +386,12 @@ A metric is uniquely identified by a name and set of dimensions.
 Defines the name of a metric. A name is of type string(255). The name may include any characters except the following: `> < = { } ( ) , ' " \ ; &`. Note that JSON does allow control characters (such as `\n`), however these should not be used in metric names.
 
 ### Dimensions
-A dictionary of (key, value) pairs. The key and value are of type string(255). Dimension keys may not begin with '_' (underscore). The dimension key and value strings may include any characters except the following: `> < = { } ( ) , ' " \ ; &`. Note that JSON does allow control characters (such as `\n`), however these should not be used in dimension keys or values. Dimension keys and values must not be empty.
+A dictionary of (key, value) pairs. The key and value are of type string(255).
+Dimension keys may not begin with '_' (underscore). The dimension key and value
+strings may include any characters except the following:
+`> < = { } , ' " \ ; &`. Note that JSON does allow control characters (such as
+`\n`), however these should not be used in dimension keys or values. Dimension
+keys and values must not be empty.
 
 ### Text Representation
 In this document, metrics will be represented in the form `name{name=value,name=value}` where name is the metric name and the name=value pairs in the curly braces are the dimensions. For example, `cpu.idle_perc{service=monitoring,hostname=mini-mon}` represents a metric with the name "cpu.idle_perc" and the dimensions "service=monitoring" and "hostname=mini-mon".

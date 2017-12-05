@@ -318,7 +318,7 @@ class TestMetrics(base.BaseMonascaTest):
     @decorators.attr(type='gate')
     @decorators.attr(type=['negative'])
     def test_create_metric_with_invalid_chars_in_name(self):
-        for invalid_char in constants.INVALID_CHARS:
+        for invalid_char in constants.INVALID_NAME_CHARS:
             metric = helpers.create_metric(invalid_char)
             self.assertRaises(exceptions.UnprocessableEntity,
                               self.monasca_client.create_metrics,
@@ -327,12 +327,12 @@ class TestMetrics(base.BaseMonascaTest):
     @decorators.attr(type='gate')
     @decorators.attr(type=['negative'])
     def test_create_metric_with_invalid_chars_in_dimensions(self):
-        for invalid_char in constants.INVALID_CHARS:
+        for invalid_char in constants.INVALID_DIMENSION_CHARS:
             metric = helpers.create_metric('name-1', {'key-1': invalid_char})
             self.assertRaises(exceptions.UnprocessableEntity,
                               self.monasca_client.create_metrics,
                               metric)
-        for invalid_char in constants.INVALID_CHARS:
+        for invalid_char in constants.INVALID_DIMENSION_CHARS:
             metric = helpers.create_metric('name-1', {invalid_char: 'value-1'})
             self.assertRaises(exceptions.UnprocessableEntity,
                               self.monasca_client.create_metrics,
