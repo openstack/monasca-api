@@ -197,7 +197,7 @@ class MonascaClient(rest_client.RestClient):
         request_body['ok_actions'] = ok_actions
         request_body['undetermined_actions'] = undetermined_actions
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             request_body[key] = value
 
         resp, response_body = self.put(uri, json.dumps(request_body))
@@ -236,7 +236,7 @@ class MonascaClient(rest_client.RestClient):
         if undetermined_actions is not None:
             request_body['undetermined_actions'] = undetermined_actions
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             request_body[key] = value
 
         resp, response_body = self.patch(uri, json.dumps(request_body))
@@ -266,7 +266,7 @@ class MonascaClient(rest_client.RestClient):
         request_body['lifecycle_state'] = lifecycle_state
         request_body['link'] = link
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             request_body[key] = value
 
         resp, response_body = self.put(uri, json.dumps(request_body))
@@ -283,7 +283,7 @@ class MonascaClient(rest_client.RestClient):
         if link is not None:
             request_body['link'] = link
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             request_body[key] = value
 
         resp, response_body = self.patch(uri, json.dumps(request_body))
@@ -328,7 +328,7 @@ class MonascaClient(rest_client.RestClient):
         request_body['alarm_actions'] = alarm_actions
         request_body['undetermined_actions'] = undetermined_actions
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             request_body[key] = value
 
         resp, response_body = self.put(uri, json.dumps(request_body))
