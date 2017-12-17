@@ -17,6 +17,7 @@
       - openstack/monasca-ui
       - openstack/python-monascaclient
       - openstack/tempest
+      - openstack/monasca-tempest-plugin
 
 - job:
     name: monasca-tempest-python-mysql

@@ -34,7 +34,7 @@
           MONASCA_API_IMPLEMENTATION_LANG="{{ api_lang }}"
           MONASCA_PERSISTER_IMPLEMENTATION_LANG="{{ persister_lang }}"
           MONASCA_METRICS_DB="{{ tsdb }}"
-
+          TEMPEST_PLUGINS+='/opt/stack/new/monasca-tempest-plugin'
           EOF
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
@@ -50,6 +50,8 @@
 
           export DEVSTACK_GATE_NEUTRON=1
           export DEVSTACK_GATE_EXERCISES=0
+          export DEVSTACK_GATE_TEMPEST=1
+           export DEVSTACK_GATE_TEMPEST_REGEX="monasca_tempest_tests.tests.api"
 
           if [ "{{ database }}" == "postgresql" ]; then
               export DEVSTACK_GATE_POSTGRES=1
@@ -67,15 +69,11 @@
           export PROJECTS="openstack/python-monascaclient $PROJECTS"
           export PROJECTS="openstack/monasca-grafana-datasource $PROJECTS"
           export PROJECTS="openstack/monasca-ui $PROJECTS"
-
-          function pre_test_hook {
-              source $BASE/new/monasca-api/monasca_tempest_tests/contrib/gate_hook.sh
-          }
-          export -f pre_test_hook
+          export PROJECTS="openstack/monasca-tempest-plugin $PROJECTS"
 
           function post_test_hook {
               # Configure and run tempest on monasca-api installation
-              source $BASE/new/monasca-api/monasca_tempest_tests/contrib/post_test_hook.sh
+              source $BASE/new/monasca-api/contrib/post_test_hook.sh
           }
           export -f post_test_hook
 
