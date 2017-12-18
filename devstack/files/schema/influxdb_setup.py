@@ -121,7 +121,7 @@ def main(argv=None):
 
     # Create the users
     users = influxdb_get(uri=api_uri, query="SHOW USERS", db=DBNAME)
-    for name, password in USERS.iteritems():
+    for name, password in USERS.items():
         if not any(user[0] == name for user in users):
             influxdb_get_post(uri=api_uri,
                               query=unicode("CREATE USER {0} WITH PASSWORD '{1}'".format(name, password)),

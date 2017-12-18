@@ -297,7 +297,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 extracted_dimensions = sub_dimensions.copy()
 
                 for dims in iter(or_dims_tuple):
-                    for k, v in dims.iteritems():
+                    for k, v in dims.items():
                         extracted_dimensions[k] = v
 
                 query = self._build_metrics_by_name_query(tenant_id, region, name, extracted_dimensions,
@@ -415,7 +415,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 extracted_dimensions = single_dimensions.copy()
 
                 for dims in iter(or_dims_tuple):
-                    for k, v in dims.iteritems():
+                    for k, v in dims.items():
                         extracted_dimensions[k] = v
 
                 names.extend(
