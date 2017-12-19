@@ -19,7 +19,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
         <computedVersion>${project.version}-${timestamp}-${gitRevision}</computedVersion>
         <computedName>${project.artifactId}-${computedVersion}</computedName>
-        <mon.common.version>1.2.1-SNAPSHOT</mon.common.version>
+        <mon.common.version>1.3.0-SNAPSHOT</mon.common.version>
         <dropwizard.version>0.7.0</dropwizard.version>
         <hikaricp.version>2.3.9</hikaricp.version>
 
