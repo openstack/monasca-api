@@ -162,7 +162,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             from_with_clause += ' from "{}"'.format(metric_name)
 
         if dimension_name:
-            from_with_clause += ' with key = {}'.format(dimension_name)
+            from_with_clause += ' with key = "{}"'.format(dimension_name)
 
         where_clause = self._build_where_clause(None, None, tenant_id, region)
 
