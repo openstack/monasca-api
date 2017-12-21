@@ -1,5 +1,5 @@
 # (C) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
-# (C) Copyright 2017 SUSE LLC
+# (C) Copyright 2017-2018 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -121,11 +121,20 @@ class TestStatistics(base.BaseMonascaTest):
 
     @decorators.attr(type="gate")
     def test_list_statistics(self):
+        self._test_list_statistic(with_end_time=True)
+
+    @decorators.attr(type="gate")
+    def test_list_statistics_with_no_end_time(self):
+        self._test_list_statistic(with_end_time=False)
+
+    def _test_list_statistic(self, with_end_time=True):
         query_parms = '?name=' + str(self._test_name) + \
                       '&statistics=' + urlparse.quote('avg,sum,min,max,count') + \
                       '&start_time=' + str(self._start_time_iso) + \
-                      '&end_time=' + str(self._end_time_iso) + \
                       '&merge_metrics=true' + '&period=100000'
+        if with_end_time is True:
+            query_parms += '&end_time=' + str(self._end_time_iso)
+
         resp, response_body = self.monasca_client.list_statistics(
             query_parms)
         self.assertEqual(200, resp.status)
