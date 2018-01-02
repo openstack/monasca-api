@@ -56,7 +56,6 @@ install_monasca-notification() {
     elif is_service_enabled mysql; then
         apt_get -y install python-mysqldb libmysqlclient-dev
         pip_install_gr PyMySQL
-        pip_install_gr mysql-python
     fi
 
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
