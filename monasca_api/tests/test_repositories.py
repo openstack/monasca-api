@@ -1,5 +1,5 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
-# (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2016-2018 Hewlett Packard Enterprise Development LP
 # Copyright 2017 Fujitsu LIMITED
 # (C) Copyright 2017 SUSE LLC
 #
@@ -130,6 +130,47 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                 u'hosttype': u'native'
             },
         }])
+
+    @patch('monasca_api.common.repositories.influxdb.'
+           'metrics_repository.client.InfluxDBClient')
+    def test_metrics_statistics(self, influxdb_client_mock):
+        mock_client = influxdb_client_mock.return_value
+        mock_client.query.return_value.raw = {
+            u'series': [{
+                u'values': [[
+                    u'1970-01-01T00:00:00Z', 0.047
+                ]],
+                u'name': u'cpu.utilization',
+                u'columns': [u'time', u'mean']}],
+            u'statement_id': 0
+        }
+
+        tenant_id = '1'
+        region = 'USA'
+        name = 'cpu.utilization'
+        start_timestamp = 1484036107.86
+        statistics = [u"avg"]
+        limit = 10000
+        dimensions = None
+        end_timestamp = None
+        period = None
+        offset = None
+        merge_metrics_flag = None
+        group_by = None
+
+        repo = influxdb_repo.MetricsRepository()
+        stats_list = repo.metrics_statistics(tenant_id, region, name,
+                                             dimensions, start_timestamp,
+                                             end_timestamp, statistics,
+                                             period, offset, limit,
+                                             merge_metrics_flag, group_by)
+        expected_result = [{
+            u'columns': [u'timestamp', u'avg'],
+            u'dimensions': {u'mean': 0.047, u'time': u'1970-01-01T00:00:00Z'},
+            u'id': '0',
+            u'name': u'cpu.utilization',
+            u'statistics': [[u'1970-01-01T00:00:00Z', 0.047]]}]
+        self.assertEqual(stats_list, expected_result)
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
