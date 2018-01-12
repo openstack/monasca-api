@@ -64,7 +64,6 @@
       tsdb: cassandra
       api_lang: python
       persister_lang: python
-    voting: false
 
 - job:
     name: monasca-tempest-java-cassandra
@@ -74,7 +73,6 @@
       tsdb: cassandra
       api_lang: python
       persister_lang: java
-    voting: false
 
 - project:
     name: openstack/monasca-api
@@ -90,3 +88,5 @@
       jobs:
         - monasca-tempest-python-mysql
         - monasca-tempest-java-mysql
+        - monasca-tempest-python-cassandra
+        - monasca-tempest-java-cassandra
