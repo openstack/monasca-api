@@ -172,6 +172,23 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
             u'statistics': [[u'1970-01-01T00:00:00Z', 0.047]]}]
         self.assertEqual(stats_list, expected_result)
 
+    def test_build_group_by_clause_with_period(self):
+        group_by = 'hostname,service'
+        period = 300
+        expected_clause = ' group by hostname,service,time(300s) fill(none)'
+
+        repo = influxdb_repo.MetricsRepository()
+        clause = repo._build_group_by_clause(group_by, period)
+        self.assertEqual(clause, expected_clause)
+
+    def test_build_group_by_clause_without_period(self):
+        group_by = 'hostname,service'
+        expected_clause = ' group by hostname,service'
+
+        repo = influxdb_repo.MetricsRepository()
+        clause = repo._build_group_by_clause(group_by)
+        self.assertEqual(clause, expected_clause)
+
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_list_dimension_values(self, influxdb_client_mock):
