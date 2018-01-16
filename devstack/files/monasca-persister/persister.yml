@@ -64,8 +64,8 @@ cassandraDbConfiguration:
   contactPoints:
     - %CASSANDRADB_HOST%
   port: 9042
-  user: mon_persister
-  password: password
+  user: cassandra
+  password: cassandra
   keyspace: monasca
   localDataCenter: datacenter1
   maxConnections: 5

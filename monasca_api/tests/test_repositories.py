@@ -20,6 +20,7 @@ from collections import namedtuple
 from datetime import datetime
 
 import cassandra
+from cassandra.auth import PlainTextAuthProvider
 from mock import patch
 
 from oslo_config import cfg
@@ -212,6 +213,24 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
         super(TestRepoMetricsCassandra, self).setUp()
         self.conf_default(contact_points='127.0.0.1',
                           group='cassandra')
+
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
+    def test_init(self, cassandra_connect_mock):
+        repo = cassandra_repo.MetricsRepository()
+        self.assertIsNone(
+            repo.cluster.auth_provider,
+            'cassandra cluster auth provider is expected to None'
+        )
+
+        repo.conf.cassandra.user = 'cassandra'
+        repo.conf.cassandra.password = 'cassandra'
+        repo = cassandra_repo.MetricsRepository()
+        self.assertIsInstance(
+            repo.cluster.auth_provider,
+            PlainTextAuthProvider,
+            'cassandra cluster auth provider is expected to be PlainTextAuthProvider'
+        )
 
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
