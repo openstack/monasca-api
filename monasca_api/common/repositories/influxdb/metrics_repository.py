@@ -1,4 +1,4 @@
-# (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2014-2018 Hewlett Packard Enterprise Development LP
 # Copyright 2015 Cray Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -777,7 +777,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if group_by:
                 items.extend(group_by)
             if period:
-                items.append("time(" + str(period) + "s)")
+                items.append("time(" + str(period) + "s) fill(none)")
             clause = " group by " + ','.join(items)
         else:
             clause = ""
