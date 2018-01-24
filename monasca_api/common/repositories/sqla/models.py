@@ -229,12 +229,13 @@ def _field_sort_mysql(element, compiler_, **kw):
 @compiler.compiles(field_sort)
 def _field_sort_general(element, compiler_, **kw):
     fields_list = []
-    if element.fields:
+    fields = list(element.fields)
+    if fields:
         fields_list.append("CASE")
-        for idx, field in enumerate(element.fields):
+        for idx, field in enumerate(fields):
             fields_list.append("WHEN {0}={1} THEN {2}".format(compiler_.process(element.column),
                                                               compiler_.process(field),
                                                               idx))
-        fields_list.append("ELSE {0}".format(len(element.fields)))
+        fields_list.append("ELSE {0}".format(len(fields)))
         fields_list.append("END")
     return " ".join(fields_list)
