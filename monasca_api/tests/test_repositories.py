@@ -1,7 +1,7 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # (C) Copyright 2016-2018 Hewlett Packard Enterprise Development LP
 # Copyright 2017 Fujitsu LIMITED
-# (C) Copyright 2017 SUSE LLC
+# (C) Copyright 2017-2018 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -470,6 +470,54 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                                 'hosttype': 'native',
                                 'mount_point': '/'},
                 u'end_time': u'2016-05-19T11:58:27.000Z',
+                u'statistics': [[u'2016-05-19T11:58:24.000Z', 95.5, 94.0, 97.0, 4, 382.0]],
+                u'name': u'cpu.idle_perc',
+                u'columns': [u'timestamp', 'avg', 'min', 'max', 'count', 'sum'],
+                u'id': '01d39f19798ed27bbf458300bf843edd17654614'
+            }
+        ], result)
+
+        cassandra_future_mock.result.side_effect = [
+            [
+                Metric(
+                    metric_id=binascii.unhexlify(b"01d39f19798ed27bbf458300bf843edd17654614"),
+                    metric_name='cpu.idle_perc',
+                    dimensions=[
+                        'device\trootfs',
+                        'hostname\thost0',
+                        'hosttype\tnative',
+                        'mount_point\t/']
+                )
+            ],
+            [
+                Measurement(self._convert_time_string("2016-05-19T11:58:24Z"), 95.0, '{}'),
+                Measurement(self._convert_time_string("2016-05-19T11:58:25Z"), 97.0, '{}'),
+                Measurement(self._convert_time_string("2016-05-19T11:58:26Z"), 94.0, '{}'),
+                Measurement(self._convert_time_string("2016-05-19T11:58:27Z"), 96.0, '{}'),
+            ]
+        ]
+
+        result = repo.metrics_statistics(
+            "tenant_id",
+            "region",
+            name="cpu.idle_perc",
+            dimensions=None,
+            start_timestamp=start_timestamp,
+            end_timestamp=None,
+            statistics=['avg', 'min', 'max', 'count', 'sum'],
+            period=300,
+            offset=None,
+            limit=1,
+            merge_metrics_flag=True,
+            group_by=None)
+
+        self.assertEqual([
+            {
+                u'dimensions': {'device': 'rootfs',
+                                'hostname': 'host0',
+                                'hosttype': 'native',
+                                'mount_point': '/'},
+                u'end_time': u'2016-05-19T12:03:23.999Z',
                 u'statistics': [[u'2016-05-19T11:58:24.000Z', 95.5, 94.0, 97.0, 4, 382.0]],
                 u'name': u'cpu.idle_perc',
                 u'columns': [u'timestamp', 'avg', 'min', 'max', 'count', 'sum'],

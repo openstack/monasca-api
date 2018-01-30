@@ -776,7 +776,10 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         columns.extend([x for x in ['avg', 'min', 'max', 'count', 'sum'] if x in statistics])
 
         start_time = datetime.utcfromtimestamp(start_timestamp)
-        end_time = datetime.utcfromtimestamp(end_timestamp)
+        if end_timestamp:
+            end_time = datetime.utcfromtimestamp(end_timestamp)
+        else:
+            end_time = datetime.utcnow()
 
         for series in series_list:
 
