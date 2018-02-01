@@ -1,7 +1,7 @@
 # Copyright 2014 IBM Corp.
 # Copyright 2016-2017 FUJITSU LIMITED
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
-# (C) Copyright 2017 SUSE LLC
+# (C) Copyright 2017-2018 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -28,6 +28,14 @@ Comma separated list of Cassandra node IP addresses
     cfg.StrOpt('keyspace', default='monasca',
                help='''
 keyspace where metric are stored
+'''),
+    cfg.StrOpt('user', default='',
+               help='''
+Cassandra user for monasca-api service
+'''),
+    cfg.StrOpt('password', default='', secret=True,
+               help='''
+Cassandra user password for monasca-api service
 ''')
 ]
 

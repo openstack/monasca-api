@@ -1,5 +1,5 @@
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development Company LP
-# (C) Copyright 2017 SUSE LLC
+# (C) Copyright 2017-2018 SUSE LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +20,7 @@ from datetime import timedelta
 import itertools
 import urllib
 
+from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import FETCH_SIZE_UNSET
 from cassandra.query import SimpleStatement
@@ -107,7 +108,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         try:
             self.conf = cfg.CONF
-            self.cluster = Cluster(self.conf.cassandra.contact_points)
+
+            if self.conf.cassandra.user:
+                auth_provider = PlainTextAuthProvider(username=self.conf.cassandra.user,
+                                                      password=self.conf.cassandra.password)
+            else:
+                auth_provider = None
+
+            self.cluster = Cluster(self.conf.cassandra.contact_points, auth_provider=auth_provider)
             self.session = self.cluster.connect(self.conf.cassandra.keyspace)
 
             self.dim_val_by_metric_stmt = self.session.prepare(DIMENSION_VALUE_BY_METRIC_CQL)
