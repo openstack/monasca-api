@@ -441,8 +441,6 @@ class TestAlarmRepoDB(base.BaseTestCase):
                        'id': '1',
                        'lifecycle_state': 'OPEN',
                        'link': 'http://somesite.com/this-alarm-info',
-                       'inhibited': False,
-                       'silenced': False,
                        'metrics': [{'dimensions': {'instance_id': '123',
                                                    'service': 'monitoring'},
                                     'name': 'cpu.idle_perc'},
@@ -458,8 +456,6 @@ class TestAlarmRepoDB(base.BaseTestCase):
                        'id': '2',
                        'lifecycle_state': 'OPEN',
                        'link': 'http://somesite.com/this-alarm-info',
-                       'inhibited': False,
-                       'silenced': False,
                        'metrics': [{'dimensions': {'instance_id': '123',
                                                    'service': 'monitoring'},
                                     'name': 'cpu.idle_perc'}],
@@ -473,8 +469,6 @@ class TestAlarmRepoDB(base.BaseTestCase):
                                'id': '234111',
                                'lifecycle_state': None,
                                'link': None,
-                               'inhibited': False,
-                               'silenced': False,
                                'metrics': [
                                    {'dimensions': {'hostname': 'roland',
                                                    'region': 'colorado',
@@ -496,8 +490,6 @@ class TestAlarmRepoDB(base.BaseTestCase):
                        'id': '3',
                        'lifecycle_state': None,
                        'link': 'http://somesite.com/this-alarm-info',
-                       'inhibited': False,
-                       'silenced': False,
                        'metrics': [{'dimensions': {'flavor_id': '222'},
                                     'name': 'cpu.idle_perc'}],
                        'state': 'ALARM',
@@ -551,8 +543,6 @@ class TestAlarmRepoDB(base.BaseTestCase):
                          u'state': alarm_row['state'],
                          u'lifecycle_state': alarm_row['lifecycle_state'],
                          u'link': alarm_row['link'],
-                         u'inhibited': alarm_row['inhibited'],
-                         u'silenced': alarm_row['silenced'],
                          u'state_updated_timestamp':
                              alarm_row['state_updated_timestamp'].isoformat() +
                              'Z',
@@ -883,27 +873,3 @@ class TestAlarmRepoDB(base.BaseTestCase):
                      'expression': 'avg(cpu.idle_perc{flavor_id=777, image_id=888, device=1}) > 10',
                      'sub_alarm_id': '43'}]
         self.assertEqual(sub_alarms, expected)
-
-    def test_silence_inhibit_tag_true(self):
-        silence_query = "UPDATE alarm SET silenced=1 WHERE id=1"
-        inhibit_query = "UPDATE alarm SET inhibited=1 WHERE id=1"
-        with self.engine.begin() as conn:
-            conn.execute(silence_query)
-            conn.execute(inhibit_query)
-
-        self.alarm1['inhibited'] = True
-        self.alarm1['silenced'] = True
-
-        res = self.repo.get_alarms(tenant_id='Not a tenant id', limit=1)
-        self.assertEqual(res, [])
-
-        tenant_id = 'bob'
-        res = self.repo.get_alarms(tenant_id=tenant_id, limit=1000)
-        res = self.helper_builder_result(res)
-
-        expected = [self.alarm1,
-                    self.alarm2,
-                    self.alarm_compound,
-                    self.alarm3]
-
-        self.assertEqual(res, expected)
