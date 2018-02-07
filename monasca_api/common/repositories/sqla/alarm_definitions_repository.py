@@ -710,6 +710,9 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                     changed_sub_alarm_defs_by_id[
                         old_or_changed.id] = (
                         new_or_changed)
+                    # patch id:
+                    changed_sub_alarm_defs_by_id[
+                        old_or_changed.id].id = old_or_changed.id
         old_or_changed_sub_alarm_defs_set = (
             old_or_changed_sub_alarm_defs_set -
             old_or_changed_sub_alarm_defs_set_to_remove
