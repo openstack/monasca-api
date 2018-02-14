@@ -585,7 +585,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         for sub_expr in sub_expr_list:
             sub_expr_event_msg[sub_expr.id] = {
                 u'function': sub_expr.normalized_func}
-            metric_definition = {u'name': sub_expr.normalized_metric_name}
+            metric_definition = {u'name': sub_expr.metric_name}
             sub_expr_event_msg[sub_expr.id][
                 u'metricDefinition'] = metric_definition
             dimensions = {}
