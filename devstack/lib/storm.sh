@@ -110,7 +110,7 @@ function post_storm {
 # helpers
 
 function _download_storm {
-    local storm_tarball_url="${APACHE_MIRROR}storm/apache-storm-${STORM_VERSION}/${STORM_TARBALL}"
+    local storm_tarball_url="${APACHE_ARCHIVES}storm/apache-storm-${STORM_VERSION}/${STORM_TARBALL}"
     local storm_dest
 
     storm_dest=`get_extra_file ${storm_tarball_url}`
