@@ -968,7 +968,7 @@ function install_monasca_thresh {
 
     sudo chmod 0640 /etc/monasca/thresh-config.yml
 
-    local dbEngine="com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+    local dbEngine="org.drizzle.jdbc.DrizzleDriver"
     local dbPort=3306
 
     if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
