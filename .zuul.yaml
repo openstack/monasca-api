@@ -27,6 +27,7 @@
       tsdb: influxdb
       api_lang: python
       persister_lang: python
+    voting: false
 
 - job:
     name: monasca-tempest-python-postgresql
@@ -46,6 +47,7 @@
       tsdb: influxdb
       api_lang: java
       persister_lang: java
+    voting: false
 
 - job:
     name: monasca-tempest-java-postgresql
@@ -65,6 +67,7 @@
       tsdb: cassandra
       api_lang: python
       persister_lang: python
+    voting: false
 
 - job:
     name: monasca-tempest-java-cassandra
@@ -74,6 +77,7 @@
       tsdb: cassandra
       api_lang: python
       persister_lang: java
+    voting: false
 
 - project:
     name: openstack/monasca-api
@@ -83,11 +87,5 @@
         - monasca-tempest-python-postgresql
         - monasca-tempest-java-mysql
         - monasca-tempest-java-postgresql
-        - monasca-tempest-python-cassandra
-        - monasca-tempest-java-cassandra
-    gate:
-      jobs:
-        - monasca-tempest-python-mysql
-        - monasca-tempest-java-mysql
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
