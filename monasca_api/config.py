@@ -1,4 +1,5 @@
 # Copyright 2017 FUJITSU LIMITED
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,6 +17,7 @@ import sys
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_policy import opts as policy_opts
 
 from monasca_api import conf
 from monasca_api import version
@@ -57,6 +59,7 @@ def parse_args(argv=None, config_file=None):
               product_name='monasca-api',
               version=version.version_str)
     conf.register_opts()
+    policy_opts.set_defaults(CONF)
 
     _CONF_LOADED = True
 

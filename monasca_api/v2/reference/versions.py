@@ -1,4 +1,5 @@
 # Copyright 2014 Hewlett-Packard
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -38,6 +39,8 @@ class Versions(versions_api.VersionsAPI):
 
     def on_get(self, req, res, version_id=None):
         req_uri = req.uri.decode('utf8') if six.PY2 else req.uri
+        helpers.validate_authorization(req,
+                                       ['api:versions'])
         result = {
             'links': [{
                 'rel': 'self',

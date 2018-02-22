@@ -26,6 +26,11 @@ import monasca_api.v2.common.validation as validation
 import monasca_api.v2.reference.helpers as helpers
 
 
+def mock_req_can(authorised_rule):
+    if authorised_rule != 'authorized':
+        raise Exception
+
+
 class TestStateValidation(base.BaseTestCase):
 
     VALID_STATES = "OK", "ALARM", "UNDETERMINED"
@@ -71,49 +76,20 @@ class TestSeverityValidation(base.BaseTestCase):
                           '|'.join([self.VALID_SEVERITIES[0], 'BOGUS']))
 
 
-class TestRoleValidation(base.BaseTestCase):
-
-    def test_role_valid(self):
-        req_roles = 'role0', 'rOlE1'
-        authorized_roles = ['RolE1', 'Role2']
-
+class TestRuleValidation(base.BaseApiTestCase):
+    def test_rule_valid(self):
         req = mock.Mock()
-        req.roles = req_roles
+        req.can = mock_req_can
+        test_rules = ['Rule1', 'authorized']
+        helpers.validate_authorization(req, test_rules)
 
-        helpers.validate_authorization(req, authorized_roles)
-
-    def test_role_invalid(self):
-        req_roles = 'role2', 'role3'
-        authorized_roles = ['role0', 'role1']
-
+    def test_rule_invalid(self):
         req = mock.Mock()
-        req.roles = req_roles
-
+        req.can = mock_req_can
+        test_rules = ['rule1', 'rule2']
         self.assertRaises(
             falcon.HTTPUnauthorized,
-            helpers.validate_authorization, req, authorized_roles)
-
-    def test_empty_role_header(self):
-        req_roles = []
-        authorized_roles = ['Role1', 'Role2']
-
-        req = mock.Mock()
-        req.roles = req_roles
-
-        self.assertRaises(
-            falcon.HTTPUnauthorized,
-            helpers.validate_authorization, req, authorized_roles)
-
-    def test_no_role_header(self):
-        req_roles = None
-        authorized_roles = ['Role1', 'Role2']
-
-        req = mock.Mock()
-        req.roles = req_roles
-
-        self.assertRaises(
-            falcon.HTTPUnauthorized,
-            helpers.validate_authorization, req, authorized_roles)
+            helpers.validate_authorization, req, test_rules)
 
 
 class TestTimestampsValidation(base.BaseTestCase):

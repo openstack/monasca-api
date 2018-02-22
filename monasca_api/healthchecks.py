@@ -1,4 +1,5 @@
 # Copyright 2017 FUJITSU LIMITED
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -39,6 +40,7 @@ class HealthChecks(healthcheck_api.HealthCheckApi):
         res.cache_control = self.CACHE_CONTROL
 
     def on_get(self, req, res):
+        helpers.validate_authorization(req, ['api:healthcheck'])
         kafka_result = self._kafka_check.health_check()
         alarms_db_result = self._alarm_db_check.health_check()
         metrics_db_result = self._metrics_db_check.health_check()

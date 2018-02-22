@@ -1,4 +1,5 @@
 # (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -44,11 +45,6 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         try:
             super(AlarmDefinitions, self).__init__()
             self._region = cfg.CONF.region
-            self._default_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles)
-            self._get_alarmdefs_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._alarm_definitions_repo = simport.load(
                 cfg.CONF.repositories.alarm_definitions_driver)()
 
@@ -58,7 +54,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_post(self, req, res):
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:definition:post'])
 
         alarm_definition = helpers.from_json(req)
 
@@ -87,8 +83,8 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_definition_id=None):
+        helpers.validate_authorization(req, ['api:alarms:definition:get'])
         if alarm_definition_id is None:
-            helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
             name = helpers.get_query_name(req)
             dimensions = helpers.get_query_dimensions(req)
             severity = helpers.get_query_param(req, "severity", default_val=None)
@@ -118,20 +114,16 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                  req.uri, sort_by,
                                                  offset, req.limit)
 
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
-
         else:
-            helpers.validate_authorization(req, self._get_alarmdefs_authorized_roles)
-
             result = self._alarm_definition_show(req.project_id,
                                                  alarm_definition_id)
 
             helpers.add_links_to_resource(result,
                                           re.sub('/' + alarm_definition_id, '',
                                                  req.uri))
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
+
+        res.body = helpers.to_json(result)
+        res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_definition_id=None):
@@ -139,7 +131,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:definition:put'])
 
         alarm_definition = helpers.from_json(req)
 
@@ -181,7 +173,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:definition:patch'])
 
         alarm_definition = helpers.from_json(req)
 
@@ -230,7 +222,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:definition:delete'])
         self._alarm_definition_delete(req.project_id, alarm_definition_id)
         res.status = falcon.HTTP_204
 

@@ -1,4 +1,5 @@
 # (C) Copyright 2016-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -34,7 +35,7 @@ class NotificationsType(notificationstype_api_v2.NotificationsTypeV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-
+        helpers.validate_authorization(req, ['api:notifications:type'])
         # This is to provide consistency. Pagination is not really supported here as there
         # are not that many rows
         result = self._list_notifications(req.uri, req.limit)

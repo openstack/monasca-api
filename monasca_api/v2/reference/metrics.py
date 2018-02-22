@@ -1,4 +1,5 @@
 # (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -52,14 +53,6 @@ class Metrics(metrics_api_v2.MetricsV2API):
         try:
             super(Metrics, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
-            self._post_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.agent_authorized_roles)
             self._message_queue = simport.load(cfg.CONF.messaging.driver)(
                 'metrics')
             self._metrics_repo = simport.load(
@@ -94,8 +87,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
     @resource.resource_try_catch_block
     def on_post(self, req, res):
         helpers.validate_json_content_type(req)
-        helpers.validate_authorization(req,
-                                       self._post_metrics_authorized_roles)
+        helpers.validate_authorization(req, ['api:metrics:post'])
         metrics = helpers.from_json(req)
         try:
             metric_validation.validate(metrics)
@@ -103,9 +95,7 @@ class Metrics(metrics_api_v2.MetricsV2API):
             LOG.exception(ex)
             raise HTTPUnprocessableEntityError("Unprocessable Entity", str(ex))
 
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         transformed_metrics = metrics_message.transform(
             metrics, tenant_id, self._region)
         self._send_metrics(transformed_metrics)
@@ -113,10 +103,8 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:get'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -138,14 +126,6 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
         try:
             super(MetricsMeasurements, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
-            self._post_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.agent_authorized_roles)
             self._metrics_repo = simport.load(
                 cfg.CONF.repositories.metrics_driver)()
 
@@ -156,10 +136,8 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:get'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -203,11 +181,6 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
         try:
             super(MetricsStatistics, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._metrics_repo = simport.load(
                 cfg.CONF.repositories.metrics_driver)()
 
@@ -218,10 +191,8 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:get'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req, True)
         helpers.validate_query_name(name)
         dimensions = helpers.get_query_dimensions(req)
@@ -268,11 +239,6 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
         try:
             super(MetricsNames, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._metrics_repo = simport.load(
                 cfg.CONF.repositories.metrics_driver)()
 
@@ -283,10 +249,8 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:get'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         dimensions = helpers.get_query_dimensions(req)
         helpers.validate_query_dimensions(dimensions)
         offset = helpers.get_query_param(req, 'offset')
@@ -310,11 +274,6 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
         try:
             super(DimensionValues, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._metrics_repo = simport.load(
                 cfg.CONF.repositories.metrics_driver)()
 
@@ -324,10 +283,8 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:dimension:values'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         metric_name = helpers.get_query_param(req, 'metric_name')
         dimension_name = helpers.get_query_param(req, 'dimension_name',
                                                  required=True)
@@ -353,11 +310,6 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         try:
             super(DimensionNames, self).__init__()
             self._region = cfg.CONF.region
-            self._delegate_authorized_roles = (
-                cfg.CONF.security.delegate_authorized_roles)
-            self._get_metrics_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._metrics_repo = simport.load(
                 cfg.CONF.repositories.metrics_driver)()
 
@@ -368,10 +320,8 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_metrics_authorized_roles)
-        tenant_id = (
-            helpers.get_x_tenant_or_tenant_id(req,
-                                              self._delegate_authorized_roles))
+        helpers.validate_authorization(req, ['api:metrics:dimension:names'])
+        tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         metric_name = helpers.get_query_param(req, 'metric_name')
         offset = helpers.get_query_param(req, 'offset')
         result = self._dimension_names(tenant_id, req.uri, metric_name,
