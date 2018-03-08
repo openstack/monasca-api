@@ -18,50 +18,29 @@
       - openstack/python-monascaclient
       - openstack/tempest
       - openstack/monasca-tempest-plugin
-
-- job:
-    name: monasca-tempest-python-mysql
-    parent: monasca-tempest-base
     vars:
       database: mysql
+
+- job:
+    name: monasca-tempest-python-influxdb
+    parent: monasca-tempest-base
+    vars:
       tsdb: influxdb
       api_lang: python
       persister_lang: python
 
 - job:
-    name: monasca-tempest-python-postgresql
+    name: monasca-tempest-java-influxdb
     parent: monasca-tempest-base
     vars:
-      database: postgresql
-      tsdb: influxdb
-      api_lang: python
-      persister_lang: python
-    voting: false
-
-- job:
-    name: monasca-tempest-java-mysql
-    parent: monasca-tempest-base
-    vars:
-      database: mysql
       tsdb: influxdb
       api_lang: java
       persister_lang: java
-
-- job:
-    name: monasca-tempest-java-postgresql
-    parent: monasca-tempest-base
-    vars:
-      database: postgresql
-      tsdb: influxdb
-      api_lang: java
-      persister_lang: java
-    voting: false
 
 - job:
     name: monasca-tempest-python-cassandra
     parent: monasca-tempest-base
     vars:
-      database: mysql
       tsdb: cassandra
       api_lang: python
       persister_lang: python
@@ -70,7 +49,6 @@
     name: monasca-tempest-java-cassandra
     parent: monasca-tempest-base
     vars:
-      database: mysql
       tsdb: cassandra
       api_lang: python
       persister_lang: java
@@ -79,15 +57,13 @@
     name: openstack/monasca-api
     check:
       jobs:
-        - monasca-tempest-python-mysql
-        - monasca-tempest-python-postgresql
-        - monasca-tempest-java-mysql
-        - monasca-tempest-java-postgresql
+        - monasca-tempest-python-influxdb
+        - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
     gate:
       jobs:
-        - monasca-tempest-python-mysql
-        - monasca-tempest-java-mysql
+        - monasca-tempest-python-influxdb
+        - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
