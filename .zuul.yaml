@@ -76,7 +76,6 @@
       persister_lang: java
 
 - project:
-    name: openstack/monasca-api
     check:
       jobs:
         - monasca-tempest-python-mysql
