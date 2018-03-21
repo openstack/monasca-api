@@ -417,8 +417,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             for sub_expr in sub_expr_list:
                 sub_alarm_definition_id = uuidutils.generate_uuid()
                 sub_expr.id = sub_alarm_definition_id
-
-                metric_name = sub_expr.normalized_metric_name.encode("utf8")
+                metric_name = sub_expr.metric_name.encode("utf8")
                 operator = sub_expr.normalized_operator.encode('utf8')
                 conn.execute(self.create_alarm_definition_insert_sad_query,
                              b_id=sub_alarm_definition_id,
