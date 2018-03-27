@@ -5,7 +5,7 @@ asn1crypto==0.23.0
 Babel==2.3.4
 bandit==1.4.0
 bashate==0.5.1
-cassandra-driver==2.1.4
+cassandra-driver==3.3.0
 cffi==1.7.0
 chardet==3.0.4
 cliff==2.8.0
@@ -23,6 +23,7 @@ falcon==1.0.0
 fasteners==0.7.0
 fixtures==3.0.0
 flake8==2.5.5
+funcsigs==1.0.0
 future==0.16.0
 futures==3.0.0
 gevent==1.2.2
@@ -97,7 +98,7 @@ rfc3986==0.3.1
 six==1.10.0
 smmap==0.9.0
 snowballstemmer==1.2.1
-Sphinx==1.6.5
+sphinx==1.6.2
 sphinxcontrib-websupport==1.0.1
 SQLAlchemy==1.0.10
 sqlalchemy-migrate==0.11.0
