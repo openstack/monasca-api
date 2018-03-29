@@ -522,7 +522,7 @@ class TestAlarmDefinition(AlarmTestBase):
         sub_expression = {'11111': {u'expression': expr,
                                     u'function': 'max',
                                     u'metricDefinition': {
-                                        u'dimensions': {u'uname': 'host'},
+                                        u'dimensions': {'hostname': 'host'},
                                         u'name': 'test.metric'},
                                     u'operator': 'gte',
                                     u'period': 60,
