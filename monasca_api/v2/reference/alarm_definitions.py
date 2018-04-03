@@ -472,7 +472,7 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         for id, sub_alarm_def in sub_alarm_def_dict.items():
             dimensions = {}
             for name, value in sub_alarm_def.dimensions.items():
-                dimensions[u'uname'] = value
+                dimensions[name] = value
             sub_alarm_def_update_dict[sub_alarm_def.id] = {}
             sub_alarm_def_update_dict[sub_alarm_def.id][u'function'] = (
                 sub_alarm_def.function)
