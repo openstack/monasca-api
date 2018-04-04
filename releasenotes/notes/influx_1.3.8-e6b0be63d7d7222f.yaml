@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Upgrade InfluxDB to 1.3.8 from 1.3.5. It provides couple of
+    bug fixes as in https://docs.influxdata.com/influxdb/v1.3/about_the_project/releasenotes-changelog/#v1-3-9-2018-01-19
