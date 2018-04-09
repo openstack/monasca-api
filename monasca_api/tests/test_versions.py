@@ -32,7 +32,7 @@ class TestVersions(base.BaseApiTestCase):
     def test_list_versions(self):
         result = self.simulate_request('/versions')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        response = json.loads(result[0])
+        response = json.loads(result[0].decode('utf-8'))
         self.assertIsInstance(response, dict)
         self.assertTrue(set(['links', 'elements']) ==
                         set(response))
@@ -47,7 +47,7 @@ class TestVersions(base.BaseApiTestCase):
     def test_valid_version_id(self):
         result = self.simulate_request('/versions/v2.0')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        response = json.loads(result[0])
+        response = json.loads(result[0].decode('utf-8'))
         self.assertIsInstance(response, dict)
         version = response
         self.assertTrue(set(['id', 'links', 'status', 'updated']) ==

@@ -13,6 +13,7 @@
 # under the License.
 
 import falcon
+import six
 
 from monasca_api.api import versions_api
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
@@ -36,24 +37,24 @@ class Versions(versions_api.VersionsAPI):
         super(Versions, self).__init__()
 
     def on_get(self, req, res, version_id=None):
+        req_uri = req.uri.decode('utf8') if six.PY2 else req.uri
         result = {
             'links': [{
                 'rel': 'self',
-                'href': req.uri.decode('utf8')
+                'href': req_uri
             }],
             'elements': []
         }
         if version_id is None:
             for version in VERSIONS:
                 VERSIONS[version]['links'][0]['href'] = (
-                    req.uri.decode('utf8') + version)
+                    req_uri + version)
                 result['elements'].append(VERSIONS[version])
             res.body = helpers.to_json(result)
             res.status = falcon.HTTP_200
         else:
             if version_id in VERSIONS:
-                VERSIONS[version_id]['links'][0]['href'] = (
-                    req.uri.decode('utf8'))
+                VERSIONS[version_id]['links'][0]['href'] = req_uri
                 res.body = helpers.to_json(VERSIONS[version_id])
                 res.status = falcon.HTTP_200
             else:
