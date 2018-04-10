@@ -216,8 +216,9 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
         mock_client.query.assert_called_once_with(
             'show tag values from "custom_metric" with key = "hostname"'
-            ' where _tenant_id = \'38dc2a2549f94d2e9a4fa1cc45a4970c\''
-            '  and _region = \'useast\' ')
+            ' where _tenant_id = \'{tenant}\''
+            '  and _region = \'{region}\' '.format(tenant=b'38dc2a2549f94d2e9a4fa1cc45a4970c',
+                                                   region=b'useast'))
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
@@ -325,7 +326,7 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
             limit=1)
 
         self.assertEqual([{
-            u'id': u'01d39f19798ed27bbf458300bf843edd17654614',
+            u'id': b'01d39f19798ed27bbf458300bf843edd17654614',
             u'name': u'disk.space_used_perc',
             u'dimensions': {
                 u'device': u'rootfs',
@@ -492,7 +493,7 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                 u'statistics': [[u'2016-05-19T11:58:24.000Z', 95.5, 94.0, 97.0, 4, 382.0]],
                 u'name': u'cpu.idle_perc',
                 u'columns': [u'timestamp', 'avg', 'min', 'max', 'count', 'sum'],
-                u'id': '01d39f19798ed27bbf458300bf843edd17654614'
+                u'id': b'01d39f19798ed27bbf458300bf843edd17654614'
             }
         ], result)
 
@@ -540,7 +541,7 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                 u'statistics': [[u'2016-05-19T11:58:24.000Z', 95.5, 94.0, 97.0, 4, 382.0]],
                 u'name': u'cpu.idle_perc',
                 u'columns': [u'timestamp', 'avg', 'min', 'max', 'count', 'sum'],
-                u'id': '01d39f19798ed27bbf458300bf843edd17654614'
+                u'id': b'01d39f19798ed27bbf458300bf843edd17654614'
             }
         ], result)
 
