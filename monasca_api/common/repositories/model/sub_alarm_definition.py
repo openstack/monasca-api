@@ -79,27 +79,27 @@ class SubAlarmDefinition(object):
 
         """Build the entire expressions as a string with spaces."""
 
-        result = "{}({}".format(self.function.lower().encode('utf8'),
-                                self.metric_name.encode('utf8'))
+        result = u"{}({}".format(self.function.lower(),
+                                 self.metric_name)
 
         if self.dimensions_str:
-            result += "{{{}}}".format(self.dimensions_str.encode('utf8'))
+            result += u"{{{}}}".format(self.dimensions_str)
 
         if self.deterministic:
-            result += ', deterministic'
+            result += u", deterministic"
 
         if self.period:
-            result += ", {}".format(str(self.period).encode('utf8'))
+            result += u", {}".format(str(self.period))
 
-        result += ")"
+        result += u")"
 
-        result += " {} {}".format(self.operator.encode('utf8'),
-                                  str(self.threshold).encode('utf8'))
+        result += u" {} {}".format(self.operator,
+                                   str(self.threshold))
 
         if self.periods:
-            result += " times {}".format(str(self.periods).encode('utf8'))
+            result += u" times {}".format(str(self.periods))
 
-        return result.decode('utf8')
+        return result
 
     def __hash__(self):
 
