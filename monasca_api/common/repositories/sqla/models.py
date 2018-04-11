@@ -1,6 +1,7 @@
 # Copyright 2015 Robin Hood
 # Copyright 2016 FUJITSU LIMITED
 # (C) Copyright 2016 Hewlett Packard Enterprise Development LP
+# Copyright 2018 SUSE Linux GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +24,33 @@ from sqlalchemy import Column
 from sqlalchemy.ext import compiler
 from sqlalchemy.sql import expression
 from sqlalchemy import String, DateTime, Boolean, Integer, Binary, Float
+from sqlalchemy import MetaData
 from sqlalchemy import Table
+
+
+def get_all_metadata():
+    """Return metadata for full data model
+
+    This metadata is used for autogenerating a complete (works on an empty
+    database) schema migration. To ensure this mechanism keeps working please
+    invoke any new model creation methods you add from this function as well.
+
+    """
+    metadata = MetaData()
+    create_a_model(metadata)
+    create_aa_model(metadata)
+    create_ad_model(metadata)
+    create_am_model(metadata)
+    create_nm_model(metadata)
+    create_md_model(metadata)
+    create_mde_model(metadata)
+    create_mdd_model(metadata)
+    create_sa_model(metadata)
+    create_sad_model(metadata)
+    create_sadd_model(metadata)
+    create_nmt_model(metadata)
+
+    return metadata
 
 
 def create_a_model(metadata=None):

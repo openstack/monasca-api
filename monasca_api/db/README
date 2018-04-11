@@ -1,0 +1,12 @@
+This directory contains the plumbing for the Alembic migrations that modify the
+Monasca database.
+
+If you need to add a new migration, run
+
+  alembic revision -m '<revision message>'
+
+in this directory, where <revision message> is a short description for what
+your migration does such as 'Add volume field to alarm'. Alembic will then
+create a revision script in the alembic/versions/ directory. You will need to
+edit this script to add upwards and downwards migrations for the change you
+want to make.
