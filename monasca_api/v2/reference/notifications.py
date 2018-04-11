@@ -55,7 +55,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         :raises falcon.HTTPBadRequest
         """
         try:
-            schemas_notifications.parse_and_validate(notification, self.valid_periods, require_all=require_all)
+            schemas_notifications.parse_and_validate(
+                notification, self.valid_periods, require_all=require_all)
         except schemas_exceptions.ValidationException as ex:
             LOG.exception(ex)
             raise falcon.HTTPBadRequest('Bad Request', str(ex))
@@ -65,14 +66,18 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
         if notification:
             if not expected_id:
-                LOG.warning("Found existing notification method for {} with tenant_id {}".format(name, tenant_id))
+                LOG.warning(
+                    "Found existing notification method for {} with tenant_id {}"
+                    .format(name, tenant_id))
                 raise exceptions.AlreadyExistsException(
                     "A notification method with the name {} already exists".format(name))
 
             found_notification_id = notification['id']
             if found_notification_id != expected_id:
-                LOG.warning("Found existing notification method for {} with tenant_id {} with unexpected id {}"
-                            .format(name, tenant_id, found_notification_id))
+                LOG.warning(
+                    "Found existing notification method for {} "
+                    "with tenant_id {} with unexpected id {}"
+                    .format(name, tenant_id, found_notification_id))
                 raise exceptions.AlreadyExistsException(
                     "A notification method with name {} already exists with id {}"
                     .format(name, found_notification_id))
@@ -82,9 +87,12 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         exists = nmt.upper() in notification_methods
 
         if not exists:
-            LOG.warning("Found no notification method type  {} . Did you install/enable the plugin for that type?"
-                        .format(nmt))
-            raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} ".format(nmt))
+            LOG.warning(
+                "Found no notification method type  {}."
+                "Did you install/enable the plugin for that type?"
+                .format(nmt))
+            raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} "
+                                        .format(nmt))
 
     def _create_notification(self, tenant_id, notification, uri):
 
@@ -183,7 +191,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                                                      notification_id)
 
     def _patch_get_notification(self, tenant_id, notification_id, notification):
-        original_notification = self._notifications_repo.list_notification(tenant_id, notification_id)
+        original_notification = self._notifications_repo.list_notification(
+            tenant_id, notification_id)
         if 'name' not in notification:
             notification['name'] = original_notification['name']
         if 'type' not in notification:

@@ -153,9 +153,11 @@ class group_concat(expression.ColumnElement):
 def _group_concat_oracle(element, compiler_, **kw):
     str_order_by = ''
     if element.order_by is not None and len(element.order_by) > 0:
-        str_order_by = "ORDER BY {0}".format(", ".join([compiler_.process(x) for x in element.order_by]))
+        str_order_by = "ORDER BY {0}".format(
+            ", ".join([compiler_.process(x) for x in element.order_by]))
     else:
-        str_order_by = "ORDER BY {0}".format(", ".join([compiler_.process(x) for x in element.columns]))
+        str_order_by = "ORDER BY {0}".format(
+            ", ".join([compiler_.process(x) for x in element.columns]))
     return "LISTAGG({0}, '{2}') WITHIN GROUP ({1})".format(
         ", ".join([compiler_.process(x) for x in element.columns]),
         str_order_by,
@@ -167,7 +169,8 @@ def _group_concat_oracle(element, compiler_, **kw):
 def _group_concat_postgresql(element, compiler_, **kw):
     str_order_by = ''
     if element.order_by is not None and len(element.order_by) > 0:
-        str_order_by = "ORDER BY {0}".format(", ".join([compiler_.process(x) for x in element.order_by]))
+        str_order_by = "ORDER BY {0}".format(
+            ", ".join([compiler_.process(x) for x in element.order_by]))
 
     return "STRING_AGG({0}, '{2}' {1})".format(
         ", ".join([compiler_.process(x) for x in element.columns]),
@@ -188,7 +191,8 @@ def _group_concat_sybase(element, compiler_, **kw):
 def _group_concat_mysql(element, compiler_, **kw):
     str_order_by = ''
     if element.order_by is not None and len(element.order_by) > 0:
-        str_order_by = "ORDER BY {0}".format(",".join([compiler_.process(x) for x in element.order_by]))
+        str_order_by = "ORDER BY {0}".format(
+            ",".join([compiler_.process(x) for x in element.order_by]))
     return "GROUP_CONCAT({0} {1} SEPARATOR '{2}')".format(
         ", ".join([compiler_.process(x) for x in element.columns]),
         str_order_by,

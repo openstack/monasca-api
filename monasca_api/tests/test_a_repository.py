@@ -378,7 +378,7 @@ class TestAlarmRepoDB(base.BaseTestCase):
                              'metric_definition_dimensions_id': '32'}]
 
         self.default_mdes = [{'id': '1',
-                             'name': 'cpu.idle_perc',
+                              'name': 'cpu.idle_perc',
                               'tenant_id': 'bob',
                               'region': 'west'},
                              {'id': '111',

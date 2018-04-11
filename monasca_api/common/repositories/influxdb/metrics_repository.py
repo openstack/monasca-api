@@ -518,9 +518,10 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return json_metric_list
 
     def _build_measurement_name_list(self, measurement_names):
-        """read measurement names from InfluxDB response
+        """Read measurement names from InfluxDB response
 
-        Extract the measurement names (InfluxDB terminology) from the SHOW MEASURMENTS result to yield metric names
+        Extract the measurement names (InfluxDB terminology) from the SHOW MEASURMENTS result
+        to yield metric names
         :param measurement_names: result from SHOW MEASUREMENTS call (json-dict)
         :return: list of metric-names (Monasca terminology)
         """
@@ -605,8 +606,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     if not group_by:
                         measurement[u'dimensions'] = dimensions
                     else:
-                        measurement[u'dimensions'] = {key: value for key, value in serie['tags'].items()
-                                                      if not key.startswith('_')}
+                        measurement[u'dimensions'] = {
+                            key: value for key,
+                            value in serie['tags'].items() if not key.startswith('_')}
 
                     json_measurement_list.append(measurement)
                     index += 1
@@ -716,8 +718,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     if not group_by:
                         statistic[u'dimensions'] = dimensions
                     else:
-                        statistic[u'dimensions'] = {key: value for key, value in serie['tags'].items()
-                                                    if not key.startswith('_')}
+                        statistic[u'dimensions'] = {
+                            key: value for key,
+                            value in serie['tags'].items() if not key.startswith('_')}
 
                     json_statistics_list.append(statistic)
                     index += 1

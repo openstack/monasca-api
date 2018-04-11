@@ -353,7 +353,9 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         sub_alarms = self.repo.get_sub_alarms('bob', '234')
         self.assertEqual(sub_alarms, [])
 
-        ads = self.repo.get_alarm_definitions('bob', '90% CPU', {'image_id': '888'}, None, None, 0, 100)
+        ads = self.repo.get_alarm_definitions(
+            'bob', '90% CPU', {
+                'image_id': '888'}, None, None, 0, 100)
         expected = [{'actions_enabled': False,
                      'alarm_actions': '29387234,77778687',
                      'description': None,
@@ -379,7 +381,9 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                      'undetermined_actions': None}]
         self.assertEqual(ads, expected)
 
-        ads = self.repo.get_alarm_definitions('bob', '90% CPU', {'image_id': '888'}, 'LOW', None, 0, 100)
+        ads = self.repo.get_alarm_definitions(
+            'bob', '90% CPU', {
+                'image_id': '888'}, 'LOW', None, 0, 100)
         expected = [{'actions_enabled': False,
                      'alarm_actions': '29387234,77778687',
                      'description': None,
@@ -405,7 +409,9 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                      'undetermined_actions': None}]
         self.assertEqual(ads, expected)
 
-        ads = self.repo.get_alarm_definitions('bob', '90% CPU', {'image_id': '888'}, 'CRITICAL', None, 0, 100)
+        ads = self.repo.get_alarm_definitions(
+            'bob', '90% CPU', {
+                'image_id': '888'}, 'CRITICAL', None, 0, 100)
         expected = []
         self.assertEqual(ads, expected)
 
@@ -757,10 +763,15 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(')', ', 120)'))
 
     def test_should_patch_expression_periods_change(self):
-        self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(' 10', ' 10 times 2'))
+        self.run_patch_test(
+            expression=ALARM_DEF_123_FIELDS['expression'].replace(
+                ' 10', ' 10 times 2'))
 
     def test_patch_fails_change_match_by(self):
-        self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test, match_by=u'device')
+        self.assertRaises(
+            exceptions.InvalidUpdateException,
+            self.run_patch_test,
+            match_by=u'device')
 
     def test_patch_fails_change_metric_name(self):
         self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
@@ -792,17 +803,18 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                                                              match_by, severity,
                                                              patch=True)
 
-        alarm_def_row = (ALARM_DEF_123_FIELDS['id'],
-                         name if name else ALARM_DEF_123_FIELDS['name'],
-                         description if description else ALARM_DEF_123_FIELDS['description'],
-                         expression if expression else ALARM_DEF_123_FIELDS['expression'],
-                         ALARM_DEF_123_FIELDS['match_by'],  # match-by can't change
-                         severity if severity else ALARM_DEF_123_FIELDS['severity'],
-                         actions_enabled if actions_enabled else ALARM_DEF_123_FIELDS['actions_enabled'],
-                         u','.join(alarm_actions) if alarm_actions else ALARM_DEF_123_FIELDS['alarm_actions'],
-                         u','.join(ok_actions) if ok_actions else ALARM_DEF_123_FIELDS['ok_actions'],
-                         (u','.join(undetermined_actions) if undetermined_actions else
-                          ALARM_DEF_123_FIELDS['undetermined_actions']))
+        alarm_def_row = \
+            (ALARM_DEF_123_FIELDS['id'],
+             name if name else ALARM_DEF_123_FIELDS['name'],
+             description if description else ALARM_DEF_123_FIELDS['description'],
+             expression if expression else ALARM_DEF_123_FIELDS['expression'],
+             ALARM_DEF_123_FIELDS['match_by'],  # match-by can't change
+             severity if severity else ALARM_DEF_123_FIELDS['severity'],
+             actions_enabled if actions_enabled else ALARM_DEF_123_FIELDS['actions_enabled'],
+             u','.join(alarm_actions) if alarm_actions else ALARM_DEF_123_FIELDS['alarm_actions'],
+             u','.join(ok_actions) if ok_actions else ALARM_DEF_123_FIELDS['ok_actions'],
+             (u','.join(undetermined_actions) if undetermined_actions else
+              ALARM_DEF_123_FIELDS['undetermined_actions']))
 
         sad = self.default_sads[0]
         if expression and ALARM_DEF_123_FIELDS['expression'] != expression:
@@ -818,7 +830,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                      'period': sub_expr.period,
                      'is_deterministic': sub_expr.deterministic,
                      'periods': sub_expr.periods})
-            expected_sub_alarm_maps = {'changed': {u'111': sub_alarm_def}, 'new': {}, 'old': {}, 'unchanged': {}}
+            expected_sub_alarm_maps = {
+                'changed': {
+                    u'111': sub_alarm_def},
+                'new': {},
+                'old': {},
+                'unchanged': {}}
         else:
             sub_alarm_def = sub_alarm_definition.SubAlarmDefinition(
                 row={'id': sad['id'],
@@ -831,5 +848,6 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                      'period': sad['period'],
                      'is_deterministic': sad['is_deterministic'],
                      'periods': sad['periods']})
-            expected_sub_alarm_maps = {'changed': {}, 'new': {}, 'old': {}, 'unchanged': {u'111': sub_alarm_def}}
+            expected_sub_alarm_maps = {'changed': {}, 'new': {},
+                                       'old': {}, 'unchanged': {u'111': sub_alarm_def}}
         self.assertEqual((alarm_def_row, expected_sub_alarm_maps), updates)

@@ -20,37 +20,45 @@ from oslo_config import cfg
 BASE_SQL_PATH = 'monasca_api.common.repositories.sqla.'
 
 repositories_opts = [
-    cfg.StrOpt('metrics_driver',
-               default='monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository',
-               advanced=True,
-               help='''
+    cfg.StrOpt(
+        'metrics_driver',
+        default='monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository',
+        advanced=True,
+        help='''
 The repository driver to use for metrics
 '''),
-    cfg.StrOpt('alarm_definitions_driver',
-               default=BASE_SQL_PATH + 'alarm_definitions_repository:AlarmDefinitionsRepository',
-               advanced=True,
-               help='''
+    cfg.StrOpt(
+        'alarm_definitions_driver',
+        default=BASE_SQL_PATH +
+        'alarm_definitions_repository:AlarmDefinitionsRepository',
+        advanced=True,
+        help='''
 The repository driver to use for alarm definitions
 '''),
-    cfg.StrOpt('alarms_driver',
-               default=BASE_SQL_PATH + 'alarms_repository:AlarmsRepository',
-               advanced=True,
-               help='''
+    cfg.StrOpt(
+        'alarms_driver',
+        default=BASE_SQL_PATH +
+        'alarms_repository:AlarmsRepository',
+        advanced=True,
+        help='''
 The repository driver to use for alarms
 '''),
-    cfg.StrOpt('notifications_driver',
-               default=BASE_SQL_PATH + 'notifications_repository:NotificationsRepository',
-               advanced=True,
-               help='''
+    cfg.StrOpt(
+        'notifications_driver',
+        default=BASE_SQL_PATH +
+        'notifications_repository:NotificationsRepository',
+        advanced=True,
+        help='''
 The repository driver to use for notifications
 '''),
-    cfg.StrOpt('notification_method_type_driver',
-               default=BASE_SQL_PATH + 'notification_method_type_repository:NotificationMethodTypeRepository',
-               advanced=True,
-               help='''
+    cfg.StrOpt(
+        'notification_method_type_driver',
+        default=BASE_SQL_PATH +
+        'notification_method_type_repository:NotificationMethodTypeRepository',
+        advanced=True,
+        help='''
 The repository driver to use for notifications
-''')
-]
+''')]
 
 repositories_group = cfg.OptGroup(name='repositories', title='repositories')
 

@@ -110,8 +110,9 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                 try:
                     offset = int(offset)
                 except Exception:
-                    raise HTTPUnprocessableEntityError('Unprocessable Entity',
-                                                       'Offset value {} must be an integer'.format(offset))
+                    raise HTTPUnprocessableEntityError(
+                        'Unprocessable Entity',
+                        'Offset value {} must be an integer'.format(offset))
             result = self._alarm_definition_list(req.project_id, name,
                                                  dimensions, severity,
                                                  req.uri, sort_by,
@@ -243,14 +244,16 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                                                          limit=0)
         if definitions:
             if not expected_id:
-                LOG.warning("Found existing definition for {} with tenant_id {}".format(name, tenant_id))
-                raise exceptions.AlreadyExistsException("An alarm definition with the name {} already exists"
-                                                        .format(name))
+                LOG.warning(
+                    "Found existing definition for {} with tenant_id {}".format(name, tenant_id))
+                raise exceptions.AlreadyExistsException(
+                    "An alarm definition with the name {} already exists" .format(name))
 
             found_definition_id = definitions[0]['id']
             if found_definition_id != expected_id:
-                LOG.warning("Found existing alarm definition for {} with tenant_id {} with unexpected id {}"
-                            .format(name, tenant_id, found_definition_id))
+                LOG.warning(
+                    "Found existing alarm definition for {} with tenant_id {} with unexpected id {}"
+                    .format(name, tenant_id, found_definition_id))
                 raise exceptions.AlreadyExistsException(
                     "An alarm definition with the name {} already exists with id {}"
                     .format(name, found_definition_id))

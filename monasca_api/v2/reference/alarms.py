@@ -130,12 +130,14 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                 if isinstance(query_parms['sort_by'], six.string_types):
                     query_parms['sort_by'] = query_parms['sort_by'].split(',')
 
-                allowed_sort_by = {'alarm_id', 'alarm_definition_id', 'alarm_definition_name',
-                                   'state', 'severity', 'lifecycle_state', 'link',
-                                   'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
+                allowed_sort_by = {
+                    'alarm_id', 'alarm_definition_id', 'alarm_definition_name',
+                    'state', 'severity', 'lifecycle_state', 'link',
+                    'state_updated_timestamp', 'updated_timestamp', 'created_timestamp'}
                 validation.validate_sort_by(query_parms['sort_by'], allowed_sort_by)
 
-            query_parms['metric_dimensions'] = helpers.get_query_dimensions(req, 'metric_dimensions')
+            query_parms['metric_dimensions'] = helpers.get_query_dimensions(
+                req, 'metric_dimensions')
             helpers.validate_query_dimensions(query_parms['metric_dimensions'])
 
             offset = helpers.get_query_param(req, 'offset')
@@ -144,8 +146,9 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                     offset = int(offset)
                 except Exception as ex:
                     LOG.exception(ex)
-                    raise HTTPUnprocessableEntityError("Unprocessable Entity",
-                                                       "Offset value {} must be an integer".format(offset))
+                    raise HTTPUnprocessableEntityError(
+                        "Unprocessable Entity",
+                        "Offset value {} must be an integer".format(offset))
 
             result = self._alarm_list(req.uri, req.project_id,
                                       query_parms, offset,
@@ -393,8 +396,9 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             try:
                 offset = int(offset)
             except Exception:
-                raise HTTPUnprocessableEntityError("Unprocessable Entity",
-                                                   "Offset must be a valid integer, was {}".format(offset))
+                raise HTTPUnprocessableEntityError(
+                    "Unprocessable Entity",
+                    "Offset must be a valid integer, was {}".format(offset))
 
         result = self._alarms_count(req.uri, req.project_id, query_parms, offset, req.limit)
 
@@ -427,8 +431,9 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
             return result
 
         if len(count_data) > limit:
-            result['links'].append({'rel': 'next',
-                                    'href': helpers.create_alarms_count_next_link(req_uri, offset, limit)})
+            result['links'].append({
+                'rel': 'next',
+                'href': helpers.create_alarms_count_next_link(req_uri, offset, limit)})
             count_data = count_data[:limit]
 
         result['columns'].extend(group_by)
@@ -449,7 +454,8 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         if not set(group_by).issubset(allowed_values):
             raise HTTPUnprocessableEntityError(
                 "Unprocessable Entity",
-                "One or more group-by values from {} are not in {}".format(group_by, allowed_values))
+                "One or more group-by values from {} are not in {}"
+                .format(group_by, allowed_values))
 
 
 class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,

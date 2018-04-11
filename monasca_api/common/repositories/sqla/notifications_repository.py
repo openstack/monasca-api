@@ -184,7 +184,14 @@ class NotificationsRepository(sql_repository.SQLRepository,
                                 b_name=name.encode('utf8')).fetchone()
 
     @sql_repository.sql_try_catch_block
-    def update_notification(self, notification_id, tenant_id, name, notification_type, address, period):
+    def update_notification(
+            self,
+            notification_id,
+            tenant_id,
+            name,
+            notification_type,
+            address,
+            period):
         with self._db_engine.connect() as conn:
             now = datetime.datetime.utcnow()
 

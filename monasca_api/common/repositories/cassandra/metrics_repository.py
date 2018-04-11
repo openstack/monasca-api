@@ -77,10 +77,11 @@ METRIC_NAME_BY_DIMENSION_CQL = ('select metric_name from dimensions_metrics wher
                                 'tenant_id = ? and dimension_name = ? and dimension_value = ? '
                                 'group by metric_name order by metric_name')
 
-METRIC_NAME_BY_DIMENSION_OFFSET_CQL = ('select metric_name from dimensions_metrics where region = ? and '
-                                       'tenant_id = ? and dimension_name = ? and dimension_value = ? and '
-                                       'metric_name >= ?'
-                                       'group by metric_name order by metric_name')
+METRIC_NAME_BY_DIMENSION_OFFSET_CQL = (
+    'select metric_name from dimensions_metrics where region = ? and '
+    'tenant_id = ? and dimension_name = ? and dimension_value = ? and '
+    'metric_name >= ?'
+    'group by metric_name order by metric_name')
 
 METRIC_NAME_CQL = ('select distinct region, tenant_id, metric_name from metrics_dimensions '
                    'where region = ? and tenant_id = ? allow filtering')
@@ -93,8 +94,9 @@ METRIC_BY_ID_CQL = ('select region, tenant_id, metric_name, dimensions from meas
 
 Metric = namedtuple('metric', 'id name dimensions')
 
-ALARM_HISTORY_CQL = ('select tenant_id, alarm_id, time_stamp, metric, new_state, old_state, reason, reason_data, '
-                     'sub_alarms from alarm_state_history where %s %s %s %s %s')
+ALARM_HISTORY_CQL = (
+    'select tenant_id, alarm_id, time_stamp, metric, new_state, old_state, reason, reason_data, '
+    'sub_alarms from alarm_state_history where %s %s %s %s %s')
 
 ALARM_ID_EQ = 'and alarm_id = %s'
 
@@ -128,7 +130,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
             self.metric_name_by_dimension_stmt = self.session.prepare(METRIC_NAME_BY_DIMENSION_CQL)
 
-            self.metric_name_by_dimension_offset_stmt = self.session.prepare(METRIC_NAME_BY_DIMENSION_OFFSET_CQL)
+            self.metric_name_by_dimension_offset_stmt = self.session.prepare(
+                METRIC_NAME_BY_DIMENSION_OFFSET_CQL)
 
             self.metric_name_stmt = self.session.prepare(METRIC_NAME_CQL)
 
@@ -228,8 +231,15 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
             for name in names:
                 if name == offset_name:
-                    futures = self._list_metrics_by_name(tenant_id, region, name, dimensions, offset_dimensions,
-                                                         limit, start_time=None, end_time=None)
+                    futures = self._list_metrics_by_name(
+                        tenant_id,
+                        region,
+                        name,
+                        dimensions,
+                        offset_dimensions,
+                        limit,
+                        start_time=None,
+                        end_time=None)
                     if offset_dimensions and dimensions:
                         offset_futures.extend(futures)
                     else:
@@ -270,16 +280,32 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return metric
 
-    def _list_metrics_by_name(self, tenant_id, region, name, dimensions, dimension_offset, limit, start_time=None,
-                              end_time=None):
+    def _list_metrics_by_name(
+            self,
+            tenant_id,
+            region,
+            name,
+            dimensions,
+            dimension_offset,
+            limit,
+            start_time=None,
+            end_time=None):
 
         or_dimensions = []
         sub_dimensions = {}
         futures = []
 
         if not dimensions:
-            query = self._build_metrics_by_name_query(tenant_id, region, name, dimensions, None, start_time,
-                                                      end_time, dimension_offset, limit)
+            query = self._build_metrics_by_name_query(
+                tenant_id,
+                region,
+                name,
+                dimensions,
+                None,
+                start_time,
+                end_time,
+                dimension_offset,
+                limit)
             futures.append(self.session.execute_async(query[0], query[1]))
             return futures
 
@@ -308,16 +334,30 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     for k, v in dims.items():
                         extracted_dimensions[k] = v
 
-                query = self._build_metrics_by_name_query(tenant_id, region, name, extracted_dimensions,
-                                                          wildcard_dimensions, start_time,
-                                                          end_time, dimension_offset, limit)
+                query = self._build_metrics_by_name_query(
+                    tenant_id,
+                    region,
+                    name,
+                    extracted_dimensions,
+                    wildcard_dimensions,
+                    start_time,
+                    end_time,
+                    dimension_offset,
+                    limit)
 
                 futures.append(self.session.execute_async(query[0], query[1]))
 
         else:
-            query = self._build_metrics_by_name_query(tenant_id, region, name, sub_dimensions, wildcard_dimensions,
-                                                      start_time,
-                                                      end_time, dimension_offset, limit)
+            query = self._build_metrics_by_name_query(
+                tenant_id,
+                region,
+                name,
+                sub_dimensions,
+                wildcard_dimensions,
+                start_time,
+                end_time,
+                dimension_offset,
+                limit)
             futures.append(self.session.execute_async(query[0], query[1]))
 
         return futures
@@ -331,9 +371,17 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return None
 
-    def _build_metrics_by_name_query(self, tenant_id, region, name, dimensions, wildcard_dimensions, start_time,
-                                     end_time, dim_offset,
-                                     limit):
+    def _build_metrics_by_name_query(
+            self,
+            tenant_id,
+            region,
+            name,
+            dimensions,
+            wildcard_dimensions,
+            start_time,
+            end_time,
+            dim_offset,
+            limit):
 
         conditions = [REGION_EQ, TENANT_EQ]
         params = [region, tenant_id.encode('utf8')]
@@ -427,13 +475,15 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                         extracted_dimensions[k] = v
 
                 names.extend(
-                    self._list_metric_names_single_dimension_value(tenant_id, region, extracted_dimensions, offset))
+                    self._list_metric_names_single_dimension_value(
+                        tenant_id, region, extracted_dimensions, offset))
 
             names.sort(key=lambda x: x[u'name'])
             return names
 
         else:
-            names = self._list_metric_names_single_dimension_value(tenant_id, region, single_dimensions, offset)
+            names = self._list_metric_names_single_dimension_value(
+                tenant_id, region, single_dimensions, offset)
             names.sort(key=lambda x: x[u'name'])
             return names
 
@@ -444,18 +494,27 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if dimensions:
                 for name, value in dimensions.items():
                     if offset:
-                        futures.append(self.session.execute_async(self.metric_name_by_dimension_offset_stmt,
-                                                                  [region, tenant_id, name, value, offset]))
+                        futures.append(
+                            self.session.execute_async(
+                                self.metric_name_by_dimension_offset_stmt, [
+                                    region, tenant_id, name, value, offset]))
                     else:
-                        futures.append(self.session.execute_async(self.metric_name_by_dimension_stmt,
-                                                                  [region, tenant_id, name, value]))
+                        futures.append(
+                            self.session.execute_async(
+                                self.metric_name_by_dimension_stmt, [
+                                    region, tenant_id, name, value]))
 
             else:
                 if offset:
                     futures.append(
-                        self.session.execute_async(self.metric_name_offset_stmt, [region, tenant_id, offset]))
+                        self.session.execute_async(
+                            self.metric_name_offset_stmt, [
+                                region, tenant_id, offset]))
                 else:
-                    futures.append(self.session.execute_async(self.metric_name_stmt, [region, tenant_id]))
+                    futures.append(
+                        self.session.execute_async(
+                            self.metric_name_stmt, [
+                                region, tenant_id]))
 
             names_list = []
 
@@ -499,7 +558,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         try:
             if len(metrics) > 1 and not group_by:
-                # offset is controlled only by offset_timestamp when the group by option is not enabled
+                # offset is controlled only by offset_timestamp when the group by option
+                # is not enabled
                 count, series_list = self._query_merge_measurements(metrics,
                                                                     dimensions,
                                                                     start_timestamp,
@@ -566,7 +626,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     if remaining <= 0:
                         break
 
-                # offset_timestamp is used only in the first group, reset to None for subsequent groups
+                # offset_timestamp is used only in the first group, reset to None for
+                # subsequent groups
                 if offset_timestamp:
                     offset_timestamp = None
 
@@ -626,9 +687,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             measurements = []
             row = next(result[1], None)
             while row:
-                measurements.append([self._isotime_msec(row.time_stamp),
-                                     row.value,
-                                     rest_utils.from_json(row.value_meta) if row.value_meta else {}])
+                measurements.append(
+                    [self._isotime_msec(row.time_stamp), row.value,
+                     rest_utils.from_json(row.value_meta) if row.value_meta else {}])
                 count += 1
                 if limit and count >= limit:
                     break
@@ -673,7 +734,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         else:
             conditions.append('')
 
-        return SimpleStatement(MEASUREMENT_LIST_CQL % tuple(conditions), fetch_size=fetch_size), params
+        return SimpleStatement(MEASUREMENT_LIST_CQL %
+                               tuple(conditions), fetch_size=fetch_size), params
 
     def _merge_series(self, series, dimensions, limit):
         series_list = []
@@ -704,10 +766,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             count += 1
             row = next(series[top_batch[num_series - 1][0]][1], None)
             if row:
-                top_batch[num_series - 1] = [top_batch[num_series - 1][0],
-                                             row.time_stamp,
-                                             row.value,
-                                             rest_utils.from_json(row.value_meta) if row.value_meta else {}]
+                top_batch[num_series - 1] = \
+                    [top_batch[num_series - 1][0], row.time_stamp,
+                     row.value, rest_utils.from_json(row.value_meta) if row.value_meta else {}]
 
                 top_batch.sort(key=lambda m: m[1], reverse=True)
             else:
@@ -802,7 +863,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             first_measure = measurements[0]
             first_measure_start_time = MetricsRepository._parse_time_string(first_measure[0])
 
-            # skip blank intervals at the beginning, finds the start time of stat period that is not empty
+            # skip blank intervals at the beginning, finds the start time of stat
+            # period that is not empty
             stat_start_time = start_time + timedelta(
                 seconds=((first_measure_start_time - start_time).seconds / period) * period)
 
@@ -840,8 +902,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     stats_sum += value
 
             if stats_count:
-                stat = MetricsRepository._create_stat(statistics, stat_start_time, stats_count, stats_sum,
-                                                      stats_min, stats_max)
+                stat = MetricsRepository._create_stat(
+                    statistics, stat_start_time, stats_count, stats_sum, stats_min, stats_max)
                 stats_list.append(stat)
                 limit -= 1
 
@@ -861,7 +923,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return json_statistics_list
 
     @staticmethod
-    def _create_stat(statistics, timestamp, stat_count=None, stat_sum=None, stat_min=None, stat_max=None):
+    def _create_stat(
+            statistics,
+            timestamp,
+            stat_count=None,
+            stat_sum=None,
+            stat_min=None,
+            stat_max=None):
 
         stat = [MetricsRepository._isotime_msec(timestamp)]
 
@@ -909,7 +977,11 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                 conditions.append(ALARM_ID_EQ)
                 params.append(alarm_id_list[0])
             else:
-                conditions.append(' and alarm_id in ({}) '.format(','.join(['%s'] * len(alarm_id_list))))
+                conditions.append(
+                    ' and alarm_id in ({}) '.format(
+                        ','.join(
+                            ['%s'] *
+                            len(alarm_id_list))))
                 for alarm_id in alarm_id_list:
                     params.append(alarm_id)
 
