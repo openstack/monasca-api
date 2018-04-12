@@ -156,6 +156,8 @@ MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-p
 # MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-cassandra}
 MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 
+MONASCA_API_USE_MOD_WSGI=${MONASCA_API_USE_MOD_WSGI:-True}
+
 # Uncomment one of the following lines and modify accordingly to enable the Monasca DevStack Plugin
 enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
 # enable_plugin monasca-api file:///vagrant_home/Documents/repos/openstack/monasca-api.vertica
