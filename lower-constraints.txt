@@ -5,7 +5,7 @@ asn1crypto==0.23.0
 Babel==2.3.4
 bandit==1.4.0
 bashate==0.5.1
-cassandra-driver==2.1.4
+cassandra-driver==3.3.0
 cffi==1.7.0
 chardet==3.0.4
 cliff==2.8.0
