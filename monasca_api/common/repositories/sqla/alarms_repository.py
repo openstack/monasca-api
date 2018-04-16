@@ -20,7 +20,8 @@ from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
-from sqlalchemy import MetaData, update, delete, select, text, bindparam, func, literal_column, asc, desc
+from sqlalchemy import (MetaData, update, delete, select, text,
+                        bindparam, func, literal_column, asc, desc)
 from sqlalchemy import or_
 
 
@@ -54,15 +55,22 @@ class AlarmsRepository(sql_repository.SQLRepository,
         gc_columns = [md.c.name + text("'='") + md.c.value]
 
         mdg = (select([md.c.dimension_set_id,
-                      models.group_concat(gc_columns).label('dimensions')])
+                       models.group_concat(gc_columns).label('dimensions')])
                .select_from(md)
                .group_by(md.c.dimension_set_id).alias('mdg'))
 
-        self.base_query_from = (a_s.join(ad, ad.c.id == a_s.c.alarm_definition_id)
-                                .join(am, am.c.alarm_id == a_s.c.id)
-                                .join(mdd, mdd.c.id == am.c.metric_definition_dimensions_id)
-                                .join(mde, mde.c.id == mdd.c.metric_definition_id)
-                                .outerjoin(mdg, mdg.c.dimension_set_id == mdd.c.metric_dimension_set_id))
+        self.base_query_from = (
+            a_s.join(
+                ad,
+                ad.c.id == a_s.c.alarm_definition_id) .join(
+                am,
+                am.c.alarm_id == a_s.c.id) .join(
+                mdd,
+                mdd.c.id == am.c.metric_definition_dimensions_id) .join(
+                    mde,
+                    mde.c.id == mdd.c.metric_definition_id) .outerjoin(
+                        mdg,
+                mdg.c.dimension_set_id == mdd.c.metric_dimension_set_id))
 
         self.base_query = select([a_s.c.id.label('alarm_id'),
                                   a_s.c.state,
@@ -280,8 +288,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             if 'severity' in query_parms:
                 severities = query_parms['severity'].split('|')
-                query = query.where(
-                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in range(len(severities))))
+                query = query.where(or_(ad.c.severity == bindparam(
+                    'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
                     parms['b_severity' + str(i)] = s.encode('utf8')
 
@@ -364,21 +372,23 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             order_columns = []
             if 'sort_by' in query_parms:
-                columns_mapper = {'alarm_id': a.c.id,
-                                  'alarm_definition_id': ad.c.id,
-                                  'alarm_definition_name': ad.c.name,
-                                  'state_updated_timestamp': a.c.state_updated_at,
-                                  'updated_timestamp': a.c.updated_at,
-                                  'created_timestamp': a.c.created_at,
-                                  'severity': models.field_sort(ad.c.severity, map(text, ["'LOW'",
-                                                                                          "'MEDIUM'",
-                                                                                          "'HIGH'",
-                                                                                          "'CRITICAL'"])),
-                                  'state': models.field_sort(a.c.state, map(text, ["'OK'",
-                                                                                   "'UNDETERMINED'",
-                                                                                   "'ALARM'"]))}
+                columns_mapper = \
+                    {'alarm_id': a.c.id,
+                     'alarm_definition_id': ad.c.id,
+                     'alarm_definition_name': ad.c.name,
+                     'state_updated_timestamp': a.c.state_updated_at,
+                     'updated_timestamp': a.c.updated_at,
+                     'created_timestamp': a.c.created_at,
+                     'severity': models.field_sort(ad.c.severity, map(text, ["'LOW'",
+                                                                             "'MEDIUM'",
+                                                                             "'HIGH'",
+                                                                             "'CRITICAL'"])),
+                     'state': models.field_sort(a.c.state, map(text, ["'OK'",
+                                                                      "'UNDETERMINED'",
+                                                                      "'ALARM'"]))}
 
-                order_columns, received_cols = self._remap_columns(query_parms['sort_by'], columns_mapper)
+                order_columns, received_cols = self._remap_columns(
+                    query_parms['sort_by'], columns_mapper)
 
                 if not received_cols.get('alarm_id', False):
                     order_columns.append(a.c.id)
@@ -461,9 +471,11 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
                     sub_query_columns.extend(sub_group_by_columns)
 
-                    sub_query_from = (mde.join(mdd, mde.c.id == mdd.c.metric_definition_id)
-                                      .join(md, mdd.c.metric_dimension_set_id == md.c.dimension_set_id)
-                                      .join(am, am.c.metric_definition_dimensions_id == mdd.c.id))
+                    sub_query_from = (
+                        mde.join(
+                            mdd, mde.c.id == mdd.c.metric_definition_id) .join(
+                            md, mdd.c.metric_dimension_set_id == md.c.dimension_set_id) .join(
+                            am, am.c.metric_definition_dimensions_id == mdd.c.id))
 
                     sub_query = (select(sub_query_columns)
                                  .select_from(sub_query_from)
@@ -491,8 +503,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             if 'severity' in query_parms:
                 severities = query_parms['severity'].split('|')
-                query = query.where(
-                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in range(len(severities))))
+                query = query.where(or_(ad.c.severity == bindparam(
+                    'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
                     parms['b_severity' + str(i)] = s.encode('utf8')
 

@@ -200,7 +200,11 @@ class TestNotificationValidation(base.BaseTestCase):
         self.assertEqual("Address name@ is not of correct format", str(ex))
 
     def test_validation_exception_for_invalid_period_for_email(self):
-        notification = {"name": "MyEmail", "type": "EMAIL", "address": "name@domain.com", "period": "60"}
+        notification = {
+            "name": "MyEmail",
+            "type": "EMAIL",
+            "address": "name@domain.com",
+            "period": "60"}
         ex = self.assertRaises(schemas_exceptions.ValidationException,
                                schemas_notifications.parse_and_validate,
                                notification, valid_periods)

@@ -32,9 +32,10 @@ def validate_alarm_state(state):
 
 def validate_alarm_definition_severity(severity):
     if severity.upper() not in VALID_ALARM_DEFINITION_SEVERITIES:
-        raise HTTPUnprocessableEntityError("Invalid Severity",
-                                           "Severity {} must be one of {}".format(severity.encode('utf8'),
-                                                                                  VALID_ALARM_DEFINITION_SEVERITIES))
+        raise HTTPUnprocessableEntityError(
+            "Invalid Severity",
+            "Severity {} must be one of {}".format(severity.encode('utf8'),
+                                                   VALID_ALARM_DEFINITION_SEVERITIES))
 
 
 def validate_severity_query(severity_str):

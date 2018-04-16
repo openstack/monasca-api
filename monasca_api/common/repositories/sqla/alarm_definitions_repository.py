@@ -108,35 +108,46 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                    aao.c.ok_actions,
                                    aau.c.undetermined_actions]))
 
-        self.get_sub_alarms_query = (select([sa_s.c.id.label('sub_alarm_id'),
-                                             sa_s.c.alarm_id,
-                                             sa_s.c.expression])
-                                     .select_from(sa_s.join(a_s, a_s.c.id == sa_s.c.alarm_id)
-                                                  .join(ad_s, ad_s.c.id == a_s.c.alarm_definition_id))
-                                     .where(ad_s.c.tenant_id == bindparam('b_tenant_id'))
-                                     .where(ad_s.c.id == bindparam('b_id'))
-                                     .distinct())
+        self.get_sub_alarms_query = (
+            select(
+                [
+                    sa_s.c.id.label('sub_alarm_id'),
+                    sa_s.c.alarm_id,
+                    sa_s.c.expression]) .select_from(
+                sa_s.join(
+                    a_s,
+                    a_s.c.id == sa_s.c.alarm_id) .join(
+                        ad_s,
+                        ad_s.c.id == a_s.c.alarm_definition_id)) .where(
+                            ad_s.c.tenant_id == bindparam('b_tenant_id')) .where(
+                                ad_s.c.id == bindparam('b_id')) .distinct())
 
         mdg = (select([md_s.c.dimension_set_id,
-                       models.group_concat([md_s.c.name + text("'='") + md_s.c.value]).label('dimensions')])
+                       models.group_concat(
+                           [md_s.c.name + text("'='") + md_s.c.value]).label('dimensions')])
                .select_from(md_s)
                .group_by(md_s.c.dimension_set_id)
                .alias('mdg'))
 
-        self.get_alarm_metrics_query = (select([a_s.c.id.label('alarm_id'),
-                                                mde_s.c.name,
-                                                mdg.c.dimensions])
-                                        .select_from(a_s.join(ad_s, ad_s.c.id == a_s.c.alarm_definition_id)
-                                                     .join(am_s, am_s.c.alarm_id == a_s.c.id)
-                                                     .join(mdd_s, mdd_s.c.id
-                                                           == am_s.c.metric_definition_dimensions_id)
-                                                     .join(mde_s, mde_s.c.id == mdd_s.c.metric_definition_id)
-                                                     .outerjoin(mdg, mdg.c.dimension_set_id
-                                                                == mdd_s.c.metric_dimension_set_id))
-                                        .where(ad_s.c.tenant_id == bindparam('b_tenant_id'))
-                                        .where(ad_s.c.id == bindparam('b_id'))
-                                        .order_by(a_s.c.id)
-                                        .distinct())
+        self.get_alarm_metrics_query = (
+            select(
+                [a_s.c.id.label('alarm_id'),
+                 mde_s.c.name,
+                 mdg.c.dimensions]) .select_from(
+                a_s.join(
+                    ad_s,
+                    ad_s.c.id == a_s.c.alarm_definition_id) .join(
+                    am_s,
+                    am_s.c.alarm_id == a_s.c.id) .join(
+                    mdd_s,
+                    mdd_s.c.id == am_s.c.metric_definition_dimensions_id) .join(
+                    mde_s,
+                    mde_s.c.id == mdd_s.c.metric_definition_id) .outerjoin(
+                    mdg,
+                    mdg.c.dimension_set_id == mdd_s.c.metric_dimension_set_id)) .where(
+                ad_s.c.tenant_id == bindparam('b_tenant_id')) .where(
+                ad_s.c.id == bindparam('b_id')) .order_by(
+                a_s.c.id) .distinct())
 
         self.soft_delete_ad_query = (update(ad)
                                      .where(ad.c.tenant_id == bindparam('b_tenant_id'))
@@ -154,90 +165,95 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                  .group_by(sadd_s.c.sub_alarm_definition_id)
                  .alias('saddg'))
 
-        self.get_sub_alarm_definitions_query = (select([sad_s, saddg.c.dimensions])
-                                                .select_from(sad_s.outerjoin(saddg,
-                                                                             saddg.c.sub_alarm_definition_id
-                                                                             == sad_s.c.id))
-                                                .where(sad_s.c.alarm_definition_id
-                                                       == bindparam('b_alarm_definition_id')))
+        self.get_sub_alarm_definitions_query = (
+            select(
+                [
+                    sad_s,
+                    saddg.c.dimensions]) .select_from(
+                sad_s.outerjoin(
+                    saddg,
+                    saddg.c.sub_alarm_definition_id == sad_s.c.id)) .where(
+                        sad_s.c.alarm_definition_id == bindparam('b_alarm_definition_id')))
 
-        self.create_alarm_definition_insert_ad_query = (insert(ad)
-                                                        .values(
-                                                            id=bindparam('b_id'),
-                                                            tenant_id=bindparam('b_tenant_id'),
-                                                            name=bindparam('b_name'),
-                                                            description=bindparam('b_description'),
-                                                            expression=bindparam('b_expression'),
-                                                            severity=bindparam('b_severity'),
-                                                            match_by=bindparam('b_match_by'),
-                                                            actions_enabled=bindparam('b_actions_enabled'),
-                                                            created_at=bindparam('b_created_at'),
-                                                            updated_at=bindparam('b_updated_at')))
+        self.create_alarm_definition_insert_ad_query = (
+            insert(ad) .values(
+                id=bindparam('b_id'),
+                tenant_id=bindparam('b_tenant_id'),
+                name=bindparam('b_name'),
+                description=bindparam('b_description'),
+                expression=bindparam('b_expression'),
+                severity=bindparam('b_severity'),
+                match_by=bindparam('b_match_by'),
+                actions_enabled=bindparam('b_actions_enabled'),
+                created_at=bindparam('b_created_at'),
+                updated_at=bindparam('b_updated_at')))
 
-        self.create_alarm_definition_insert_sad_query = (insert(sad)
-                                                         .values(
-                                                             id=bindparam('b_id'),
-                                                             alarm_definition_id=bindparam('b_alarm_definition_id'),
-                                                             function=bindparam('b_function'),
-                                                             metric_name=bindparam('b_metric_name'),
-                                                             operator=bindparam('b_operator'),
-                                                             threshold=bindparam('b_threshold'),
-                                                             period=bindparam('b_period'),
-                                                             periods=bindparam('b_periods'),
-                                                             is_deterministic=bindparam('b_is_deterministic'),
-                                                             created_at=bindparam('b_created_at'),
-                                                             updated_at=bindparam('b_updated_at')))
+        self.create_alarm_definition_insert_sad_query = (
+            insert(sad) .values(
+                id=bindparam('b_id'),
+                alarm_definition_id=bindparam('b_alarm_definition_id'),
+                function=bindparam('b_function'),
+                metric_name=bindparam('b_metric_name'),
+                operator=bindparam('b_operator'),
+                threshold=bindparam('b_threshold'),
+                period=bindparam('b_period'),
+                periods=bindparam('b_periods'),
+                is_deterministic=bindparam('b_is_deterministic'),
+                created_at=bindparam('b_created_at'),
+                updated_at=bindparam('b_updated_at')))
 
         b_sad_id = bindparam('b_sub_alarm_definition_id')
-        self.create_alarm_definition_insert_sadd_query = (insert(sadd)
-                                                          .values(
-                                                              sub_alarm_definition_id=b_sad_id,
-                                                              dimension_name=bindparam('b_dimension_name'),
-                                                              value=bindparam('b_value')))
+        self.create_alarm_definition_insert_sadd_query = (
+            insert(sadd) .values(
+                sub_alarm_definition_id=b_sad_id,
+                dimension_name=bindparam('b_dimension_name'),
+                value=bindparam('b_value')))
 
-        self.update_or_patch_alarm_definition_update_ad_query = (update(ad)
-                                                                 .where(ad.c.tenant_id == bindparam('b_tenant_id'))
-                                                                 .where(ad.c.id == bindparam('b_id')))
+        self.update_or_patch_alarm_definition_update_ad_query = (
+            update(ad) .where(
+                ad.c.tenant_id == bindparam('b_tenant_id')) .where(
+                ad.c.id == bindparam('b_id')))
 
-        self.update_or_patch_alarm_definition_delete_sad_query = (delete(sad)
-                                                                  .where(sad.c.id == bindparam('b_id')))
+        self.update_or_patch_alarm_definition_delete_sad_query = (
+            delete(sad) .where(sad.c.id == bindparam('b_id')))
 
-        self.update_or_patch_alarm_definition_update_sad_query = (update(sad)
-                                                                  .where(sad.c.id == bindparam('b_id'))
-                                                                  .values(
-                                                                      operator=bindparam('b_operator'),
-                                                                      threshold=bindparam('b_threshold'),
-                                                                      is_deterministic=bindparam('b_is_deterministic'),
-                                                                      updated_at=bindparam('b_updated_at')))
+        self.update_or_patch_alarm_definition_update_sad_query = (
+            update(sad) .where(
+                sad.c.id == bindparam('b_id')) .values(
+                operator=bindparam('b_operator'),
+                threshold=bindparam('b_threshold'),
+                is_deterministic=bindparam('b_is_deterministic'),
+                updated_at=bindparam('b_updated_at')))
 
         b_ad_id = bindparam('b_alarm_definition_id'),
-        self.update_or_patch_alarm_definition_insert_sad_query = (insert(sad)
-                                                                  .values(
-                                                                      id=bindparam('b_id'),
-                                                                      alarm_definition_id=b_ad_id,
-                                                                      function=bindparam('b_function'),
-                                                                      metric_name=bindparam('b_metric_name'),
-                                                                      operator=bindparam('b_operator'),
-                                                                      threshold=bindparam('b_threshold'),
-                                                                      period=bindparam('b_period'),
-                                                                      periods=bindparam('b_periods'),
-                                                                      is_deterministic=bindparam('b_is_deterministic'),
-                                                                      created_at=bindparam('b_created_at'),
-                                                                      updated_at=bindparam('b_updated_at')))
+        self.update_or_patch_alarm_definition_insert_sad_query = (
+            insert(sad) .values(
+                id=bindparam('b_id'),
+                alarm_definition_id=b_ad_id,
+                function=bindparam('b_function'),
+                metric_name=bindparam('b_metric_name'),
+                operator=bindparam('b_operator'),
+                threshold=bindparam('b_threshold'),
+                period=bindparam('b_period'),
+                periods=bindparam('b_periods'),
+                is_deterministic=bindparam('b_is_deterministic'),
+                created_at=bindparam('b_created_at'),
+                updated_at=bindparam('b_updated_at')))
 
-        self.update_or_patch_alarm_definition_insert_sadd_query = (insert(sadd)
-                                                                   .values(
-                                                                       sub_alarm_definition_id=b_sad_id,
-                                                                       dimension_name=bindparam('b_dimension_name'),
-                                                                       value=bindparam('b_value')))
+        self.update_or_patch_alarm_definition_insert_sadd_query = (
+            insert(sadd) .values(
+                sub_alarm_definition_id=b_sad_id,
+                dimension_name=bindparam('b_dimension_name'),
+                value=bindparam('b_value')))
 
         self.delete_aa_query = (delete(aa)
                                 .where(aa.c.alarm_definition_id
                                        == bindparam('b_alarm_definition_id')))
 
-        self.delete_aa_state_query = (delete(aa)
-                                      .where(aa.c.alarm_definition_id == bindparam('b_alarm_definition_id'))
-                                      .where(aa.c.alarm_state == bindparam('b_alarm_state')))
+        self.delete_aa_state_query = (
+            delete(aa) .where(
+                aa.c.alarm_definition_id == bindparam('b_alarm_definition_id')) .where(
+                aa.c.alarm_state == bindparam('b_alarm_state')))
 
         self.select_nm_query = (select([nm_s.c.id])
                                 .select_from(nm_s)
@@ -315,8 +331,8 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
             if severity:
                 severities = severity.split('|')
-                query = query.where(
-                    or_(ad.c.severity == bindparam('b_severity' + str(i)) for i in range(len(severities))))
+                query = query.where(or_(ad.c.severity == bindparam(
+                    'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
                     parms['b_severity' + str(i)] = s.encode('utf8')
 
@@ -389,8 +405,10 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             return self._get_sub_alarm_definitions(conn, alarm_definition_id)
 
     def _get_sub_alarm_definitions(self, conn, alarm_definition_id):
-        return [dict(row) for row in conn.execute(self.get_sub_alarm_definitions_query,
-                                                  b_alarm_definition_id=alarm_definition_id).fetchall()]
+        return [
+            dict(row) for row in conn.execute(
+                self.get_sub_alarm_definitions_query,
+                b_alarm_definition_id=alarm_definition_id).fetchall()]
 
     @sql_repository.sql_try_catch_block
     def create_alarm_definition(self, tenant_id, name, expression,

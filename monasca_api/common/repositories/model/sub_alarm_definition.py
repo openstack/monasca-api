@@ -120,8 +120,8 @@ class SubAlarmDefinition(object):
 
     def __repr__(self):
 
-        result = 'id={},alarm_definition_id={},function={},metric_name={},dimensions={}'\
-            .format(self.id, self.alarm_definition_id, self.function, self.metric_name, self.dimensions)
+        result = 'id={},alarm_definition_id={},function={},metric_name={},dimensions={}' .format(
+            self.id, self.alarm_definition_id, self.function, self.metric_name, self.dimensions)
         result += ',operator={},period={},periods={},determinstic={}'\
             .format(self.operator, self.period, self.periods, self.deterministic)
         return result

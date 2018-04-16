@@ -182,7 +182,8 @@ class TestAlarmsStateHistory(AlarmTestBase):
     def test_alarm_state_history(self):
         expected_elements = {u"elements": [dict(ALARM_HISTORY)]}
         del expected_elements[u"elements"][0][u"time"]
-        del expected_elements[u"elements"][0][u"sub_alarms"][0][u"sub_alarm_expression"][u"metric_definition"]
+        del (expected_elements[u"elements"][0][u"sub_alarms"][0]
+             [u"sub_alarm_expression"][u"metric_definition"])
         del expected_elements[u"elements"][0][u"tenant_id"]
 
         response = self.simulate_request(
@@ -412,8 +413,13 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm Definition Updated',
         }
 
-        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
-                              method="PATCH", body=json.dumps(alarm_def))
+        self.simulate_request(
+            "/v2.0/alarm-definitions/",
+            headers={
+                'X-Roles': 'admin',
+                'X-Tenant-Id': TENANT_ID},
+            method="PATCH",
+            body=json.dumps(alarm_def))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
@@ -422,15 +428,24 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm Definition Updated',
         }
 
-        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
-                              method="PUT", body=json.dumps(alarm_def))
+        self.simulate_request(
+            "/v2.0/alarm-definitions/",
+            headers={
+                'X-Roles': 'admin',
+                'X-Tenant-Id': TENANT_ID},
+            method="PUT",
+            body=json.dumps(alarm_def))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_alarm_definition_delete_no_id(self):
 
-        self.simulate_request("/v2.0/alarm-definitions/", headers={'X-Roles': 'admin', 'X-Tenant-Id': TENANT_ID},
-                              method="DELETE")
+        self.simulate_request(
+            "/v2.0/alarm-definitions/",
+            headers={
+                'X-Roles': 'admin',
+                'X-Tenant-Id': TENANT_ID},
+            method="DELETE")
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 

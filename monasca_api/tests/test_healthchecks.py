@@ -114,10 +114,10 @@ class TestHealthChecks(test_base.BaseApiTestCase):
         for service in test_list:
             kafka_check.health_check.return_value = base.CheckResult(service['kafka']['healthy'],
                                                                      service['kafka']['message'])
-            alarms_db_check.health_check.return_value = base.CheckResult(service['alarms_db']['healthy'],
-                                                                         service['alarms_db']['message'])
-            metrics_db_check.health_check.return_value = base.CheckResult(service['netrics_db']['healthy'],
-                                                                          service['netrics_db']['message'])
+            alarms_db_check.health_check.return_value = base.CheckResult(
+                service['alarms_db']['healthy'], service['alarms_db']['message'])
+            metrics_db_check.health_check.return_value = base.CheckResult(
+                service['netrics_db']['healthy'], service['netrics_db']['message'])
             self.set_route()
             self.resources._kafka_check = kafka_check
             self.resources._alarm_db_check = alarms_db_check
