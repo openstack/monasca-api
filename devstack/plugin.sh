@@ -598,8 +598,12 @@ function install_schema_metric_database_vertica {
 }
 
 function install_schema_metric_database_cassandra {
+    local CASSANDRA_CONNECT_TIMEOUT=30
+    local CASSANDRA_REQUEST_TIMEOUT=60
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/cassandra/*.cql $MONASCA_SCHEMA_DIR
-    /usr/bin/cqlsh ${SERVICE_HOST} -f $MONASCA_SCHEMA_DIR/monasca_schema.cql
+    /usr/bin/cqlsh ${SERVICE_HOST} -f $MONASCA_SCHEMA_DIR/monasca_schema.cql \
+        --connect-timeout="${CASSANDRA_CONNECT_TIMEOUT}" \
+        --request-timeout="${CASSANDRA_REQUEST_TIMEOUT}"
 }
 
 function install_schema_kafka_topics {
