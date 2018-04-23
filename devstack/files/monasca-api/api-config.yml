@@ -123,7 +123,7 @@ middleware:
   connPoolMinIdleTime: 600000
   connRetryTimes: 2
   connRetryInterval: 50
-  defaultAuthorizedRoles: [user, domainuser, domainadmin, monasca-user, admin]
+  defaultAuthorizedRoles: [monasca-user]
   readOnlyAuthorizedRoles: [monasca-read-only-user]
   agentAuthorizedRoles: [monasca-agent]
   delegateAuthorizedRole: admin
