@@ -49,7 +49,6 @@
     voting: false
 
 - project:
-    name: openstack/monasca-api
     check:
       jobs:
         - monasca-tempest-python-mysql
