@@ -53,5 +53,7 @@ fi
 # install will be constrained and we need to unconstrain it.
 edit-constraints $localfile -- $PACKAGE_NAME "-e file://$PWD#egg=$PACKAGE_NAME"
 
-$install_cmd -U $*
+if [ -n "$*" ]; then
+    $install_cmd -U $*
+fi
 exit $?
