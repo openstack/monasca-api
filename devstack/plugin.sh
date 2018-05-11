@@ -838,8 +838,6 @@ function configure_monasca_api_python {
         iniset "$MONASCA_API_CONF" keystone_authtoken region_name $REGION_NAME
         iniset "$MONASCA_API_CONF" keystone_authtoken project_name "admin"
         iniset "$MONASCA_API_CONF" keystone_authtoken password $ADMIN_PASSWORD
-        iniset "$MONASCA_API_CONF" keystone_authtoken identity_uri "http://$SERVICE_HOST:35357"
-        iniset "$MONASCA_API_CONF" keystone_authtoken auth_uri "http://$SERVICE_HOST:5000"
 
         iniset "$MONASCA_API_CONF" security default_authorized_roles "monasca-user"
         iniset "$MONASCA_API_CONF" security agent_authorized_roles "monasca-agent"
