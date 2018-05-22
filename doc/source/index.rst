@@ -15,37 +15,48 @@
     under the License.
 
 ===================================
-Welcome to Monasca's documentation!
+Welcome to Monasca's Documentation!
 ===================================
 
-Monasca is a open-source multi-tenant, highly scalable, performant,
-fault-tolerant monitoring-as-a-service solution that
-integrates with OpenStack. It uses a REST API for high-speed metrics
-processing and querying and has a streaming
-alarm and notification engine.
+The monitoring requirements in OpenStack environments are vast, varied, and
+highly complex. Monasca's project mission is to provide a
+monitoring-as-a-service solution that is multi-tenant, highly scalable,
+performant, and fault-tolerant. Monasca provides an extensible platform for
+advanced monitoring that can be used by both operators and tenants to gain
+operational insights about their infrastructure and applications.
 
-The developer documentation provided here is continually kept up-to-date
-based on the latest code, and may not represent the state of the project at
-any specific prior release.
+Monasca uses REST APIs for high-speed metrics, logs processing and querying. It
+integrates a streaming alarm engine, a notification engine and an aggregation
+engine.
 
-.. note:: This is documentation for developers, if you are looking for more
-          general documentation including API, install, operator and user
-          guides see `docs.openstack.org`_
+The use cases you can implement with Monasca are very diverse. Monasca follows
+a micro-services architecture, with several services split across multiple
+repositories. Each module is designed to provide a discrete service in the
+overall monitoring solution and can be deployed or omitted according to
+operators/customers needs.
 
-.. _`docs.openstack.org`: https://docs.openstack.org
-
-.. toctree::
-   :maxdepth: 2
-
-   user/index
-   admin/index
-   install/index
-   configuration/index
-   cli/index
-   contributor/index
+For Contributors
+================
 
 .. toctree::
    :maxdepth: 1
 
-   glossary
+   contributor/index
 
+For Operators
+================
+
+Configuration
+-------------
+
+* :doc:`Sample Config Files </configuration/sample>`
+
+.. toctree::
+   :hidden:
+
+   admin/index
+   cli/index
+   configuration/sample
+   glossary
+   install/index
+   user/index
