@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from builtins import str as text
 import re
 
 import falcon
@@ -655,8 +656,7 @@ def get_query_alarm_definition_description(alarm_definition,
 
 def get_query_alarm_definition_severity(alarm_definition, return_none=False):
     if 'severity' in alarm_definition:
-        severity = alarm_definition['severity']
-        severity = severity.decode('utf8').upper()
+        severity = text(alarm_definition['severity']).upper()
         if severity not in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
             raise HTTPUnprocessableEntityError('Unprocessable Entity', 'Invalid severity')
         return severity
@@ -736,7 +736,7 @@ def get_comma_separated_str_as_list(comma_separated_str):
     if not comma_separated_str:
         return []
     else:
-        return comma_separated_str.decode('utf8').split(',')
+        return text(comma_separated_str).split(',')
 
 
 def is_definition_deterministic(expression):

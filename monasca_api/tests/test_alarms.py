@@ -26,6 +26,7 @@ import testtools.matchers as matchers
 from mock import Mock
 
 import oslo_config.fixture
+from oslo_serialization import jsonutils
 import six
 
 from monasca_api.common.repositories.model import sub_alarm_definition
@@ -125,7 +126,7 @@ class RESTResponseEquals(object):
         if len(actual) != 1:
             return matchers.Mismatch("Response contains <> 1 item: %r" % actual)
 
-        response_data = json.loads(actual[0])
+        response_data = jsonutils.loads(actual[0])
 
         if u"links" in response_data:
             del response_data[u"links"]
@@ -256,24 +257,24 @@ class TestAlarmDefinition(AlarmTestBase):
         return_value.create_alarm_definition.return_value = u"00000001-0001-0001-0001-000000000001"
 
         valid_expressions = [
-            "max(-_.千幸福的笑脸{घोड़ा=馬,  "
-            "dn2=dv2,千幸福的笑脸घ=千幸福的笑脸घ}) gte 100 "
-            "times 3 && "
-            "(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >99 and "
-            "count(fizzle) lt 0or count(baz) > 1)".decode('utf8'),
+            u"max(-_.千幸福的笑脸{घोड़ा=馬,  "
+            u"dn2=dv2,千幸福的笑脸घ=千幸福的笑脸घ}) gte 100 "
+            u"times 3 && "
+            u"(min(ເຮືອນ{dn3=dv3,家=дом}) < 10 or sum(biz{dn5=dv5}) >99 and "
+            u"count(fizzle) lt 0or count(baz) > 1)",
 
-            "max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
-            " or max(biz)>100)".decode('utf8'),
+            u"max(foo{hostname=mini-mon,千=千}, 120) > 100 and (max(bar)>100 "
+            u" or max(biz)>100)",
 
-            "max(foo)>=100",
+            u"max(foo)>=100",
 
-            "test_metric{this=that, that =  this} < 1",
+            u"test_metric{this=that, that =  this} < 1",
 
-            "max  (  3test_metric5  {  this  =  that  })  lt  5 times    3",
+            u"max  (  3test_metric5  {  this  =  that  })  lt  5 times    3",
 
-            "3test_metric5 lt 3",
+            u"3test_metric5 lt 3",
 
-            "ntp.offset > 1 or ntp.offset < -5",
+            u"ntp.offset > 1 or ntp.offset < -5",
         ]
 
         alarm_def = {
@@ -412,7 +413,7 @@ class TestAlarmDefinition(AlarmTestBase):
                                        body=json.dumps(alarm_def))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = json.loads(result[0])
+        result_def = jsonutils.loads(result[0])
         self.assertEqual(result_def, expected_def)
 
     def test_alarm_definition_patch_no_id(self):
@@ -533,7 +534,7 @@ class TestAlarmDefinition(AlarmTestBase):
                                        body=json.dumps(alarm_def))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = json.loads(result[0])
+        result_def = jsonutils.loads(result[0])
         self.assertEqual(result_def, expected_def)
         # If the alarm-definition-updated event does not have all of the
         # fields set, the Threshold Engine will get confused. For example,
@@ -645,7 +646,7 @@ class TestAlarmDefinition(AlarmTestBase):
                                        body=json.dumps(alarm_def))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = json.loads(result[0])
+        result_def = jsonutils.loads(result[0])
         self.assertEqual(result_def, expected_def)
 
         for key, value in alarm_def.items():

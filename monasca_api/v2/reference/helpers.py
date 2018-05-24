@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from builtins import str as text
 import datetime
 
 import falcon
@@ -366,7 +367,7 @@ def paginate(resource, uri, limit):
     else:
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')}]),
+                                 u'href': text(self_link)}]),
                     u'elements': resource}
 
     return resource
