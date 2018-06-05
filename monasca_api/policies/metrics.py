@@ -23,7 +23,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:metrics:get',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get metrics role',
+        description='List metrics, measurements, metric statistics or metric names.',
         operations=[
             {'path': '/v2.0/metrics', 'method': 'GET'},
             {'path': '/v2.0/metrics/measurements', 'method': 'GET'},
@@ -34,7 +34,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:metrics:post',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + AGENT_AUTHORIZED_ROLES,
-        description='Post metrics role',
+        description='Create metrics.',
         operations=[
             {'path': '/v2.0/metrics', 'method': 'POST'}
         ]
@@ -42,7 +42,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:metrics:dimension:values',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get metrics dimension values role',
+        description='List dimension values.',
         operations=[
             {'path': '/v2.0/metrics/dimensions/names/values', 'method': 'GET'}
         ]
@@ -50,7 +50,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:metrics:dimension:names',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get metrics dimension names role',
+        description='List dimension names.',
         operations=[
             {'path': '/v2.0/metrics/dimensions/names', 'method': 'GET'}
         ]

@@ -21,7 +21,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:definition:post',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Post alarm definition role',
+        description='Create an alarm definition.',
         operations=[
             {
                 'path': '/v2.0/alarm-definitions/',
@@ -32,7 +32,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:definition:get',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get alarm definition role',
+        description='List or get the details of the specified alarm definition.',
         operations=[
             {
                 'path': '/v2.0/alarm-definitions/{alarm_definition_id}',
@@ -47,7 +47,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:definition:put',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Put alarm definition role',
+        description='Update/Replace the specified alarm definition.',
         operations=[
             {
                 'path': '/v2.0/alarm-definitions/{alarm_definition_id}',
@@ -58,7 +58,8 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:definition:patch',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Patch alarm definition role',
+        description='Update selected parameters of the specified alarm definition, '
+                    'and enable/disable its actions.',
         operations=[
             {
                 'path': '/v2.0/alarm-definitions/{alarm_definition_id}',
@@ -69,7 +70,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:definition:delete',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Delete alarm definition role',
+        description='Delete the specified alarm definition.',
         operations=[
             {
                 'path': '/v2.0/alarm-definitions/{alarm_definition_id}',
@@ -80,7 +81,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:put',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Put alarm role',
+        description='Update/Replace the entire state of the specified alarm.',
         operations=[
             {
                 'path': '/v2.0/alarms/{alarm_id}',
@@ -91,7 +92,8 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:patch',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Patch alarm role',
+        description='Update selected parameters of a specified alarm,'
+                    ' set the alarm state and enable/disable it.',
         operations=[
             {
                 'path': '/v2.0/alarms/{alarm_id}',
@@ -102,7 +104,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:delete',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Delete alarm role',
+        description='Delete the specified alarm.',
         operations=[
             {
                 'path': '/v2.0/alarms/{alarm_id}',
@@ -113,7 +115,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:get',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get alarm role',
+        description='List or get the details of the specified alarm.',
         operations=[
             {
                 'path': '/v2.0/alarms/',
@@ -128,7 +130,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:count',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Count alarm role',
+        description='Get the number of alarms that match the criteria.',
         operations=[
             {
                 'path': '/v2.0/alarms/count/',
@@ -139,7 +141,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:alarms:state_history',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Alarm state history role',
+        description='List alarm state history for alarms.',
         operations=[
             {
                 'path': '/v2.0/alarms/state-history',

@@ -20,8 +20,8 @@ rules = [
     policy.RuleDefault(
         name='api:delegate',
         check_str=DELEGATE_AUTHORIZED_ROLES,
-        description='The rules that allowes to access the API on'
-                    ' behalf of another tenant role',
+        description='The rules which allow to access the API on'
+                    ' behalf of another tenant.',
 
     )
 ]
