@@ -1,4 +1,5 @@
 # Copyright 2016-2017 FUJITSU LIMITED
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +21,8 @@ from monasca_api.v2.common import exceptions
 
 
 class TestRequest(base.BaseApiTestCase):
+    def setUp(self):
+        super(TestRequest, self).setUp()
 
     def test_use_context_from_request(self):
         req = request.Request(

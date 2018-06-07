@@ -1,4 +1,5 @@
 # Copyright 2014-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -38,11 +39,6 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         try:
             super(Alarms, self).__init__()
             self._region = cfg.CONF.region
-            self._default_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles)
-            self._get_alarms_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
 
@@ -53,7 +49,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
     @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_id):
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:put'])
 
         alarm = helpers.from_json(req)
         schema_alarm.validate(alarm)
@@ -80,7 +76,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
     @resource.resource_try_catch_block
     def on_patch(self, req, res, alarm_id):
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:patch'])
 
         alarm = helpers.from_json(req)
         schema_alarm.validate(alarm)
@@ -106,7 +102,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
     @resource.resource_try_catch_block
     def on_delete(self, req, res, alarm_id):
 
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:delete'])
 
         self._alarm_delete(req.project_id, alarm_id)
 
@@ -114,7 +110,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
-        helpers.validate_authorization(req, self._get_alarms_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:get'])
 
         if alarm_id is None:
             query_parms = falcon.uri.parse_query_string(req.query_string)
@@ -359,9 +355,6 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         try:
             super(AlarmsCount, self).__init__()
             self._region = cfg.CONF.region
-            self._get_alarms_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
 
@@ -371,7 +364,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
-        helpers.validate_authorization(req, self._get_alarms_authorized_roles)
+        helpers.validate_authorization(req, ['api:alarms:count'])
         query_parms = falcon.uri.parse_query_string(req.query_string)
 
         if 'state' in query_parms:
@@ -464,9 +457,6 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
         try:
             super(AlarmsStateHistory, self).__init__()
             self._region = cfg.CONF.region
-            self._get_alarms_authorized_roles = (
-                cfg.CONF.security.default_authorized_roles +
-                cfg.CONF.security.read_only_authorized_roles)
             self._alarms_repo = simport.load(
                 cfg.CONF.repositories.alarms_driver)()
             self._metrics_repo = simport.load(
@@ -478,12 +468,13 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
+        helpers.validate_authorization(req, ['api:alarms:state_history'])
+        offset = helpers.get_query_param(req, 'offset')
 
         if alarm_id is None:
-            helpers.validate_authorization(req, self._get_alarms_authorized_roles)
             start_timestamp = helpers.get_query_starttime_timestamp(req, False)
             end_timestamp = helpers.get_query_endtime_timestamp(req, False)
-            offset = helpers.get_query_param(req, 'offset')
+
             dimensions = helpers.get_query_dimensions(req)
             helpers.validate_query_dimensions(dimensions)
 
@@ -491,19 +482,13 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
                                               end_timestamp, dimensions,
                                               req.uri, offset, req.limit)
 
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
-
         else:
-            helpers.validate_authorization(req, self._get_alarms_authorized_roles)
-            offset = helpers.get_query_param(req, 'offset')
-
             result = self._alarm_history(req.project_id, alarm_id,
                                          req.uri, offset,
                                          req.limit)
 
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
+        res.body = helpers.to_json(result)
+        res.status = falcon.HTTP_200
 
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, dimensions, req_uri, offset,

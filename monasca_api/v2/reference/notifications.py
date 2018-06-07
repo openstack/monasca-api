@@ -1,4 +1,5 @@
 # (C) Copyright 2014-2017 Hewlett Packard Enterprise Development LP
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -37,11 +38,6 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         super(Notifications, self).__init__()
 
         self._region = cfg.CONF.region
-        self._default_authorized_roles = (
-            cfg.CONF.security.default_authorized_roles)
-        self._get_notifications_authorized_roles = (
-            cfg.CONF.security.default_authorized_roles +
-            cfg.CONF.security.read_only_authorized_roles)
         self._notifications_repo = simport.load(
             cfg.CONF.repositories.notifications_driver)()
         self._notification_method_type_repo = simport.load(
@@ -205,7 +201,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
     @resource.resource_try_catch_block
     def on_post(self, req, res):
         helpers.validate_json_content_type(req)
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:notifications:post'])
         notification = helpers.from_json(req)
         self._parse_and_validate_notification(notification)
         result = self._create_notification(req.project_id, notification, req.uri)
@@ -214,9 +210,8 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, notification_method_id=None):
+        helpers.validate_authorization(req, ['api:notifications:get'])
         if notification_method_id is None:
-            helpers.validate_authorization(req,
-                                           self._get_notifications_authorized_roles)
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
             if sort_by is not None:
                 if isinstance(sort_by, six.string_types):
@@ -238,27 +233,26 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
             result = self._list_notifications(req.project_id, req.uri, sort_by,
                                               offset, req.limit)
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
+
         else:
-            helpers.validate_authorization(req,
-                                           self._get_notifications_authorized_roles)
+
             result = self._list_notification(req.project_id,
                                              notification_method_id,
                                              req.uri)
-            res.body = helpers.to_json(result)
-            res.status = falcon.HTTP_200
+
+        res.body = helpers.to_json(result)
+        res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
     def on_delete(self, req, res, notification_method_id):
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:notifications:delete'])
         self._delete_notification(req.project_id, notification_method_id)
         res.status = falcon.HTTP_204
 
     @resource.resource_try_catch_block
     def on_put(self, req, res, notification_method_id):
         helpers.validate_json_content_type(req)
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:notifications:put'])
         notification = helpers.from_json(req)
         self._parse_and_validate_notification(notification, require_all=True)
         result = self._update_notification(notification_method_id, req.project_id,
@@ -269,7 +263,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
     @resource.resource_try_catch_block
     def on_patch(self, req, res, notification_method_id):
         helpers.validate_json_content_type(req)
-        helpers.validate_authorization(req, self._default_authorized_roles)
+        helpers.validate_authorization(req, ['api:notifications:patch'])
         notification = helpers.from_json(req)
         self._patch_get_notification(req.project_id, notification_method_id, notification)
         self._parse_and_validate_notification(notification, require_all=True)

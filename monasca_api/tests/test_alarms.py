@@ -193,7 +193,6 @@ class TestAlarmsStateHistory(AlarmTestBase):
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             })
-
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 

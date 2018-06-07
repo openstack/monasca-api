@@ -1,4 +1,5 @@
 # Copyright 2016 FUJITSU LIMITED
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,10 +15,15 @@
 
 import falcon
 
-from oslo_context import context
+from monasca_common.policy import policy_engine as policy
 
+from monasca_api.api.core import request_context
 from monasca_api.common.repositories import constants
+from monasca_api import policies
 from monasca_api.v2.common import exceptions
+
+
+policy.POLICIES = policies
 
 _TENANT_ID_PARAM = 'tenant_id'
 """Name of the query-param pointing at project-id (tenant-id)"""
@@ -33,7 +39,7 @@ class Request(falcon.Request):
 
     def __init__(self, env, options=None):
         super(Request, self).__init__(env, options)
-        self.context = context.RequestContext.from_environ(self.env)
+        self.context = request_context.RequestContext.from_environ(self.env)
 
     @property
     def project_id(self):
@@ -104,6 +110,9 @@ class Request(falcon.Request):
                 raise exceptions.HTTPUnprocessableEntityError('Invalid limit', err_msg)
         else:
             return constants.PAGE_LIMIT
+
+    def can(self, action, target=None):
+        return self.context.can(action, target)
 
     def __repr__(self):
         return '%s, context=%s' % (self.path, self.context)

@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Use of oslo mechanisms for defining and enforcing policy.
+    A command line entry point that allow the user to generate a sample policy file.

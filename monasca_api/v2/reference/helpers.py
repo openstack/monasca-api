@@ -1,6 +1,7 @@
 # Copyright 2015 Cray Inc. All Rights Reserved.
 # (C) Copyright 2014,2016-2017 Hewlett Packard Enterprise Development LP
 # (C) Copyright 2017 SUSE LLC
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -69,53 +70,41 @@ def validate_json_content_type(req):
                                                    'application/json')
 
 
-def validate_authorization(req, authorized_roles):
-    """Validates whether one or more X-ROLES in the HTTP header is authorized.
+def validate_authorization(http_request, authorized_rules_list):
+    """Validates whether is authorized according to provided policy rules list.
 
     If authorization fails, 401 is thrown with appropriate description.
     Additionally response specifies 'WWW-Authenticate' header with 'Token'
     value challenging the client to use different token (the one with
-    different set of roles).
-
-    :param req: HTTP request object. Must contain "X-ROLES" in the HTTP
-                request header.
-    :param authorized_roles: List of authorized roles to check against.
-
-    :raises falcon.HTTPUnauthorized
+    different set of roles which can access the service).
     """
-    roles = req.roles
+
     challenge = 'Token'
-    if not roles:
-        raise falcon.HTTPUnauthorized('Forbidden',
-                                      'Tenant does not have any roles',
-                                      challenge)
-    roles = roles.split(',') if isinstance(roles, six.string_types) else roles
-    authorized_roles_lower = [r.lower() for r in authorized_roles]
-    for role in roles:
-        role = role.lower()
-        if role in authorized_roles_lower:
+    for rule in authorized_rules_list:
+        try:
+            http_request.can(rule)
             return
+        except Exception as ex:
+            LOG.debug(ex)
+
     raise falcon.HTTPUnauthorized('Forbidden',
-                                  'Tenant ID is missing a required role to '
-                                  'access this service',
+                                  'The request does not have access to this service',
                                   challenge)
 
 
-def get_x_tenant_or_tenant_id(req, delegate_authorized_roles):
-    """Evaluates whether the tenant ID or cross tenant ID should be returned.
+def get_x_tenant_or_tenant_id(http_request, delegate_authorized_rules_list):
+    params = falcon.uri.parse_query_string(http_request.query_string)
+    if 'tenant_id' in params:
+        tenant_id = params['tenant_id']
 
-    :param req: HTTP request object.
-    :param delegate_authorized_roles: List of authorized roles that have
-                                      delegate privileges.
+        for rule in delegate_authorized_rules_list:
+            try:
+                http_request.can(rule)
+                return tenant_id
+            except Exception as ex:
+                LOG.debug(ex)
 
-    :returns: Returns the cross tenant or tenant ID.
-    """
-    if any(x in set(delegate_authorized_roles) for x in req.roles):
-        params = falcon.uri.parse_query_string(req.query_string)
-        if 'tenant_id' in params:
-            tenant_id = params['tenant_id']
-            return tenant_id
-    return req.project_id
+    return http_request.project_id
 
 
 def get_query_param(req, param_name, required=False, default_val=None):

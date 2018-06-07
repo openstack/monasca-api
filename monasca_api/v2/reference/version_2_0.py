@@ -1,4 +1,5 @@
 # Copyright 2016 Hewlett Packard Enterprise Development Company, L.P.
+# Copyright 2018 OP5 AB
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +21,8 @@ class Version2(object):
         super(Version2, self).__init__()
 
     def on_get(self, req, res):
+        helpers.validate_authorization(req,
+                                       ['api:versions'])
         result = {
             'id': 'v2.0',
             'links': [{
