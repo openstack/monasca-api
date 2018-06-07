@@ -927,7 +927,7 @@ function install_storm {
     echo_summary "Install Monasca Storm"
 
     local storm_tarball=apache-storm-${STORM_VERSION}.tar.gz
-    local storm_tarball_url=${APACHE_MIRROR}storm/apache-storm-${STORM_VERSION}/${storm_tarball}
+    local storm_tarball_url=${APACHE_ARCHIVES}storm/apache-storm-${STORM_VERSION}/${storm_tarball}
     local storm_tarball_dest=${FILES}/${storm_tarball}
 
     download_file ${storm_tarball_url} ${storm_tarball_dest}
