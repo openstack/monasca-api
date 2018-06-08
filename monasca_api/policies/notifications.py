@@ -22,7 +22,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:put',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Put notifications role',
+        description='Update the specified notification method.',
         operations=[
             {
                 'path': '/v2.0/notification-methods/{notification_method_id}',
@@ -33,7 +33,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:patch',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Patch notifications role',
+        description='Update selected parameters of the specified notification method.',
         operations=[
             {
                 'path': '/v2.0/notification-methods/{notification_method_id}',
@@ -44,7 +44,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:delete',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Delete notifications role',
+        description='Delete the specified notification method.',
         operations=[
             {
                 'path': '/v2.0/notification-methods/{notification_method_id}',
@@ -55,7 +55,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:get',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get notifications role',
+        description='List or get the details of the specified notification method.',
         operations=[
             {
                 'path': '/v2.0/notification-methods',
@@ -70,7 +70,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:post',
         check_str=DEFAULT_AUTHORIZED_ROLES,
-        description='Post notifications role',
+        description='Create a notification method.',
         operations=[
             {
                 'path': '/v2.0/notification-methods',
@@ -81,7 +81,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:notifications:type',
         check_str=DEFAULT_AUTHORIZED_ROLES + ' or ' + READ_ONLY_AUTHORIZED_ROLES,
-        description='Get notifications type role',
+        description='List supported notification method types.',
         operations=[
             {
                 'path': '/v2.0/notification-methods/types',

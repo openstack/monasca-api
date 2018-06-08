@@ -20,7 +20,8 @@ rules = [
     policy.DocumentedRuleDefault(
         name='api:versions',
         check_str=VERSIONS_ROLES,
-        description='Get versions role',
+        description='List supported versions '
+                    'or get the details about the specified version of Monasca API.',
         operations=[
             {'path': '/', 'method': 'GET'},
             {'path': '/v2.0', 'method': 'GET'}
