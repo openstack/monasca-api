@@ -16,7 +16,6 @@
 import os
 import pkgutil
 
-
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
@@ -34,13 +33,6 @@ def roles_list_to_check_str(roles_list):
 
 
 security.register_opts(CONF)
-
-HEALTHCHECK_ROLES = roles_list_to_check_str(cfg.CONF.security.healthcheck_roles)
-VERSIONS_ROLES = roles_list_to_check_str(cfg.CONF.security.versions_roles)
-DEFAULT_AUTHORIZED_ROLES = roles_list_to_check_str(cfg.CONF.security.default_authorized_roles)
-READ_ONLY_AUTHORIZED_ROLES = roles_list_to_check_str(cfg.CONF.security.read_only_authorized_roles)
-AGENT_AUTHORIZED_ROLES = roles_list_to_check_str(cfg.CONF.security.agent_authorized_roles)
-DELEGATE_AUTHORIZED_ROLES = roles_list_to_check_str(cfg.CONF.security.delegate_authorized_roles)
 
 
 def load_policy_modules():

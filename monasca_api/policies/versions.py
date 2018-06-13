@@ -12,9 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import cfg
 from oslo_policy import policy
 
-from monasca_api.policies import VERSIONS_ROLES
+from monasca_api import policies
+
+CONF = cfg.CONF
+VERSIONS_ROLES = policies.roles_list_to_check_str(cfg.CONF.security.versions_roles)
 
 rules = [
     policy.DocumentedRuleDefault(
