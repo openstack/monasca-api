@@ -12,9 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import cfg
 from oslo_policy import policy
 
-from monasca_api.policies import HEALTHCHECK_ROLES
+from monasca_api import policies
+
+CONF = cfg.CONF
+HEALTHCHECK_ROLES = policies.roles_list_to_check_str(cfg.CONF.security.healthcheck_roles)
 
 rules = [
     policy.DocumentedRuleDefault(
