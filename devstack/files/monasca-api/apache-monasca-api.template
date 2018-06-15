@@ -1,0 +1,18 @@
+Listen %PUBLICPORT%
+
+<VirtualHost *:%PUBLICPORT%>
+    WSGIDaemonProcess monasca-api user=%USER% processes=%APIWORKERS% threads=1 display-name=%{GROUP} %VIRTUALENV%
+    WSGIProcessGroup monasca-api
+    WSGIScriptAlias / %PUBLICWSGI%/wsgi.py
+    WSGIApplicationGroup %{GLOBAL}
+
+    WSGIPassAuthorization On
+
+    LogLevel info
+    ErrorLog /var/log/%APACHE_NAME%/monasca-api.log
+    CustomLog /var/log/%APACHE_NAME%/monasca-api_access.log combined
+
+    SetEnv no-gzip 1
+    AddDefaultCharset utf-8
+
+</VirtualHost>
