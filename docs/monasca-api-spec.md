@@ -403,7 +403,7 @@ A measurement is a value with a timestamp for a specific Metric. The value is re
 Optionally, a measurement may also contain extra data about the value which is known as value meta. Value meta is a set of name/value pairs that add textual data to the value of the measurement.  The value meta will be returned from the API when the measurement is read. Only measurements that were written with value meta will have the key value pairs when read from the API. The value meta is ignored when computing statistics such as average on measurements.
 
 For an example of how value meta is used, imagine this metric: http_status{url: http://localhost:8070/healthcheck, hostname=devstack, service=object-storage}.  The measurements for this metric have a value of either 1 or 0 depending if the status check succeeded. If the check fails, it would be helpful to have the actual http status code and error message if possible. So instead of just a value, the measurement will be something like:
-{Timestamp=now(), value=1, value_meta{http_rc=500, error=“Error accessing MySQL”}}
+{Timestamp=now(), value=1, value_meta{http_rc=500, error="Error accessing MySQL"}}
 
 Up to 16 separate key/value pairs of value meta are allowed per measurement. The keys are required and are trimmed of leading and trailing whitespace and have a maximum length of 255 characters. The value is a string and value meta (with key, value and '{"":""}' combined) has a maximum length of 2048 characters. The value can be an empty string. Whitespace is not trimmed from the values.
 
