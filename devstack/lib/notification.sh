@@ -43,7 +43,9 @@ install_monasca-notification() {
 
     git_clone ${MONASCA_NOTIFICATION_REPO} ${MONASCA_NOTIFICATION_DIR} \
         ${MONASCA_NOTIFICATION_BRANCH}
-
+    if python3_enabled; then
+        enable_python3_package monasca-notification
+    fi
     setup_develop ${MONASCA_NOTIFICATION_DIR}
     # see devstack/plugin.sh
     install_monasca_common

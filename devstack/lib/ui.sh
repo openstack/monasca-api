@@ -37,10 +37,13 @@ function configure_ui {
         sed -e "
             s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': \"http:\/\/${SERVICE_HOST}:3000\", }#g;
         " -i "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
-
-        DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
-        DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python "${MONASCA_BASE}"/horizon/manage.py compress --force
-
+        if python3_enabled; then
+            DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python3 "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
+            DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python3 "${MONASCA_BASE}"/horizon/manage.py compress --force
+        else
+            DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
+            DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python "${MONASCA_BASE}"/horizon/manage.py compress --force
+        fi
         restart_service apache2 || true
     fi
 }
@@ -49,6 +52,9 @@ function install_ui {
     if is_ui_enabled; then
         git_clone $MONASCA_UI_REPO $MONASCA_UI_DIR $MONASCA_UI_BRANCH
         git_clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR $MONASCA_CLIENT_BRANCH
+        if python3_enabled; then
+            enable_python3_package monasca-ui
+        fi
 
         setup_develop $MONASCA_UI_DIR
         setup_dev_lib "python-monascaclient"
