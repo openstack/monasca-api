@@ -21,6 +21,7 @@ After=network.target zookeeper.service
 User=kafka
 Group=kafka
 LimitNOFILE=32768:32768
+Environment="LOG_DIR=/var/log/kafka"
 Environment="KAFKA_HEAP_OPTS=-Xmx128m"
 ExecStart=/opt/kafka/bin/kafka-server-start.sh /etc/kafka/server.properties
 Restart=on-failure
