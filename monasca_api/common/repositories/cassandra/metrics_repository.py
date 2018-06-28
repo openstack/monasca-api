@@ -14,10 +14,12 @@
 # under the License.
 
 import binascii
+from builtins import str as text
 from collections import namedtuple
 from datetime import datetime
 from datetime import timedelta
 import itertools
+import six
 import urllib
 
 from cassandra.auth import PlainTextAuthProvider
@@ -711,7 +713,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                  end_timestamp, offset_timestamp,
                                  limit=None, fetch_size=FETCH_SIZE_UNSET):
         conditions = [METRIC_ID_EQ]
-        params = [bytearray.fromhex(metric_id)]
+        decode_metric_id = metric_id if six.PY2 else metric_id.decode('utf-8')
+        params = [bytearray.fromhex(decode_metric_id)]
 
         if offset_timestamp:
             conditions.append(OFFSET_TIME_GT)
@@ -817,7 +820,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             st = st[:23] + 'Z'
         else:
             st += '.000Z'
-        return st.decode('utf8')
+        return text(st)
 
     def metrics_statistics(self, tenant_id, region, name, dimensions,
                            start_timestamp, end_timestamp, statistics,
@@ -911,7 +914,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if stats_end_time > end_time:
                 stats_end_time = end_time
 
-            statistic = {u'name': name.decode('utf8'),
+            statistic = {u'name': text(name),
                          u'id': series['id'],
                          u'dimensions': series['dimensions'],
                          u'columns': columns,

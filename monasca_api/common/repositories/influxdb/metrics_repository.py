@@ -418,7 +418,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         for name in dim_name_set:
             json_dim_name_list.append({u'dimension_name': name})
 
-        json_dim_name_list = sorted(json_dim_name_list)
+        json_dim_name_list = sorted(json_dim_name_list, key=lambda x: x[u'dimension_name'])
         return json_dim_name_list
 
     def _build_serie_metric_list_to_v0_11_0(self, series_names, tenant_id, region,
