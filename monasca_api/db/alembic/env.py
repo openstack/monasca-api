@@ -14,8 +14,8 @@
 
 from __future__ import with_statement
 
-import monasca_api.config
 import os
+import sys
 
 from alembic import config as alembic_config
 from alembic import context
@@ -23,20 +23,22 @@ from logging.config import fileConfig
 
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
+import monasca_api.config
 
 ini_file_path = os.path.join(os.path.dirname(__file__), '..', 'alembic.ini')
 
 # This indicates whether we are running with a viable Alembic
-# context (necessary to do skip run_migrations_online() below
+# context (necessary to skip run_migrations_online() below
 # if sphinx imports this file without a viable Alembic
 # context)
 have_context = True
 
 try:
     config = context.config
-    # FIXME: Move this to the monasca_db entry point later.
-    # Load monasca-api config (from files only)
-    monasca_api.config.parse_args(argv=[])
+    # Only load Monasca configuration if imported by alembic CLI tool (the
+    # monasca_db command will handle this on its own).
+    if os.path.basename(sys.argv[0]) == 'alembic':
+        monasca_api.config.parse_args(argv=[])
 except AttributeError:
     config = alembic_config.Config(ini_file_path)
     have_context = False
@@ -75,15 +77,6 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
-
-
-def fingerprint_db():
-    return
-
-
-def stamp_db():
-    return
-
 
 if have_context:
     run_migrations_online()

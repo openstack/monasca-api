@@ -95,6 +95,21 @@ If any of the following applies to the patch, a release note is required:
 A release note is suggested if a long-standing or important bug is fixed.
 Otherwise, a release note is not required.
 
+Database Migrations
+-------------------
+
+As of the Rocky release, Monasca uses `Alembic <http://alembic.zzzcomputing.com/en/latest/>`_
+migrations to set up its configuration database. If you need to change the
+configuration database's schema, you need to create a migration to adjust the
+database accordingly, as follows::
+
+    cd monasca_api/db/
+    alembic revision
+
+This will create a new skeleton revision for you to edit. You will find
+existing revisions to use for inspiration in the
+``/monasca_api/db/alembic/versions/`` directory.
+
 Developer reference
 -------------------
 

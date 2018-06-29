@@ -45,14 +45,12 @@ def parse_args(argv=None, config_file=None):
 
     argv = (argv if argv is not None else sys.argv[1:])
     args = ([] if _is_running_under_gunicorn() else argv or [])
-    config_file = (_get_deprecated_config_file()
-                   if config_file is None else config_file)
 
     CONF(args=args,
          prog='api',
          project='monasca',
          version=version.version_str,
-         default_config_files=[config_file] if config_file else None,
+         default_config_files=get_config_file(config_file),
          description='RESTful API for alarming in the cloud')
 
     log.setup(CONF,
@@ -62,6 +60,21 @@ def parse_args(argv=None, config_file=None):
     policy_opts.set_defaults(CONF)
 
     _CONF_LOADED = True
+
+
+def get_config_file(config_file):
+    """Get config file in a format suitable for CONF constructor
+
+    Returns the config file name as a single element array. If a config file
+    was explicitly, specified, that file's name is returned. If there isn't and a
+    legacy config file is present that one is returned. Otherwise we return
+    None.  This is what the CONF constructor expects for its
+    default_config_files keyword argument.
+    """
+    if config_file is not None:
+        return [config_file]
+
+    return _get_deprecated_config_file()
 
 
 def _is_running_under_gunicorn():
@@ -87,4 +100,5 @@ def _get_deprecated_config_file():
     if old_files is not None and len(old_files) > 0:
         LOG.warning('Detected old location "/etc/monasca/api-config.conf" '
                     'of main configuration file')
-        return old_files[0]
+        return [old_files[0]]
+    return None
