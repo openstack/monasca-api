@@ -190,7 +190,12 @@ function start_monasca_services {
     fi
     if is_service_enabled monasca-agent; then
         sudo /usr/local/bin/monasca-reconfigure
-        start_service monasca-agent || restart_service monasca-agent
+        if [ -f /etc/systemd/system/monasca-agent.target ]; then
+            start_service monasca-agent.target || restart_service monasca-agent.target
+        fi
+        if [ -f /etc/systemd/system/monasca-agent.service ]; then
+            start_service monasca-agent.service || restart_service monasca-agent.service
+        fi
     fi
 }
 
@@ -213,7 +218,8 @@ function delete_kafka_topics {
 function unstack_monasca {
     stop_service grafana-server || true
 
-    stop_service monasca-agent || true
+    [[ -f /etc/systemd/system/monasca-agent.target ]] && stop_service monasca-agent.target || true
+    [[ -f /etc/systemd/system/monasca-agent.service ]] && stop_service monasca-agent.service || true
 
     stop_service monasca-thresh || true
 
@@ -1193,6 +1199,11 @@ function clean_monasca_agent {
     sudo rm -rf /etc/monasca/agent
 
     sudo rm -rf /opt/monasca-agent
+
+    [[ -f /etc/systemd/system/monasca-agent.target ]] && sudo rm /etc/systemd/system/monasca-agent.target
+    [[ -f /etc/systemd/system/monasca-collector.service ]] && sudo rm /etc/systemd/system/monasca-collector.service
+    [[ -f /etc/systemd/system/monasca-forwarder.service ]] && sudo rm /etc/systemd/system/monasca-forwarder.service
+    [[ -f /etc/systemd/system/monasca-statsd.service ]] && sudo rm /etc/systemd/system/monasca-statsd.service
 
     apt_get -y purge libxslt1-dev
     apt_get -y purge libxml2-dev
