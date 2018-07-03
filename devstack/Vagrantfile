@@ -124,6 +124,17 @@ DEST=/opt/stack
 disable_all_services
 enable_service rabbit key tempest horizon
 
+# Enable more OpenStack services if neccessary:
+# https://github.com/openstack-dev/devstack/blob/master/stackrc#L56-L81
+# Nova - services to support libvirt based openstack clouds
+# enable_service n-api n-cpu n-cond n-sch n-novnc n-cauth n-api-meta
+# Placement and Glance services needed for Nova
+# enable_service placement-api placement-client
+# enable_service g-api g-reg
+# Cinder, Neutron
+# enable_service cinder c-api c-vol c-sch c-bak
+# enable_service neutron q-svc q-agt q-dhcp q-meta q-l3
+
 # Uncomment one of the following lines to use either MySQL or PostgreSQL
 # as RDB (relational database) backend for monasca.
 enable_service mysql
