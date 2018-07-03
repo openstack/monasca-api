@@ -16,6 +16,8 @@
 from datetime import datetime
 from time import time
 
+import six
+
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.sqla import models
@@ -284,7 +286,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             if 'metric_name' in query_parms:
                 query = query.where(a.c.id.in_(self.get_a_am_query))
-                parms['b_md_name'] = query_parms['metric_name'].encode('utf8')
+                parms['b_md_name'] = query_parms['metric_name'].encode('utf8') if six.PY2 else \
+                    query_parms['metric_name']
 
             if 'severity' in query_parms:
                 severities = query_parms['severity'].split('|')
@@ -295,7 +298,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             if 'state' in query_parms:
                 query = query.where(a.c.state == bindparam('b_state'))
-                parms['b_state'] = query_parms['state'].encode('utf8')
+                parms['b_state'] = query_parms['state']
 
             if 'lifecycle_state' in query_parms:
                 query = (query
@@ -311,7 +314,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = (query
                          .where(a.c.state_updated_at >=
                                 bindparam('b_state_updated_at')))
-                date_str = query_parms['state_updated_start_time'].encode('utf8')
+
+                date_str = query_parms['state_updated_start_time'].encode('utf8') if six.PY2 else \
+                    query_parms['state_updated_start_time']
                 date_param = datetime.strptime(date_str,
                                                '%Y-%m-%dT%H:%M:%S.%fZ')
                 parms['b_state_updated_at'] = date_param
@@ -334,7 +339,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
                     if metric_dimension and metric_dimension[1]:
                         if '|' in metric_dimension[1]:
-                            values = metric_dimension[1].encode('utf8').split('|')
+                            values = metric_dimension[1].encode('utf8').split('|') if six.PY2 else \
+                                metric_dimension[1].split('|')
                             sub_values_cond = []
                             for j, value in enumerate(values):
                                 sub_md_value = "b_md_value_{}_{}".format(i, j)
@@ -363,7 +369,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                             sub_query_md.c.dimension_set_id ==
                                             mdd.c.metric_dimension_set_id))
 
-                    parms[md_name] = metric_dimension[0].encode('utf8')
+                    parms[md_name] = metric_dimension[0].encode('utf8') if six.PY2 else \
+                        metric_dimension[0]
 
                     sub_query = (sub_query
                                  .select_from(sub_query_from)
