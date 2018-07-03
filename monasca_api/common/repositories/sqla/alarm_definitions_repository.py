@@ -13,7 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from builtins import str as strtext
 import datetime
+import six
 
 from oslo_utils import uuidutils
 
@@ -315,8 +317,8 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
                     sadd_id = sadd_.c.sub_alarm_definition_id
                     query_from = query_from.join(sadd_, sadd_id == sad.c.id)
-                    parms[bind_dimension_name] = n.encode('utf8')
-                    parms[bind_value] = v.encode('utf8')
+                    parms[bind_dimension_name] = n.encode('utf8') if six.PY2 else n
+                    parms[bind_value] = v.encode('utf8') if six.PY2 else v
 
                     i += 1
 
@@ -327,14 +329,14 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
             if name:
                 query = query.where(ad.c.name == bindparam('b_name'))
-                parms['b_name'] = name.encode('utf8')
+                parms['b_name'] = name.encode('utf-8') if six.PY2 else name
 
             if severity:
                 severities = severity.split('|')
                 query = query.where(or_(ad.c.severity == bindparam(
                     'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
-                    parms['b_severity' + str(i)] = s.encode('utf8')
+                    parms['b_severity' + str(i)] = s.encode('utf-8') if six.PY2 else s
 
             order_columns = []
             if sort_by is not None:
@@ -522,7 +524,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             if name is None:
                 new_name = original_row['name']
             else:
-                new_name = name.encode('utf8')
+                new_name = name.encode('utf-8') if six.PY2 else name
 
             if description is None:
                 if patch:
@@ -530,12 +532,12 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 else:
                     new_description = ''
             else:
-                new_description = description.encode('utf8')
+                new_description = description.encode('utf-8') if six.PY2 else description
 
             if expression is None:
                 new_expression = original_row['expression']
             else:
-                new_expression = expression.encode('utf8')
+                new_expression = expression.encode('utf8') if six.PY2 else expression
 
             if severity is None:
                 if patch:
@@ -543,7 +545,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 else:
                     new_severity = 'LOW'
             else:
-                new_severity = severity.encode('utf8')
+                new_severity = severity.encode('utf8') if six.PY2 else severity
 
             if match_by is None:
                 if patch:
@@ -551,10 +553,11 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 else:
                     new_match_by = None
             else:
-                new_match_by = ",".join(match_by).encode('utf8')
+                match = ",".join(match_by)
+                new_match_by = match.encode('utf8') if six.PY2 else match
 
             if new_match_by != original_row['match_by']:
-                msg = "match_by must not change".encode('utf8')
+                msg = strtext("match_by must not change")
                 raise exceptions.InvalidUpdateException(msg)
 
             if actions_enabled is None:
@@ -606,9 +609,12 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             parms_sadd = []
             for sub_alarm_def in new_sub_alarm_defs_by_id.values():
                 adi = sub_alarm_def.alarm_definition_id
-                function = sub_alarm_def.function.encode('utf8')
-                metric_name = sub_alarm_def.metric_name.encode('utf8')
-                operator = sub_alarm_def.operator.encode('utf8')
+                function = sub_alarm_def.function.encode('utf8') if six.PY2 \
+                    else sub_alarm_def.function
+                metric_name = sub_alarm_def.metric_name.encode('utf8') if six.PY2 \
+                    else sub_alarm_def.metric_name
+                operator = sub_alarm_def.operator.encode('utf8') if six.PY2 \
+                    else sub_alarm_def.operator
                 threshold = sub_alarm_def.threshold
                 period = sub_alarm_def.period
                 periods = sub_alarm_def.periods
@@ -627,9 +633,11 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
                 for name, value in sub_alarm_def.dimensions.items():
                     sadi = sub_alarm_def.id
+                    b_dimension_name = name .encode('utf8') if six.PY2 else name
+                    b_value = value.encode('utf8') if six.PY2 else value
                     parms_sadd.append({'b_sub_alarm_definition_id': sadi,
-                                       'b_dimension_name': name.encode('utf8'),
-                                       'b_value': value.encode('utf8')})
+                                       'b_dimension_name': b_dimension_name,
+                                       'b_value': b_value})
 
             if len(parms) > 0:
                 query = self.update_or_patch_alarm_definition_insert_sad_query
@@ -701,7 +709,8 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             sad = sub_alarm_definition.SubAlarmDefinition(
                 sub_expr=sub_expr)
             # Inject the alarm definition id.
-            sad.alarm_definition_id = alarm_definition_id.decode('utf8')
+            sad.alarm_definition_id = alarm_definition_id.decode('utf8') if six.PY2 \
+                else alarm_definition_id
             new_sub_alarm_defs_set.add(sad)
 
         # Identify old or changed expressions
@@ -778,15 +787,16 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             return
 
         for action in actions:
+            b_id = action.encode('utf8') if six.PY2 else action
             row = conn.execute(self.select_nm_query,
-                               b_id=action.encode('utf8')).fetchone()
+                               b_id=b_id).fetchone()
             if row is None:
                 raise exceptions.InvalidUpdateException(
                     "Non-existent notification id {} submitted for {} "
-                    "notification action".format(action.encode('utf8'),
-                                                 alarm_state.encode('utf8')))
+                    "notification action".format(strtext(action),
+                                                 strtext(alarm_state)))
             conn.execute(self.insert_aa_query,
                          b_alarm_definition_id=alarm_definition_id,
-                         b_alarm_state=alarm_state.encode('utf8'),
-                         b_action_id=action.encode('utf8')
+                         b_alarm_state=alarm_state.encode('utf8') if six.PY2 else alarm_state,
+                         b_action_id=action.encode('utf8') if six.PY2 else action
                          )

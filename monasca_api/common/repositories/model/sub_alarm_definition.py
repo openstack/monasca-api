@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from builtins import str as text
+
 
 class SubAlarmDefinition(object):
     """Holds sub alarm definition
@@ -56,7 +58,7 @@ class SubAlarmDefinition(object):
             self.metric_name = sub_expr.metric_name
             self.dimensions_str = sub_expr.dimensions_str
             self.dimensions = self._init_dimensions(sub_expr.dimensions_str)
-            self.function = sub_expr.normalized_func.decode('utf8')
+            self.function = text(sub_expr.normalized_func)
             self.operator = sub_expr.normalized_operator
             self.period = sub_expr.period
             self.periods = sub_expr.periods
