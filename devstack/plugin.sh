@@ -202,17 +202,17 @@ function start_monasca_services {
 function delete_kafka_topics {
 
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 64 --topic metrics || true
+                --topic metrics || true
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 12 --topic events || true
+                --topic events || true
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 12 --topic alarm-state-transitions || true
+                --topic alarm-state-transitions || true
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 12 --topic alarm-notifications || true
+                --topic alarm-notifications || true
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 3 --topic retry-notifications || true
+                --topic retry-notifications || true
         /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --replication-factor 1 --partitions 3 --topic 60-seconds-notifications || true
+                --topic 60-seconds-notifications || true
 }
 
 function unstack_monasca {
