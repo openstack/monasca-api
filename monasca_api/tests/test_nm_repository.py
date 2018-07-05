@@ -168,9 +168,9 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
         self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc', 0)
         nm = self.repo.list_notification('444', '123')
         new_nm = copy.deepcopy(self.default_nms[0])
-        new_nm['name'] = 'Foo'
-        new_nm['type'] = 'EMAIL'
-        new_nm['address'] = 'abc'
+        new_nm['name'] = b'Foo'
+        new_nm['type'] = b'EMAIL'
+        new_nm['address'] = b'abc'
         new_nm['created_at'] = nm['created_at']
         new_nm['updated_at'] = nm['updated_at']
         self.assertEqual(nm, new_nm)
@@ -198,9 +198,9 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
         self.repo.update_notification('123', '444', 'Foo', 'EMAIL', 'abc', 0)
         nm = self.repo.list_notification('444', '123')
         new_nm = copy.deepcopy(self.default_nms[0])
-        new_nm['name'] = 'Foo'
-        new_nm['type'] = 'EMAIL'
-        new_nm['address'] = 'abc'
+        new_nm['name'] = b'Foo'
+        new_nm['type'] = b'EMAIL'
+        new_nm['address'] = b'abc'
         new_nm['created_at'] = nm['created_at']
         new_nm['updated_at'] = nm['updated_at']
         self.assertEqual(nm, new_nm)
