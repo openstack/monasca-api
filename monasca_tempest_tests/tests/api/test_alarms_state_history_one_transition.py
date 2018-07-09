@@ -38,6 +38,8 @@ class TestAlarmsStateHistoryOneTransition(base.BaseMonascaTest):
                 name=data_utils.rand_name('alarm_state_history' + str(i + 1)),
                 expression="min(name-" + str(i + 1) + ") < " + str(i + 1))
             cls.monasca_client.create_alarm_definitions(alarm_definition)
+        # Ensure the new Alarm Definitions get to the Threshold Engine
+        time.sleep(constants.ALARM_DEFINITION_CREATION_WAIT)
 
         num_transitions = 0
         for timer in range(constants.MAX_RETRIES):
