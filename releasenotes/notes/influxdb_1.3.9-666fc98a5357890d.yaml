@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    Upgrade InfluxDB to 1.3.9 from 1.3.8. It provides the bugfix which improves
+    performance when writes exceed `max-values-per-tag` or `max-series`
+    https://docs.influxdata.com/influxdb/v1.3/about_the_project/releasenotes-changelog/#v1-3-9-2018-01-19
