@@ -112,9 +112,9 @@ def get_query_param(req, param_name, required=False, default_val=None):
         params = falcon.uri.parse_query_string(req.query_string)
         if param_name in params:
             if isinstance(params[param_name], list):
-                param_val = params[param_name][0].decode('utf8')
+                param_val = encodeutils.safe_decode(params[param_name][0], 'utf8')
             else:
-                param_val = params[param_name].decode('utf8')
+                param_val = encodeutils.safe_decode(params[param_name], 'utf8')
 
             return param_val
         else:
@@ -325,7 +325,7 @@ def validate_query_dimensions(dimensions):
 def paginate(resource, uri, limit):
     parsed_uri = urlparse.urlparse(uri)
 
-    self_link = build_base_uri(parsed_uri)
+    self_link = encodeutils.safe_decode(build_base_uri(parsed_uri), 'utf8')
 
     old_query_params = _get_old_query_params(parsed_uri)
 
@@ -337,7 +337,7 @@ def paginate(resource, uri, limit):
         if 'id' in resource[limit - 1]:
             new_offset = resource[limit - 1]['id']
 
-        next_link = build_base_uri(parsed_uri)
+        next_link = encodeutils.safe_decode(build_base_uri(parsed_uri), 'utf8')
 
         new_query_params = [u'offset' + '=' + urlparse.quote(
             new_offset.encode('utf8'), safe='')]
@@ -348,9 +348,9 @@ def paginate(resource, uri, limit):
             next_link += '?' + '&'.join(new_query_params)
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')},
+                                 u'href': self_link},
                                 {u'rel': u'next',
-                                 u'href': next_link.decode('utf8')}]),
+                                 u'href': next_link}]),
                     u'elements': resource[:limit]}
 
     else:
@@ -368,7 +368,7 @@ def paginate_with_no_id(dictionary_list, uri, offset, limit):
        value list.
     """
     parsed_uri = urlparse.urlparse(uri)
-    self_link = build_base_uri(parsed_uri)
+    self_link = encodeutils.safe_decode(build_base_uri(parsed_uri), 'utf-8')
     old_query_params = _get_old_query_params(parsed_uri)
 
     if old_query_params:
@@ -385,11 +385,10 @@ def paginate_with_no_id(dictionary_list, uri, offset, limit):
 
         # Then truncate it with limit
         truncated_list_offset_limit = truncated_list_offset[:limit]
-
-        links = [{u'rel': u'self', u'href': self_link.decode('utf8')}]
+        links = [{u'rel': u'self', u'href': self_link}]
         if len(truncated_list_offset) > limit:
-            new_offset = truncated_list_offset_limit[limit - 1].values()[0]
-            next_link = build_base_uri(parsed_uri)
+            new_offset = list(truncated_list_offset_limit[limit - 1].values())[0]
+            next_link = encodeutils.safe_decode(build_base_uri(parsed_uri), 'utf-8')
             new_query_params = [u'offset' + '=' + new_offset]
 
             _get_old_query_params_except_offset(new_query_params, parsed_uri)
@@ -397,13 +396,13 @@ def paginate_with_no_id(dictionary_list, uri, offset, limit):
             if new_query_params:
                 next_link += '?' + '&'.join(new_query_params)
 
-            links.append({u'rel': u'next', u'href': next_link.decode('utf8')})
+            links.append({u'rel': u'next', u'href': next_link})
 
         resource = {u'links': links,
                     u'elements': truncated_list_offset_limit}
     else:
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')}]),
+                                 u'href': self_link}]),
                     u'elements': dictionary_list}
 
     return resource
@@ -457,15 +456,15 @@ def paginate_alarming(resource, uri, limit):
             next_link += '?' + '&'.join(new_query_params)
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')},
+                                 u'href': encodeutils.safe_decode(self_link, 'utf8')},
                                 {u'rel': u'next',
-                                 u'href': next_link.decode('utf8')}]),
+                                 u'href': encodeutils.safe_decode(next_link, 'utf8')}]),
                     u'elements': resource[:limit]}
 
     else:
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')}]),
+                                 u'href': encodeutils.safe_decode(self_link, 'utf8')}]),
                     u'elements': resource}
 
     return resource
@@ -530,6 +529,7 @@ def paginate_measurements(measurements, uri, limit):
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
+    self_link = encodeutils.safe_decode(self_link, 'utf-8')
 
     old_query_params = _get_old_query_params(parsed_uri)
 
@@ -539,7 +539,7 @@ def paginate_measurements(measurements, uri, limit):
     if measurements:
         measurement_elements = []
         resource = {u'links': [{u'rel': u'self',
-                                u'href': self_link.decode('utf8')},
+                                u'href': self_link},
                                ]}
         for measurement in measurements:
             if len(measurement['measurements']) >= limit:
@@ -548,6 +548,7 @@ def paginate_measurements(measurements, uri, limit):
                                          measurement['measurements'][limit - 1][0]])
 
                 next_link = build_base_uri(parsed_uri)
+                next_link = encodeutils.safe_decode(next_link, 'utf-8')
 
                 new_query_params = [u'offset' + '=' + urlparse.quote(
                     new_offset.encode('utf8'), safe='')]
@@ -558,7 +559,7 @@ def paginate_measurements(measurements, uri, limit):
                     next_link += '?' + '&'.join(new_query_params)
 
                 resource[u'links'].append({u'rel': u'next',
-                                           u'href': next_link.decode('utf8')})
+                                           u'href': next_link})
 
                 truncated_measurement = {u'dimensions': measurement['dimensions'],
                                          u'measurements': (measurement
@@ -575,9 +576,8 @@ def paginate_measurements(measurements, uri, limit):
         resource[u'elements'] = measurement_elements
 
     else:
-
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')}]),
+                                 u'href': self_link}]),
                     u'elements': []}
 
     return resource
@@ -622,10 +622,12 @@ def paginate_statistics(statistics, uri, limit):
     if old_query_params:
         self_link += '?' + '&'.join(old_query_params)
 
+    self_link = encodeutils.safe_decode(self_link, 'utf-8')
+
     if statistics:
         statistic_elements = []
         resource = {u'links': [{u'rel': u'self',
-                                u'href': self_link.decode('utf8')}]}
+                                u'href': self_link}]}
 
         for statistic in statistics:
             stat_id = statistic['id']
@@ -649,8 +651,9 @@ def paginate_statistics(statistics, uri, limit):
                 if new_query_params:
                     next_link += '?' + '&'.join(new_query_params)
 
+                next_link = encodeutils.safe_decode(next_link, 'utf-8')
                 resource[u'links'].append({u'rel': u'next',
-                                          u'href': next_link.decode('utf8')})
+                                          u'href': next_link})
 
                 truncated_statistic = {u'dimensions': statistic['dimensions'],
                                        u'statistics': (statistic['statistics'][:limit]),
@@ -671,7 +674,7 @@ def paginate_statistics(statistics, uri, limit):
     else:
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': self_link.decode('utf8')}]),
+                                 u'href': self_link}]),
                     u'elements': []}
 
     return resource

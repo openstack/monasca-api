@@ -304,19 +304,21 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = (query
                          .where(a.c.lifecycle_state ==
                                 bindparam('b_lifecycle_state')))
-                parms['b_lifecycle_state'] = query_parms['lifecycle_state'].encode('utf8')
+                parms['b_lifecycle_state'] = query_parms['lifecycle_state'] \
+                    if six.PY3 else query_parms['lifecycle_state'].encode('utf8')
 
             if 'link' in query_parms:
                 query = query.where(a.c.link == bindparam('b_link'))
-                parms['b_link'] = query_parms['link'].encode('utf8')
+                parms['b_link'] = query_parms['link'] if six.PY3 \
+                    else query_parms['link'].encode('utf8')
 
             if 'state_updated_start_time' in query_parms:
                 query = (query
                          .where(a.c.state_updated_at >=
                                 bindparam('b_state_updated_at')))
 
-                date_str = query_parms['state_updated_start_time'].encode('utf8') if six.PY2 else \
-                    query_parms['state_updated_start_time']
+                date_str = query_parms['state_updated_start_time'] if six.PY3 \
+                    else query_parms['state_updated_start_time'].encode('utf8')
                 date_param = datetime.strptime(date_str,
                                                '%Y-%m-%dT%H:%M:%S.%fZ')
                 parms['b_state_updated_at'] = date_param
@@ -376,7 +378,6 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                  .select_from(sub_query_from)
                                  .distinct())
                     query = query.where(a.c.id.in_(sub_query))
-
             order_columns = []
             if 'sort_by' in query_parms:
                 columns_mapper = \
@@ -386,13 +387,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
                      'state_updated_timestamp': a.c.state_updated_at,
                      'updated_timestamp': a.c.updated_at,
                      'created_timestamp': a.c.created_at,
-                     'severity': models.field_sort(ad.c.severity, map(text, ["'LOW'",
-                                                                             "'MEDIUM'",
-                                                                             "'HIGH'",
-                                                                             "'CRITICAL'"])),
-                     'state': models.field_sort(a.c.state, map(text, ["'OK'",
-                                                                      "'UNDETERMINED'",
-                                                                      "'ALARM'"]))}
+                     'severity': models.field_sort(ad.c.severity, list(map(text, ["'LOW'",
+                                                                                  "'MEDIUM'",
+                                                                                  "'HIGH'",
+                                                                                  "'CRITICAL'"]))),
+                     'state': models.field_sort(a.c.state, list(map(text, ["'OK'",
+                                                                           "'UNDETERMINED'",
+                                                                           "'ALARM'"])))}
 
                 order_columns, received_cols = self._remap_columns(
                     query_parms['sort_by'], columns_mapper)

@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_utils import encodeutils
+
 from monasca_api.v2.reference import helpers
 
 
@@ -27,7 +29,7 @@ class Version2(object):
             'id': 'v2.0',
             'links': [{
                 'rel': 'self',
-                'href': req.uri.decode('utf-8')
+                'href': encodeutils.safe_decode(req.uri, 'utf-8')
             }],
             'status': 'CURRENT',
             'updated': "2013-03-06T00:00:00.000Z"

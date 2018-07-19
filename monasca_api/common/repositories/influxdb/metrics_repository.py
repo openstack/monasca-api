@@ -22,6 +22,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 import requests
+from six import PY3
 
 from monasca_common.rest import utils as rest_utils
 
@@ -250,39 +251,42 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         # name - optional
         if name:
             # replace ' with \' to make query parsable
-            clean_name = name.replace("'", "\\'")
-            where_clause += ' from  "{}" '.format(clean_name.encode('utf8'))
+            clean_name = name.replace("'", "\\'") if PY3 \
+                else name.replace("'", "\\'").encode('utf-8')
+            where_clause += ' from  "{}" '.format(clean_name)
 
         # tenant id
-        where_clause += " where _tenant_id = '{}' ".format(tenant_id.encode(
-            "utf8"))
+        where_clause += " where _tenant_id = '{}' ".format(tenant_id)
 
         # region
-        where_clause += " and _region = '{}' ".format(region.encode('utf8'))
+        where_clause += " and _region = '{}' ".format(region)
 
         # dimensions - optional
         if dimensions:
             for dimension_name, dimension_value in iter(
                     sorted(dimensions.items())):
                 # replace ' with \' to make query parsable
-                clean_dimension_name = dimension_name.replace("\'", "\\'")
+                clean_dimension_name = dimension_name.replace("\'", "\\'") if PY3 \
+                    else dimension_name.replace("\'", "\\'").encode('utf-8')
                 if dimension_value == "":
                     where_clause += " and \"{}\" =~ /.+/ ".format(
                         clean_dimension_name)
                 elif '|' in dimension_value:
                     # replace ' with \' to make query parsable
-                    clean_dimension_value = dimension_value.replace("\'", "\\'")
+                    clean_dimension_value = dimension_value.replace("\'", "\\'") if PY3 else \
+                        dimension_value.replace("\'", "\\'").encode('utf-8')
 
                     where_clause += " and \"{}\" =~ /^{}$/ ".format(
-                        clean_dimension_name.encode('utf8'),
-                        clean_dimension_value.encode('utf8'))
+                        clean_dimension_name,
+                        clean_dimension_value)
                 else:
                     # replace ' with \' to make query parsable
-                    clean_dimension_value = dimension_value.replace("\'", "\\'")
+                    clean_dimension_value = dimension_value.replace("\'", "\\'") if PY3 else \
+                        dimension_value.replace("\'", "\\'").encode('utf-8')
 
                     where_clause += " and \"{}\" = '{}' ".format(
-                        clean_dimension_name.encode('utf8'),
-                        clean_dimension_value.encode('utf8'))
+                        clean_dimension_name,
+                        clean_dimension_value)
 
         if start_timestamp is not None:
             where_clause += " and time >= " + str(int(start_timestamp *
@@ -358,7 +362,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         for value in dim_value_set:
             json_dim_value_list.append({u'dimension_value': value})
 
-        json_dim_value_list = sorted(json_dim_value_list)
+        json_dim_value_list = sorted(json_dim_value_list, key=lambda x: x[u'dimension_value'])
         return json_dim_value_list
 
     def _build_serie_dimension_values_from_v0_11_0(self, series_names, dimension_name):
@@ -392,7 +396,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         for value in dim_value_set:
             json_dim_value_list.append({u'dimension_value': value})
 
-        json_dim_value_list = sorted(json_dim_value_list)
+        json_dim_value_list = sorted(json_dim_value_list, key=lambda x: x[u'dimension_value'])
         return json_dim_value_list
 
     def _build_serie_dimension_names(self, series_names):
@@ -535,7 +539,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             entry = {u'name': name[0]}
             json_metric_list.append(entry)
 
-        json_metric_list = sorted(json_metric_list)
+        json_metric_list = sorted(json_metric_list, key=lambda k: k['name'])
         return json_metric_list
 
     def _get_dimensions(self, tenant_id, region, name, dimensions):
@@ -844,13 +848,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                      reason, reason_data, sub_alarms, tenant_id
               from alarm_state_history
               """
-
+            tenant_id = tenant_id if PY3 else tenant_id.encode('utf-8')
             where_clause = (
-                " where tenant_id = '{}' ".format(tenant_id.encode('utf8')))
+                " where tenant_id = '{}' ".format(tenant_id))
 
             alarm_id_where_clause_list = (
-                [" alarm_id = '{}' ".format(id.encode('utf8'))
-                 for id in alarm_id_list])
+                [" alarm_id = '{}' ".format(alarm_id if PY3 else alarm_id.encode('utf8'))
+                 for alarm_id in alarm_id_list])
 
             alarm_id_where_clause = " or ".join(alarm_id_where_clause_list)
 
