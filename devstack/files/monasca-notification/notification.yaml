@@ -122,3 +122,13 @@ logging: # Used in logging.dictConfig
 statsd:
     host: 'localhost'
     port: %MONASCA_STATSD_PORT%
+
+keystone:
+    auth_required: False
+    auth_url: '%KEYSTONE_URL%'
+    username: 'admin'
+    password: 'password'
+    project_name: 'admin'
+    user_domain_name: 'default'
+    project_domain_name: 'default'
+    auth_type: 'password'
