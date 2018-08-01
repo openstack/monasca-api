@@ -14,7 +14,6 @@
 # under the License.
 
 import binascii
-from builtins import str as text
 from collections import namedtuple
 from datetime import datetime
 from datetime import timedelta
@@ -26,14 +25,15 @@ from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import FETCH_SIZE_UNSET
 from cassandra.query import SimpleStatement
-
+from monasca_common.rest import utils as rest_utils
 from oslo_config import cfg
 from oslo_log import log
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
-from monasca_common.rest import utils as rest_utils
+
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -817,10 +817,10 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         """
         st = timestamp.isoformat()
         if '.' in st:
-            st = st[:23] + 'Z'
+            st = st[:23] + u'Z'
         else:
-            st += '.000Z'
-        return text(st)
+            st += u'.000Z'
+        return st
 
     def metrics_statistics(self, tenant_id, region, name, dimensions,
                            start_timestamp, end_timestamp, statistics,
@@ -914,7 +914,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             if stats_end_time > end_time:
                 stats_end_time = end_time
 
-            statistic = {u'name': text(name),
+            statistic = {u'name': encodeutils.safe_decode(name, 'utf-8'),
                          u'id': series['id'],
                          u'dimensions': series['dimensions'],
                          u'columns': columns,
