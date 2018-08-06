@@ -134,7 +134,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-.. _Team and repository tags: https://governance.openstack.org/tc/reference/tags/index.html
 .. _layered architecture: https://en.wikipedia.org/wiki/Multilayered_architecture
 .. _docs/monasca-api-spec.md: docs/monasca-api-spec.md
 .. _here: /docs/java.md
