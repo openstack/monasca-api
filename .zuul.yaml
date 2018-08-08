@@ -49,13 +49,32 @@
     voting: false
 
 - project:
+    templates:
+      - openstack-python-jobs
+      - check-requirements
+      - release-notes-jobs
     check:
       jobs:
         - monasca-tempest-python-mysql
         - monasca-tempest-python-postgresql
         - monasca-tempest-java-mysql
         - monasca-tempest-java-postgresql
+        - monasca-tempest-python-cassandra
+        - monasca-tempest-java-cassandra
+        - legacy-monasca-api-maven-build
+        - openstack-tox-cover
+        - build-openstack-sphinx-docs
     gate:
+      queue: monasca
       jobs:
         - monasca-tempest-python-mysql
         - monasca-tempest-java-mysql
+        - monasca-tempest-python-cassandra
+        - monasca-tempest-java-cassandra
+        - legacy-monasca-api-maven-build
+        - openstack-tox-cover
+        - build-openstack-sphinx-docs
+    post:
+      jobs:
+        - legacy-monasca-api-localrepo-upload
+        - publish-openstack-sphinx-docs
