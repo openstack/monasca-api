@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    Apache Kafka has been upgraded to version 1.0.1 in devstack. It is the
+    recommended version for Monasca. Because of existing old consumers, Kafka
+    log message format option `log.message.format.version` should be set to
+    0.9.0.
