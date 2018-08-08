@@ -15,11 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from builtins import str as text
 import datetime
 
 import falcon
 from oslo_log import log
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse
@@ -356,7 +356,7 @@ def paginate(resource, uri, limit):
     else:
 
         resource = {u'links': ([{u'rel': u'self',
-                                 u'href': text(self_link)}]),
+                                 u'href': encodeutils.safe_decode(self_link, 'utf-8')}]),
                     u'elements': resource}
 
     return resource

@@ -13,20 +13,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from builtins import str as strtext
 import datetime
 import six
 
+from oslo_utils import encodeutils
 from oslo_utils import uuidutils
+from sqlalchemy import MetaData, update, delete, insert
+from sqlalchemy import select, text, bindparam, null, literal_column
+from sqlalchemy import or_
 
 from monasca_api.common.repositories import alarm_definitions_repository as adr
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.model import sub_alarm_definition
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
-from sqlalchemy import MetaData, update, delete, insert
-from sqlalchemy import select, text, bindparam, null, literal_column
-from sqlalchemy import or_
 
 
 class AlarmDefinitionsRepository(sql_repository.SQLRepository,
@@ -557,7 +557,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 new_match_by = match.encode('utf8') if six.PY2 else match
 
             if new_match_by != original_row['match_by']:
-                msg = strtext("match_by must not change")
+                msg = u"match_by must not change"
                 raise exceptions.InvalidUpdateException(msg)
 
             if actions_enabled is None:
@@ -793,8 +793,8 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             if row is None:
                 raise exceptions.InvalidUpdateException(
                     "Non-existent notification id {} submitted for {} "
-                    "notification action".format(strtext(action),
-                                                 strtext(alarm_state)))
+                    "notification action".format(encodeutils.to_utf8(action),
+                                                 encodeutils.to_utf8(alarm_state)))
             conn.execute(self.insert_aa_query,
                          b_alarm_definition_id=alarm_definition_id,
                          b_alarm_state=alarm_state.encode('utf8') if six.PY2 else alarm_state,
