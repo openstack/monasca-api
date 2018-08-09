@@ -59,6 +59,11 @@
       persister_lang: java
 
 - project:
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - check-requirements
+      - release-notes-jobs
     check:
       jobs:
         - monasca-tempest-python-influxdb
@@ -66,10 +71,21 @@
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
         - openstack-tox-lower-constraints
+        - legacy-monasca-api-maven-build
+        - openstack-tox-cover
+        - build-openstack-sphinx-docs
     gate:
+      queue: monasca
       jobs:
         - monasca-tempest-python-influxdb
         - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
         - openstack-tox-lower-constraints
+        - legacy-monasca-api-maven-build
+        - openstack-tox-cover
+        - build-openstack-sphinx-docs
+    post:
+      jobs:
+        - legacy-monasca-api-localrepo-upload
+        - publish-openstack-sphinx-docs
