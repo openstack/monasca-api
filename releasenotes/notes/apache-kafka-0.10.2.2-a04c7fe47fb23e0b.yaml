@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    Due to CVE-2018-1288, Apache Kafka has been upgraded to version 0.10.2.2 in
+    devstack. It is the recommended version for Monasca in stable/pike and
+    older. Because of existing old consumers, Kafka log message format option
+    `log.message.format.version` should be set to 0.9.0.
