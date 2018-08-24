@@ -125,6 +125,10 @@ clean_monasca-persister() {
 
 # python
 install_monasca_persister_python() {
+    echo_summary "Installing monasca-persister"
+    if python3_enabled; then
+        enable_python3_package monasca-persister
+    fi
     setup_develop ${MONASCA_PERSISTER_DIR}
 
     install_monasca_common

@@ -18,6 +18,9 @@ _XTRACE_MON_CLIENT=$(set +o | grep xtrace)
 set +o xtrace
 
 install_monascaclient() {
+    if python3_enabled; then
+        enable_python3_package python-monascaclient
+    fi
     git_clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR $MONASCA_CLIENT_BRANCH
     setup_dev_lib "python-monascaclient"
 
