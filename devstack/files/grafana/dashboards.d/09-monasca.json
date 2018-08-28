@@ -1,0 +1,1603 @@
+{
+  "id": null,
+  "title": "Monasca Monitoring",
+  "originalTitle": "Monasca Monitoring",
+  "tags": [],
+  "style": "dark",
+  "timezone": "utc",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": false,
+  "rows": [
+    {
+      "title": "Monasca Health - metrics",
+      "height": "100px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Metrics API",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 19,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "uwsgi"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "9",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "10",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "11",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "12",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "0.0,0.2,1.0",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Storm",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 44,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "storm"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Persister",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 21,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "persister"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Metrics DB",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 51,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "http_status",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "influxdb"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "0",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "1",
+              "op": "=",
+              "text": "DOWN"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Notification Engine",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 42,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "monasca-notification"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        }
+      ],
+      "showTitle": true
+    },
+    {
+      "title": "Monasca Health - Common",
+      "height": "100px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Kafka",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 38,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "kafka"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "ZooKeeper",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 48,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "zookeeper"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "MariaDB",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 66,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "mysqld"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Statsd",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 166,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "monasca-statsd"}]
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "1",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "0",
+              "op": "=",
+              "text": "DOWN"
+            },
+            {
+              "value": "2",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "3",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "4",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "5",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "6",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "7",
+              "op": "=",
+              "text": "UP"
+            },
+            {
+              "value": "8",
+              "op": "=",
+              "text": "UP"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "-1.0,0.2,0.8",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        }
+      ],
+      "showTitle": true
+    },
+    {
+      "title": "System resources",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "CPU usage",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 23,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": 100,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "cpu.percent",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "cpu.user_perc",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "cpu.system_perc",
+              "condition_filter": true
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "cpu.wait_perc",
+              "condition_filter": true
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        },
+        {
+          "title": "Memory usage",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 24,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "individual",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "mem.total_mb",
+              "condition_filter": true
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "mem.used_mb",
+              "period": "",
+              "condition_filter": true
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "mem.swap_total_mb",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "mem.swap_used_mb",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "mem.used_cache",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "MB"
+        },
+        {
+          "title": "Disk usage",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 25,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": 100,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "disk.space_used_perc",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring",
+              "dimensions": [
+                {
+                  "key": "mount_point",
+                  "value": "/boot"
+                }
+              ]
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        },
+        {
+          "title": "System load",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 26,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "load.avg_1_min",
+              "period": "",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "aggregator": "none",
+              "column": "value",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring",
+              "metric": "load.avg_5_min",
+              "period": "300",
+              "refId": "B",
+              "dimensions": [],
+              "error": ""
+            },
+            {
+              "aggregator": "none",
+              "column": "value",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring",
+              "metric": "load.avg_15_min",
+              "period": "300",
+              "refId": "C",
+              "dimensions": [],
+              "error": ""
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        }
+      ],
+      "showTitle": true
+    },
+    {
+      "title": "Network Monitoring",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Network usage",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 61,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "bps",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "net.in_bytes_sec",
+              "merge": true,
+              "dimensions": "",
+              "period": "",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            },
+            {
+              "target": "",
+              "aggregator": "none",
+              "column": "value",
+              "metric": "net.out_bytes_sec",
+              "merge": true,
+              "dimensions": "",
+              "period": "",
+              "condition_filter": true,
+              "condition_key": "service",
+              "condition_value": "monitoring"
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        }
+      ],
+      "showTitle": true
+    },
+    {
+      "title": "Kafka",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "CPU usage",
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "graph",
+          "id": 60,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.cpu_perc",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "kafka"}]
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        },
+        {
+          "title": "Allocated memory",
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "graph",
+          "id": 59,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.mem.rss_mbytes",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "kafka"}]
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "leftYAxisLabel": "MB",
+          "links": []
+        },
+        {
+          "title": "PID count",
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "graph",
+          "id": 89,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": true,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "process.pid_count",
+              "condition_filter": true,
+              "dimensions": [{"key": "service", "value": "kafka"}]
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        },
+        {
+          "title": "Consumer lag",
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 58,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": true
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "aggregator": "none",
+              "column": "value",
+              "metric": "kafka.consumer_lag",
+              "alias": "kafka.consumer_lag: @consumer_group",
+              "refId": "A",
+              "period": "300",
+              "dimensions": [
+                {
+                  "key": "consumer_group",
+                  "value": "$all"
+                }
+              ],
+              "error": ""
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": []
+        }
+      ],
+      "showTitle": true
+    },
+    {
+      "title": "Components",
+      "panels": [
+        {
+          "id": 167,
+          "title": "Common",
+          "span": 4,
+          "type": "dashlist",
+          "query": "",
+          "limit": 10,
+          "tags": [
+            "common"
+          ],
+          "recent": false,
+          "search": true,
+          "starred": false,
+          "headings": false,
+          "links": []
+        },
+        {
+          "id": 168,
+          "title": "Metrics",
+          "span": 4,
+          "type": "dashlist",
+          "query": "",
+          "limit": 10,
+          "tags": [
+            "metrics"
+          ],
+          "recent": false,
+          "search": true,
+          "starred": false,
+          "headings": false,
+          "links": []
+        }
+      ]
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [],
+    "enable": false
+  },
+  "annotations": {
+    "enable": false,
+    "list": []
+  },
+  "refresh": "30s",
+  "version": 6,
+  "hideAllLegends": false
+}

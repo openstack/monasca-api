@@ -174,6 +174,10 @@ function extra_monasca {
     start_monasca_services
     init_collector_service
     post_storm
+
+    if is_service_enabled horizon; then
+        init_monasca_grafana
+    fi
 }
 
 function start_monasca_services {
@@ -1169,8 +1173,13 @@ function install_monasca_agent {
         sudo chmod 0755 /usr/lib/monasca/agent/custom_detect.d
 
         sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/host_alive.yaml /etc/monasca/agent/conf.d/host_alive.yaml
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/http_check.yaml /etc/monasca/agent/conf.d/http_check.yaml
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/kafka_consumer.yaml /etc/monasca/agent/conf.d/kafka_consumer.yaml
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/mysql.yaml /etc/monasca/agent/conf.d/mysql.yaml
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/process.yaml /etc/monasca/agent/conf.d/process.yaml
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/zk.yaml /etc/monasca/agent/conf.d/zk.yaml
 
-        sudo sed -i "s/127\.0\.0\.1/$(hostname)/" /etc/monasca/agent/conf.d/host_alive.yaml
+        sudo sed -i "s/127\.0\.0\.1/$(hostname)/" /etc/monasca/agent/conf.d/*.yaml
 
         sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/monasca-reconfigure /usr/local/bin/monasca-reconfigure
 
@@ -1246,6 +1255,18 @@ function install_node_nvm {
             npm set strict-ssl false;
     )
     set +i
+}
+
+function init_monasca_grafana {
+    echo_summary "Init Grafana"
+
+    sudo cp -f -r "${MONASCA_API_DIR}"/devstack/files/grafana/dashboards.d "${DASHBOARDS_DIR}"
+    sudo chown -R root:root "${DASHBOARDS_DIR}"
+    sudo chmod -R 0644 "${DASHBOARDS_DIR}"
+
+    sudo python "${MONASCA_API_DIR}"/devstack/files/grafana/grafana-init.py
+
+    sudo rm -rf "${DASHBOARDS_DIR}"
 }
 
 function install_monasca_grafana {

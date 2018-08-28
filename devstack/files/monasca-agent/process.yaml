@@ -1,0 +1,87 @@
+init_config:
+
+instances:
+- name: influxd
+  detailed: true
+  dimensions:
+    service: influxd
+  exact_match: false
+  search_string:
+  - influxd
+- name: monasca-statsd
+  detailed: true
+  dimensions:
+    service: monasca-statsd
+  exact_match: false
+  search_string:
+  - monasca-statsd
+- name: monasca-notification
+  detailed: true
+  dimensions:
+    service: monasca-notification
+  exact_match: false
+  search_string:
+  - monasca-notification
+- name: persister
+  detailed: true
+  dimensions:
+    service: persister
+  exact_match: false
+  search_string:
+  - persister
+- name: storm
+  detailed: true
+  dimensions:
+    service: storm
+  exact_match: false
+  search_string:
+  - storm
+- name: monasca-api
+  detailed: true
+  dimensions:
+    service: uwsgi
+  exact_match: false
+  search_string:
+  - uwsgi
+- name: monasca-collector
+  detailed: true
+  dimensions:
+    service: monasca-collector
+  exact_match: false
+  search_string:
+  - monasca-collector
+- name: memcached
+  detailed: true
+  dimensions:
+    service: memcached
+  exact_match: false
+  search_string:
+  - memcached
+- name: monasca-forwarder
+  detailed: true
+  dimensions:
+    service: monasca-forwarder
+  exact_match: false
+  search_string:
+  - monasca-forwarder
+- name: zookeeper
+  detailed: true
+  dimensions:
+    service: zookeeper
+  exact_match: false
+  search_string:
+  - zookeeper
+- name: kafka
+  detailed: true
+  dimensions:
+    service: kafka
+  exact_match: false
+  search_string:
+  - kafka
+- name: mysqld
+  detailed: true
+  dimensions:
+    service: mysqld
+  exact_match: false
+  search_string:
+  - mysqld

@@ -1,0 +1,17 @@
+init_config: null
+instances:
+- name: keystone
+  dimensions:
+    service: keystone
+  timeout: 3
+  url: http://127.0.0.1:5000
+- name: mysql
+  dimensions:
+    service: mysql
+  timeout: 3
+  url: http://127.0.0.1:3306
+- name: influxdb
+  dimensions:
+    service: influxdb
+  timeout: 3
+  url: http://127.0.0.1:8086/ping
