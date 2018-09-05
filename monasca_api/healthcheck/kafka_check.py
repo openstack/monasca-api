@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_log import log
+from six import PY3
 
 from monasca_api.healthcheck import base
 from monasca_common.kafka_lib import client
@@ -59,6 +60,8 @@ class KafkaHealthCheck(base.BaseHealthCheck):
         topics = (CONF.kafka.metrics_topic,
                   CONF.kafka.events_topic,
                   CONF.kafka.alarm_state_transitions_topic)
+        if PY3:
+            topics = tuple(topic.encode('utf-8') for topic in topics)
 
         for topic in topics:
             topic_exists = topic in kafka_client.topics
