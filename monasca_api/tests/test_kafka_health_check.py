@@ -59,7 +59,7 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_fail_missing_topic(self, kafka_client):
         kafka = mock.Mock()
-        kafka.topic_partitions = ['topic1']
+        kafka.topics = ['topic1']
         kafka_client.return_value = kafka
 
         kafka_health = kc.KafkaHealthCheck()
@@ -71,9 +71,9 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_pass(self, kafka_client):
         kafka = mock.Mock()
-        kafka.topic_partitions = (self.mocked_topics,
-                                  self.mocked_event_topic,
-                                  self.mocked_alarm_state_topic)
+        kafka.topics = [self.mocked_topics,
+                        self.mocked_event_topic,
+                        self.mocked_alarm_state_topic]
         kafka_client.return_value = kafka
 
         kafka_health = kc.KafkaHealthCheck()
