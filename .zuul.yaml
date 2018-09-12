@@ -60,10 +60,13 @@
 
 - project:
     templates:
+      - check-requirements
+      - openstack-cover-jobs
+      - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python35-jobs
       - openstack-python36-jobs
-      - check-requirements
+      - publish-openstack-docs-pti
       - release-notes-jobs-python3
     check:
       jobs:
@@ -71,10 +74,7 @@
         - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
-        - openstack-tox-lower-constraints
         - legacy-monasca-api-maven-build
-        - openstack-tox-cover
-        - openstack-tox-docs
     gate:
       queue: monasca
       jobs:
@@ -82,11 +82,7 @@
         - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
-        - openstack-tox-lower-constraints
         - legacy-monasca-api-maven-build
-        - openstack-tox-cover
-        - openstack-tox-docs
     post:
       jobs:
         - legacy-monasca-api-localrepo-upload
-        - publish-openstack-sphinx-docs
