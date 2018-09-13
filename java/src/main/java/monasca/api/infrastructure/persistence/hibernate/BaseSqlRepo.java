@@ -48,7 +48,7 @@ abstract class BaseSqlRepo {
       try {
         tx.rollback();
       } catch (RuntimeException rbe) {
-        LOG.error(ORM_LOG_MARKER, "Couldn’t roll back transaction", rbe);
+        LOG.error(ORM_LOG_MARKER, "Couldn't roll back transaction", rbe);
       }
     }
   }
