@@ -172,6 +172,7 @@ function extra_monasca {
     fi
 
     start_monasca_services
+    init_collector_service
     post_storm
 }
 
@@ -1419,6 +1420,16 @@ function find_nearest_apache_mirror {
     fi
 }
 
+# This solution fixes problem with privileges for agent
+# to gather metrics from services started as root user.
+function init_collector_service {
+    echo_summary "Init Monasca collector service"
+    sudo systemctl stop monasca-collector
+    sudo sed -i "s/User=mon-agent/User=root/g" /etc/systemd/system/monasca-collector.service
+    sudo sed -i "s/Group=mon-agent/Group=root/g" /etc/systemd/system/monasca-collector.service
+    sudo systemctl daemon-reload
+    sudo systemctl restart monasca-collector
+}
 
 # check for service enabled
 if is_service_enabled monasca; then
