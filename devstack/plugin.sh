@@ -1125,100 +1125,103 @@ function install_keystone_client {
 
 function install_monasca_agent {
 
-    echo_summary "Install Monasca monasca_agent"
+    if is_service_enabled monasca-agent; then
+        echo_summary "Install Monasca monasca_agent"
 
-    apt_get -y install python-yaml libxml2-dev libxslt1-dev
+        apt_get -y install python-yaml libxml2-dev libxslt1-dev
 
-    git_clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR $MONASCA_CLIENT_BRANCH
-    git_clone $MONASCA_AGENT_REPO $MONASCA_AGENT_DIR $MONASCA_AGENT_BRANCH
+        git_clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR $MONASCA_CLIENT_BRANCH
+        git_clone $MONASCA_AGENT_REPO $MONASCA_AGENT_DIR $MONASCA_AGENT_BRANCH
 
-    sudo mkdir -p /opt/monasca-agent || true
-    sudo chown $STACK_USER:monasca /opt/monasca-agent
+        sudo mkdir -p /opt/monasca-agent || true
+        sudo chown $STACK_USER:monasca /opt/monasca-agent
 
-    if python3_enabled; then
-        (cd /opt/monasca-agent ; virtualenv -p python3 .)
-        sudo rm -rf /opt/stack/monasca-common/.eggs/
-    else
-        (cd /opt/monasca-agent ; virtualenv .)
+        if python3_enabled; then
+            (cd /opt/monasca-agent ; virtualenv -p python3 .)
+            sudo rm -rf /opt/stack/monasca-common/.eggs/
+        else
+            (cd /opt/monasca-agent ; virtualenv .)
+        fi
+
+        PIP_VIRTUAL_ENV=/opt/monasca-agent
+
+        setup_install $MONASCA_AGENT_DIR kafka_plugin
+        setup_dev_lib "python-monascaclient"
+
+        unset PIP_VIRTUAL_ENV
+
+        sudo mkdir -p /etc/monasca/agent/conf.d || true
+
+        sudo chown root:root /etc/monasca/agent/conf.d
+
+        sudo chmod 0755 /etc/monasca/agent/conf.d
+
+        sudo mkdir -p /usr/lib/monasca/agent/custom_checks.d || true
+
+        sudo chown root:root /usr/lib/monasca/agent/custom_checks.d
+
+        sudo chmod 0755 /usr/lib/monasca/agent/custom_checks.d
+
+        sudo mkdir -p /usr/lib/monasca/agent/custom_detect.d || true
+
+        sudo chown root:root /usr/lib/monasca/agent/custom_detect.d
+
+        sudo chmod 0755 /usr/lib/monasca/agent/custom_detect.d
+
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/host_alive.yaml /etc/monasca/agent/conf.d/host_alive.yaml
+
+        sudo sed -i "s/127\.0\.0\.1/$(hostname)/" /etc/monasca/agent/conf.d/host_alive.yaml
+
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/monasca-reconfigure /usr/local/bin/monasca-reconfigure
+
+        sudo chown root:root /usr/local/bin/monasca-reconfigure
+
+        sudo chmod 0750 /usr/local/bin/monasca-reconfigure
+
+        sudo sed -e "
+            s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
+            s|%MONASCA_SERVICE_TYPE%|$MONASCA_SERVICE_TYPE|g;
+            s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
+            s|%SERVICE_DOMAIN_NAME%|$SERVICE_DOMAIN_NAME|g;
+            s|%REGION_NAME%|$REGION_NAME|g;
+        " -i /usr/local/bin/monasca-reconfigure
     fi
-
-    PIP_VIRTUAL_ENV=/opt/monasca-agent
-
-    setup_install $MONASCA_AGENT_DIR kafka_plugin
-    setup_dev_lib "python-monascaclient"
-
-    unset PIP_VIRTUAL_ENV
-
-    sudo mkdir -p /etc/monasca/agent/conf.d || true
-
-    sudo chown root:root /etc/monasca/agent/conf.d
-
-    sudo chmod 0755 /etc/monasca/agent/conf.d
-
-    sudo mkdir -p /usr/lib/monasca/agent/custom_checks.d || true
-
-    sudo chown root:root /usr/lib/monasca/agent/custom_checks.d
-
-    sudo chmod 0755 /usr/lib/monasca/agent/custom_checks.d
-
-    sudo mkdir -p /usr/lib/monasca/agent/custom_detect.d || true
-
-    sudo chown root:root /usr/lib/monasca/agent/custom_detect.d
-
-    sudo chmod 0755 /usr/lib/monasca/agent/custom_detect.d
-
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/host_alive.yaml /etc/monasca/agent/conf.d/host_alive.yaml
-
-    sudo sed -i "s/127\.0\.0\.1/$(hostname)/" /etc/monasca/agent/conf.d/host_alive.yaml
-
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/monasca-agent/monasca-reconfigure /usr/local/bin/monasca-reconfigure
-
-    sudo chown root:root /usr/local/bin/monasca-reconfigure
-
-    sudo chmod 0750 /usr/local/bin/monasca-reconfigure
-
-    sudo sed -e "
-        s|%MONASCA_STATSD_PORT%|$MONASCA_STATSD_PORT|g;
-        s|%MONASCA_SERVICE_TYPE%|$MONASCA_SERVICE_TYPE|g;
-        s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
-        s|%SERVICE_DOMAIN_NAME%|$SERVICE_DOMAIN_NAME|g;
-        s|%REGION_NAME%|$REGION_NAME|g;
-    " -i /usr/local/bin/monasca-reconfigure
 }
 
 function clean_monasca_agent {
 
-    echo_summary "Clean Monasca monasca_agent"
+    if is_service_enabled monasca-agent; then
+        echo_summary "Clean Monasca monasca_agent"
 
-    sudo rm /etc/init.d/monasca-agent
+        sudo rm /etc/init.d/monasca-agent
 
-    sudo rm /usr/local/bin/monasca-reconfigure
+        sudo rm /usr/local/bin/monasca-reconfigure
 
-    sudo rm /etc/monasca/agent/conf.d/host_alive.yaml
+        sudo rm /etc/monasca/agent/conf.d/host_alive.yaml
 
-    sudo chown root:root /etc/monasca/agent/conf.d/host_alive.yaml
+        sudo chown root:root /etc/monasca/agent/conf.d/host_alive.yaml
 
-    chmod 0644 /etc/monasca/agent/conf.d/host_alive.yaml
+        chmod 0644 /etc/monasca/agent/conf.d/host_alive.yaml
 
-    sudo rm -rf /usr/lib/monasca/agent/custom_detect.d
+        sudo rm -rf /usr/lib/monasca/agent/custom_detect.d
 
-    sudo rm -rf  /usr/lib/monasca/agent/custom_checks.d
+        sudo rm -rf  /usr/lib/monasca/agent/custom_checks.d
 
-    sudo rm -rf /etc/monasca/agent/conf.d
+        sudo rm -rf /etc/monasca/agent/conf.d
 
-    sudo rm -rf /etc/monasca/agent
+        sudo rm -rf /etc/monasca/agent
 
-    sudo rm -rf /opt/monasca-agent
+        sudo rm -rf /opt/monasca-agent
 
-    [[ -f /etc/systemd/system/monasca-agent.target ]] && sudo rm /etc/systemd/system/monasca-agent.target
-    [[ -f /etc/systemd/system/monasca-collector.service ]] && sudo rm /etc/systemd/system/monasca-collector.service
-    [[ -f /etc/systemd/system/monasca-forwarder.service ]] && sudo rm /etc/systemd/system/monasca-forwarder.service
-    [[ -f /etc/systemd/system/monasca-statsd.service ]] && sudo rm /etc/systemd/system/monasca-statsd.service
+        [[ -f /etc/systemd/system/monasca-agent.target ]] && sudo rm /etc/systemd/system/monasca-agent.target
+        [[ -f /etc/systemd/system/monasca-collector.service ]] && sudo rm /etc/systemd/system/monasca-collector.service
+        [[ -f /etc/systemd/system/monasca-forwarder.service ]] && sudo rm /etc/systemd/system/monasca-forwarder.service
+        [[ -f /etc/systemd/system/monasca-statsd.service ]] && sudo rm /etc/systemd/system/monasca-statsd.service
 
-    apt_get -y purge libxslt1-dev
-    apt_get -y purge libxml2-dev
-    apt_get -y purge python-yaml
-
+        apt_get -y purge libxslt1-dev
+        apt_get -y purge libxml2-dev
+        apt_get -y purge python-yaml
+    fi
 }
 
 # install node with nvm, works behind corporate proxy
@@ -1423,12 +1426,14 @@ function find_nearest_apache_mirror {
 # This solution fixes problem with privileges for agent
 # to gather metrics from services started as root user.
 function init_collector_service {
-    echo_summary "Init Monasca collector service"
-    sudo systemctl stop monasca-collector
-    sudo sed -i "s/User=mon-agent/User=root/g" /etc/systemd/system/monasca-collector.service
-    sudo sed -i "s/Group=mon-agent/Group=root/g" /etc/systemd/system/monasca-collector.service
-    sudo systemctl daemon-reload
-    sudo systemctl restart monasca-collector
+    if is_service_enabled monasca-agent; then
+        echo_summary "Init Monasca collector service"
+        sudo systemctl stop monasca-collector
+        sudo sed -i "s/User=mon-agent/User=root/g" /etc/systemd/system/monasca-collector.service
+        sudo sed -i "s/Group=mon-agent/Group=root/g" /etc/systemd/system/monasca-collector.service
+        sudo systemctl daemon-reload
+        sudo systemctl restart monasca-collector
+    fi
 }
 
 # check for service enabled
