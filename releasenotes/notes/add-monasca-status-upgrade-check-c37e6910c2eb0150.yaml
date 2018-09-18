@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    Added new tool ``monasca-status upgrade check``.
+    New framework for ``monasca-status upgrade check`` command is added.
+    This framework allows adding various checks which can be run before a
+    Monasca upgrade to ensure if the upgrade can be performed safely.
+upgrade:
+  - |
+    Operator can now use new CLI tool ``monasca-status upgrade check``
+    to check if the Monasca deployment can be safely upgraded from
+    N-1 to N release.
