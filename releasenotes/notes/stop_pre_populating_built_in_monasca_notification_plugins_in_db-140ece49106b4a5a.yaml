@@ -1,0 +1,6 @@
+---
+upgrade:
+  - The concept of built-in monasca-notification plugins has been removed
+    and the built-in plugins are no longer pre-populated in the database. If
+    you were using the PAGERDUTY, EMAIL or WEBHOOK notification plugin you
+    should explicitly enable it in the monasca-notification config file.

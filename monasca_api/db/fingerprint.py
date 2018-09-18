@@ -14,9 +14,16 @@
 
 import hashlib
 
+from oslo_log import log
+from oslo_utils import encodeutils
 from sqlalchemy import MetaData
+from sqlalchemy.orm import sessionmaker
 
-# Map of SHA1 fingerprints to alembic revisions.
+LOG = log.getLogger(__name__)
+
+# Map of SHA1 fingerprints to alembic revisions. Note that this is
+# used in the pre-alembic case and does not need to be updated if a
+# new revision is introduced.
 _REVS = {"43e5913b0272077321ab6f25ffbcda7149b6284b": "00597b5c8325",
          "c4e5c870c705421faa4041405b5a895970faa434": "0cce983d957a",
          "f7a79c4eea9c9d130277a64eb6d2d16587088dbb": "30181b42434b",
@@ -34,8 +41,17 @@ _REVS = {"43e5913b0272077321ab6f25ffbcda7149b6284b": "00597b5c8325",
 class Fingerprint(object):
 
     def __init__(self, engine):
-        metadata = MetaData(bind=engine, reflect=True)
+        metadata = self._get_metadata(engine)
+        self.schema_raw = self._get_schema_raw(metadata)
+        self.sha1 = self._get_schema_sha1(self.schema_raw)
+        self.revision = self._get_revision(metadata, engine, self.sha1)
 
+    @staticmethod
+    def _get_metadata(engine):
+        return MetaData(bind=engine, reflect=True)
+
+    @staticmethod
+    def _get_schema_raw(metadata):
         schema_strings = []
 
         for table in metadata.sorted_tables:
@@ -56,11 +72,39 @@ class Fingerprint(object):
 
             schema_strings.append("")
 
-        self.schema_raw = "\n".join(schema_strings)
-        self.sha1 = hashlib.sha1(self.schema_raw).hexdigest()
+        return "\n".join(schema_strings)
 
-        try:
-            self.revision = _REVS[self.sha1]
-        except KeyError:
-            # Fingerprint does not match any revisions
-            self.revision = None
+    @staticmethod
+    def _get_schema_sha1(schema_raw):
+        return hashlib.sha1(encodeutils.to_utf8(schema_raw)).hexdigest()
+
+    @staticmethod
+    def _get_revision(metadata, engine, sha1):
+        # Alembic stores the current version in the DB so check that first
+        # and fall back to the lookup table for the pre-alembic case.
+        versions_table = metadata.tables.get('alembic_version')
+        if versions_table is not None:
+            return Fingerprint._lookup_version_from_db(versions_table, engine)
+        elif sha1:
+            return Fingerprint._lookup_version_from_table(sha1)
+
+    @staticmethod
+    def _get_db_session(engine):
+        Session = sessionmaker(bind=engine)
+        return Session()
+
+    @staticmethod
+    def _lookup_version_from_db(versions_table, engine):
+        session = Fingerprint._get_db_session(engine)
+        # This will throw an exception for the unexpected case when there is
+        # more than one row. The query returns a tuple which is stripped off
+        # before returning.
+        return session.query(versions_table).one()[0]
+
+    @staticmethod
+    def _lookup_version_from_table(sha1):
+        revision = _REVS.get(sha1)
+        if not revision:
+            LOG.warning("Fingerprint: {} does not match any revisions."
+                        .format(sha1))
+        return revision
