@@ -103,8 +103,21 @@ start_monasca-persister() {
     if ! is_monasca_persister_enabled; then
         return
     fi
+
+    local cmd=${MONASCA_PERSISTER_CMD}
+    local systemd_service="devstack@monasca-persister.service"
+    local unitfile="$SYSTEMD_DIR/$systemd_service"
+
+    # sanity check the command
+    _common_systemd_pitfalls "$cmd"
+
+    # Restart monasca-persister when exited with error code
+    iniset -sudo $unitfile "Service" "Restart" "on-failure"
+    write_user_unit_file $systemd_service "$cmd" "" "$STACK_USER"
+
     echo_summary "Starting monasca-persister"
-    run_process "monasca-persister" "${MONASCA_PERSISTER_CMD}"
+    $SYSTEMCTL enable $systemd_service
+    $SYSTEMCTL start $systemd_service
 }
 stop_monasca-persister() {
     if ! is_monasca_persister_enabled; then
