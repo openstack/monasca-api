@@ -155,7 +155,7 @@ class TestPolicyCase(base.BaseTestCase):
 class RegisteredPoliciesTestCase(base.BaseTestCase):
     def __init__(self, *args, **kwds):
         super(RegisteredPoliciesTestCase, self).__init__(*args, **kwds)
-        self.agent_roles = ['agent']
+        self.agent_roles = ['monasca-agent']
         self.readonly_roles = ['monasca-read-only-user']
         self.default_roles = ['monasca-user']
         self.delegate_roles = ['admin']

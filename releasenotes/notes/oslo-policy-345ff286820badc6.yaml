@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    ``agent_authorized_roles`` default value changed to ``monasca-agent`` to be
+    consistent with rest of Monasca, was configured by default to ``agent`` so
+    old policy configuration should be checked and adjusted accordingly.
