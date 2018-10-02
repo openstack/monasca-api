@@ -160,11 +160,16 @@ configure_monasca_persister_python() {
             --config-file $MONASCA_PERSISTER_DIR/config-generator/persister.conf \
             --output-file /tmp/persister.conf
 
-    install -m 600 ${MONASCA_PERSISTER_DIR}/etc/monasca/persister-logging.conf ${MONASCA_PERSISTER_LOGGING_CONF}
-
     install -m 600 /tmp/persister.conf ${MONASCA_PERSISTER_CONF} && rm -rf /tmp/persister.conf
 
-    iniset "$MONASCA_PERSISTER_CONF" DEFAULT log_config_append ${MONASCA_PERSISTER_LOGGING_CONF}
+    # Set up logging
+    iniset $MONASCA_PERSISTER_CONF DEFAULT use_syslog $SYSLOG
+
+    # Format logging
+    setup_logging $MONASCA_PERSISTER_CONF
+    iniset $MONASCA_PERSISTER_CONF DEFAULT default_log_levels \
+        "monasca_common.kafka_lib.client=INFO"
+    iniset $MONASCA_PERSISTER_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
 
     iniset "$MONASCA_PERSISTER_CONF" kafka num_processors 1
 
