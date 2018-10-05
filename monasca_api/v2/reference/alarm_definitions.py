@@ -502,10 +502,11 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         except (pyparsing.ParseException,
                 pyparsing.ParseFatalException) as ex:
             LOG.exception(ex)
-            title = "Invalid alarm expression".encode('utf8')
-            msg = "parser failed on expression '{}' at column {}: {}".format(
-                  expression.encode('utf8'), str(ex.column).encode('utf8'),
-                  ex.msg.encode('utf8'))
+            title = u"Invalid alarm expression"
+            msg = u"parser failed on expression '{}' at column {}: {}".format(
+                encodeutils.safe_decode(expression, 'utf-8'),
+                encodeutils.safe_decode(str(ex.column), 'utf-8'),
+                encodeutils.safe_decode(ex.msg, 'utf-8'))
             raise HTTPUnprocessableEntityError(title, msg)
 
         self._validate_name_not_conflicting(tenant_id, name)
