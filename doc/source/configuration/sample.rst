@@ -26,7 +26,7 @@ Sample Configuration For Logging
 --------------------------------
 
 This sample configuration can also be viewed in `api-logging.conf
-<../../../etc/api-logging.conf>`_.
+<https://git.openstack.org/cgit/openstack/monasca-api/plain/etc/api-logging.conf>`_.
 
 .. literalinclude:: ../../../etc/api-logging.conf
 
@@ -35,6 +35,6 @@ Sample Configuration For Paster
 -------------------------------
 
 This sample configuration can also be viewed in `api-config.ini
-<../../../etc/api-config.ini>`_.
+<https://git.openstack.org/cgit/openstack/monasca-api/plain/etc/api-config.ini>`_.
 
 .. literalinclude:: ../../../etc/api-config.ini
