@@ -223,7 +223,6 @@ configure_monasca_persister_python() {
     fi
 
     ln -sf ${MONASCA_PERSISTER_CONF} ${MONASCA_PERSISTER_GATE_CONFIG}
-    ln -sf ${MONASCA_PERSISTER_LOGGING_CONF} ${MONASCA_PERSISTER_GATE_CONFIG}
 }
 
 clean_monasca_persister_python() {
