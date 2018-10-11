@@ -105,6 +105,14 @@ For Contributors
 For Operators
 ================
 
+Administrating
+--------------
+
+.. toctree::
+   :maxdepth: 1
+
+   admin/index
+
 Configuration
 -------------
 
