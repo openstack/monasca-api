@@ -1,0 +1,65 @@
+ARG DOCKER_IMAGE=monasca/api
+ARG APP_REPO=https://git.openstack.org/openstack/monasca-api
+
+# Branch, tag or git hash to build from.
+ARG REPO_VERSION=master
+ARG CONSTRAINTS_BRANCH=master
+
+# Extra Python3 dependencies.
+# gevent is not in upper constrains and v1.3.6 is not working with
+# older greenlet.
+ARG EXTRA_DEPS="gunicorn gevent==1.3.5 python-memcached influxdb"
+
+# Always start from `monasca-base` image and use specific tag of it.
+ARG BASE_TAG=master
+FROM monasca/base:$BASE_TAG
+
+# Environment variables used for our service or wait scripts.
+ENV \
+    KAFKA_URI=kafka:9092 \
+    KAFKA_WAIT_FOR_TOPICS=alarm-state-transitions,metrics \
+    MONASCA_CONTAINER_API_PORT=8070 \
+    INFLUX_HOST=influxdb \
+    INFLUX_PORT=8086 \
+    INFLUX_USER=mon_api \
+    INFLUX_PASSWORD=password \
+    INFLUX_DB=mon \
+    MYSQL_HOST=mysql \
+    MYSQL_USER=monapi \
+    MYSQL_PASSWORD=password \
+    MYSQL_DB=mon \
+    MEMCACHED_URI=memcached:11211 \
+    KEYSTONE_IDENTITY_URI=http://keystone:35357 \
+    KEYSTONE_AUTH_URI=http://keystone:5000 \
+    KEYSTONE_ADMIN_USER=admin \
+    KEYSTONE_ADMIN_PASSWORD=secretadmin \
+    KEYSTONE_ADMIN_TENANT=admin \
+    KEYSTONE_ADMIN_DOMAIN=default \
+    GUNICORN_WORKERS=9 \
+    GUNICORN_WORKER_CLASS=gevent \
+    GUNICORN_WORKER_CONNECTIONS=2000 \
+    GUNICORN_BACKLOG=1000 \
+    GUNICORN_TIMEOUT=10 \
+    ADD_ACCESS_LOG=true \
+    ACCESS_LOG_FORMAT="%(asctime)s [%(process)d] gunicorn.access [%(levelname)s] %(message)s" \
+    ACCESS_LOG_FIELDS='%(h)s %(l)s %(u)s %(t)s %(r)s %(s)s %(b)s "%(f)s" "%(a)s" %(L)s' \
+    LOG_LEVEL_ROOT=WARN \
+    LOG_LEVEL_CONSOLE=INFO \
+    LOG_LEVEL_ACCESS=INFO \
+    STAY_ALIVE_ON_FAILURE=false
+
+# Copy all neccessary files to proper locations.
+COPY api-* /etc/monasca/
+
+# Run here all additionals steps your service need post installation.
+# Stay with only one `RUN` and use `&& \` for next steps to don't create
+# unnecessary image layers. Clean at the end to conserve space.
+#RUN \
+#    echo "Some steps to do after main installation." && \
+#    echo "Hello when building."
+
+# Expose port for specific service.
+EXPOSE ${MONASCA_CONTAINER_API_PORT}
+
+# Implement start script in `start.sh` file.
+CMD ["/start.sh"]

@@ -1,0 +1,631 @@
+[DEFAULT]
+
+#
+# From monasca_api
+#
+
+#
+# Region that API is running in
+#  (string value)
+region = useast
+
+#
+# Valid periods for notification methods
+#  (list value)
+#valid_notification_periods = 0,60
+
+#
+# From oslo.log
+#
+
+# If set to true, the logging level will be set to DEBUG instead of the default
+# INFO level (boolean value)
+# Note: This option can be changed without restarting.
+#debug = false
+
+# The name of a logging configuration file. This file is appended to any
+# existing logging configuration files. For details about logging configuration
+# files, see the Python logging module documentation. Note that when logging
+# configuration files are used then all logging configuration is set in the
+# configuration file and other logging configuration options are ignored (for
+# example, logging_context_format_string) (string value)
+# Note: This option can be changed without restarting.
+# Deprecated group/name - [DEFAULT]/log_config
+log_config_append=/etc/monasca/api-logging.conf
+
+# Defines the format string for %%(asctime)s in log records. Default:
+# %(default)s . This option is ignored if log_config_append is set (string
+# value)
+#log_date_format = %Y-%m-%d %H:%M:%S
+
+# (Optional) Name of log file to send logging output to. If no default is set,
+# logging will go to stderr as defined by use_stderr. This option is ignored if
+# log_config_append is set (string value)
+# Deprecated group/name - [DEFAULT]/logfile
+#log_file = <None>
+
+# (Optional) The base directory used for relative log_file  paths. This option
+# is ignored if log_config_append is set (string value)
+# Deprecated group/name - [DEFAULT]/logdir
+#log_dir = <None>
+
+# Uses logging handler designed to watch file system. When log file is moved or
+# removed this handler will open a new log file with specified path
+# instantaneously. It makes sense only if log_file option is specified and
+# Linux platform is used. This option is ignored if log_config_append is set
+# (boolean value)
+#watch_log_file = false
+
+# Use syslog for logging. Existing syslog format is DEPRECATED and will be
+# changed later to honor RFC5424. This option is ignored if log_config_append
+# is set (boolean value)
+#use_syslog = false
+
+# Enable journald for logging. If running in a systemd environment you may wish
+# to enable journal support. Doing so will use the journal native protocol
+# which includes structured metadata in addition to log messages.This option is
+# ignored if log_config_append is set (boolean value)
+#use_journal = false
+
+# Syslog facility to receive log lines. This option is ignored if
+# log_config_append is set (string value)
+#syslog_log_facility = LOG_USER
+
+# Use JSON formatting for logging. This option is ignored if log_config_append
+# is set (boolean value)
+#use_json = false
+
+# Log output to standard error. This option is ignored if log_config_append is
+# set (boolean value)
+#use_stderr = false
+
+# Format string to use for log messages with context (string value)
+#logging_context_format_string = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s
+
+# Format string to use for log messages when context is undefined (string
+# value)
+#logging_default_format_string = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s
+
+# Additional data to append to log message when logging level for the message
+# is DEBUG (string value)
+#logging_debug_format_suffix = %(funcName)s %(pathname)s:%(lineno)d
+
+# Prefix each line of exception output with this format (string value)
+#logging_exception_prefix = %(asctime)s.%(msecs)03d %(process)d ERROR %(name)s %(instance)s
+
+# Defines the format string for %(user_identity)s that is used in
+# logging_context_format_string (string value)
+#logging_user_identity_format = %(user)s %(tenant)s %(domain)s %(user_domain)s %(project_domain)s
+
+# List of package logging levels in logger=LEVEL pairs. This option is ignored
+# if log_config_append is set (list value)
+#default_log_levels = amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,dogpile.core.dogpile=INFO
+
+# Enables or disables publication of error events (boolean value)
+#publish_errors = false
+
+# The format for an instance that is passed with the log message (string value)
+#instance_format = "[instance: %(uuid)s] "
+
+# The format for an instance UUID that is passed with the log message (string
+# value)
+#instance_uuid_format = "[instance: %(uuid)s] "
+
+# Interval, number of seconds, of log rate limiting (integer value)
+#rate_limit_interval = 0
+
+# Maximum number of logged messages per rate_limit_interval (integer value)
+#rate_limit_burst = 0
+
+# Log level name used by rate limiting: CRITICAL, ERROR, INFO, WARNING, DEBUG
+# or empty string. Logs with level greater or equal to rate_limit_except_level
+# are not filtered. An empty string means that all levels are filtered (string
+# value)
+#rate_limit_except_level = CRITICAL
+
+# Enables or disables fatal status of deprecations (boolean value)
+#fatal_deprecations = false
+
+
+[cassandra]
+
+#
+# From monasca_api
+#
+
+#
+# Comma separated list of Cassandra node IP addresses
+#  (list value)
+#contact_points = 127.0.0.1
+
+#
+# keyspace where metric are stored
+#  (string value)
+#keyspace = monasca
+
+#
+# Cassandra user for monasca-api service
+#  (string value)
+#user =
+
+#
+# Cassandra user password for monasca-api service
+#  (string value)
+#password =
+
+
+[database]
+
+#
+# From monasca_api
+#
+
+# DEPRECATED:
+# The SQLAlchemy connection string to use to connect to the database
+#  (string value)
+# This option is deprecated for removal since 1.6.0.
+# Its value may be silently ignored in the future.
+# Reason: Please use database.connection option,database.url is scheduled for
+# removal in Pike release
+#url = $database.connection
+
+#
+# From oslo.db
+#
+
+# If True, SQLite uses synchronous mode (boolean value)
+#sqlite_synchronous = true
+
+# The back end to use for the database (string value)
+# Deprecated group/name - [DEFAULT]/db_backend
+#backend = sqlalchemy
+
+# The SQLAlchemy connection string to use to connect to the database (string
+# value)
+# Deprecated group/name - [DEFAULT]/sql_connection
+# Deprecated group/name - [DATABASE]/sql_connection
+# Deprecated group/name - [sql]/connection
+{% if not ( API_MYSQL_DISABLED is defined and API_MYSQL_DISABLED | lower == 'true' ) %}
+connection = "mysql+pymysql://{{ MYSQL_USER }}:{{ MYSQL_PASSWORD }}@{{ MYSQL_HOST }}/{{ MYSQL_DB }}"
+{% endif %}
+
+
+# The SQLAlchemy connection string to use to connect to the slave database
+# (string value)
+#slave_connection = <None>
+
+# The SQL mode to be used for MySQL sessions. This option, including the
+# default, overrides any server-set SQL mode. To use whatever SQL mode is set
+# by the server configuration, set this to no value. Example: mysql_sql_mode=
+# (string value)
+#mysql_sql_mode = TRADITIONAL
+
+# If True, transparently enables support for handling MySQL Cluster (NDB)
+# (boolean value)
+#mysql_enable_ndb = false
+
+# Connections which have been present in the connection pool longer than this
+# number of seconds will be replaced with a new one the next time they are
+# checked out from the pool (integer value)
+# Deprecated group/name - [DATABASE]/idle_timeout
+# Deprecated group/name - [database]/idle_timeout
+# Deprecated group/name - [DEFAULT]/sql_idle_timeout
+# Deprecated group/name - [DATABASE]/sql_idle_timeout
+# Deprecated group/name - [sql]/idle_timeout
+#connection_recycle_time = 3600
+
+# DEPRECATED: Minimum number of SQL connections to keep open in a pool (integer
+# value)
+# Deprecated group/name - [DEFAULT]/sql_min_pool_size
+# Deprecated group/name - [DATABASE]/sql_min_pool_size
+# This option is deprecated for removal.
+# Its value may be silently ignored in the future.
+# Reason: The option to set the minimum pool size is not supported by
+# sqlalchemy.
+#min_pool_size = 1
+
+# Maximum number of SQL connections to keep open in a pool. Setting a value of
+# 0 indicates no limit (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_pool_size
+# Deprecated group/name - [DATABASE]/sql_max_pool_size
+#max_pool_size = 5
+
+# Maximum number of database connection retries during startup. Set to -1 to
+# specify an infinite retry count (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_retries
+# Deprecated group/name - [DATABASE]/sql_max_retries
+#max_retries = 10
+
+# Interval between retries of opening a SQL connection (integer value)
+# Deprecated group/name - [DEFAULT]/sql_retry_interval
+# Deprecated group/name - [DATABASE]/reconnect_interval
+#retry_interval = 10
+
+# If set, use this value for max_overflow with SQLAlchemy (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_overflow
+# Deprecated group/name - [DATABASE]/sqlalchemy_max_overflow
+#max_overflow = 50
+
+# Verbosity of SQL debugging information: 0=None, 100=Everything (integer
+# value)
+# Minimum value: 0
+# Maximum value: 100
+# Deprecated group/name - [DEFAULT]/sql_connection_debug
+#connection_debug = 0
+
+# Add Python stack traces to SQL as comment strings (boolean value)
+# Deprecated group/name - [DEFAULT]/sql_connection_trace
+#connection_trace = false
+
+# If set, use this value for pool_timeout with SQLAlchemy (integer value)
+# Deprecated group/name - [DATABASE]/sqlalchemy_pool_timeout
+#pool_timeout = <None>
+
+# Enable the experimental use of database reconnect on connection lost (boolean
+# value)
+#use_db_reconnect = false
+
+# Seconds between retries of a database transaction (integer value)
+#db_retry_interval = 1
+
+# If True, increases the interval between retries of a database operation up to
+# db_max_retry_interval (boolean value)
+#db_inc_retry_interval = true
+
+# If db_inc_retry_interval is set, the maximum seconds between retries of a
+# database operation (integer value)
+#db_max_retry_interval = 10
+
+# Maximum retries in case of connection error or deadlock error before error is
+# raised. Set to -1 to specify an infinite retry count (integer value)
+#db_max_retries = 20
+
+# Optional URL parameters to append onto the connection URL at connect time;
+# specify as param1=value1&param2=value2& (string value)
+#connection_parameters =
+
+
+[dispatcher]
+
+#
+# From monasca_api
+#
+
+# Versions controller (string value)
+versions = monasca_api.v2.reference.versions:Versions
+
+# Version 2.0 controller (string value)
+version_2_0 = monasca_api.v2.reference.version_2_0:Version2
+
+# Metrics controller (string value)
+metrics = monasca_api.v2.reference.metrics:Metrics
+
+# Metrics measurements controller (string value)
+metrics_measurements = monasca_api.v2.reference.metrics:MetricsMeasurements
+
+# Metrics statistics controller (string value)
+metrics_statistics = monasca_api.v2.reference.metrics:MetricsStatistics
+
+# Metrics names controller (string value)
+metrics_names = monasca_api.v2.reference.metrics:MetricsNames
+
+# Alarm definitions controller (string value)
+alarm_definitions = monasca_api.v2.reference.alarm_definitions:AlarmDefinitions
+
+# Alarms controller (string value)
+alarms = monasca_api.v2.reference.alarms:Alarms
+
+# Alarms Count controller (string value)
+alarms_count = monasca_api.v2.reference.alarms:AlarmsCount
+
+# Alarms state history controller (string value)
+alarms_state_history = monasca_api.v2.reference.alarms:AlarmsStateHistory
+
+# Notification Methods controller (string value)
+notification_methods = monasca_api.v2.reference.notifications:Notifications
+
+# Dimension Values controller (string value)
+dimension_values = monasca_api.v2.reference.metrics:DimensionValues
+
+# Dimension Names controller (string value)
+dimension_names = monasca_api.v2.reference.metrics:DimensionNames
+
+# Notifications Type Methods controller (string value)
+notification_method_types = monasca_api.v2.reference.notificationstype:NotificationsType
+
+# Health checks endpoint controller (string value)
+healthchecks = monasca_api.healthchecks:HealthChecks
+
+
+[influxdb]
+
+#
+# From monasca_api
+#
+
+#
+# Database name where metrics are stored
+#  (string value)
+database_name = {{ INFLUX_DB }}
+
+#
+# IP address to Influxdb server
+#  (host address value)
+ip_address = {{ INFLUX_HOST }}
+
+# Port to Influxdb server (port value)
+# Minimum value: 0
+# Maximum value: 65535
+port = {{ INFLUX_PORT }}
+
+#
+# Influxdb user
+#  (string value)
+user = {{ INFLUX_USER }}
+
+#
+# Influxdb password
+#  (string value)
+password = {{ INFLUX_PASSWORD }}
+
+
+[kafka]
+
+#
+# From monasca_api
+#
+
+#
+# Comma separated list of Kafka broker host:port
+#  (list value)
+uri = {{ KAFKA_URI }}
+
+#
+# The topic that metrics will be published to
+#  (string value)
+metrics_topic = metrics
+
+#
+# The topic that events will be published too
+#  (string value)
+#events_topic = events
+
+#
+# The topic that alarm state will be published too
+#  (string value)
+#alarm_state_transitions_topic = alarm-state-transitions
+
+#
+# The group name that this service belongs to
+#  (string value)
+group = api
+
+#
+# The ack time back to kafka.
+#  (integer value)
+#ack_time = 20
+
+#
+# The number of retry when there is a connection error
+#  (integer value)
+max_retry = 1
+
+#
+# The type of posting
+#  (boolean value)
+async = true
+
+#
+# Specify if the message received should be parsed.
+# If True, message will not be parsed, otherwise
+# messages will be parsed
+#  (boolean value)
+compact = true
+
+#
+# The partitions this connection should
+# listen for messages on. Currently does not
+# support multiple partitions.
+# Default is to listen on partition 0
+#  (list value)
+partitions = 0
+
+#
+# Specify if received data should be simply dropped.
+# This parameter is only for testing purposes
+#  (boolean value)
+#drop_data = false
+
+#
+# The wait time when no messages on kafka queue
+#  (integer value)
+# Minimum value: 1
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+wait_time = 1
+
+#
+# Should messages be automatically committed
+#  (boolean value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+#auto_commit = false
+
+
+[messaging]
+
+#
+# From monasca_api
+#
+
+#
+# The message queue driver to use
+#  (string value)
+driver = monasca_api.common.messaging.kafka_publisher:KafkaPublisher
+
+# DEPRECATED:
+# The type of metrics message format to publish to the message queue
+#  (string value)
+# This option is deprecated for removal since 2.1.0.
+# Its value may be silently ignored in the future.
+# Reason:
+# Option is not used anywhere in the codebase
+#metrics_message_format = reference
+
+# DEPRECATED:
+# The type of events message format to publish to the message queue
+#  (string value)
+# This option is deprecated for removal since 2.1.0.
+# Its value may be silently ignored in the future.
+# Reason:
+# Option is not used anywhere in the codebase
+#events_message_format = reference
+
+
+[oslo_policy]
+
+#
+# From oslo.policy
+#
+
+# This option controls whether or not to enforce scope when evaluating
+# policies. If ``True``, the scope of the token used in the request is compared
+# to the ``scope_types`` of the policy being enforced. If the scopes do not
+# match, an ``InvalidScope`` exception will be raised. If ``False``, a message
+# will be logged informing operators that policies are being invoked with
+# mismatching scope (boolean value)
+#enforce_scope = false
+
+# The file that defines policies (string value)
+#policy_file = policy.json
+
+# Default rule. Enforced when a requested rule is not found (string value)
+#policy_default_rule = default
+
+# Directories where policy configuration files are stored. They can be relative
+# to any directory in the search path defined by the config_dir option, or
+# absolute paths. The file defined by policy_file must exist for these
+# directories to be searched.  Missing or empty directories are ignored (multi
+# valued)
+#policy_dirs = policy.d
+
+# Content Type to send and receive data for REST based policy check (string
+# value)
+# Possible values:
+# application/x-www-form-urlencoded - <No description provided>
+# application/json - <No description provided>
+#remote_content_type = application/x-www-form-urlencoded
+
+# server identity verification for REST based policy check (boolean value)
+#remote_ssl_verify_server_crt = false
+
+# Absolute path to ca cert file for REST based policy check (string value)
+#remote_ssl_ca_crt_file = <None>
+
+# Absolute path to client cert for REST based policy check (string value)
+#remote_ssl_client_crt_file = <None>
+
+# Absolute path client key file REST based policy check (string value)
+#remote_ssl_client_key_file = <None>
+
+
+[repositories]
+
+#
+# From monasca_api
+#
+
+#
+# The repository driver to use for metrics
+#  (string value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+metrics_driver = monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository
+
+#
+# The repository driver to use for alarm definitions
+#  (string value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+alarm_definitions_driver = monasca_api.common.repositories.sqla.alarm_definitions_repository:AlarmDefinitionsRepository
+
+#
+# The repository driver to use for alarms
+#  (string value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+alarms_driver = monasca_api.common.repositories.sqla.alarms_repository:AlarmsRepository
+
+#
+# The repository driver to use for notifications
+#  (string value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+notifications_driver = monasca_api.common.repositories.sqla.notifications_repository:NotificationsRepository
+
+#
+# The repository driver to use for notifications
+#  (string value)
+# Advanced Option: intended for advanced users and not used
+# by the majority of users, and might have a significant
+# effect on stability and/or performance.
+notification_method_type_driver = monasca_api.common.repositories.sqla.notification_method_type_repository:NotificationMethodTypeRepository
+
+
+[security]
+
+#
+# From monasca_api
+#
+
+# Roles that are allowed to check the health (list value)
+#healthcheck_roles = @
+
+# Roles that are allowed to check the versions (list value)
+#versions_roles = @
+
+#
+# Roles that are allowed full access to the API
+#  (list value)
+default_authorized_roles = {{ AUTHORIZED_ROLES | default('admin, domainuser, domainadmin, monasca-user') }}
+
+#
+# Roles that are only allowed to POST to the API
+#  (list value)
+agent_authorized_roles = {{ AGENT_AUTHORIZED_ROLES | default('monasca-agent') }}
+
+#
+# Roles that are only allowed to GET from the API
+#  (list value)
+read_only_authorized_roles = {{ READ_ONLY_AUTHORIZED_ROLES | default('monasca-read-only-user') }}
+
+#
+# Roles that are allowed to POST metrics on
+# behalf of another tenant
+#  (list value)
+delegate_authorized_roles = {{ DELEGATE_AUTHORIZED_ROLES | default('admin') }}
+
+[dispatcher]
+driver = v2_reference
+
+[keystone_authtoken]
+auth_type = password
+auth_url = {{ KEYSTONE_IDENTITY_URI }}
+auth_uri = {{ KEYSTONE_AUTH_URI }}
+username = {{ KEYSTONE_ADMIN_USER }}
+password = {{ KEYSTONE_ADMIN_PASSWORD }}
+user_domain_name = Default
+project_name = {{ KEYSTONE_ADMIN_TENANT }}
+project_domain_name = Default
+service_token_roles_required = true
+memcached_servers = {{  MEMCACHED_URI }}
+insecure = false
+cafile =
+certfile =
+keyfile =

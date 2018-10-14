@@ -1,0 +1,15 @@
+bind = '0.0.0.0:{{ MONASCA_CONTAINER_API_PORT }}'
+proc_name = 'monasca-api'
+
+backlog = {{ GUNICORN_BACKLOG | int }}
+workers = {{ GUNICORN_WORKERS | int }}
+worker_class = '{{ GUNICORN_WORKER_CLASS }}'
+worker_connections = '{{ GUNICORN_WORKER_CONNECTIONS }}'
+timeout = {{ GUNICORN_TIMEOUT | int }}
+
+{% if ADD_ACCESS_LOG == true %}
+accesslog = '-'
+{% endif %}
+access_log_format = '{{ ACCESS_LOG_FIELDS }}'
+
+capture_output = True
