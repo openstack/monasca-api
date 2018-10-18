@@ -1,19 +1,12 @@
-=======================
-Contribution Guidelines
-=======================
+==========================
+Contribution documentation
+==========================
 
-In the Contribution Guide, you will find documented policies for
-developing with Monasca. This includes the processes we use for
-blueprints and specs, bugs and other procedural items.
+Kanban Board
+~~~~~~~~~~~~
 
-Monasca, as with all OpenStack projects, is written with the following
-design guidelines in mind:
-
-* **Component based architecture**: Quickly add new behaviors
-* **Highly available**: Scale to very serious workloads
-* **Fault tolerant**: Isolated processes avoid cascading failures
-* **Recoverable**: Failures should be easy to diagnose, debug, and rectify
-* **Open standards**: Be a reference implementation for a community-driven api
+Progress on implementation of important stories in Stein release is tracked in
+`Monasca Board on StoryBoard <https://storyboard.openstack.org/#!/board/111>`_.
 
 Workflow
 ~~~~~~~~
@@ -27,9 +20,6 @@ desires for new features using Storyboard stories. The workflow is very simple:
   gerrit to elaborate on the feature request.
 * Significant features require `release notes`_ to be included when the code is
   merged.
-
-Progress on implementation of important stories in Stein release is tracked in
-`Monasca Board on StoryBoard <https://storyboard.openstack.org/#!/board/111>`_.
 
 .. _bug report:
 
