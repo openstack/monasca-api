@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Deprecated configuration option ``database.url`` has been removed. Please
+    use ``database.connection`` instead.
