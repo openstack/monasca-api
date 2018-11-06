@@ -62,7 +62,9 @@ def get_engine(use_slave=False, connection=None):
     :param connection: The database connection string
     """
     ctxt_mgr = create_context_manager(connection=connection)
-    return ctxt_mgr.get_legacy_facade().get_engine(use_slave=use_slave)
+    if use_slave:
+        return ctxt_mgr.reader.get_engine()
+    return ctxt_mgr.writer.get_engine()
 
 
 class SQLRepository(object):
