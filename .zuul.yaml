@@ -74,7 +74,8 @@
         - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
-        - legacy-monasca-api-maven-build
+        - legacy-monasca-api-maven-build:
+            voting: false
     gate:
       queue: monasca
       jobs:
@@ -82,7 +83,3 @@
         - monasca-tempest-java-influxdb
         - monasca-tempest-python-cassandra
         - monasca-tempest-java-cassandra
-        - legacy-monasca-api-maven-build
-    post:
-      jobs:
-        - legacy-monasca-api-localrepo-upload
