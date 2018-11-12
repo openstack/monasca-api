@@ -79,7 +79,6 @@ pycparser==2.18
 pyflakes==0.8.1
 Pygments==2.2.0
 pyinotify==0.9.6
-pykafka==2.5.0
 PyMySQL==0.7.6
 pyparsing==2.1.0
 pyperclip==1.5.27
