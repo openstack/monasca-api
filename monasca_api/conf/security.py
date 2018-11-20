@@ -25,7 +25,7 @@ security_opts = [
                 help='''
 Roles that are allowed full access to the API
 '''),
-    cfg.ListOpt('agent_authorized_roles', default=['agent'],
+    cfg.ListOpt('agent_authorized_roles', default=['monasca-agent'],
                 help='''
 Roles that are only allowed to POST to the API
 '''),
