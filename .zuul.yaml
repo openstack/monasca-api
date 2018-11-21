@@ -16,13 +16,35 @@
       - openstack/python-monascaclient
       - openstack/tempest
       - openstack/monasca-tempest-plugin
-
     vars:
+      devstack_services:
+        # Disable unneeded services.
+        etcd3: false
+        g-api: false
+        g-reg: false
+        n-api: false
+        n-api-meta: false
+        n-cauth: false
+        n-cond: false
+        n-cpu: false
+        n-novnc: false
+        n-obj: false
+        n-sch: false
+        placement-api: false
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
+        horizon: false
       tox_envlist: all
       tempest_test_regex: monasca_tempest_tests.tests.api
       devstack_plugins:
         monasca-api: git://git.openstack.org/openstack/monasca-api
-        monasca-tempest-plugin: git://git.openstack.org/openstack/monasca-tempest-plugin
     irrelevant-files:
       - ^.*\.rst$
       - ^.*\.md$
