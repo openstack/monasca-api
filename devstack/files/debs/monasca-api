@@ -1,6 +1,7 @@
-openjdk-8-jdk # dist:xenial
-maven # dist:xenial
-jq # dist:xenial
-python-dev # dist:xenial
-build-essential # dist:xenial
-mailutils # dist:xenial
+openjdk-8-jdk # dist:xenial,bionic
+openjdk-8-jre-headless # dist:bionic
+maven # dist:xenial,bionic
+jq # dist:xenial,bionic
+python-dev # dist:xenial,bionic
+build-essential # dist:xenial,bionic
+mailutils # dist:xenial,bionic
