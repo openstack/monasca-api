@@ -39,7 +39,7 @@ class SkippingAuthProtocol(auth_token.AuthProtocol):
     def process_request(self, request):
         path = request.path
         for p in _SKIP_PATH:
-            if path.startswith(p):
+            if path.endswith(p):
                 LOG.debug(
                     ('Request path is %s and it does not require keystone '
                      'communication'), path)
