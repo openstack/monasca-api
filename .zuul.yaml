@@ -30,10 +30,21 @@
       - ^releasenotes/.*$
 
 - job:
-    name: monasca-tempest-python-influxdb
+    name: monasca-tempest-python2-influxdb
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
+        MONASCA_METRICS_DB: influxdb
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
+- job:
+    name: monasca-tempest-python3-influxdb
+    parent: monasca-tempest-base
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: influxdb
@@ -51,7 +62,7 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - job:
-    name: monasca-tempest-python-cassandra
+    name: monasca-tempest-python2-cassandra
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
@@ -61,7 +72,19 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - job:
-    name: monasca-tempest-java-cassandra
+    name: monasca-tempest-python3-cassandra
+    parent: monasca-tempest-base
+    voting: false
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
+        MONASCA_METRICS_DB: cassandra
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
+- job:
+    name: monasca-tempest-python2-java-cassandra
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
@@ -69,6 +92,19 @@
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
+- job:
+    name: monasca-tempest-python3-java-cassandra
+    parent: monasca-tempest-base
+    voting: false
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
+        MONASCA_METRICS_DB: cassandra
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
 
 - project:
     templates:
@@ -82,16 +118,22 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - monasca-tempest-python-influxdb
+        - monasca-tempest-python2-influxdb
+        - monasca-tempest-python3-influxdb
         - monasca-tempest-java-influxdb
-        - monasca-tempest-python-cassandra
-        - monasca-tempest-java-cassandra
+        - monasca-tempest-python2-cassandra
+        - monasca-tempest-python3-cassandra
+        - monasca-tempest-python2-java-cassandra
+        - monasca-tempest-python3-java-cassandra
         - legacy-monasca-api-maven-build:
             voting: false
     gate:
       queue: monasca
       jobs:
-        - monasca-tempest-python-influxdb
+        - monasca-tempest-python2-influxdb
+        - monasca-tempest-python3-influxdb
         - monasca-tempest-java-influxdb
-        - monasca-tempest-python-cassandra
-        - monasca-tempest-java-cassandra
+        - monasca-tempest-python2-cassandra
+        - monasca-tempest-python3-cassandra
+        - monasca-tempest-python2-java-cassandra
+        - monasca-tempest-python3-java-cassandra
