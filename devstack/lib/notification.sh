@@ -46,7 +46,7 @@ install_monasca-notification() {
     if python3_enabled; then
         enable_python3_package monasca-notification
     fi
-    setup_develop ${MONASCA_NOTIFICATION_DIR}
+    setup_develop ${MONASCA_NOTIFICATION_DIR} jira_plugin
     # see devstack/plugin.sh
     install_monasca_common
     install_monasca_statsd
