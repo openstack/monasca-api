@@ -826,10 +826,12 @@ The offset is determined by the ID and/or timestamp values of the last element i
 The offset can take the form of an integer ID, string ID, timestamp, or a combination of both ID and timestamp, but the user should treat the offset as an opaque reference. When using offsets in manually generated URLs, users enter them as strings that look like integers, timestamps, or strings. Future releases may change the type and form of the offsets for each resource.
 
 ## Limit
-The Monasca API has a server-wide default limit that is applied. Users may specify their own limit in the URL, but the server-wide limit may not be exceeded. The Monasca server-wide limit is configured in the Monasca API config file as maxQueryLimit. Users may specify a limit up to the maxQueryLimit.
+The Monasca API has a server-wide default limit that is applied. It is
+hard-coded to `10,000` entries. Users may specify their own limit in the URL,
+but the server-wide limit may not be exceeded, e.g.:
 
 ```
-limit=1000
+limit=5000
 
 ```
 # JSON Results
