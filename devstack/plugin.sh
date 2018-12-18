@@ -166,7 +166,7 @@ function extra_monasca {
     install_monasca_profile
 
     if is_service_enabled horizon; then
-        install_node_nvm
+        install_nodejs
         install_go
         install_monasca_grafana
     fi
@@ -253,7 +253,7 @@ function clean_monasca {
     clean_ui
 
     if is_service_enabled horizon; then
-        clean_node_nvm
+        clean_nodejs
         clean_monasca_grafana
         clean_go
     fi
@@ -451,7 +451,7 @@ function install_monasca_vertica {
 
     echo_summary "Install Monasca Vertica"
 
-    apt_get -y install dialog
+    apt_get install dialog
 
     sudo dpkg --skip-same-version -i /vagrant_home/vertica_${VERTICA_VERSION}_amd64.deb
 
@@ -495,7 +495,7 @@ function install_monasca_cassandra {
 
     REPOS_UPDATED=False
     apt_get_update
-    apt_get -y install cassandra
+    apt_get install cassandra
 
     if [[ ${SERVICE_HOST} ]]; then
 
@@ -566,16 +566,16 @@ function clean_monasca_vertica {
 
     sudo rm -rf /home/dbadmin
 
-    apt_get -y purge dialog
+    apt_get purge dialog
 }
 
 function clean_monasca_cassandra {
 
     echo_summary "Clean Monasca Cassandra"
 
-    apt_get -y purge cassandra
+    apt_get purge cassandra
 
-    apt_get -y autoremove
+    apt_get autoremove
 
     sudo rm -rf /var/lib/cassandra
 
@@ -794,10 +794,10 @@ function install_monasca-api {
         pip_install_gr cassandra-driver
     fi
     if is_service_enabled postgresql; then
-        apt_get -y install libpq-dev
+        apt_get install libpq-dev
         pip_install_gr psycopg2
     elif is_service_enabled mysql; then
-        apt_get -y install libmysqlclient-dev
+        apt_get install libmysqlclient-dev
         pip_install_gr PyMySQL
     fi
 
@@ -955,9 +955,9 @@ function clean_monasca_api_python {
     sudo rm -rf $MONASCA_API_LOG_DIR
 
     if is_service_enabled postgresql; then
-        apt_get -y purge libpq-dev
+        apt_get purge libpq-dev
     elif is_service_enabled mysql; then
-        apt_get -y purge libmysqlclient-dev
+        apt_get purge libmysqlclient-dev
     fi
 
     if [ "$MONASCA_API_USE_MOD_WSGI" == "True" ]; then
@@ -1132,7 +1132,7 @@ function install_monasca_agent {
     if is_service_enabled monasca-agent; then
         echo_summary "Install Monasca monasca_agent"
 
-        apt_get -y install python-yaml libxml2-dev libxslt1-dev
+        apt_get install python-yaml libxml2-dev libxslt1-dev
 
         git_clone $MONASCA_CLIENT_REPO $MONASCA_CLIENT_DIR $MONASCA_CLIENT_BRANCH
         git_clone $MONASCA_AGENT_REPO $MONASCA_AGENT_DIR $MONASCA_AGENT_BRANCH
@@ -1227,34 +1227,22 @@ function clean_monasca_agent {
         [[ -f /etc/systemd/system/monasca-forwarder.service ]] && sudo rm /etc/systemd/system/monasca-forwarder.service
         [[ -f /etc/systemd/system/monasca-statsd.service ]] && sudo rm /etc/systemd/system/monasca-statsd.service
 
-        apt_get -y purge libxslt1-dev
-        apt_get -y purge libxml2-dev
-        apt_get -y purge python-yaml
+        apt_get purge libxslt1-dev
+        apt_get purge libxml2-dev
+        apt_get purge python-yaml
     fi
 }
 
-# install node with nvm, works behind corporate proxy
+# install nodejs and npm packages, works behind corporate proxy
 # and does not result in gnutsl_handshake error
-function install_node_nvm {
+function install_nodejs {
 
-    echo_summary "Install Node ${NODE_JS_VERSION} with NVM ${NVM_VERSION}"
+    echo_summary "Install Node.js"
 
-    local nvm_url=https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh
-
-    local nvm_dest
-    nvm_dest=`get_extra_file ${nvm_url}`
-
-    set -i
-    bash ${nvm_dest}
-    (
-        source "${HOME}"/.nvm/nvm.sh >> /dev/null; \
-            nvm install ${NODE_JS_VERSION}; \
-            nvm use ${NODE_JS_VERSION}; \
-            npm config set registry "http://registry.npmjs.org/"; \
-            npm config set proxy "${HTTP_PROXY}"; \
-            npm set strict-ssl false;
-    )
-    set +i
+    apt_get install nodejs npm
+    npm config set registry "http://registry.npmjs.org/"; \
+    npm config set proxy "${HTTP_PROXY}"; \
+    npm set strict-ssl false;
 }
 
 function init_monasca_grafana {
@@ -1291,14 +1279,10 @@ function install_monasca_grafana {
 
     go run build.go build
 
-    set -i
-
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm config set unsafe-perm true)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm install)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; npm install -g grunt-cli)
-    (source "${HOME}"/.nvm/nvm.sh >> /dev/null; nvm use ${NODE_JS_VERSION}; grunt --force)
-
-    set +i
+    npm config set unsafe-perm true
+    npm install
+    sudo npm install -g grunt-cli
+    grunt --force
 
     cd "${MONASCA_BASE}"
     sudo rm -r grafana
@@ -1326,10 +1310,8 @@ function install_monasca_grafana {
     sudo systemctl enable grafana-server
 }
 
-function clean_node_nvm {
-    sudo rm -rf "${HOME}"/.nvm
-
-    sudo rm -f ${FILES}/nvm_install.sh
+function clean_nodejs {
+    apt_get purge nodejs npm
 }
 
 function clean_monasca_grafana {

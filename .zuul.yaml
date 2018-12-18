@@ -1,6 +1,8 @@
 - job:
     name: monasca-tempest-base
     parent: devstack-tempest
+    description: |
+      Base job for running tempest tests with monasca-api devstack plugin.
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
