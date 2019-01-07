@@ -26,7 +26,7 @@ python3 /mysql_check.py
 # Template all config files before start, it will use env variables.
 # Read usage examples: https://pypi.org/project/Templer/
 echo "Start script: creating config files from templates"
-templer -v -f /etc/monasca/api-config.conf.j2   /etc/monasca/api-config.conf
+templer -v -f /etc/monasca/monasca-api.conf.j2   /etc/monasca/monasca-api.conf
 templer -v -f /etc/monasca/api-config.ini.j2    /etc/monasca/api-config.ini
 templer -v -f /etc/monasca/api-logging.conf.j2  /etc/monasca/api-logging.conf
 templer -v -f /etc/monasca/api-gunicorn.conf.j2 /etc/monasca/api-gunicorn.conf

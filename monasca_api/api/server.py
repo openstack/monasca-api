@@ -100,7 +100,7 @@ def launch(conf):
 def get_wsgi_app(config_base_path=None, **kwargs):
 
     # allow to override names of the configuration files
-    config_file = kwargs.get('config_file', 'api-config.conf')
+    config_file = kwargs.get('config_file', 'monasca-api.conf')
     paste_file = kwargs.get('paste_file', 'api-config.ini')
 
     if config_base_path is None:

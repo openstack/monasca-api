@@ -86,7 +86,7 @@ STAY_ALIVE_ON_FAILURE          false                                            
 
 Provide Configuration templates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* api-config.conf.j2
+* monasca-api.conf.j2
 * api-config.ini.j2
 * api-logging.conf.j2
 

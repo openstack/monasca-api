@@ -53,7 +53,7 @@ author = u'OpenStack Foundation'
 
 # sample config
 config_generator_config_file = [
-    ('config-generator/api-config.conf', '_static/api-config')
+    ('config-generator/monasca-api.conf', '_static/monasca-api')
 ]
 
 # Add any paths that contain templates here, relative to this directory.
