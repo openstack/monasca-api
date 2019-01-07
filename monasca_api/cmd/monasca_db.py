@@ -157,7 +157,7 @@ command_opt = cfg.SubCommandOpt('command',
 def main():
     CONF.register_cli_opt(command_opt)
     CONF(args=sys.argv[1:],
-         default_config_files=monasca_api.config.get_config_file(None),
+         default_config_files=monasca_api.config.get_config_files(),
          prog='api',
          project='monasca',
          version=version.version_str)

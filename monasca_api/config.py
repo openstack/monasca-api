@@ -29,7 +29,7 @@ _CONF_LOADED = False
 _GUNICORN_MARKER = 'gunicorn'
 
 
-def parse_args(argv=None, config_file=None):
+def parse_args(argv=None):
     """Loads application configuration.
 
     Loads entire application configuration just once.
@@ -47,10 +47,10 @@ def parse_args(argv=None, config_file=None):
     args = ([] if _is_running_under_gunicorn() else argv or [])
 
     CONF(args=args,
-         prog='api',
+         prog=sys.argv[1:],
          project='monasca',
          version=version.version_str,
-         default_config_files=get_config_file(config_file),
+         default_config_files=get_config_files(),
          description='RESTful API for alarming in the cloud')
 
     log.setup(CONF,
@@ -62,19 +62,22 @@ def parse_args(argv=None, config_file=None):
     _CONF_LOADED = True
 
 
-def get_config_file(config_file):
-    """Get config file in a format suitable for CONF constructor
+def get_config_files():
+    """Get the possible configuration files accepted by oslo.config
 
-    Returns the config file name as a single element array. If a config file
-    was explicitly, specified, that file's name is returned. If there isn't and a
-    legacy config file is present that one is returned. Otherwise we return
-    None.  This is what the CONF constructor expects for its
-    default_config_files keyword argument.
+    This also includes the deprecated ones
     """
-    if config_file is not None:
-        return [config_file]
-
-    return _get_deprecated_config_file()
+    # default files
+    conf_files = cfg.find_config_files(project='monasca', prog='monasca-api')
+    # deprecated config files (only used if standard config files are not there)
+    if len(conf_files) == 0:
+        for prog_name in ['api', 'api-config']:
+            old_conf_files = cfg.find_config_files(project='monasca', prog=prog_name)
+            if len(old_conf_files) > 0:
+                LOG.warning('Found deprecated old location "{}" '
+                            'of main configuration file'.format(old_conf_files))
+                conf_files += old_conf_files
+    return conf_files
 
 
 def _is_running_under_gunicorn():
@@ -82,23 +85,3 @@ def _is_running_under_gunicorn():
     content = filter(lambda x: x != sys.executable and _GUNICORN_MARKER in x,
                      sys.argv or [])
     return len(list(content) if not isinstance(content, list) else content) > 0
-
-
-def _get_deprecated_config_file():
-    """Get deprecated config file.
-
-    Responsible for keeping  backward compatibility with old name of
-    the configuration file i.e. api-config.conf.
-    New name is => api.conf as prog=api.
-
-    Note:
-        Old configuration file name did not follow a convention
-        oslo_config expects.
-
-    """
-    old_files = cfg.find_config_files(project='monasca', prog='api-config')
-    if old_files is not None and len(old_files) > 0:
-        LOG.warning('Detected old location "/etc/monasca/api-config.conf" '
-                    'of main configuration file')
-        return [old_files[0]]
-    return None
