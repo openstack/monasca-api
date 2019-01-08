@@ -108,6 +108,7 @@ function pre_install_monasca {
     echo_summary "Pre-Installing Monasca Components"
     find_nearest_apache_mirror
     install_gate_config_holder
+    configure_system_encoding_format
     install_kafka
     install_zookeeper
     install_storm
@@ -155,6 +156,14 @@ function configure_monasca {
     configure_monasca_api
     configure_monasca-notification
     configure_monasca-persister
+}
+
+function configure_system_encoding_format {
+    # This is needed to build monasca-common
+    export LANGUAGE=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_TYPE=en_US.UTF-8
 }
 
 function extra_monasca {
