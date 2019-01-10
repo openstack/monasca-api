@@ -1,0 +1,7 @@
+---
+deprecations:
+  - |
+    Configuration file path /etc/monasca/api-config.conf and
+    /etc/monasca/api.conf are deprecated. Use the standard path
+    /etc/monasca/monasca-api.conf or the configuration dir (supported via
+    oslo.config) /etc/monasca/monasca-api.conf.d/any_config_name.conf
