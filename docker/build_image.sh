@@ -44,6 +44,10 @@ set -eo pipefail  # Exit the script if any statement returns error.
 # to provide it as in the following example:
 #   $ ./build_image.sh master master refs/changes/19/595719/3
 
+# Go to folder with Docker files.
+REAL_PATH=$(python -c "import os,sys; print(os.path.realpath('$0'))")
+cd "$(dirname "$REAL_PATH")/../docker/"
+
 [ -z "$DOCKER_IMAGE" ] && \
     DOCKER_IMAGE=$(\grep DOCKER_IMAGE Dockerfile | cut -f2 -d"=")
 
