@@ -294,7 +294,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(or_(ad.c.severity == bindparam(
                     'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
-                    parms['b_severity' + str(i)] = s.encode('utf8')
+                    parms['b_severity' + str(i)] = s if six.PY3 else s.encode('utf-8')
 
             if 'state' in query_parms:
                 query = query.where(a.c.state == bindparam('b_state'))
@@ -505,7 +505,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(ad.c.id == bindparam('b_alarm_definition_id'))
 
             if 'state' in query_parms:
-                parms['b_state'] = query_parms['state'].encode('utf8')
+                parms['b_state'] = query_parms['state'] if six.PY3 else \
+                    query_parms['state'].encode('utf8')
                 query = query.where(a.c.state == bindparam('b_state'))
 
             if 'severity' in query_parms:
@@ -513,23 +514,29 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 query = query.where(or_(ad.c.severity == bindparam(
                     'b_severity' + str(i)) for i in range(len(severities))))
                 for i, s in enumerate(severities):
-                    parms['b_severity' + str(i)] = s.encode('utf8')
+                    parms['b_severity' + str(i)] = s if six.PY3 else s.encode('utf8')
 
             if 'lifecycle_state' in query_parms:
-                parms['b_lifecycle_state'] = query_parms['lifecycle_state'].encode('utf8')
+                parms['b_lifecycle_state'] = query_parms['lifecycle_state'] if six.PY3 else \
+                    query_parms['lifecycle_state'].encode('utf8')
                 query = query.where(a.c.lifecycle_state == bindparam('b_lifecycle_state'))
 
             if 'link' in query_parms:
-                parms['b_link'] = query_parms['link'].encode('utf8')
+                parms['b_link'] = query_parms['link'] if six.PY3 else \
+                    query_parms['link'].encode('utf8')
                 query = query.where(a.c.link == bindparam('b_link'))
 
             if 'state_updated_start_time' in query_parms:
-                parms['b_state_updated_at'] = query_parms['state_updated_start_time'].encode("utf8")
+                date_str = query_parms['state_updated_start_time'] if six.PY3 \
+                    else query_parms['state_updated_start_time'].encode('utf8')
+                date_param = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+                parms['b_state_updated_at'] = date_param
                 query = query.where(a.c.state_updated_at >= bindparam('b_state_updated_at'))
 
             if 'metric_name' in query_parms:
                 query = query.where(a.c.id.in_(self.get_a_am_query))
-                parms['b_md_name'] = query_parms['metric_name'].encode('utf8')
+                parms['b_md_name'] = query_parms['metric_name'] if six.PY3 else \
+                    query_parms['metric_name'].encode('utf8')
 
             if 'metric_dimensions' in query_parms:
                 sub_query = select([a.c.id])
@@ -555,8 +562,10 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                             sub_query_md.c.dimension_set_id ==
                                             mdd.c.metric_dimension_set_id))
 
-                    parms[md_name] = metric_dimension[0].encode('utf8')
-                    parms[md_value] = metric_dimension[1].encode('utf8')
+                    parms[md_name] = metric_dimension[0] if six.PY3 else \
+                        metric_dimension[0].encode('utf8')
+                    parms[md_value] = metric_dimension[1] if six.PY3 else \
+                        metric_dimension[1].encode('utf8')
 
                     sub_query = (sub_query
                                  .select_from(sub_query_from)
@@ -577,5 +586,4 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 parms['b_offset'] = offset
 
             query = query.distinct()
-
             return [dict(row) for row in conn.execute(query, parms).fetchall()]

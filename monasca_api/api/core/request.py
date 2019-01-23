@@ -115,4 +115,4 @@ class Request(falcon.Request):
         return self.context.can(action, target)
 
     def __repr__(self):
-        return '%s, context=%s' % (self.path, self.context)
+        return '%s, context=%s' % (self.path, self.context.to_dict())

@@ -16,6 +16,7 @@
 import datetime
 
 from oslo_utils import uuidutils
+import six
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import notifications_repository as nr
@@ -178,10 +179,11 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def find_notification_by_name(self, tenant_id, name):
+        name = name if six.PY3 else name.encode('utf8')
         with self._db_engine.connect() as conn:
             return conn.execute(self._select_nm_name_query,
                                 b_tenant_id=tenant_id,
-                                b_name=name.encode('utf8')).fetchone()
+                                b_name=name).fetchone()
 
     @sql_repository.sql_try_catch_block
     def update_notification(

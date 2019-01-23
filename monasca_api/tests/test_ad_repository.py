@@ -286,6 +286,26 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
             count_sadd = conn.execute(query_sadd, id=count_sad[0][0]).fetchone()
             self.assertEqual(count_sadd[0], 3)
 
+    def test_should_try_to_create_with_wrong_alarm_action(self):
+        expression = ('AVG(hpcs.compute{flavor_id=777, image_id=888,'
+                      ' metric_name=cpu}) > 10')
+        description = ''
+        match_by = ['flavor_id', 'image_id']
+        sub_expr_list = alarm_expr_parser.AlarmExprParser(expression).sub_expr_list
+        alarm_actions = ['66666666']
+        args = ('555',
+                '90% CPU',
+                expression,
+                sub_expr_list,
+                description,
+                'LOW',
+                match_by,
+                alarm_actions,
+                None,
+                None)
+        self.assertRaises(exceptions.InvalidUpdateException,
+                          self.repo.create_alarm_definition, *args)
+
     def test_should_update(self):
         expression = ''.join(['AVG(hpcs.compute{flavor_id=777, image_id=888,',
                               ' metric_name=mem}) > 20 and',
@@ -556,6 +576,17 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         sub_alarms = self.repo.get_sub_alarm_definitions('asdfasdf')
         self.assertEqual(sub_alarms, [])
 
+    def test_try_update_alarm_that_does_not_exist(self):
+        args = ('koala', '999',
+                None, None,
+                None, True,
+                None, None,
+                None, None,
+                None, None,
+                True)
+        self.assertRaises(exceptions.DoesNotExistException,
+                          self.repo.update_or_patch_alarm_definition, *args)
+
     def test_exists(self):
         alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
                                                     name='90% CPU')
@@ -696,6 +727,38 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                                                     limit=1)
         self.assertEqual(alarmDef1, [])
 
+    def test_should_find_and_sort(self):
+        expected = [{'actions_enabled': False,
+                     'alarm_actions': '29387234,77778687',
+                     'description': None,
+                     'expression': 'AVG(hpcs.compute{flavor_id=777, '
+                     'image_id=888, metric_name=cpu, device=1}) > 10',
+                     'id': '123',
+                     'match_by': 'flavor_id,image_id',
+                     'name': '90% CPU',
+                     'ok_actions': None,
+                     'severity': 'LOW',
+                     'undetermined_actions': None},
+                    {'actions_enabled': False,
+                     'alarm_actions': '29387234,77778687',
+                     'description': None,
+                     'expression': 'AVG(hpcs.compute{flavor_id=777, '
+                     'image_id=888, metric_name=mem}) > 20 and '
+                     'AVG(hpcs.compute) < 100',
+                     'id': '234',
+                     'match_by': 'flavor_id,image_id',
+                     'name': '50% CPU',
+                     'ok_actions': None,
+                     'severity': 'LOW',
+                     'undetermined_actions': None}]
+
+        alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
+                                                    sort_by=['id'])
+        self.assertEqual(expected, alarmDef1)
+        alarmDef2 = self.repo.get_alarm_definitions(tenant_id='bob',
+                                                    sort_by=['name'])
+        self.assertEqual(expected[::-1], alarmDef2)
+
     def test_should_delete_by_id(self):
         self.repo.delete_alarm_definition('bob', '123')
         from monasca_api.common.repositories import exceptions
@@ -720,6 +783,10 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
                                                     limit=1)
         self.assertEqual(alarmDef1, expected)
+
+    def test_try_delete_alarm_that_does_not_exist(self):
+        response = self.repo.delete_alarm_definition('goku', '123')
+        self.assertEqual(False, response)
 
     def test_should_patch_name(self):
         self.run_patch_test(name=u'90% CPU New')

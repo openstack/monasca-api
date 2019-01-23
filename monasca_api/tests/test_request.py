@@ -12,10 +12,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from mock import mock
+from monasca_common.policy import policy_engine as policy
+from oslo_policy import policy as os_policy
 
 from monasca_api.api.core import request
+import monasca_api.common.repositories.constants as const
 from monasca_api.tests import base
 from monasca_api.v2.common import exceptions
 
@@ -23,6 +24,12 @@ from monasca_api.v2.common import exceptions
 class TestRequest(base.BaseApiTestCase):
     def setUp(self):
         super(TestRequest, self).setUp()
+        rules = [
+            os_policy.RuleDefault("example:allowed", "user_id:222"),
+        ]
+        policy.reset()
+        policy.init()
+        policy._ENFORCER.register_defaults(rules)
 
     def test_use_context_from_request(self):
         req = request.Request(
@@ -32,8 +39,10 @@ class TestRequest(base.BaseApiTestCase):
                     'X_AUTH_TOKEN': '111',
                     'X_USER_ID': '222',
                     'X_PROJECT_ID': '333',
-                    'X_ROLES': 'terminator,predator'
-                }
+                    'X_ROLES': 'terminator,predator',
+                },
+                query_string='tenant_id=444'
+
             )
         )
 
@@ -41,6 +50,35 @@ class TestRequest(base.BaseApiTestCase):
         self.assertEqual('222', req.user_id)
         self.assertEqual('333', req.project_id)
         self.assertEqual(['terminator', 'predator'], req.roles)
+        self.assertEqual('444', req.cross_project_id)
+
+    def test_policy_validation_with_target(self):
+        req = request.Request(
+            self.create_environ(
+                path='/',
+                headers={
+                    'X_AUTH_TOKEN': '111',
+                    'X_USER_ID': '222',
+                    'X_PROJECT_ID': '333',
+                }
+            )
+        )
+        target = {'project_id': req.project_id,
+                  'user_id': req.user_id}
+        self.assertEqual(True, req.can('example:allowed', target))
+
+    def test_policy_validation_without_target(self):
+        req = request.Request(
+            self.create_environ(
+                path='/',
+                headers={
+                    'X_AUTH_TOKEN': '111',
+                    'X_USER_ID': '222',
+                    'X_PROJECT_ID': '333',
+                }
+            )
+        )
+        self.assertEqual(True, req.can('example:allowed'))
 
 
 class TestRequestLimit(base.BaseApiTestCase):
@@ -85,8 +123,7 @@ class TestRequestLimit(base.BaseApiTestCase):
             property_wrapper
         )
 
-    @mock.patch('monasca_api.common.repositories.constants.PAGE_LIMIT')
-    def test_default_limit(self, page_limit):
+    def test_default_limit(self):
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -98,4 +135,19 @@ class TestRequestLimit(base.BaseApiTestCase):
                 }
             )
         )
-        self.assertEqual(page_limit, req.limit)
+        self.assertEqual(const.PAGE_LIMIT, req.limit)
+
+    def test_to_big_limit(self):
+        req = request.Request(
+            self.create_environ(
+                path='/',
+                headers={
+                    'X_AUTH_TOKEN': '111',
+                    'X_USER_ID': '222',
+                    'X_PROJECT_ID': '333',
+                    'X_ROLES': 'terminator,predator'
+                },
+                query_string='limit={}'.format(const.PAGE_LIMIT + 1),
+            )
+        )
+        self.assertEqual(const.PAGE_LIMIT, req.limit)

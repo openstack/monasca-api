@@ -78,22 +78,33 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
         from monasca_api.common.repositories.sqla import notifications_repository as nr
 
         self.repo = nr.NotificationsRepository()
+        self.created_at = datetime.datetime.now()
+        self.updated_at = datetime.datetime.now()
         self.default_nms = [{'id': '123',
                              'tenant_id': '444',
                              'name': 'MyEmail',
                              'type': 'EMAIL',
                              'address': 'a@b',
                              'period': 0,
-                             'created_at': datetime.datetime.now(),
-                             'updated_at': datetime.datetime.now()},
+                             'created_at': self.created_at,
+                             'updated_at': self.updated_at},
                             {'id': '124',
                              'tenant_id': '444',
                              'name': 'OtherEmail',
                              'type': 'EMAIL',
                              'address': 'a@b',
                              'period': 0,
-                             'created_at': datetime.datetime.now(),
-                             'updated_at': datetime.datetime.now()}]
+                             'created_at': self.created_at,
+                             'updated_at': self.updated_at},
+                            {'id': '125',
+                             'tenant_id': '444',
+                             'name': 'AEmail',
+                             'type': 'EMAIL',
+                             'address': 'a@b',
+                             'period': 0,
+                             'created_at': self.created_at,
+                             'updated_at': self.updated_at}
+                            ]
 
         with self.engine.connect() as conn:
             conn.execute(self._delete_nm_query)
@@ -157,11 +168,26 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
         self.assertEqual(nm['type'], 'EMAIL')
         self.assertEqual(nm['address'], 'a@b')
 
+    def test_should_find_by_name(self):
+        nms = self.repo.find_notification_by_name('444', 'MyEmail')
+        expected = ('123', '444', 'MyEmail', 'EMAIL', 'a@b', 0,
+                    self.created_at,
+                    self.updated_at)
+        self.assertEqual(expected, nms)
+
     def test_should_find(self):
-        nms = self.repo.list_notifications('444', None, None, 1)
+        nms = self.repo.list_notifications('444', None, None, 2)
         self.assertEqual(nms, self.default_nms)
-        nms = self.repo.list_notifications('444', None, 2, 1)
+        nms = self.repo.list_notifications('444', None, 3, 1)
         self.assertEqual(nms, [])
+
+    def test_should_find_and_sort(self):
+        nms = self.repo.list_notifications('444', ['id'], None, 3)
+        self.assertEqual(self.default_nms, nms)
+
+        nms = self.repo.list_notifications('444', ['name'], None, 3)
+        expected = sorted(self.default_nms, key=lambda k: k['name'])
+        self.assertEqual(expected, nms)
 
     def test_update(self):
         import copy
