@@ -433,11 +433,10 @@ class AlarmsRepository(sql_repository.SQLRepository,
             order_column = columns_mapper.get(col_name, literal_column(col_name))
             if len(col_values) > 1:
                 mode = col_values[1]
-                if mode:
-                    if mode == 'asc':
-                        order_column = asc(order_column)
-                    elif mode == 'desc':
-                        order_column = desc(order_column)
+                if mode == 'asc':
+                    order_column = asc(order_column)
+                elif mode == 'desc':
+                    order_column = desc(order_column)
             order_columns.append(order_column)
             received_cols[col_name] = True
         return order_columns, received_cols

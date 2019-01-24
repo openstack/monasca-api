@@ -584,15 +584,6 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                          b_updated_at=now,
                          b_tenant_id=tenant_id,
                          b_id=alarm_definition_id)
-
-            parms = []
-            for sub_alarm_def_id in old_sub_alarm_defs_by_id.values():
-                parms.append({'b_id': sub_alarm_def_id.id})
-
-            if len(parms) > 0:
-                query = self.update_or_patch_alarm_definition_delete_sad_query
-                conn.execute(query, parms)
-
             parms = []
             for sub_alarm_definition_id, sub_alarm_def in (
                     changed_sub_alarm_defs_by_id.items()):
@@ -604,48 +595,6 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             if len(parms) > 0:
                 query = self.update_or_patch_alarm_definition_update_sad_query
                 conn.execute(query, parms)
-
-            parms = []
-            parms_sadd = []
-            for sub_alarm_def in new_sub_alarm_defs_by_id.values():
-                adi = sub_alarm_def.alarm_definition_id
-                function = sub_alarm_def.function.encode('utf8') if six.PY2 \
-                    else sub_alarm_def.function
-                metric_name = sub_alarm_def.metric_name.encode('utf8') if six.PY2 \
-                    else sub_alarm_def.metric_name
-                operator = sub_alarm_def.operator.encode('utf8') if six.PY2 \
-                    else sub_alarm_def.operator
-                threshold = sub_alarm_def.threshold
-                period = sub_alarm_def.period
-                periods = sub_alarm_def.periods
-                is_deterministic = sub_alarm_def.is_deterministic
-                parms.append({'b_id': sub_alarm_def.id,
-                              'b_alarm_definition_id': adi,
-                              'b_function': function,
-                              'b_metric_name': metric_name,
-                              'b_operator': operator,
-                              'b_threshold': threshold,
-                              'b_period': period,
-                              'b_periods': periods,
-                              'b_is_deterministic': is_deterministic,
-                              'b_created_at': now,
-                              'b_updated_at': now})
-
-                for name, value in sub_alarm_def.dimensions.items():
-                    sadi = sub_alarm_def.id
-                    b_dimension_name = name .encode('utf8') if six.PY2 else name
-                    b_value = value.encode('utf8') if six.PY2 else value
-                    parms_sadd.append({'b_sub_alarm_definition_id': sadi,
-                                       'b_dimension_name': b_dimension_name,
-                                       'b_value': b_value})
-
-            if len(parms) > 0:
-                query = self.update_or_patch_alarm_definition_insert_sad_query
-                conn.execute(query, parms)
-
-            if len(parms_sadd) > 0:
-                query = self.update_or_patch_alarm_definition_insert_sadd_query
-                conn.execute(query, parms_sadd)
 
             # Delete old alarm actions
             if patch:
