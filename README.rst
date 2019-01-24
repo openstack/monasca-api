@@ -34,7 +34,7 @@ kafka server is located:
 ::
 
    /etc/monasca/api-config.ini
-   /etc/monasca/api-config.conf
+   /etc/monasca/monasca-api.conf
    /etc/monasca/api-logging.conf
 
 Once the configuration files are modified to match your environment, you

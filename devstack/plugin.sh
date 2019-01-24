@@ -832,10 +832,10 @@ function configure_monasca_api_python {
         # create configuration files in target locations
         rm -rf $MONASCA_API_CONF $MONASCA_API_PASTE_INI $MONASCA_API_LOGGING_CONF
         $MONASCA_API_BIN_DIR/oslo-config-generator \
-            --config-file $MONASCA_API_DIR/config-generator/api-config.conf \
-            --output-file /tmp/api.conf
+            --config-file $MONASCA_API_DIR/config-generator/monasca-api.conf \
+            --output-file /tmp/monasca-api.conf
 
-        install -m 600 /tmp/api.conf $MONASCA_API_CONF && rm -rf /tmp/api.conf
+        install -m 600 /tmp/monasca-api.conf $MONASCA_API_CONF && rm -rf /tmp/monasca-api.conf
         install -m 600 $MONASCA_API_DIR/etc/api-logging.conf $MONASCA_API_LOGGING_CONF
         install -m 600 $MONASCA_API_DIR/etc/api-config.ini $MONASCA_API_PASTE_INI
         # create configuration files in target locations
@@ -957,7 +957,7 @@ function clean_monasca_api_python {
 
     echo_summary "Clean Monasca monasca_api_python"
 
-    sudo rm -rf /etc/monasca/api-config.conf
+    sudo rm -rf /etc/monasca/monasca-api.conf
     sudo rm -rf /etc/monasca/api-logging.conf
     sudo rm -rf /etc/monasca/api-config.ini
     sudo rm -rf $MON_API_GATE_CONFIGURATION_DIR

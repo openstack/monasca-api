@@ -50,6 +50,7 @@ ENV \
 
 # Copy all neccessary files to proper locations.
 COPY api-* /etc/monasca/
+COPY monasca-api.conf.j2 /etc/monasca/
 
 # Run here all additionals steps your service need post installation.
 # Stay with only one `RUN` and use `&& \` for next steps to don't create
