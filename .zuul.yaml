@@ -154,6 +154,7 @@
         - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
         - monasca-tempest-python3-java-cassandra
+        - monascalog-python3-tempest
         - legacy-monasca-api-maven-build:
             voting: false
     gate:
@@ -166,3 +167,4 @@
         - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
         - monasca-tempest-python3-java-cassandra
+        - monascalog-python3-tempest
