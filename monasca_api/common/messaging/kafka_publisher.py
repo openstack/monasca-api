@@ -36,7 +36,7 @@ class KafkaPublisher(publisher.Publisher):
         self.topic = topic
         self.group = cfg.CONF.kafka.group
         self.wait_time = cfg.CONF.kafka.wait_time
-        self.async = cfg.CONF.kafka.async
+        self.async_ = cfg.CONF.kafka.async
         self.ack_time = cfg.CONF.kafka.ack_time
         self.max_retry = cfg.CONF.kafka.max_retry
         self.auto_commit = cfg.CONF.kafka.auto_commit
