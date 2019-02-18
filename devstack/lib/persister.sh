@@ -31,7 +31,7 @@ if [ "$MONASCA_PERSISTER_IMPLEMENTATION_LANG" == "python" ]; then
     else
         MONASCA_PERSISTER_BIN_DIR=$(get_python_exec_prefix)
     fi
-    MONASCA_PERSISTER_CONF=${MONASCA_PERSISTER_CONF:-$MONASCA_PERSISTER_CONF_DIR/persister.conf}
+    MONASCA_PERSISTER_CONF=${MONASCA_PERSISTER_CONF:-$MONASCA_PERSISTER_CONF_DIR/monasca-persister.conf}
     MONASCA_PERSISTER_LOGGING_CONF=${MONASCA_PERSISTER_LOGGING_CONF:-$MONASCA_PERSISTER_CONF_DIR/persister-logging.conf}
 
     M_REPO_DRIVER_BASE=monasca_persister.repositories.${MONASCA_METRICS_DB}.metrics_repository
@@ -158,9 +158,9 @@ configure_monasca_persister_python() {
 
     $MONASCA_PERSISTER_BIN_DIR/oslo-config-generator \
             --config-file $MONASCA_PERSISTER_DIR/config-generator/persister.conf \
-            --output-file /tmp/persister.conf
+            --output-file /tmp/monasca-persister.conf
 
-    install -m 600 /tmp/persister.conf ${MONASCA_PERSISTER_CONF} && rm -rf /tmp/persister.conf
+    install -m 600 /tmp/monasca-persister.conf ${MONASCA_PERSISTER_CONF} && rm -rf /tmp/monasca-persister.conf
 
     # Set up logging
     iniset $MONASCA_PERSISTER_CONF DEFAULT use_syslog $SYSLOG
