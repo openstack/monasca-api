@@ -2,7 +2,7 @@
 - hosts: all
   tasks:
     - name: Login to Dockerhub
-      command: "docker login -u {{ doker_hub_login.user }} -p {{ doker_hub_login.password }}"
+      command: "docker login -u {{ doker_hub_login_api.user }} -p {{ doker_hub_login_api.password }}"
       no_log: true
 
     - name: List images
