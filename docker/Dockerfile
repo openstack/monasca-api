@@ -29,12 +29,14 @@ ENV \
     MYSQL_PASSWORD=password \
     MYSQL_DB=mon \
     MEMCACHED_URI=memcached:11211 \
+    DEFAULT_REGION=RegionOne \
     KEYSTONE_IDENTITY_URI=http://keystone:35357 \
     KEYSTONE_AUTH_URI=http://keystone:5000 \
     KEYSTONE_ADMIN_USER=admin \
     KEYSTONE_ADMIN_PASSWORD=secretadmin \
     KEYSTONE_ADMIN_TENANT=admin \
     KEYSTONE_ADMIN_DOMAIN=default \
+    KEYSTONE_INSECURE=false \
     GUNICORN_WORKERS=9 \
     GUNICORN_WORKER_CLASS=gevent \
     GUNICORN_WORKER_CONNECTIONS=2000 \
