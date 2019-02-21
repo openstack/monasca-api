@@ -59,6 +59,7 @@ MYSQL_WAIT_RETRIES             24                                               
 MYSQL_WAIT_DELAY               5                                                                       Seconds to wait between attempts
 API_MYSQL_DISABLED             unset                                                                   If 'true' do not use a mysql database. Only metric API will work
 MEMCACHED_URI                  memcached:11211                                                         URI to Keystone authentication cache
+DEFAULT_REGION                 RegionOne                                                               Region that API is running in
 AUTHORIZED_ROLES               admin,domainuser,domainadmin,monasca-user                               Roles for Monasca users (full API access)
 AGENT_AUTHORIZED_ROLES         monasca-agent                                                           Roles for Monasca agents (sending data only)
 READ_ONLY_AUTHORIZED_ROLES     monasca-read-only-user                                                  Roles for read only users
@@ -69,6 +70,8 @@ KEYSTONE_ADMIN_USER            admin                                            
 KEYSTONE_ADMIN_PASSWORD        secretadmin                                                             OpenStack administrator user password
 KEYSTONE_ADMIN_TENANT          admin                                                                   OpenStack administrator tenant name
 KEYSTONE_ADMIN_DOMAIN          default                                                                 OpenStack administrator domain
+KEYSTONE_INSECURE              false                                                                   Allow insecure Keystone connection
+KEYSTONE_REGION_NAME           undefined                                                               Keystone admin account region
 GUNICORN_WORKERS               9                                                                       Number of gunicorn (WSGI-HTTP server) workers
 GUNICORN_WORKER_CLASS          gevent                                                                  Used gunicorn worker class
 GUNICORN_WORKER_CONNECTIONS    2000                                                                    Number of gunicorn worker connections

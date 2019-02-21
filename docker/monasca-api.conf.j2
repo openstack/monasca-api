@@ -7,7 +7,11 @@
 #
 # Region that API is running in
 #  (string value)
-region = useast
+#
+# This option has a sample default set, which means that
+# its actual default value may vary from the one documented
+# below.
+region = {{ DEFAULT_REGION }}
 
 #
 # Valid periods for notification methods
@@ -79,6 +83,39 @@ log_config_append=/etc/monasca/api-logging.conf
 # set (boolean value)
 #use_stderr = false
 
+# Log output to Windows Event Log (boolean value)
+#use_eventlog = false
+
+# The amount of time before the log files are rotated. This option is ignored
+# unless log_rotation_type is setto "interval" (integer value)
+#log_rotate_interval = 1
+
+# Rotation interval type. The time of the last file change (or the time when
+# the service was started) is used when scheduling the next rotation (string
+# value)
+# Possible values:
+# Seconds - <No description provided>
+# Minutes - <No description provided>
+# Hours - <No description provided>
+# Days - <No description provided>
+# Weekday - <No description provided>
+# Midnight - <No description provided>
+#log_rotate_interval_type = days
+
+# Maximum number of rotated log files (integer value)
+#max_logfile_count = 30
+
+# Log file maximum size in MB. This option is ignored if "log_rotation_type" is
+# not set to "size" (integer value)
+#max_logfile_size_mb = 200
+
+# Log rotation type (string value)
+# Possible values:
+# interval - Rotate logs at predefined time intervals.
+# size - Rotate logs once they reach a predefined size.
+# none - Do not rotate log files.
+#log_rotation_type = none
+
 # Format string to use for log messages with context (string value)
 #logging_context_format_string = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s
 
@@ -99,7 +136,7 @@ log_config_append=/etc/monasca/api-logging.conf
 
 # List of package logging levels in logger=LEVEL pairs. This option is ignored
 # if log_config_append is set (list value)
-#default_log_levels = amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,dogpile.core.dogpile=INFO
+#default_log_levels = amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo_policy=INFO,dogpile.core.dogpile=INFO
 
 # Enables or disables publication of error events (boolean value)
 #publish_errors = false
@@ -155,19 +192,6 @@ log_config_append=/etc/monasca/api-logging.conf
 
 
 [database]
-
-#
-# From monasca_api
-#
-
-# DEPRECATED:
-# The SQLAlchemy connection string to use to connect to the database
-#  (string value)
-# This option is deprecated for removal since 1.6.0.
-# Its value may be silently ignored in the future.
-# Reason: Please use database.connection option,database.url is scheduled for
-# removal in Pike release
-#url = $database.connection
 
 #
 # From oslo.db
@@ -454,6 +478,208 @@ wait_time = 1
 #auto_commit = false
 
 
+[keystone_authtoken]
+
+auth_url = {{ KEYSTONE_IDENTITY_URI }}
+username = {{ KEYSTONE_ADMIN_USER }}
+password = {{ KEYSTONE_ADMIN_PASSWORD }}
+user_domain_name = Default
+project_name = {{ KEYSTONE_ADMIN_TENANT }}
+project_domain_name = Default
+
+#
+# From keystonemiddleware.auth_token
+#
+
+# Complete "public" Identity API endpoint. This endpoint should not be an
+# "admin" endpoint, as it should be accessible by all end users.
+# Unauthenticated clients are redirected to this endpoint to authenticate.
+# Although this endpoint should ideally be unversioned, client support in the
+# wild varies. If you're using a versioned v2 endpoint here, then this should
+# *not* be the same endpoint the service user utilizes for validating tokens,
+# because normal end users may not be able to reach that endpoint (string
+# value)
+# Deprecated group/name - [keystone_authtoken]/auth_uri
+www_authenticate_uri = {{ KEYSTONE_AUTH_URI }}
+
+# DEPRECATED: Complete "public" Identity API endpoint. This endpoint should not
+# be an "admin" endpoint, as it should be accessible by all end users.
+# Unauthenticated clients are redirected to this endpoint to authenticate.
+# Although this endpoint should ideally be unversioned, client support in the
+# wild varies. If you're using a versioned v2 endpoint here, then this should
+# *not* be the same endpoint the service user utilizes for validating tokens,
+# because normal end users may not be able to reach that endpoint. This option
+# is deprecated in favor of www_authenticate_uri and will be removed in the S
+# release (string value)
+# This option is deprecated for removal since Queens.
+# Its value may be silently ignored in the future.
+# Reason: The auth_uri option is deprecated in favor of www_authenticate_uri
+# and will be removed in the S  release.
+#auth_uri = <None>
+
+# API version of the admin Identity API endpoint (string value)
+#auth_version = <None>
+
+# Do not handle authorization requests within the middleware, but delegate the
+# authorization decision to downstream WSGI components (boolean value)
+#delay_auth_decision = false
+
+# Request timeout value for communicating with Identity API server (integer
+# value)
+#http_connect_timeout = <None>
+
+# How many times are we trying to reconnect when communicating with Identity
+# API Server (integer value)
+#http_request_max_retries = 3
+
+# Request environment key where the Swift cache object is stored. When
+# auth_token middleware is deployed with a Swift cache, use this option to have
+# the middleware share a caching backend with swift. Otherwise, use the
+# ``memcached_servers`` option instead (string value)
+#cache = <None>
+
+# Required if identity server requires client certificate (string value)
+#certfile = <None>
+
+# Required if identity server requires client certificate (string value)
+#keyfile = <None>
+
+# A PEM encoded Certificate Authority to use when verifying HTTPs connections.
+# Defaults to system CAs (string value)
+#cafile = <None>
+
+# Verify HTTPS connections (boolean value)
+insecure = {{ KEYSTONE_INSECURE }}
+
+# The region in which the identity server can be found (string value)
+{% if KEYSTONE_REGION_NAME is defined %}
+region_name = {{ KEYSTONE_REGION_NAME }}
+{% endif %}
+
+# DEPRECATED: Directory used to cache files related to PKI tokens. This option
+# has been deprecated in the Ocata release and will be removed in the P release
+# (string value)
+# This option is deprecated for removal since Ocata.
+# Its value may be silently ignored in the future.
+# Reason: PKI token format is no longer supported.
+#signing_dir = <None>
+
+# Optionally specify a list of memcached server(s) to use for caching. If left
+# undefined, tokens will instead be cached in-process (list value)
+# Deprecated group/name - [keystone_authtoken]/memcache_servers
+memcached_servers = {{ MEMCACHED_URI }}
+
+# In order to prevent excessive effort spent validating tokens, the middleware
+# caches previously-seen tokens for a configurable duration (in seconds). Set
+# to -1 to disable caching completely (integer value)
+#token_cache_time = 300
+
+# DEPRECATED: Determines the frequency at which the list of revoked tokens is
+# retrieved from the Identity service (in seconds). A high number of revocation
+# events combined with a low cache duration may significantly reduce
+# performance. Only valid for PKI tokens. This option has been deprecated in
+# the Ocata release and will be removed in the P release (integer value)
+# This option is deprecated for removal since Ocata.
+# Its value may be silently ignored in the future.
+# Reason: PKI token format is no longer supported.
+#revocation_cache_time = 10
+
+# (Optional) If defined, indicate whether token data should be authenticated or
+# authenticated and encrypted. If MAC, token data is authenticated (with HMAC)
+# in the cache. If ENCRYPT, token data is encrypted and authenticated in the
+# cache. If the value is not one of these options or empty, auth_token will
+# raise an exception on initialization (string value)
+# Possible values:
+# None - <No description provided>
+# MAC - <No description provided>
+# ENCRYPT - <No description provided>
+#memcache_security_strategy = None
+
+# (Optional, mandatory if memcache_security_strategy is defined) This string is
+# used for key derivation (string value)
+#memcache_secret_key = <None>
+
+# (Optional) Number of seconds memcached server is considered dead before it is
+# tried again (integer value)
+#memcache_pool_dead_retry = 300
+
+# (Optional) Maximum total number of open connections to every memcached server
+# (integer value)
+#memcache_pool_maxsize = 10
+
+# (Optional) Socket timeout in seconds for communicating with a memcached
+# server (integer value)
+#memcache_pool_socket_timeout = 3
+
+# (Optional) Number of seconds a connection to memcached is held unused in the
+# pool before it is closed (integer value)
+#memcache_pool_unused_timeout = 60
+
+# (Optional) Number of seconds that an operation will wait to get a memcached
+# client connection from the pool (integer value)
+#memcache_pool_conn_get_timeout = 10
+
+# (Optional) Use the advanced (eventlet safe) memcached client pool. The
+# advanced pool will only work under python 2.x (boolean value)
+#memcache_use_advanced_pool = false
+
+# (Optional) Indicate whether to set the X-Service-Catalog header. If False,
+# middleware will not ask for service catalog on token validation and will not
+# set the X-Service-Catalog header (boolean value)
+#include_service_catalog = true
+
+# Used to control the use and type of token binding. Can be set to: "disabled"
+# to not check token binding. "permissive" (default) to validate binding
+# information if the bind type is of a form known to the server and ignore it
+# if not. "strict" like "permissive" but if the bind type is unknown the token
+# will be rejected. "required" any form of token binding is needed to be
+# allowed. Finally the name of a binding method that must be present in tokens
+# (string value)
+#enforce_token_bind = permissive
+
+# DEPRECATED: If true, the revocation list will be checked for cached tokens.
+# This requires that PKI tokens are configured on the identity server (boolean
+# value)
+# This option is deprecated for removal since Ocata.
+# Its value may be silently ignored in the future.
+# Reason: PKI token format is no longer supported.
+#check_revocations_for_cached = false
+
+# DEPRECATED: Hash algorithms to use for hashing PKI tokens. This may be a
+# single algorithm or multiple. The algorithms are those supported by Python
+# standard hashlib.new(). The hashes will be tried in the order given, so put
+# the preferred one first for performance. The result of the first hash will be
+# stored in the cache. This will typically be set to multiple values only while
+# migrating from a less secure algorithm to a more secure one. Once all the old
+# tokens are expired this option should be set to a single value for better
+# performance (list value)
+# This option is deprecated for removal since Ocata.
+# Its value may be silently ignored in the future.
+# Reason: PKI token format is no longer supported.
+#hash_algorithms = md5
+
+# A choice of roles that must be present in a service token. Service tokens are
+# allowed to request that an expired token can be used and so this check should
+# tightly control that only actual services should be sending this token. Roles
+# here are applied as an ANY check so any role in this list must be present.
+# For backwards compatibility reasons this currently only affects the
+# allow_expired check (list value)
+#service_token_roles = service
+
+# For backwards compatibility reasons we must let valid service tokens pass
+# that don't pass the service_token_roles check as valid. Setting this true
+# will become the default in a future release and should be enabled if possible
+# (boolean value)
+service_token_roles_required = true
+
+# Authentication type to load (string value)
+# Deprecated group/name - [keystone_authtoken]/auth_plugin
+auth_type = password
+
+# Config Section from which to load plugin specific options (string value)
+#auth_section = <None>
+
+
 [messaging]
 
 #
@@ -610,22 +836,3 @@ read_only_authorized_roles = {{ READ_ONLY_AUTHORIZED_ROLES | default('monasca-re
 # behalf of another tenant
 #  (list value)
 delegate_authorized_roles = {{ DELEGATE_AUTHORIZED_ROLES | default('admin') }}
-
-[dispatcher]
-driver = v2_reference
-
-[keystone_authtoken]
-auth_type = password
-auth_url = {{ KEYSTONE_IDENTITY_URI }}
-auth_uri = {{ KEYSTONE_AUTH_URI }}
-username = {{ KEYSTONE_ADMIN_USER }}
-password = {{ KEYSTONE_ADMIN_PASSWORD }}
-user_domain_name = Default
-project_name = {{ KEYSTONE_ADMIN_TENANT }}
-project_domain_name = Default
-service_token_roles_required = true
-memcached_servers = {{  MEMCACHED_URI }}
-insecure = false
-cafile =
-certfile =
-keyfile =
