@@ -148,14 +148,13 @@ function install_monasca {
 
 function configure_monasca {
     echo_summary "Configuring Monasca"
-    #(trebskit) Installing should happen in post-config phase
-    # at this point databases is already configured
-    install_schema
+
     configure_storm
     configure_ui
     configure_monasca_api
     configure_monasca-notification
     configure_monasca-persister
+    install_schema
 }
 
 function configure_system_encoding_format {
@@ -653,17 +652,9 @@ function install_schema_kafka_topics {
 function install_schema_alarm_database {
     local databaseName="mon"
 
-    # copy the file with the $DATABASE_TYPE to just know what DB is used
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql
-    sudo ln -sf $MONASCA_SCHEMA_DIR/mon_$DATABASE_TYPE.sql $MONASCA_SCHEMA_DIR/mon.sql
-    sudo chmod 0644 $MONASCA_SCHEMA_DIR/mon.sql
-    sudo chown root:root $MONASCA_SCHEMA_DIR/mon.sql
-
-    recreate_database $databaseName
-    if is_service_enabled mysql; then
-        sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST < $MONASCA_SCHEMA_DIR/mon.sql
-    elif is_service_enabled postgresql; then
-        sudo -u root sudo -u postgres -i psql -d $databaseName -f $MONASCA_SCHEMA_DIR/mon.sql
+    if is_service_enabled mysql postgresql; then
+        recreate_database $databaseName
+        $MONASCA_API_BIN_DIR/monasca_db upgrade
     fi
 }
 

@@ -34,8 +34,7 @@ def upgrade():
     op.add_column(
         'sub_alarm',
         sa.Column('state',
-                  sa.dialects.mysql.VARCHAR(length=20,
-                                            collate='utf8mb4_unicode_ci'),
+                  sa.String(length=20),
                   sa.ForeignKey('alarm_state.name'),
                   nullable=False,
                   server_default='OK'))
