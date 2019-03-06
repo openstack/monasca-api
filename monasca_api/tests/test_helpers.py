@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from falcon import errors
 from falcon import testing
 
 from monasca_common.policy import policy_engine as policy
@@ -20,6 +21,55 @@ from oslo_policy import policy as os_policy
 from monasca_api.api.core import request
 from monasca_api.tests import base
 import monasca_api.v2.reference.helpers as helpers
+
+from monasca_common.rest import utils as rest_utils
+
+
+class TestHelpersFunction(base.BaseTestCase):
+
+    def test_from_json(self):
+        body_json = {'test_body': 'test'}
+        req = request.Request(
+            testing.create_environ(
+                body=rest_utils.as_json(body_json),
+            )
+        )
+        response = helpers.from_json(req)
+        self.assertEqual(body_json, response)
+
+    def test_from_json_incorrect_message(self):
+        req = request.Request(
+            testing.create_environ(
+                body='incorrect message',
+            )
+        )
+        self.assertRaises(errors.HTTPBadRequest, helpers.from_json, req)
+
+    def test_to_json(self):
+        test_dict = {'test_body': 'test'}
+        expected_json = '{"test_body":"test"}'
+        response = helpers.to_json(test_dict)
+        self.assertEqual(expected_json, response)
+
+    def test_validate_json_content_type(self):
+        req = request.Request(
+            testing.create_environ(
+                headers={'Content-Type': 'application/json'}
+            )
+        )
+        helpers.validate_json_content_type(req)
+
+    def test_validate_json_content_type_incorrect_content_type(self):
+        req = request.Request(
+            testing.create_environ(
+                headers={'Content-Type': 'multipart/form-data'}
+            )
+        )
+        self.assertRaises(errors.HTTPBadRequest, helpers.validate_json_content_type, req)
+
+    def test_validate_json_content_type_missing_content_type(self):
+        req = request.Request(testing.create_environ())
+        self.assertRaises(errors.HTTPBadRequest, helpers.validate_json_content_type, req)
 
 
 class TestGetXTenantOrTenantId(base.BaseApiTestCase):
