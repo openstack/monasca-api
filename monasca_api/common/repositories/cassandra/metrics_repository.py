@@ -119,7 +119,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             else:
                 auth_provider = None
 
-            self.cluster = Cluster(self.conf.cassandra.contact_points, auth_provider=auth_provider)
+            self.cluster = Cluster(self.conf.cassandra.contact_points,
+                                   port=self.conf.cassandra.port, auth_provider=auth_provider)
             self.session = self.cluster.connect(self.conf.cassandra.keyspace)
 
             self.dim_val_by_metric_stmt = self.session.prepare(DIMENSION_VALUE_BY_METRIC_CQL)

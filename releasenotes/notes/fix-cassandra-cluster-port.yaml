@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    User can configure Cassandra cluster port via configuration option. Default value for port number is ``9042``.

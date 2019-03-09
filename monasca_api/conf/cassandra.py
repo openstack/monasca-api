@@ -25,6 +25,10 @@ cassandra_opts = [
                 help='''
 Comma separated list of Cassandra node IP addresses
 '''),
+    cfg.PortOpt('port', default=9042,
+                help='''
+Cassandra port number
+'''),
     cfg.StrOpt('keyspace', default='monasca',
                help='''
 keyspace where metric are stored
