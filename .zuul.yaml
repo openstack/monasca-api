@@ -156,8 +156,6 @@
         - monasca-tempest-python3-java-cassandra
         - monascalog-python3-tempest
         - docker-build-monasca-service
-        - legacy-monasca-api-maven-build:
-            voting: false
     gate:
       queue: monasca
       jobs:
