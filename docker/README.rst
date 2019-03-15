@@ -45,11 +45,16 @@ KAFKA_WAIT_FOR_TOPICS          alarm-state-transitions,metrics                  
 KAFKA_WAIT_RETRIES 	           24                                                                      Number of kafka connect attempts
 KAFKA_WAIT_DELAY               5                                                                       Seconds to wait between attempts
 MONASCA_CONTAINER_API_PORT     8070                                                                    The port from the metric pipeline endpoint
+DATABASE_BACKEND               influxdb                                                                Select for backend database
 INFLUX_HOST                    influxdb                                                                The host for influxdb
 INFLUX_PORT                    8086                                                                    The port for influxdb
 INFLUX_USER                    mon_api                                                                 The influx username
 INFLUX_PASSWORD                password                                                                The influx password
 INFLUX_DB                      mon                                                                     The influx database name
+CASSANDRA_CONTACT_POINTS       cassandra                                                               Cassandra node addresses
+CASSANDRA_PORT                 9042                                                                    Cassandra port number
+CASSANDRA_USER                 mon_persister                                                           Cassandra user name
+CASSANDRA_PASSWORD             password                                                                Cassandra password
 MYSQL_DB_HOST                  mysql                                                                   The host for MySQL
 MYSQL_DB_PORT                  3306                                                                    The port for MySQL
 MYSQL_DB_USERNAME              monapi                                                                  The MySQL username
