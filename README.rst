@@ -64,7 +64,7 @@ directory of this project
 
    $ tox -e py27
 
-Start the Server – for Apache
+Start the Server - for Apache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To start the server using Apache: create a modwsgi file, create a
