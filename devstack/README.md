@@ -48,7 +48,7 @@ To run Monasca in DevStack, do the following three steps.
     \# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
 
     \# This line will enable all of Monasca.
-    enable_plugin monasca-api git://git.openstack.org/openstack/monasca-api
+    enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
 
     \# END DEVSTACK LOCAL.CONF CONTENTS
 
