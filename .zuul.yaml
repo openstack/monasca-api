@@ -46,7 +46,7 @@
       tox_envlist: all
       tempest_test_regex: monasca_tempest_tests.tests.api
       devstack_plugins:
-        monasca-api: git://git.openstack.org/openstack/monasca-api
+        monasca-api: https://git.openstack.org/openstack/monasca-api
       zuul_copy_output:
         /var/log/kafka: logs
         /etc/kafka/server.properties: logs
