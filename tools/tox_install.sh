@@ -11,7 +11,7 @@ requirements_installed=$(echo "import openstack_requirements" | python 2>/dev/nu
 
 set -e
 
-git config --global url.https://git.openstack.org/.insteadOf git://git.openstack.org/
+git config --global url.https://git.openstack.org/.insteadOf https://git.openstack.org/
 
 CONSTRAINTS_FILE=$1
 shift
@@ -35,7 +35,7 @@ elif [ -x "$ZUUL_CLONER" ]; then
     $ZUUL_CLONER --cache-dir \
         /opt/git \
         --branch $BRANCH_NAME \
-        git://git.openstack.org \
+        https://git.openstack.org \
         openstack/requirements
     cd openstack/requirements
     $install_cmd -e .
