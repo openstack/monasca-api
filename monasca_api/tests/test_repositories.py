@@ -335,6 +335,51 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
                 u'hosttype': u'native'
             }}], result)
 
+    # As Cassandra allows sparse data, it is possible to have a missing metric_id
+    @patch("monasca_api.common.repositories.cassandra."
+           "metrics_repository.Cluster.connect")
+    def test_list_metrics_empty_metric_id(self, cassandra_connect_mock):
+        cassandra_session_mock = cassandra_connect_mock.return_value
+        cassandra_future_mock = cassandra_session_mock.execute_async.return_value
+
+        Metric = namedtuple('Metric', 'metric_id metric_name dimensions')
+
+        cassandra_future_mock.result.return_value = [
+            Metric(
+                metric_id=None,
+                metric_name='disk.space_used_perc',
+                dimensions=[
+                    'device\trootfs',
+                    'hostname\thost0',
+                    'hosttype\tnative',
+                    'mount_point\t/']
+            )
+        ]
+
+        repo = cassandra_repo.MetricsRepository()
+
+        result = repo.list_metrics(
+            "0b5e7d8c43f74430add94fba09ffd66e",
+            "region",
+            name="disk.space_user_perc",
+            dimensions={
+                "hostname": "host0",
+                "hosttype": "native",
+                "mount_point": "/",
+                "device": "rootfs"},
+            offset=None,
+            limit=1)
+
+        self.assertEqual([{
+            u'id': None,
+            u'name': u'disk.space_used_perc',
+            u'dimensions': {
+                u'device': u'rootfs',
+                u'hostname': u'host0',
+                u'mount_point': u'/',
+                u'hosttype': u'native'
+            }}], result)
+
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metric_names(self, cassandra_connect_mock):
