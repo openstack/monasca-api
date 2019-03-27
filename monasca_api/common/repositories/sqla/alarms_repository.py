@@ -16,6 +16,8 @@
 from datetime import datetime
 from time import time
 
+import six
+
 from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.sqla import models
@@ -522,12 +524,26 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 sub_query_md_base = select([md.c.dimension_set_id]).select_from(md)
 
                 for i, metric_dimension in enumerate(query_parms['metric_dimensions'].items()):
+                    dimension_value = metric_dimension[1] if six.PY3 else \
+                        metric_dimension[1].encode('utf8')
+
+                    if '|' in dimension_value:
+                        dimension_value = tuple(dimension_value.split('|'))
+
                     md_name = "b_md_name_{}".format(i)
                     md_value = "b_md_value_{}".format(i)
 
                     sub_query_md = (sub_query_md_base
-                                    .where(md.c.name == bindparam(md_name))
-                                    .where(md.c.value == bindparam(md_value))
+                                    .where(md.c.name == bindparam(md_name)))
+
+                    if isinstance(dimension_value, tuple):
+                        sub_query_md = (sub_query_md
+                                        .where(md.c.value.op('IN')(bindparam(md_value))))
+                    else:
+                        sub_query_md = (sub_query_md
+                                        .where(md.c.value == bindparam(md_value)))
+
+                    sub_query_md = (sub_query_md
                                     .distinct()
                                     .alias('md_{}'.format(i)))
 
@@ -537,7 +553,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                             mdd.c.metric_dimension_set_id))
 
                     parms[md_name] = metric_dimension[0].encode('utf8')
-                    parms[md_value] = metric_dimension[1].encode('utf8')
+                    parms[md_value] = dimension_value
 
                     sub_query = (sub_query
                                  .select_from(sub_query_from)
