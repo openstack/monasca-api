@@ -2873,7 +2873,7 @@ None
 #### Query Parameters
 * alarm_definition_id (string, optional) - Alarm definition ID to filter by.
 * metric_name (string(255), optional) - Name of metric to filter by.
-* metric_dimensions ({string(255): string(255)}, optional) - Dimensions of metrics to filter by specified as a comma separated array of (key, value) pairs as `key1:value1,key1:value1,...`
+* metric_dimensions ({string(255): string(255)}, optional) - One or more dimensions of metrics to filter by specified as a comma separated array of (key, value or multiple values sperated by `|`) pairs as `key1:value1,key2:value2,key3:value3|value4,...`
 * state (string, optional) - State of alarm to filter by, either `OK`, `ALARM` or `UNDETERMINED`.
 * severity (string, optional) - One or more severities to filter by, separated with `|`, ex. `severity=LOW|MEDIUM`.
 * lifecycle_state (string(50), optional) - Lifecycle state to filter by.
