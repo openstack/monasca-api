@@ -1,6 +1,6 @@
 # Monasca DevStack Plugin
 
-The Monasca DevStack plugin currently only works on Ubuntu 16.04 (Xenial).
+The Monasca DevStack plugin currently only works on Ubuntu 18.04 (Bionic).
 More Linux Distributions will be supported in the future.
 
 Running the Monasca DevStack plugin requires a machine with 10GB of RAM.
