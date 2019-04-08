@@ -162,7 +162,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
                 metric[u'dimensions'] = dimensions
 
-                metric[u'id'] = binascii.hexlify(bytearray(metric_hash))
+                try:
+                    metric[u'id'] = binascii.hexlify(bytearray(metric_hash))
+
+                except TypeError as terr:
+                    LOG.exception("metric_hash missing, using None as "
+                                  "metric[id]. ({})".format(terr))
+                    metric[u'id'] = None
 
                 json_metric_list.append(metric)
 
