@@ -277,6 +277,15 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             pair = d.split('\t')
             dim_map[pair[0]] = pair[1]
 
+        if row.metric_id is None:
+            LOG.error(
+                'Metric is missing metric_id, using metric_id=None'
+                ' name: {}, dimensions: {}'.format(
+                    row.metric_name, row.dimensions))
+            return {'id': None,
+                    'name': row.metric_name,
+                    'dimensions': dim_map}
+
         metric = {'id': binascii.hexlify(bytearray(row.metric_id)),
                   'name': row.metric_name,
                   'dimensions': dim_map}
