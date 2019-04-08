@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Allow metric_dimensions filter to filter on multiple dimension values,
+    on alarms count endpoint (IE metric_dimension=hostname:host1|host2).
+    This brings the query parameters into parity between the alarms list
+    and alarms count endpoints. This also restores functionality that was
+    available on the deprecated java api.
