@@ -155,7 +155,7 @@
         - monasca-tempest-python2-java-cassandra
         - monasca-tempest-python3-java-cassandra
         - monascalog-python3-tempest
-        - docker-build-monasca-service
+        - build-monasca-docker-image
     gate:
       queue: monasca
       jobs:
@@ -169,17 +169,17 @@
         - monascalog-python3-tempest
     post:
       jobs:
-        - docker-publish-monasca-api
+        - publish-monasca-api-docker-image
     periodic:
       jobs:
-        - docker-publish-monasca-api
+        - publish-monasca-api-docker-image
     release:
       jobs:
-        - docker-publish-monasca-api
+        - publish-monasca-api-docker-image
 
 - job:
-    name: docker-publish-monasca-api
-    parent: docker-build-monasca-service
+    name: publish-monasca-api-docker-image
+    parent: build-monasca-docker-image
     post-run: playbooks/docker-publish.yml
     required-projects:
       - openstack/monasca-common
