@@ -61,6 +61,9 @@ dispatcher_opts = [
                default='monasca_api.v2.reference.'
                        'notificationstype:NotificationsType',
                help='Notifications Type Methods controller'),
+    cfg.StrOpt('logs',
+               default='monasca_api.v2.reference.logs:Logs',
+               help='Logs controller'),
     cfg.StrOpt('healthchecks',
                default='monasca_api.healthchecks:HealthChecks',
                help='Health checks endpoint controller')

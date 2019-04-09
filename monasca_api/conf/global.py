@@ -27,7 +27,13 @@ Region that API is running in
                 item_type=int,
                 help='''
 Valid periods for notification methods
-''')
+'''),
+    cfg.BoolOpt('enable_metrics_api', default='true',
+                help='''
+Enable Metrics api endpoints'''),
+    cfg.BoolOpt('enable_logs_api', default='false',
+                help='''
+Enable Logs api endpoints''')
 ]
 
 

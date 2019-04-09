@@ -1,0 +1,11 @@
+
+features:
+  - |
+    Merge monasca-log-api source code into the monasca-api and enable logs endpoints.
+  - |
+    Introduce configuration options that allow to enable/disable metrics and logs endpoints.
+
+other:
+  - |
+    Unified response when content-type is incorect. Changed response for log part from 415 to
+    400 (Bad request, message - Bad content type. Must be application/json).
