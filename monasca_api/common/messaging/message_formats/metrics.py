@@ -14,7 +14,7 @@
 
 from oslo_utils import timeutils
 
-from monasca_common.rest import utils as rest_utils
+from monasca_api.common.rest import utils as rest_utils
 
 
 def transform(metrics, tenant_id, region):

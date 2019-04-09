@@ -14,11 +14,11 @@
 # under the License.
 from falcon import testing
 
-from monasca_common.policy import policy_engine as policy
 from oslo_context import context
 from oslo_policy import policy as os_policy
 
 from monasca_api.api.core import request
+from monasca_api.common.policy import policy_engine as policy
 from monasca_api.policies import roles_list_to_check_str
 from monasca_api.tests import base
 

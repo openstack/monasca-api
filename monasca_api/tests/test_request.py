@@ -12,10 +12,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from monasca_common.policy import policy_engine as policy
 from oslo_policy import policy as os_policy
 
 from monasca_api.api.core import request
+from monasca_api.common.policy import policy_engine as policy
 import monasca_api.common.repositories.constants as const
 from monasca_api.tests import base
 from monasca_api.v2.common import exceptions

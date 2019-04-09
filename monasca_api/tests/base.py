@@ -18,7 +18,7 @@ import os
 import falcon
 from falcon import testing
 import fixtures
-from monasca_common.policy import policy_engine as policy
+from monasca_api.common.policy import policy_engine as policy
 from oslo_config import cfg
 from oslo_config import fixture as oo_cfg
 from oslo_context import fixture as oo_ctx

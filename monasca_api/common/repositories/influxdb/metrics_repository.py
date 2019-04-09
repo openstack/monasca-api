@@ -24,7 +24,7 @@ from oslo_utils import timeutils
 import requests
 from six import PY3
 
-from monasca_common.rest import utils as rest_utils
+from monasca_api.common.rest import utils as rest_utils
 
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories import metrics_repository
