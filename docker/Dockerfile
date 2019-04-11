@@ -19,11 +19,16 @@ ENV \
     KAFKA_URI=kafka:9092 \
     KAFKA_WAIT_FOR_TOPICS=alarm-state-transitions,metrics \
     MONASCA_CONTAINER_API_PORT=8070 \
+    DATABASE_BACKEND=influxdb \
     INFLUX_HOST=influxdb \
     INFLUX_PORT=8086 \
     INFLUX_USER=mon_api \
     INFLUX_PASSWORD=password \
     INFLUX_DB=mon \
+    CASSANDRA_CONTACT_POINTS=cassandra \
+    CASSANDRA_PORT=9042 \
+    CASSANDRA_USER=mon_persister \
+    CASSANDRA_PASSWORD=password \
     MYSQL_HOST=mysql \
     MYSQL_USER=monapi \
     MYSQL_PASSWORD=password \

@@ -173,22 +173,28 @@ log_config_append=/etc/monasca/api-logging.conf
 #
 # Comma separated list of Cassandra node IP addresses
 #  (list value)
-#contact_points = 127.0.0.1
+contact_points = {{ CASSANDRA_CONTACT_POINTS | default('127.0.0.1') }}
+
+#
+# Port to Cassandra server
+#  (port value)
+port = {{ CASSANDRA_PORT | default('9042') }}
 
 #
 # keyspace where metric are stored
 #  (string value)
-#keyspace = monasca
+keyspace = monasca
 
 #
 # Cassandra user for monasca-api service
 #  (string value)
-#user =
+user = {{ CASSANDRA_USER }}
 
 #
 # Cassandra user password for monasca-api service
 #  (string value)
-#password =
+password = {{ CASSANDRA_PASSWORD }}
+
 
 
 [database]
@@ -769,7 +775,11 @@ driver = monasca_api.common.messaging.kafka_publisher:KafkaPublisher
 # Advanced Option: intended for advanced users and not used
 # by the majority of users, and might have a significant
 # effect on stability and/or performance.
+{% if DATABASE_BACKEND | lower == 'cassandra' %}
+metrics_driver = monasca_api.common.repositories.cassandra.metrics_repository:MetricsRepository
+{% else %}
 metrics_driver = monasca_api.common.repositories.influxdb.metrics_repository:MetricsRepository
+{% endif %}
 
 #
 # The repository driver to use for alarm definitions
