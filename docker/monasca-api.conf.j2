@@ -486,9 +486,6 @@ password = {{ KEYSTONE_ADMIN_PASSWORD }}
 user_domain_name = Default
 project_name = {{ KEYSTONE_ADMIN_TENANT }}
 project_domain_name = Default
-{% if KEYSTONE_REGION_NAME is defined %}
-region_name = {{ KEYSTONE_REGION_NAME }}
-{% endif %}
 
 #
 # From keystonemiddleware.auth_token
