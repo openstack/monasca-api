@@ -27,6 +27,7 @@ ENV \
     INFLUX_DB=mon \
     CASSANDRA_CONTACT_POINTS=cassandra \
     CASSANDRA_PORT=9042 \
+    CASSANDRA_KEY_SPACE=monasca \
     CASSANDRA_USER=mon_persister \
     CASSANDRA_PASSWORD=password \
     MYSQL_HOST=mysql \

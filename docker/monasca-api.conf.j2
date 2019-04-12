@@ -183,7 +183,7 @@ port = {{ CASSANDRA_PORT | default('9042') }}
 #
 # keyspace where metric are stored
 #  (string value)
-keyspace = monasca
+keyspace = {{ CASSANDRA_KEY_SPACE }}
 
 #
 # Cassandra user for monasca-api service
