@@ -41,6 +41,10 @@ Cassandra user for monasca-api service
                help='''
 Cassandra user password for monasca-api service
 '''),
+    cfg.IntOpt('connection_timeout', default=5,
+               help='''
+Cassandra timeout in seconds when creating a new connection
+'''),
     cfg.StrOpt('local_data_center', default='',
                help='''
 Cassandra local data center name

@@ -124,6 +124,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             self.cluster = Cluster(self.conf.cassandra.contact_points,
                                    port=self.conf.cassandra.port,
                                    auth_provider=auth_provider,
+                                   connect_timeout=self.conf.cassandra.connection_timeout,
                                    load_balancing_policy=TokenAwarePolicy(
                                        DCAwareRoundRobinPolicy(
                                            local_dc=self.conf.cassandra.local_data_center))

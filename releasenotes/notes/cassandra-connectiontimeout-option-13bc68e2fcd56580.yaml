@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Support cassandra connection timeout option which set timeout when creating a new connection.
