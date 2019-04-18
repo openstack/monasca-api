@@ -15,25 +15,9 @@ Building Monasca API image
 Example:
   $ ./build_image.sh <repository_version> <upper_constains_branch> <common_version>
 
-
-Requirements from monasca-base image
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-health_check.py
-  This file will be used for checking the status of the Monasca API
-  application.
-
-
-Scripts
-~~~~~~~
-start.sh
-  In this starting script provide all steps that lead to the proper service
-  start. Including usage of wait scripts and templating of configuration
-  files. You also could provide the ability to allow running container after
-  service died for easier debugging.
-
-build_image.sh
-  Please read detailed build description inside the script.
-
+Everything after ``./build_image.sh`` is optional and by default configured
+to get versions from ``Dockerfile``. ``./build_image.sh`` also contain more
+detailed build description.
 
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
@@ -41,9 +25,6 @@ Environment variables
 Variable                       Default                                                                 Description
 ============================== ======================================================================= ==========================================
 KAFKA_URI                      kafka:9092                                                              URI to Apache Kafka (distributed streaming platform)
-KAFKA_WAIT_FOR_TOPICS          alarm-state-transitions,metrics                                         The topics where metric-api streams the metric messages and alarm-states
-KAFKA_WAIT_RETRIES 	           24                                                                      Number of kafka connect attempts
-KAFKA_WAIT_DELAY               5                                                                       Seconds to wait between attempts
 MONASCA_CONTAINER_API_PORT     8070                                                                    The port from the metric pipeline endpoint
 DATABASE_BACKEND               influxdb                                                                Select for backend database
 INFLUX_HOST                    influxdb                                                                The host for influxdb
@@ -56,13 +37,11 @@ CASSANDRA_PORT                 9042                                             
 CASSANDRA_KEY_SPACE            monasca                                                                 Cassandra keyspace where metric are stored
 CASSANDRA_USER                 mon_persister                                                           Cassandra user name
 CASSANDRA_PASSWORD             password                                                                Cassandra password
-MYSQL_DB_HOST                  mysql                                                                   The host for MySQL
-MYSQL_DB_PORT                  3306                                                                    The port for MySQL
-MYSQL_DB_USERNAME              monapi                                                                  The MySQL username
-MYSQL_DB_PASSWORD              password                                                                The MySQL password
-MYSQL_DB_DATABASE              mon                                                                     The MySQL database name
-MYSQL_WAIT_RETRIES             24                                                                      Number of MySQL connection attempts
-MYSQL_WAIT_DELAY               5                                                                       Seconds to wait between attempts
+MYSQL_HOST                     mysql                                                                   The host for MySQL
+MYSQL_PORT                     3306                                                                    The port for MySQL
+MYSQL_USER                     monapi                                                                  The MySQL username
+MYSQL_PASSWORD                 password                                                                The MySQL password
+MYSQL_DB                       mon                                                                     The MySQL database name
 API_MYSQL_DISABLED             unset                                                                   If 'true' do not use a mysql database. Only metric API will work
 MEMCACHED_URI                  memcached:11211                                                         URI to Keystone authentication cache
 DEFAULT_REGION                 RegionOne                                                               Region that API is running in
@@ -92,6 +71,35 @@ LOG_LEVEL_ACCESS               INFO                                             
 STAY_ALIVE_ON_FAILURE          false                                                                   If true, container runs 2 hours after service fail
 ============================== ======================================================================= ==========================================
 
+Wait scripts environment variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+======================== ================================ =========================================
+Variable                 Default                          Description
+======================== ================================ =========================================
+KAFKA_URI                kafka:9092                       URI to Apache Kafka
+KAFKA_WAIT_FOR_TOPICS    alarm-state-transitions,metrics  The topics where metric-api streams
+                                                          the metric messages and alarm-states
+KAFKA_WAIT_RETRIES       24                               Number of kafka connect attempts
+KAFKA_WAIT_DELAY         5                                Seconds to wait between attempts
+MYSQL_HOST               mysql                            The host for MySQL
+MYSQL_PORT               3306                             The port for MySQL
+MYSQL_USER               monapi                           The MySQL username
+MYSQL_PASSWORD           password                         The MySQL password
+MYSQL_DB                 mon                              The MySQL database name
+MYSQL_WAIT_RETRIES       24                               Number of MySQL connection attempts
+MYSQL_WAIT_DELAY         5                                Seconds to wait between attempts
+======================== ================================ =========================================
+
+Scripts
+~~~~~~~
+start.sh
+  In this starting script provide all steps that lead to the proper service
+  start. Including usage of wait scripts and templating of configuration
+  files. You also could provide the ability to allow running container after
+  service died for easier debugging.
+
+health_check.py
+  This file will be used for checking the status of the application.
 
 Provide Configuration templates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
