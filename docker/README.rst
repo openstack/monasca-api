@@ -53,6 +53,7 @@ INFLUX_PASSWORD                password                                         
 INFLUX_DB                      mon                                                                     The influx database name
 CASSANDRA_CONTACT_POINTS       cassandra                                                               Cassandra node addresses
 CASSANDRA_PORT                 9042                                                                    Cassandra port number
+CASSANDRA_KEY_SPACE            monasca                                                                 Cassandra keyspace where metric are stored
 CASSANDRA_USER                 mon_persister                                                           Cassandra user name
 CASSANDRA_PASSWORD             password                                                                Cassandra password
 MYSQL_DB_HOST                  mysql                                                                   The host for MySQL
