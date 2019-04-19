@@ -216,7 +216,7 @@ password = {{ CASSANDRA_PASSWORD }}
 # Deprecated group/name - [DATABASE]/sql_connection
 # Deprecated group/name - [sql]/connection
 {% if not ( API_MYSQL_DISABLED is defined and API_MYSQL_DISABLED | lower == 'true' ) %}
-connection = "mysql+pymysql://{{ MYSQL_USER }}:{{ MYSQL_PASSWORD }}@{{ MYSQL_HOST }}/{{ MYSQL_DB }}"
+connection = "mysql+pymysql://{{ MYSQL_USER }}:{{ MYSQL_PASSWORD }}@{{ MYSQL_HOST }}:{{ MYSQL_PORT | default('3306') }}/{{ MYSQL_DB }}"
 {% endif %}
 
 
