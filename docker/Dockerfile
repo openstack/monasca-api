@@ -1,5 +1,5 @@
 ARG DOCKER_IMAGE=monasca/api
-ARG APP_REPO=https://git.openstack.org/openstack/monasca-api
+ARG APP_REPO=https://review.opendev.org/openstack/monasca-api
 
 # Branch, tag or git hash to build from.
 ARG REPO_VERSION=master
