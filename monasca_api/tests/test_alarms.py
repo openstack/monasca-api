@@ -27,7 +27,6 @@ import testtools.matchers as matchers
 from mock import Mock
 
 import oslo_config.fixture
-from oslo_serialization import jsonutils
 import six
 
 from monasca_api.common.repositories.model import sub_alarm_definition
@@ -124,10 +123,7 @@ class RESTResponseEquals(object):
         return 'RESTResponseEquals(%s)' % (self.expected,)
 
     def match(self, actual):
-        if len(actual) != 1:
-            return matchers.Mismatch("Response contains <> 1 item: %r" % actual)
-
-        response_data = jsonutils.loads(actual[0])
+        response_data = actual.json
 
         if u"links" in response_data:
             del response_data[u"links"]
@@ -176,10 +172,10 @@ class TestAlarmsStateHistory(AlarmTestBase):
             'metrics_repository.client.InfluxDBClient'))
 
         self.alarms_resource = alarms.AlarmsStateHistory()
-        self.api.add_route(
+        self.app.add_route(
             '/v2.0/alarms/{alarm_id}/state-history/', self.alarms_resource)
 
-        self.api.add_route(
+        self.app.add_route(
             '/v2.0/alarms/state-history/', self.alarms_resource)
 
     def test_alarm_state_history(self):
@@ -188,26 +184,25 @@ class TestAlarmsStateHistory(AlarmTestBase):
         del (expected_elements[u"elements"][0][u"sub_alarms"][0]
              [u"sub_alarm_expression"][u"metric_definition"])
         del expected_elements[u"elements"][0][u"tenant_id"]
-
         response = self.simulate_request(
-            u'/v2.0/alarms/%s/state-history/' % ALARM_HISTORY[u"alarm_id"],
+            path=u'/v2.0/alarms/%s/state-history/' % ALARM_HISTORY[u"alarm_id"],
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             })
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_alarm_state_history_no_alarm_id(self):
         expected_elements = {u'elements': []}
 
         response = self.simulate_request(
-            u'/v2.0/alarms/state-history/',
+            path=u'/v2.0/alarms/state-history/',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             })
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
 
@@ -220,8 +215,7 @@ class TestAlarmsCount(AlarmTestBase):
         )).mock
 
         self.alarms_count_resource = alarms.AlarmsCount()
-
-        self.api.add_route('/v2.0/alarms/count',
+        self.app.add_route('/v2.0/alarms/count',
                            self.alarms_count_resource)
 
     def test_get_alarm_count(self):
@@ -230,13 +224,13 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'count': 4}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_state_parameter(self):
@@ -245,14 +239,14 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'count': 4}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='state=OK')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_severity_parameter(self):
@@ -261,14 +255,14 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'count': 4}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='severity=LOW')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_group_by_parameter(self):
@@ -280,14 +274,14 @@ class TestAlarmsCount(AlarmTestBase):
         return_value.get_alarms_count.return_value = [{'metric_name': u'cpu.idle_perc', 'count': 2},
                                                       {'metric_name': u'cpu.sys_mem', 'count': 1}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='group_by=metric_name')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
         expected_elements = {'columns': ['count', 'metric_name', 'dimension_name'],
@@ -301,14 +295,14 @@ class TestAlarmsCount(AlarmTestBase):
                                                        'dimension_name': 'hostname',
                                                        'count': 1}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='group_by=metric_name,dimension_name')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_incorrect_group_by_parameter(self):
@@ -317,13 +311,14 @@ class TestAlarmsCount(AlarmTestBase):
         return_value.get_alarms_count.return_value = [{'metric_name': u'cpu.idle_perc', 'count': 2},
                                                       {'metric_name': u'cpu.sys_mem', 'count': 1}]
 
-        self.simulate_request('/v2.0/alarms/count',
-                              headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method='GET',
-                              query_string='group_by=hahahah')
+        response = self.simulate_request(
+            path='/v2.0/alarms/count',
+            headers={'X-Roles': CONF.security.default_authorized_roles[0],
+                     'X-Tenant-Id': TENANT_ID},
+            method='GET',
+            query_string='group_by=hahahah')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_get_alarm_count_offset(self):
         return_value = self.alarms_get_alarms_count_mock.return_value
@@ -332,13 +327,13 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'metric_name': u'cpu.idle_perc', 'count': 2}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='group_by=metric_name&offset=1')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_incorrect_offset(self):
@@ -348,13 +343,13 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'metric_name': u'cpu.idle_perc', 'count': 2}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='group_by=metric_name&offset=hahahah')
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_limit_parameter(self):
@@ -363,27 +358,27 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'count': 4}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='limit=1')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
         return_value.get_alarms_count.return_value = [{'count': 4}]
         expected_elements = {'counts': [], 'columns': ['count']}
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='limit=0')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_when_count_is_zero(self):
@@ -392,24 +387,24 @@ class TestAlarmsCount(AlarmTestBase):
 
         return_value.get_alarms_count.return_value = [{'count': 0}]
 
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='group_by=metric_name')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
         expected_elements = {'columns': ['count'], 'counts': [[0]]}
-        response = self.simulate_request('/v2.0/alarms/count',
+        response = self.simulate_request(path='/v2.0/alarms/count',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
 
@@ -422,10 +417,9 @@ class TestAlarms(AlarmTestBase):
         )).mock
 
         self.alarms_resource = alarms.Alarms()
-
-        self.api.add_route('/v2.0/alarms',
+        self.app.add_route('/v2.0/alarms',
                            self.alarms_resource)
-        self.api.add_route('/v2.0/alarms/{alarm_id}',
+        self.app.add_route('/v2.0/alarms/{alarm_id}',
                            self.alarms_resource)
 
     def test_alarms_get_alarms(self):
@@ -469,13 +463,13 @@ class TestAlarms(AlarmTestBase):
                 'state_updated_timestamp': '2015-03-14T09:26:53Z',
                 'updated_timestamp': '2015-03-14T09:26:53Z'}]}
 
-        response = self.simulate_request('/v2.0/alarms',
+        response = self.simulate_request(path='/v2.0/alarms',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarm(self):
@@ -517,13 +511,13 @@ class TestAlarms(AlarmTestBase):
             'state_updated_timestamp': '2015-03-14T09:26:53Z',
             'updated_timestamp': '2015-03-14T09:26:53Z'}
 
-        response = self.simulate_request('/v2.0/alarms/1',
+        response = self.simulate_request(path='/v2.0/alarms/1',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_state_parameter(self):
@@ -566,14 +560,14 @@ class TestAlarms(AlarmTestBase):
                 'state': 'OK',
                 'state_updated_timestamp': '2015-03-14T09:26:53Z',
                 'updated_timestamp': '2015-03-14T09:26:53Z'}]}
-        response = self.simulate_request('/v2.0/alarms',
+        response = self.simulate_request(path='/v2.0/alarms',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='state=OK')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_severity_parameter(self):
@@ -616,14 +610,14 @@ class TestAlarms(AlarmTestBase):
                 'state': 'OK',
                 'state_updated_timestamp': '2015-03-14T09:26:53Z',
                 'updated_timestamp': '2015-03-14T09:26:53Z'}]}
-        response = self.simulate_request('/v2.0/alarms',
+        response = self.simulate_request(path='/v2.0/alarms',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='severity=LOW')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_with_offset(self):
@@ -666,14 +660,14 @@ class TestAlarms(AlarmTestBase):
                 'state': 'OK',
                 'state_updated_timestamp': '2015-03-14T09:26:53Z',
                 'updated_timestamp': '2015-03-14T09:26:53Z'}]}
-        response = self.simulate_request('/v2.0/alarms',
+        response = self.simulate_request(path='/v2.0/alarms',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='offset=1')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_with_incorrect_offset(self):
@@ -692,13 +686,14 @@ class TestAlarms(AlarmTestBase):
               'alarm_id': '1',
               'lifecycle_state': 'OPEN'}]
 
-        self.simulate_request('/v2.0/alarms',
-                              headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method='GET',
-                              query_string='offset=ninccorect_offset')
+        response = self.simulate_request(
+            path='/v2.0/alarms',
+            headers={'X-Roles': CONF.security.default_authorized_roles[0],
+                     'X-Tenant-Id': TENANT_ID},
+            method='GET',
+            query_string='offset=ninccorect_offset')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarms_get_alarms_sort_by_parameter(self):
         return_value = self.alarms_repo_mock.return_value
@@ -740,14 +735,14 @@ class TestAlarms(AlarmTestBase):
                 'state': 'OK',
                 'state_updated_timestamp': '2015-03-14T09:26:53Z',
                 'updated_timestamp': '2015-03-14T09:26:53Z'}]}
-        response = self.simulate_request('/v2.0/alarms',
+        response = self.simulate_request(path='/v2.0/alarms',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='GET',
                                          query_string='sort_by=alarm_id')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_incorrect_sort_by_parameter(self):
@@ -766,14 +761,14 @@ class TestAlarms(AlarmTestBase):
               'alarm_id': '1',
               'lifecycle_state': 'OPEN'}]
 
-        self.simulate_request('/v2.0/alarms',
-                              headers={'X-Roles':
-                                       CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method='GET',
-                              query_string='sort_by=random_string')
+        response = self.simulate_request(path='/v2.0/alarms',
+                                         headers={'X-Roles':
+                                                  CONF.security.default_authorized_roles[0],
+                                                  'X-Tenant-Id': TENANT_ID},
+                                         method='GET',
+                                         query_string='sort_by=random_string')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarms_delete_alarms(self):
         return_value = self.alarms_repo_mock.return_value
@@ -786,13 +781,12 @@ class TestAlarms(AlarmTestBase):
               'alarm_id': u'2',
               'expression': u'avg(cpu.idle_perc{instance_id=123, service=monitoring}) > 10',
               'alarm_definition_id': u'1'}]
-
-        self.simulate_request('/v2.0/alarms/2',
-                              headers={'X-Roles':
-                                       CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method='DELETE')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        response = self.simulate_request(path='/v2.0/alarms/2',
+                                         headers={'X-Roles':
+                                                  CONF.security.default_authorized_roles[0],
+                                                  'X-Tenant-Id': TENANT_ID},
+                                         method='DELETE')
+        self.assertEqual(response.status, falcon.HTTP_204)
 
     def test_alarms_put(self):
         return_value = self.alarms_repo_mock.return_value
@@ -857,14 +851,14 @@ class TestAlarms(AlarmTestBase):
                           u'state_updated_timestamp': u'2019-02-22T12:44:25.850947Z',
                           u'updated_timestamp': u'2019-02-22T12:44:25.850947Z'}
 
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PUT',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarm))
 
     def test_alarms_put_without_link(self):
@@ -872,14 +866,14 @@ class TestAlarms(AlarmTestBase):
                             'lifecycle_state': 'OPEN'}
         expected_response = {u'description': u"Field 'link' is required",
                              u'title': u'Unprocessable Entity'}
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PUT',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_put_without_lifecycle_state(self):
@@ -887,14 +881,14 @@ class TestAlarms(AlarmTestBase):
                             'link': 'http://somesite.com/this-alarm-info'}
         expected_response = {u'description': u"Field 'lifecycle_state' is required",
                              u'title': u'Unprocessable Entity'}
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PUT',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_put_without_state(self):
@@ -902,14 +896,14 @@ class TestAlarms(AlarmTestBase):
                             'link': 'http://somesite.com/this-alarm-info'}
         expected_response = {u'description': u"Field 'state' is required",
                              u'title': u'Unprocessable Entity'}
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PUT',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_patch(self):
@@ -975,14 +969,14 @@ class TestAlarms(AlarmTestBase):
                           u'state_updated_timestamp': u'2019-02-22T12:44:25.850947Z',
                           u'updated_timestamp': u'2019-02-22T12:44:25.850947Z'}
 
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PATCH',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarm))
 
     def test_alarms_patch_without_new_fields(self):
@@ -1046,14 +1040,14 @@ class TestAlarms(AlarmTestBase):
                           u'state_updated_timestamp': u'2019-02-22T12:44:25.850947Z',
                           u'updated_timestamp': u'2019-02-22T12:44:25.850947Z'}
 
-        response = self.simulate_request('/v2.0/alarms/2',
+        response = self.simulate_request(path='/v2.0/alarms/2',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method='PATCH',
                                          body=json.dumps(alarm_new_fields))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_alarm))
 
 
@@ -1070,9 +1064,9 @@ class TestAlarmDefinition(AlarmTestBase):
         self.alarm_definition_resource.send_event = Mock()
         self._send_event = self.alarm_definition_resource.send_event
 
-        self.api.add_route("/v2.0/alarm-definitions/",
+        self.app.add_route("/v2.0/alarm-definitions/",
                            self.alarm_definition_resource)
-        self.api.add_route("/v2.0/alarm-definitions/{alarm_definition_id}",
+        self.app.add_route("/v2.0/alarm-definitions/{alarm_definition_id}",
                            self.alarm_definition_resource)
 
     def test_alarm_definition_create(self):
@@ -1099,14 +1093,14 @@ class TestAlarmDefinition(AlarmTestBase):
             u'severity': u'LOW',
         }
 
-        response = self.simulate_request("/v2.0/alarm-definitions/",
+        response = self.simulate_request(path="/v2.0/alarm-definitions/",
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
                                                   'X-Tenant-Id': TENANT_ID},
                                          method="POST",
                                          body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(response.status, falcon.HTTP_201)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_create_with_valid_expressions(self):
@@ -1157,14 +1151,14 @@ class TestAlarmDefinition(AlarmTestBase):
         for expression in valid_expressions:
             alarm_def[u'expression'] = expression
             expected_data[u'expression'] = expression
-            response = self.simulate_request("/v2.0/alarm-definitions/",
+            response = self.simulate_request(path="/v2.0/alarm-definitions/",
                                              headers={'X-Roles':
                                                       CONF.security.default_authorized_roles[0],
                                                       'X-Tenant-Id': TENANT_ID},
                                              method="POST",
                                              body=json.dumps(alarm_def))
 
-            self.assertEqual(self.srmock.status, falcon.HTTP_201,
+            self.assertEqual(response.status, falcon.HTTP_201,
                              u'Expression {} should have passed'.format(expression))
             self.assertThat(response, RESTResponseEquals(expected_data))
 
@@ -1183,13 +1177,14 @@ class TestAlarmDefinition(AlarmTestBase):
 
         for expression in bad_expressions:
             alarm_def[u'expression'] = expression
-            self.simulate_request("/v2.0/alarm-definitions/",
-                                  headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                           'X-Tenant-Id': TENANT_ID},
-                                  method="POST",
-                                  body=json.dumps(alarm_def))
+            response = self.simulate_request(
+                path="/v2.0/alarm-definitions/",
+                headers={'X-Roles': CONF.security.default_authorized_roles[0],
+                         'X-Tenant-Id': TENANT_ID},
+                method="POST",
+                body=json.dumps(alarm_def))
 
-            self.assertEqual(self.srmock.status, '422 Unprocessable Entity',
+            self.assertEqual(response.status, '422 Unprocessable Entity',
                              u'Expression {} should have failed'.format(expression))
 
     def test_alarm_definition_create_with_occupied_alarm_definition_name(self):
@@ -1209,12 +1204,13 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Definition',
             u'expression': u'max(test.metric{hostname=host}) gte 1'
         }
-        self.simulate_request("/v2.0/alarm-definitions/",
-                              headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method="POST",
-                              body=json.dumps(alarm_def))
-        self.assertEqual(self.srmock.status, falcon.HTTP_409)
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/",
+            headers={'X-Roles': CONF.security.default_authorized_roles[0],
+                     'X-Tenant-Id': TENANT_ID},
+            method="POST",
+            body=json.dumps(alarm_def))
+        self.assertEqual(response.status, falcon.HTTP_409)
 
     def test_alarm_definition_update(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
@@ -1285,15 +1281,15 @@ class TestAlarmDefinition(AlarmTestBase):
             u'severity': u'LOW',
         }
 
-        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+        result = self.simulate_request(path="/v2.0/alarm-definitions/%s" % expected_def[u'id'],
                                        headers={'X-Roles':
                                                 CONF.security.default_authorized_roles[0],
                                                 'X-Tenant-Id': TENANT_ID},
                                        method="PUT",
                                        body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = jsonutils.loads(result[0])
+        self.assertEqual(result.status, falcon.HTTP_200)
+        result_def = result.json
         self.assertEqual(result_def, expected_def)
 
     def test_alarm_definition_patch_incorrect_id(self):
@@ -1312,15 +1308,15 @@ class TestAlarmDefinition(AlarmTestBase):
         alarm_def = {
             u'name': u'Test Alarm Definition Updated',
         }
-        self.simulate_request(
-            "/v2.0/alarm-definitions/9999999-0001-0001-0001-000000000001",
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/9999999-0001-0001-0001-000000000001",
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method="PATCH",
             body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_409)
+        self.assertEqual(response.status, falcon.HTTP_409)
 
     def test_alarm_definition_put_incorrect_period_value(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
@@ -1338,43 +1334,44 @@ class TestAlarmDefinition(AlarmTestBase):
             u'severity': u'LOW',
         }
 
-        self.simulate_request("/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001",
-                              headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                       'X-Tenant-Id': TENANT_ID},
-                              method="PUT",
-                              body=json.dumps(alarm_def))
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001",
+            headers={'X-Roles': CONF.security.default_authorized_roles[0],
+                     'X-Tenant-Id': TENANT_ID},
+            method="PUT",
+            body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarm_definition_patch_no_id(self):
         alarm_def = {
             u'name': u'Test Alarm Definition Updated',
         }
 
-        self.simulate_request(
-            "/v2.0/alarm-definitions/",
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/",
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method="PATCH",
             body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_update_no_id(self):
         alarm_def = {
             u'name': u'Test Alarm Definition Updated',
         }
 
-        self.simulate_request(
-            "/v2.0/alarm-definitions/",
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/",
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method="PUT",
             body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_delete(self):
 
@@ -1400,14 +1397,14 @@ class TestAlarmDefinition(AlarmTestBase):
             'sub_alarm_id': '43'}]
         self.alarm_def_repo_mock.return_value.delete_alarm_definition.return_value = True
 
-        self.simulate_request(
-            '/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001',
+        response = self.simulate_request(
+            path='/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method='DELETE')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(response.status, falcon.HTTP_204)
 
     def test_alarm_definition_delete_alarm_definition_not_exist(self):
         self.alarm_def_repo_mock.return_value.get_get_sub_alarm_definitions.return_value = []
@@ -1415,25 +1412,25 @@ class TestAlarmDefinition(AlarmTestBase):
         self.alarm_def_repo_mock.return_value.get_sub_alarms.return_value = []
         self.alarm_def_repo_mock.return_value.delete_alarm_definition.return_value = False
 
-        self.simulate_request(
-            '/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001',
+        response = self.simulate_request(
+            path='/v2.0/alarm-definitions/00000001-0001-0001-0001-000000000001',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method='DELETE')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(response.status, falcon.HTTP_404)
 
     def test_alarm_definition_delete_no_id(self):
 
-        self.simulate_request(
-            "/v2.0/alarm-definitions/",
+        response = self.simulate_request(
+            path="/v2.0/alarm-definitions/",
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID},
             method="DELETE")
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_patch(self):
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
@@ -1502,15 +1499,15 @@ class TestAlarmDefinition(AlarmTestBase):
             u'name': u'Test Alarm Updated',
         }
 
-        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+        result = self.simulate_request(path="/v2.0/alarm-definitions/%s" % expected_def[u'id'],
                                        headers={'X-Roles':
                                                 CONF.security.default_authorized_roles[0],
                                                 'X-Tenant-Id': TENANT_ID},
                                        method="PATCH",
                                        body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = jsonutils.loads(result[0])
+        self.assertEqual(result.status, falcon.HTTP_200)
+        result_def = result.json
         self.assertEqual(result_def, expected_def)
         # If the alarm-definition-updated event does not have all of the
         # fields set, the Threshold Engine will get confused. For example,
@@ -1612,26 +1609,28 @@ class TestAlarmDefinition(AlarmTestBase):
             u'severity': u'LOW'
         }
 
-        result = self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+        result = self.simulate_request(path="/v2.0/alarm-definitions/%s" % expected_def[u'id'],
                                        headers={'X-Roles':
                                                 CONF.security.default_authorized_roles[0],
                                                 'X-Tenant-Id': TENANT_ID},
                                        method="PUT",
                                        body=json.dumps(alarm_def))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_def = jsonutils.loads(result[0])
+        self.assertEqual(result.status, falcon.HTTP_200)
+        result_def = result.json
         self.assertEqual(result_def, expected_def)
 
         for key, value in alarm_def.items():
             del alarm_def[key]
 
-            self.simulate_request("/v2.0/alarm-definitions/%s" % expected_def[u'id'],
-                                  headers={'X-Roles': CONF.security.default_authorized_roles[0],
-                                           'X-Tenant-Id': TENANT_ID},
-                                  method="PUT",
-                                  body=json.dumps(alarm_def))
-            self.assertEqual(self.srmock.status, "422 Unprocessable Entity",
+            response = self.simulate_request(
+                path="/v2.0/alarm-definitions/%s" % expected_def[u'id'],
+                headers={'X-Roles':
+                         CONF.security.default_authorized_roles[0],
+                         'X-Tenant-Id': TENANT_ID},
+                method="PUT",
+                body=json.dumps(alarm_def))
+            self.assertEqual(response.status, "422 Unprocessable Entity",
                              u"should have failed without key {}".format(key))
             alarm_def[key] = value
 
@@ -1668,13 +1667,13 @@ class TestAlarmDefinition(AlarmTestBase):
         }
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
+            path='/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             })
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_specific_alarm_description_none(self):
@@ -1707,13 +1706,13 @@ class TestAlarmDefinition(AlarmTestBase):
         }
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
+            path='/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             })
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_get_alarm_definitions_with_multibyte_character(self):
@@ -1745,14 +1744,13 @@ class TestAlarmDefinition(AlarmTestBase):
         }
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
+            path='/v2.0/alarm-definitions/%s' % (expected_data[u'id']),
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID,
             }
         )
-
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_alarm_definition_list(self):
@@ -1789,56 +1787,56 @@ class TestAlarmDefinition(AlarmTestBase):
         }
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions',
+            path='/v2.0/alarm-definitions',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID
             },
             query_string='name=Test Alarm')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions',
+            path='/v2.0/alarm-definitions',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID
             },
             query_string='sort_by=name')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions',
+            path='/v2.0/alarm-definitions',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID
             },
             query_string='severity=LOW')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
         response = self.simulate_request(
-            '/v2.0/alarm-definitions',
+            path='/v2.0/alarm-definitions',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID
             },
             query_string='offset=1')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(response.status, falcon.HTTP_200)
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_alarm_definition_list_incorrect(self):
-        self.simulate_request(
-            '/v2.0/alarm-definitions',
+        response = self.simulate_request(
+            path='/v2.0/alarm-definitions',
             headers={
                 'X-Roles': CONF.security.default_authorized_roles[0],
                 'X-Tenant-Id': TENANT_ID
             },
             query_string='offset=definitelyNotINT')
-        self.assertEqual(self.srmock.status, falcon.HTTP_422)
+        self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarm_definition_get_query_alarm_definition_name(self):
         alarm_def = {

@@ -34,24 +34,6 @@ from monasca_api import policies
 policy.POLICIES = policies
 
 
-class MockedAPI(falcon.API):
-    """MockedAPI
-
-    Subclasses :py:class:`falcon.API` in order to overwrite
-    request_type property with custom :py:class:`request.Request`
-
-    """
-
-    def __init__(self):
-        super(MockedAPI, self).__init__(
-            media_type=falcon.DEFAULT_MEDIA_TYPE,
-            request_type=request.Request,
-            response_type=falcon.Response,
-            middleware=None,
-            router=None
-        )
-
-
 class ConfigFixture(oo_cfg.Config):
     """Mocks configuration"""
 
@@ -96,8 +78,18 @@ class BaseTestCase(oslotest_base.BaseTestCase):
             cfg.CONF.set_default(k, v, group)
 
 
-class BaseApiTestCase(BaseTestCase, testing.TestBase):
-    api_class = MockedAPI
+class BaseApiTestCase(BaseTestCase, testing.TestCase):
+
+    def setUp(self):
+        super(BaseApiTestCase, self).setUp()
+        # TODO(dszumski): Loading the app from api/server.py seems to make
+        # more sense here so that we don't have to manually keep the tests in
+        # sync with it.
+        self.app = falcon.API(request_type=request.Request)
+        # NOTE(dszumski): Falcon 2.0.0 switches the default for this from True
+        # to False so we explicitly set it here to prevent the behaviour
+        # changing between versions.
+        self.app.req_options.strip_url_path_trailing_slash = True
 
     @staticmethod
     def create_environ(*args, **kwargs):

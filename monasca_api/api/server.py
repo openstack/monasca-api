@@ -33,6 +33,10 @@ def launch(conf):
     config.parse_args()
 
     app = falcon.API(request_type=request.Request)
+    # NOTE(dszumski): Falcon 2.0.0 switches the default for this from True
+    # to False so we explicitly set it here to prevent the behaviour
+    # changing between versions.
+    app.req_options.strip_url_path_trailing_slash = True
 
     versions = simport.load(cfg.CONF.dispatcher.versions)()
     app.add_route("/", versions)

@@ -19,7 +19,7 @@ docutils==0.11
 dulwich==0.15.0
 eventlet==0.18.2
 extras==1.0.0
-falcon==1.0.0
+falcon==2.0.0
 fasteners==0.7.0
 fixtures==3.0.0
 flake8==2.5.5

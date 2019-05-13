@@ -40,8 +40,7 @@ def from_json(req):
     :raises falcon.HTTPBadRequest:
     """
     try:
-        msg = req.stream.read()
-        return rest_utils.from_json(msg)
+        return req.media
     except Exception as ex:
         LOG.exception(ex)
         raise falcon.HTTPBadRequest('Bad request',

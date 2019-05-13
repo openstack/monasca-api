@@ -14,7 +14,6 @@
 # under the License.
 
 import datetime
-import json
 
 import falcon
 
@@ -24,15 +23,15 @@ from monasca_api.v2.reference import versions
 
 class TestVersions(base.BaseApiTestCase):
 
-    def before(self):
-        self.versions_resource = versions.Versions()
-        self.api.add_route('/versions', self.versions_resource)
-        self.api.add_route('/versions/{version_id}', self.versions_resource)
+    def setUp(self):
+        super(TestVersions, self).setUp()
+        self.app.add_route('/', versions.Versions())
+        self.app.add_route('/{version_id}', versions.Versions())
 
     def test_list_versions(self):
-        result = self.simulate_request('/versions')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        response = json.loads(result[0].decode('utf-8'))
+        result = self.simulate_request(path='/')
+        self.assertEqual(result.status, falcon.HTTP_200)
+        response = result.json
         self.assertIsInstance(response, dict)
         self.assertTrue(set(['links', 'elements']) ==
                         set(response))
@@ -42,12 +41,12 @@ class TestVersions(base.BaseApiTestCase):
         self.assertTrue(set(['rel', 'href']) ==
                         set(link))
         self.assertEqual(link['rel'], u'self')
-        self.assertTrue(link['href'].endswith('versions'))
+        self.assertTrue(link['href'].endswith('/'))
 
     def test_valid_version_id(self):
-        result = self.simulate_request('/versions/v2.0')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        response = json.loads(result[0].decode('utf-8'))
+        result = self.simulate_request(path='/v2.0')
+        self.assertEqual(result.status, falcon.HTTP_200)
+        response = result.json
         self.assertIsInstance(response, dict)
         version = response
         self.assertTrue(set(['id', 'links', 'status', 'updated']) ==
@@ -63,8 +62,8 @@ class TestVersions(base.BaseApiTestCase):
         self.assertTrue(set(['rel', 'href']) ==
                         set(link))
         self.assertEqual(link['rel'], u'self')
-        self.assertTrue(link['href'].endswith('/versions/v2.0'))
+        self.assertTrue(link['href'].endswith('/v2.0'))
 
     def test_invalid_version_id(self):
-        self.simulate_request('/versions/v1.0')
-        self.assertEqual(self.srmock.status, '422 Unprocessable Entity')
+        result = self.simulate_request(path='/v1.0')
+        self.assertEqual(result.status, '422 Unprocessable Entity')

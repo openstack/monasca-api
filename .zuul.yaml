@@ -153,7 +153,8 @@
         - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
         - monasca-tempest-python3-java-cassandra
-        - monascalog-python3-tempest
+        - monascalog-python3-tempest:
+            voting: false
         - build-monasca-docker-image
     gate:
       queue: monasca
@@ -165,7 +166,6 @@
         - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
         - monasca-tempest-python3-java-cassandra
-        - monascalog-python3-tempest
     post:
       jobs:
         - publish-monasca-api-docker-image

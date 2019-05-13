@@ -19,7 +19,7 @@ from monasca_api import config
 from monasca_api.healthcheck import base
 from monasca_api import healthchecks
 from monasca_api.tests import base as test_base
-from monasca_common.rest import utils
+
 
 CONF = config.CONF
 ENDPOINT = '/healthcheck'
@@ -32,9 +32,10 @@ class TestHealthChecks(test_base.BaseApiTestCase):
         if hasattr(CONF, 'sql_engine'):
             delattr(CONF, 'sql_engine')
 
-    def set_route(self):
+    def setUp(self):
+        super(TestHealthChecks, self).setUp()
         self.resources = healthchecks.HealthChecks()
-        self.api.add_route(
+        self.app.add_route(
             ENDPOINT,
             self.resources
         )
@@ -43,9 +44,8 @@ class TestHealthChecks(test_base.BaseApiTestCase):
     @mock.patch(
         'monasca_api.healthcheck.metrics_db_check.MetricsDbCheck')
     def test_should_return_200_for_head(self, metrics_db_check, _):
-        self.set_route()
-        self.simulate_request(ENDPOINT, method='HEAD')
-        self.assertEqual(falcon.HTTP_NO_CONTENT, self.srmock.status)
+        result = self.simulate_request(path=ENDPOINT, method='HEAD')
+        self.assertEqual(falcon.HTTP_NO_CONTENT, result.status)
 
     @mock.patch('monasca_api.healthcheck.kafka_check.KafkaHealthCheck')
     @mock.patch(
@@ -63,20 +63,18 @@ class TestHealthChecks(test_base.BaseApiTestCase):
                                                                      'OK')
         metrics_db_check.health_check.return_value = base.CheckResult(True,
                                                                       'OK')
-        self.set_route()
         self.resources._kafka_check = kafka_check
         self.resources._alarm_db_check = alarms_db_check
         self.resources._metrics_db_check = metrics_db_check
 
-        response = self.simulate_request(ENDPOINT,
+        response = self.simulate_request(path=ENDPOINT,
                                          headers={
                                              'Content-Type': 'application/json'
                                          },
-                                         decode='utf8',
                                          method='GET')
-        self.assertEqual(falcon.HTTP_OK, self.srmock.status)
+        self.assertEqual(falcon.HTTP_OK, response.status)
 
-        response = utils.from_json(response)
+        response = response.json
         self.assertIn('kafka', response)
         self.assertIn('alarms_database', response)
         self.assertIn('metrics_database', response)
@@ -118,20 +116,19 @@ class TestHealthChecks(test_base.BaseApiTestCase):
                 service['alarms_db']['healthy'], service['alarms_db']['message'])
             metrics_db_check.health_check.return_value = base.CheckResult(
                 service['netrics_db']['healthy'], service['netrics_db']['message'])
-            self.set_route()
             self.resources._kafka_check = kafka_check
             self.resources._alarm_db_check = alarms_db_check
             self.resources._metrics_db_check = metrics_db_check
 
-            response = self.simulate_request(ENDPOINT,
+            response = self.simulate_request(path=ENDPOINT,
                                              headers={
                                                  'Content-Type': 'application/json'
                                              },
-                                             decode='utf8',
                                              method='GET')
-            self.assertEqual(falcon.HTTP_SERVICE_UNAVAILABLE, self.srmock.status)
+            self.assertEqual(falcon.HTTP_SERVICE_UNAVAILABLE,
+                             response.status)
 
-            response = utils.from_json(response)
+            response = response.json
             self.assertIn('kafka', response)
             self.assertIn('alarms_database', response)
             self.assertIn('metrics_database', response)
