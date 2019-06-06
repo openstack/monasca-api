@@ -62,3 +62,13 @@ Provide the following alongside the story:
 2. The fingerprint shown in the error message.
 
 3. The output of ``monasca_db fingerprint --raw``.
+
+Time Series Databases Setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enabling InfluxDB Time Series Index in existing deployments
+-----------------------------------------------------------
+
+If enabling TSI on an existing InfluxDB install please follow the instructions
+for migrating existing data here:
+https://docs.influxdata.com/influxdb/v1.7/administration/upgrading/#upgrading-influxdb-1-3-1-4-no-tsi-preview-to-1-7-x-tsi-enabled
