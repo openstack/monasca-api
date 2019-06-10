@@ -30,6 +30,7 @@ ENV \
     CASSANDRA_KEY_SPACE=monasca \
     CASSANDRA_USER=mon_persister \
     CASSANDRA_PASSWORD=password \
+    CASSANDRA_CONNECTION_TIMEOUT=5 \
     MYSQL_HOST=mysql \
     MYSQL_PORT=3306 \
     MYSQL_USER=monapi \

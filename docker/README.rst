@@ -37,6 +37,7 @@ CASSANDRA_PORT                 9042                                             
 CASSANDRA_KEY_SPACE            monasca                                                                 Cassandra keyspace where metric are stored
 CASSANDRA_USER                 mon_persister                                                           Cassandra user name
 CASSANDRA_PASSWORD             password                                                                Cassandra password
+CASSANDRA_CONNECTION_TIMEOUT   5                                                                       Cassandra timeout in seconds when creating a new connection
 MYSQL_HOST                     mysql                                                                   The host for MySQL
 MYSQL_PORT                     3306                                                                    The port for MySQL
 MYSQL_USER                     monapi                                                                  The MySQL username
