@@ -591,9 +591,9 @@ def _get_old_query_params(parsed_uri):
             query_param_name, query_param_val = query_param.split('=', 1)
 
             old_query_params.append(urlparse.quote(
-                query_param_name.encode('utf8'), safe='')
-                + "="
-                + urlparse.quote(query_param_val.encode('utf8'), safe=''))
+                query_param_name.encode('utf8'), safe='') +
+                "=" +
+                urlparse.quote(query_param_val.encode('utf8'), safe=''))
 
     return old_query_params
 

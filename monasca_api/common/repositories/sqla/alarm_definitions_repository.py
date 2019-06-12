@@ -249,8 +249,8 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 value=bindparam('b_value')))
 
         self.delete_aa_query = (delete(aa)
-                                .where(aa.c.alarm_definition_id
-                                       == bindparam('b_alarm_definition_id')))
+                                .where(aa.c.alarm_definition_id ==
+                                       bindparam('b_alarm_definition_id')))
 
         self.delete_aa_state_query = (
             delete(aa) .where(
