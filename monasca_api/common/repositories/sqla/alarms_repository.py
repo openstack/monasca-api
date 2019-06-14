@@ -22,7 +22,7 @@ from monasca_api.common.repositories import alarms_repository
 from monasca_api.common.repositories import exceptions
 from monasca_api.common.repositories.sqla import models
 from monasca_api.common.repositories.sqla import sql_repository
-from sqlalchemy import (MetaData, update, delete, select, text,
+from sqlalchemy import (MetaData, update, delete, select, text, column,
                         bindparam, func, literal_column, asc, desc)
 from sqlalchemy import or_
 
@@ -492,7 +492,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                     query_from = query_from.join(sub_query, sub_query.c.alarm_id == a.c.id)
 
             query_columns = [func.count().label('count')]
-            query_columns.extend(group_by_columns)
+            query_columns.extend([column(col) for col in group_by_columns])
 
             query = (select(query_columns)
                      .select_from(query_from)
