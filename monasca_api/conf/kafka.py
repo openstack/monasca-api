@@ -60,7 +60,7 @@ The number of retry when there is a connection error
                 advanced=True, help='''
 Should messages be automatically committed
 '''),
-    cfg.BoolOpt('async', default=True,
+    cfg.BoolOpt('is_async', default=True,
                 help='''
 The type of posting
 '''),
