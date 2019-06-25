@@ -502,7 +502,7 @@ class TestMetrics(base.BaseMonascaTest):
             self.assertEqual(200, resp.status)
             elements = response_body['elements']
             for element in elements:
-                if str(element['name']) == name:
+                if str(element['name'].encode('utf8')) == name:
                     self._verify_list_metrics_element(element, test_key=key,
                                                       test_value=value)
                     return
