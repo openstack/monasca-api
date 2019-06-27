@@ -64,7 +64,11 @@ kafka_opts = [
                 help='Enable legacy Kafka client. When set old version of '
                      'kafka-python library is used. Message format version '
                      'for the brokers should be set to 0.9.0.0 to avoid '
-                     'performance issues until all consumers are upgraded.')
+                     'performance issues until all consumers are upgraded.'),
+    cfg.IntOpt('queue_buffering_max_messages', default=1000,
+               help='The maximum number of metrics per payload sent to '
+                    'Kafka. Posts to the Monasca API which exceed this will '
+                    'be chunked into batches not exceeding this number.')
 ]
 
 kafka_group = cfg.OptGroup(name='kafka', title='kafka')
