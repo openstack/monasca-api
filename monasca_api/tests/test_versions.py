@@ -33,13 +33,13 @@ class TestVersions(base.BaseApiTestCase):
         self.assertEqual(result.status, falcon.HTTP_200)
         response = result.json
         self.assertIsInstance(response, dict)
-        self.assertTrue(set(['links', 'elements']) ==
-                        set(response))
+        self.assertEqual(set(['links', 'elements']),
+                         set(response))
         links = response['links']
         self.assertIsInstance(links, list)
         link = links[0]
-        self.assertTrue(set(['rel', 'href']) ==
-                        set(link))
+        self.assertEqual(set(['rel', 'href']),
+                         set(link))
         self.assertEqual(link['rel'], u'self')
         self.assertTrue(link['href'].endswith('/'))
 
@@ -49,8 +49,8 @@ class TestVersions(base.BaseApiTestCase):
         response = result.json
         self.assertIsInstance(response, dict)
         version = response
-        self.assertTrue(set(['id', 'links', 'status', 'updated']) ==
-                        set(version))
+        self.assertEqual(set(['id', 'links', 'status', 'updated']),
+                         set(version))
         self.assertEqual(version['id'], u'v2.0')
         self.assertEqual(version['status'], u'CURRENT')
         date_object = datetime.datetime.strptime(version['updated'],
@@ -59,8 +59,8 @@ class TestVersions(base.BaseApiTestCase):
         links = response['links']
         self.assertIsInstance(links, list)
         link = links[0]
-        self.assertTrue(set(['rel', 'href']) ==
-                        set(link))
+        self.assertEqual(set(['rel', 'href']),
+                         set(link))
         self.assertEqual(link['rel'], u'self')
         self.assertTrue(link['href'].endswith('/v2.0'))
 
