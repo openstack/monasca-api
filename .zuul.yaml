@@ -49,9 +49,11 @@
         monasca-api: https://opendev.org/openstack/monasca-api
       zuul_copy_output:
         /var/log/kafka: logs
+        /var/log/monasca/notification: logs
         /etc/kafka/server.properties: logs
         /etc/kafka/producer.properties: logs
         /etc/kafka/consumer.properties: logs
+        /etc/monasca/monasca-notification.conf: logs
     irrelevant-files:
       - ^.*\.rst$
       - ^.*\.md$

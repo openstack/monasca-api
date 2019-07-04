@@ -19,7 +19,7 @@ set +o xtrace
 
 MONASCA_NOTIFICATION_CONF_DIR=${MONASCA_NOTIFICATION_CONF_DIR:-/etc/monasca}
 MONASCA_NOTIFICATION_LOG_DIR=${MONASCA_NOTIFICATION_LOG_DIR:-/var/log/monasca/notification}
-MONASCA_NOTIFICATION_CONF=${MONASCA_NOTIFICATION_CONF:-$MONASCA_NOTIFICATION_CONF_DIR/notification.yaml}
+MONASCA_NOTIFICATION_CONF=${MONASCA_NOTIFICATION_CONF:-$MONASCA_NOTIFICATION_CONF_DIR/monasca-notification.conf}
 MONASCA_NOTIFICATION_GATE_CFG_LINK=/etc/monasca-notification
 
 if [[ ${USE_VENV} = True ]]; then
@@ -75,8 +75,6 @@ configure_monasca-notification() {
     sudo install -d -o $STACK_USER ${MONASCA_NOTIFICATION_CONF_DIR}
     sudo install -d -o $STACK_USER ${MONASCA_NOTIFICATION_LOG_DIR}
 
-    install -m 600 ${MONASCA_API_DIR}/devstack/files/monasca-notification/notification.yaml ${MONASCA_NOTIFICATION_CONF}
-
     local dbDriver
     local dbEngine
     local dbPort
@@ -93,19 +91,25 @@ configure_monasca-notification() {
         dbDriver="monasca_notification.common.repositories.orm.orm_repo:OrmRepo"
     fi
 
-    sudo sed -e "
-        s|%DATABASE_HOST%|${DATABASE_HOST}|g;
-        s|%DATABASE_PORT%|$dbPort|g;
-        s|%DATABASE_PASSWORD%|${DATABASE_PASSWORD}|g;
-        s|%DATABASE_USER%|${DATABASE_USER}|g;
-        s|%MONASCA_NOTIFICATION_DATABASE_DRIVER%|$dbDriver|g;
-        s|%MONASCA_NOTIFICATION_DATABASE_ENGINE%|$dbEngine|g;
-        s|%KAFKA_HOST%|${SERVICE_HOST}|g;
-        s|%MONASCA_STATSD_PORT%|${MONASCA_STATSD_PORT}|g;
-        s|%MONASCA_NOTIFICATION_LOG_DIR%|${MONASCA_NOTIFICATION_LOG_DIR}|g;
-        s|%GRAFANA_URL%|http:\/\/${SERVICE_HOST}:3000|g;
-        s|%KEYSTONE_URL%|http:\/\/${SERVICE_HOST}\/identity\/v3|g;
-    " -i ${MONASCA_NOTIFICATION_CONF}
+    iniset "${MONASCA_NOTIFICATION_CONF}" kafka url ${DATABASE_HOST}:9092
+    iniset "${MONASCA_NOTIFICATION_CONF}" database repo_driver ${dbDriver}
+    iniset "${MONASCA_NOTIFICATION_CONF}" email_notifier grafana_url ${SERVICE_HOST}:3000
+    iniset "${MONASCA_NOTIFICATION_CONF}" keystone auth_url ${SERVICE_HOST}/identity/v3
+    if is_service_enabled postgresql; then
+        iniset "${MONASCA_NOTIFICATION_CONF}" postgresql host ${DATABASE_HOST}
+        iniset "${MONASCA_NOTIFICATION_CONF}" postgresql port ${dbPort}
+        iniset "${MONASCA_NOTIFICATION_CONF}" postgresql user ${DATABASE_USER}
+        iniset "${MONASCA_NOTIFICATION_CONF}" postgresql passwd ${DATABASE_PASSWORD}
+        iniset "${MONASCA_NOTIFICATION_CONF}" postgresql db mon
+    else
+        iniset "${MONASCA_NOTIFICATION_CONF}" mysql host ${DATABASE_HOST}
+        iniset "${MONASCA_NOTIFICATION_CONF}" mysql user ${DATABASE_USER}
+        iniset "${MONASCA_NOTIFICATION_CONF}" mysql passwd ${DATABASE_PASSWORD}
+        iniset "${MONASCA_NOTIFICATION_CONF}" mysql db mon
+    fi
+    if [[ ${MONASCA_DATABASE_USE_ORM} == "True" ]]; then
+        iniset "${MONASCA_NOTIFICATION_CONF}" orm url ${dbEngine}://${DATABASE_USER}:${DATABASE_PASSWORD}%${DATABASE_HOST}:${dbPort}/mon
+    fi
 
     sudo install -d -o ${STACK_USER} ${MONASCA_NOTIFICATION_GATE_CFG_LINK}
     ln -sf ${MONASCA_NOTIFICATION_CONF} ${MONASCA_NOTIFICATION_GATE_CFG_LINK}
@@ -118,7 +122,7 @@ configure_monasca-notification() {
 start_monasca-notification(){
     if is_monasca_notification_enabled; then
         echo_summary "Starting monasca-notification"
-        run_process "monasca-notification" "$MONASCA_NOTIFICATION_BIN_DIR/monasca-notification $MONASCA_NOTIFICATION_CONF"
+        run_process "monasca-notification" "$MONASCA_NOTIFICATION_BIN_DIR/monasca-notification"
     fi
 }
 
