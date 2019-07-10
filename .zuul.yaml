@@ -150,11 +150,8 @@
       jobs:
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
-        - monasca-tempest-java-influxdb
         - monasca-tempest-python2-cassandra
-        - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
-        - monasca-tempest-python3-java-cassandra
         - monascalog-python3-tempest
         - build-monasca-docker-image
     gate:
@@ -162,11 +159,8 @@
       jobs:
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
-        - monasca-tempest-java-influxdb
         - monasca-tempest-python2-cassandra
-        - monasca-tempest-python3-cassandra
         - monasca-tempest-python2-java-cassandra
-        - monasca-tempest-python3-java-cassandra
         - monascalog-python3-tempest
     post:
       jobs:
