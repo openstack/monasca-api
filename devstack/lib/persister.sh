@@ -172,6 +172,7 @@ configure_monasca_persister_python() {
     iniset $MONASCA_PERSISTER_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
 
     iniset "$MONASCA_PERSISTER_CONF" kafka num_processors 1
+    iniset "$MONASCA_PERSISTER_CONF" kafka legacy_kafka_client_enabled false
 
     iniset "$MONASCA_PERSISTER_CONF" kafka_metrics uri $SERVICE_HOST:9092
     iniset "$MONASCA_PERSISTER_CONF" kafka_metrics group_id 1_metrics
