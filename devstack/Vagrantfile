@@ -70,7 +70,7 @@ Vagrant.configure(2) do |config|
       sudo cp ./maven_proxy_settings.xml /root/.m2/settings.xml
     fi
 
-    git clone https://git.openstack.org/openstack-dev/devstack -b master --depth 1
+    git clone https://opendev.org/openstack/devstack.git -b master --depth 1
 
     # If using vagrant-cachier, restore cached downloads of 3rd-party dependencies
     if [ -d "/tmp/vagrant-cache" ]; then
@@ -125,7 +125,7 @@ disable_all_services
 enable_service rabbit key tempest horizon
 
 # Enable more OpenStack services if neccessary:
-# https://github.com/openstack-dev/devstack/blob/master/stackrc#L56-L81
+# https://opendev.org/openstack/devstack/src/branch/master/stackrc#L56-L81
 # Nova - services to support libvirt based openstack clouds
 # enable_service n-api n-cpu n-cond n-sch n-novnc n-cauth n-api-meta
 # Placement and Glance services needed for Nova
