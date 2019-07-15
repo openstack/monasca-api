@@ -91,7 +91,7 @@ configure_monasca-notification() {
         dbDriver="monasca_notification.common.repositories.orm.orm_repo:OrmRepo"
     fi
 
-    iniset "${MONASCA_NOTIFICATION_CONF}" kafka url ${DATABASE_HOST}:9092
+    iniset "${MONASCA_NOTIFICATION_CONF}" kafka url ${SERVICE_HOST}:9092
     iniset "${MONASCA_NOTIFICATION_CONF}" database repo_driver ${dbDriver}
     iniset "${MONASCA_NOTIFICATION_CONF}" email_notifier grafana_url ${SERVICE_HOST}:3000
     iniset "${MONASCA_NOTIFICATION_CONF}" keystone auth_url ${SERVICE_HOST}/identity/v3

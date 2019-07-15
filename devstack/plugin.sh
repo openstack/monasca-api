@@ -363,20 +363,14 @@ function install_kafka {
 
     sudo ln -sf /opt/kafka/config /etc/kafka
 
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/kafka/log4j.properties /etc/kafka/log4j.properties
-
-    sudo chown kafka:kafka /etc/kafka/log4j.properties
-
-    sudo chmod 644 /etc/kafka/log4j.properties
-
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/kafka/server.properties /etc/kafka/server.properties
 
     sudo chown kafka:kafka /etc/kafka/server.properties
 
     sudo chmod 644 /etc/kafka/server.properties
 
-    # set kafka advertised broker address.
-    sudo sed -i "s/^#advertised.host.name=<hostname routable by clients>/#advertised.host.name=<hostname routable by clients>\nadvertised.host.name=${SERVICE_HOST}/"\
+    # set kafka listeners address.
+    sudo sed -i "s/listeners = PLAINTEXT:\/\/your.host.name:9092/listeners = PLAINTEXT:\/\/your.host.name:9092\nlisteners=PLAINTEXT:\/\/${SERVICE_HOST}:9092/"\
         /etc/kafka/server.properties
 
     sudo systemctl enable kafka
