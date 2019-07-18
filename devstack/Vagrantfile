@@ -170,7 +170,7 @@ MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 MONASCA_API_USE_MOD_WSGI=${MONASCA_API_USE_MOD_WSGI:-True}
 
 # Start devstack with services running under Python 3
-# USE_PYTHON3=True
+USE_PYTHON3=True
 
 # Uncomment one of the following lines and modify accordingly to enable the Monasca DevStack Plugin
 enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api

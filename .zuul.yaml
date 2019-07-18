@@ -87,6 +87,7 @@
     voting: false
     vars:
       devstack_localrc:
+        USE_PYTHON3: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: influxdb
@@ -97,6 +98,7 @@
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
+        USE_PYTHON3: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: cassandra
@@ -119,6 +121,7 @@
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
+        USE_PYTHON3: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
