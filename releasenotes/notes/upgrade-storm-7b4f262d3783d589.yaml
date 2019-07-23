@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Upgrade Storm to 1.2.2 from 1.1.3.
+
