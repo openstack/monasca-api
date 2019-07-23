@@ -43,8 +43,73 @@
         c-vol: false
         cinder: false
         horizon: false
+        monasca-log: false
       tox_envlist: all
       tempest_test_regex: monasca_tempest_tests.tests.api
+      devstack_plugins:
+        monasca-api: https://opendev.org/openstack/monasca-api
+      zuul_copy_output:
+        /var/log/kafka: logs
+        /var/log/monasca/notification: logs
+        /etc/kafka/server.properties: logs
+        /etc/kafka/producer.properties: logs
+        /etc/kafka/consumer.properties: logs
+        /etc/monasca/monasca-notification.conf: logs
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^.*\.md$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+
+- job:
+    name: monasca-log-tempest-base
+    parent: devstack-tempest
+    description: |
+      Base job for running tempest tests with monasca-log-api devstack plugin.
+    timeout: 7800
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/monasca-agent
+      - openstack/monasca-api
+      - openstack/monasca-common
+      - openstack/monasca-grafana-datasource
+      - openstack/monasca-notification
+      - openstack/monasca-persister
+      - openstack/monasca-statsd
+      - openstack/monasca-thresh
+      - openstack/monasca-ui
+      - openstack/python-monascaclient
+      - openstack/tempest
+      - openstack/monasca-kibana-plugin
+      - openstack/monasca-tempest-plugin
+    vars:
+      devstack_services:
+        monasca-log: true
+        # Disable unneeded services.
+        etcd3: false
+        g-api: false
+        g-reg: false
+        n-api: false
+        n-api-meta: false
+        n-cauth: false
+        n-cond: false
+        n-cpu: false
+        n-novnc: false
+        n-obj: false
+        n-sch: false
+        placement-api: false
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
+        horizon: false
+      tox_envlist: all
+      tempest_test_regex: monasca_tempest_tests.tests.log_api
       devstack_plugins:
         monasca-api: https://opendev.org/openstack/monasca-api
       zuul_copy_output:
@@ -144,6 +209,41 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
       tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
+- job:
+    name: monasca-log-tempest-python3-influxdb
+    parent: monasca-log-tempest-base
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
+        USE_OLD_LOG_API: false
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
+        MONASCA_METRICS_DB: influxdb
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
+- job:
+    name: monasca-log-tempest-python2-influxdb
+    parent: monasca-log-tempest-base
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: false
+        USE_OLD_LOG_API: false
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
+        MONASCA_METRICS_DB: influxdb
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+
+- job:
+    name: monasca-log-tempest-oldapi-python3-influxdb
+    parent: monasca-log-tempest-base
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
+        USE_OLD_LOG_API: false
+        MONASCA_API_IMPLEMENTATION_LANG: python
+        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
+        MONASCA_METRICS_DB: influxdb
+        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - project:
     templates:
@@ -156,19 +256,19 @@
       - release-notes-jobs-python3
     check:
       jobs:
+        - monasca-log-tempest-python3-influxdb
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
         - monasca-tempest-python2-cassandra
         - monasca-tempest-python2-java-cassandra
-        - monascalog-python3-tempest
         - build-monasca-docker-image
     gate:
       queue: monasca
       jobs:
+        - monasca-log-tempest-python3-influxdb
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
         - monasca-tempest-python2-cassandra
-        - monascalog-python3-tempest
     post:
       jobs:
         - publish-monasca-api-docker-image

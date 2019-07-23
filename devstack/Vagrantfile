@@ -145,6 +145,11 @@ enable_service monasca-storm-nimbus
 enable_service monasca-storm-supervisor
 enable_service monasca-storm-ui
 enable_service monasca-storm-logviewer
+enable_service monasca-log
+
+
+# Uncomment this line to disable log part
+# disable_service monasca-log
 
 # Enable/Disable ORM support for mysql/postgresql
 # HINT: If postgresql service is enabled, ORM is enforced
@@ -169,15 +174,20 @@ MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
 
 MONASCA_API_USE_MOD_WSGI=${MONASCA_API_USE_MOD_WSGI:-True}
 
+# Uncomment to stack devstack with old log-api
+# USE_OLD_LOG_API=true
+# enable_service monasca-log-api
+
 # Start devstack with services running under Python 3
 USE_PYTHON3=True
 
+
 # Uncomment one of the following lines and modify accordingly to enable the Monasca DevStack Plugin
-enable_plugin monasca-api https://git.openstack.org/openstack/monasca-api
+enable_plugin monasca-api https://opendev.org/openstack/monasca-api
 # enable_plugin monasca-api file:///vagrant_home/Documents/repos/openstack/monasca-api.vertica
 
 # Uncomment to install tempest tests
-# enable_plugin monasca-tempest-plugin https://git.openstack.org/openstack/monasca-tempest-plugin
+enable_plugin monasca-tempest-plugin https://opendev.org/openstack/monasca-tempest-plugin
 
 ' > local.conf
     ./stack.sh
