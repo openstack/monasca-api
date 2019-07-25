@@ -16,8 +16,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from monasca_api.version import version_info
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -45,9 +43,6 @@ master_doc = 'index'
 
 # General details about project
 repository_name = u'openstack/monasca-api'
-project = u'Monitoring API Reference'
-version = version_info.canonical_version_string()
-release = version_info.version_string_with_vcs()
 bug_project = u'863'
 bug_tag = u''
 copyright = u'2014-present, OpenStack Foundation'
@@ -128,10 +123,6 @@ html_short_title = 'API Ref'
 # directly to the root of the documentation.
 # html_extra_path = []
 
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
-
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 # html_use_smartypants = True
@@ -173,17 +164,6 @@ html_use_index = True
 htmlhelp_basename = 'MonitoringApiRefDoc'
 
 # -- Options for LaTeX output ---------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
-}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
