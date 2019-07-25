@@ -101,6 +101,7 @@
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 - job:
     name: monasca-tempest-python3-cassandra
@@ -113,6 +114,7 @@
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 - job:
     name: monasca-tempest-python2-java-cassandra
@@ -123,6 +125,7 @@
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 - job:
     name: monasca-tempest-python3-java-cassandra
@@ -135,6 +138,7 @@
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
+      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 
 - project:

@@ -192,59 +192,97 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
-    def test_list_dimension_values(self, influxdb_client_mock):
+    def test_list_dimension_values(self, influxdb_client_mock, timestamp=True):
         mock_client = influxdb_client_mock.return_value
+
+        tenant = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
+        region = u'useast'
+        metric = u'custom_metric'
+        column = u'hostname'
+        hostname = u'custom_host'
+        start_timestamp = 1571917171275
+        end_timestamp = 1572917171275
         mock_client.query.return_value.raw = {
-            u'series': [
-                {
-                    u'values': [[u'custom_host']],
-                    u'name': u'custom_metric',
-                    u'columns': [u'hostname']
-                }]
+            u'series': [{
+                u'values': [[hostname]],
+                u'name': metric,
+                u'columns': [column]
+            }]
         }
 
         repo = influxdb_repo.MetricsRepository()
         mock_client.query.reset_mock()
+        if timestamp:
+            result = repo.list_dimension_values(tenant, region, metric, column,
+                                                start_timestamp, end_timestamp)
+        else:
+            result = repo.list_dimension_values(tenant, region, metric, column)
 
-        result = repo.list_dimension_values(
-            "38dc2a2549f94d2e9a4fa1cc45a4970c",
-            "useast",
-            "custom_metric",
-            "hostname")
+        self.assertEqual(result, [{u'dimension_value': hostname}])
 
-        self.assertEqual(result, [{u'dimension_value': u'custom_host'}])
+        expected_query = ('show tag values from "{metric}"'
+                          ' with key = "{column}"'
+                          ' where _tenant_id = \'{tenant}\''
+                          '  and _region = \'{region}\' '
+                          .format(tenant=tenant, region=region,
+                                  metric=metric, column=column))
+        expected_query += (' and time >= {start_timestamp}000000u'
+                           ' and time < {end_timestamp}000000u'
+                           .format(start_timestamp=start_timestamp,
+                                   end_timestamp=end_timestamp)
+                           if timestamp else '')
+        mock_client.query.assert_called_once_with(expected_query)
 
-        mock_client.query.assert_called_once_with(
-            'show tag values from "custom_metric" with key = "hostname"'
-            ' where _tenant_id = \'{tenant}\''
-            '  and _region = \'{region}\' '.format(tenant='38dc2a2549f94d2e9a4fa1cc45a4970c',
-                                                   region='useast'))
+    def test_list_dimension_values_with_timestamp(self):
+        self.test_list_dimension_values(timestamp=True)
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
-    def test_list_dimension_names(self, influxdb_client_mock):
+    def test_list_dimension_names(self, influxdb_client_mock, timestamp=False):
         mock_client = influxdb_client_mock.return_value
+
+        tenant = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
+        region = u'useast'
+        metric = u'custom_metric'
+        start_timestamp = 1571917171275
+        end_timestamp = 1572917171275
         mock_client.query.return_value.raw = {
             u'series': [{
                 u'values': [[u'_region'], [u'_tenant_id'], [u'hostname'],
                             [u'service']],
-                u'name': u'custom_metric',
+                u'name': metric,
                 u'columns': [u'tagKey']
             }]
         }
 
         repo = influxdb_repo.MetricsRepository()
-
-        result = repo.list_dimension_names(
-            "38dc2a2549f94d2e9a4fa1cc45a4970c",
-            "useast",
-            "custom_metric")
+        mock_client.query.reset_mock()
+        if timestamp:
+            result = repo.list_dimension_names(tenant, region, metric,
+                                               start_timestamp, end_timestamp)
+        else:
+            result = repo.list_dimension_names(tenant, region, metric)
 
         self.assertEqual(result,
                          [
                              {u'dimension_name': u'hostname'},
                              {u'dimension_name': u'service'}
                          ])
+
+        expected_query = ('show tag keys from "{metric}"'
+                          ' where _tenant_id = \'{tenant}\''
+                          '  and _region = \'{region}\' '
+                          .format(tenant=tenant, region=region, metric=metric))
+        expected_query += (' and time >= {start_timestamp}000000u'
+                           ' and time < {end_timestamp}000000u'
+                           .format(start_timestamp=start_timestamp,
+                                   end_timestamp=end_timestamp)
+                           if timestamp else '')
+
+        mock_client.query.assert_called_once_with(expected_query)
+
+    def test_list_dimension_names_with_timestamp(self):
+        self.test_list_dimension_names(timestamp=True)
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.requests.head")

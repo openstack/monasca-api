@@ -159,7 +159,8 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return query
 
     def _build_show_tag_values_query(self, metric_name, dimension_name,
-                                     tenant_id, region):
+                                     tenant_id, region, start_timestamp,
+                                     end_timestamp):
         from_with_clause = ''
         if metric_name:
             from_with_clause += ' from "{}"'.format(metric_name)
@@ -167,18 +168,21 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         if dimension_name:
             from_with_clause += ' with key = "{}"'.format(dimension_name)
 
-        where_clause = self._build_where_clause(None, None, tenant_id, region)
+        where_clause = self._build_where_clause(None, None, tenant_id, region,
+                                                start_timestamp, end_timestamp)
 
         query = 'show tag values' + from_with_clause + where_clause
 
         return query
 
-    def _build_show_tag_keys_query(self, metric_name, tenant_id, region):
+    def _build_show_tag_keys_query(self, metric_name, tenant_id, region,
+                                   start_timestamp, end_timestamp):
         from_with_clause = ''
         if metric_name:
             from_with_clause += ' from "{}"'.format(metric_name)
 
-        where_clause = self._build_where_clause(None, None, tenant_id, region)
+        where_clause = self._build_where_clause(None, None, tenant_id, region,
+                                                start_timestamp, end_timestamp)
 
         query = 'show tag keys' + from_with_clause + where_clause
 
@@ -919,11 +923,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return int((dt - datetime(1970, 1, 1)).total_seconds() * 1000)
 
     def list_dimension_values(self, tenant_id, region, metric_name,
-                              dimension_name):
+                              dimension_name, start_timestamp=None,
+                              end_timestamp=None):
         try:
             query = self._build_show_tag_values_query(metric_name,
                                                       dimension_name,
-                                                      tenant_id, region)
+                                                      tenant_id, region,
+                                                      start_timestamp,
+                                                      end_timestamp)
             result = self.influxdb_client.query(query)
             json_dim_name_list = self._build_serie_dimension_values(
                 result, dimension_name)
@@ -932,10 +939,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def list_dimension_names(self, tenant_id, region, metric_name):
+    def list_dimension_names(self, tenant_id, region, metric_name,
+                             start_timestamp=None, end_timestamp=None):
         try:
             query = self._build_show_tag_keys_query(metric_name,
-                                                    tenant_id, region)
+                                                    tenant_id, region,
+                                                    start_timestamp,
+                                                    end_timestamp)
             result = self.influxdb_client.query(query)
             json_dim_name_list = self._build_serie_dimension_names(result)
             return json_dim_name_list
