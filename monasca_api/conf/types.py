@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_config import types
+from oslo_utils import netutils
 
 
 class HostAddressPortOpt(cfg.Opt):
@@ -36,7 +37,11 @@ class HostAddressPortType(types.HostAddress):
         super(HostAddressPortType, self).__init__(version, type_name=type_name)
 
     def __call__(self, value):
-        addr, port = value.split(':')
+        addr, port = netutils.parse_host_port(value)
+        # NOTE(gmann): parse_host_port() return port as None if no port is
+        # supplied in value so setting port as string for correct
+        # parsing and error otherwise it will not be parsed for NoneType.
+        port = 'None' if port is None else port
         addr = self.validate_addr(addr)
         port = self._validate_port(port)
         if not addr and not port:

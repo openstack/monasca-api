@@ -837,8 +837,8 @@ function configure_monasca_api_python {
         # databases
         iniset "$MONASCA_API_CONF" database connection $dbAlarmUrl
         iniset "$MONASCA_API_CONF" repositories metrics_driver $dbMetricDriver
-        iniset "$MONASCA_API_CONF" cassandra contact_points $SERVICE_HOST
-        iniset "$MONASCA_API_CONF" influxdb ip_address $SERVICE_HOST
+        iniset "$MONASCA_API_CONF" cassandra contact_points $(ipv6_unquote $SERVICE_HOST)
+        iniset "$MONASCA_API_CONF" influxdb ip_address $(ipv6_unquote $SERVICE_HOST)
         iniset "$MONASCA_API_CONF" influxdb port 8086
 
         # keystone & security

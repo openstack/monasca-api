@@ -30,6 +30,13 @@ class TestHostAddressPortType(base.BaseTestCase):
     def test_hostname(self):
         self.assertEqual('localhost:2121', self.types('localhost:2121'))
 
+    def test_ipv6_address(self):
+        self.assertEqual('2001:db8:85a3::8a2e:370:2121',
+                         self.types('[2001:db8:85a3::8a2e:370]:2121'))
+
+    def test_ipv6_hostname(self):
+        self.assertEqual('::1:2121', self.types('[::1]:2121'))
+
     # failure scenario
     def test_missing_port(self):
         self.assertRaises(ValueError, self.types, '127.0.0.1')
@@ -39,6 +46,9 @@ class TestHostAddressPortType(base.BaseTestCase):
 
     def test_incorrect_ip(self):
         self.assertRaises(ValueError, self.types, '127.surprise.0.1:2121')
+
+    def test_incorrect_ipv6(self):
+        self.assertRaises(ValueError, self.types, '[2001:db8:8a2e:370]:2121')
 
     def test_incorrect_port(self):
         self.assertRaises(ValueError, self.types, '127.0.0.1:65536')
