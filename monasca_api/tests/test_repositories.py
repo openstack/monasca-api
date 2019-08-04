@@ -192,10 +192,10 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
-    def test_list_dimension_values(self, influxdb_client_mock, timestamp=True):
+    def test_list_dimension_values(self, influxdb_client_mock, timestamp=False):
         mock_client = influxdb_client_mock.return_value
 
-        tenant = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
+        tenant_id = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
         region = u'useast'
         metric = u'custom_metric'
         column = u'hostname'
@@ -209,29 +209,32 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                 u'columns': [column]
             }]
         }
-
         repo = influxdb_repo.MetricsRepository()
         mock_client.query.reset_mock()
-        if timestamp:
-            result = repo.list_dimension_values(tenant, region, metric, column,
-                                                start_timestamp, end_timestamp)
-        else:
-            result = repo.list_dimension_values(tenant, region, metric, column)
+
+        db_per_tenant = repo.conf.influxdb.db_per_tenant
+        database = repo.conf.influxdb.database_name
+        database += "_%s" % tenant_id if db_per_tenant else ""
+
+        result = (repo.list_dimension_values(tenant_id, region, metric, column,
+                                             start_timestamp, end_timestamp)
+                  if timestamp else
+                  repo.list_dimension_values(tenant_id, region, metric, column))
 
         self.assertEqual(result, [{u'dimension_value': hostname}])
 
-        expected_query = ('show tag values from "{metric}"'
-                          ' with key = "{column}"'
-                          ' where _tenant_id = \'{tenant}\''
-                          '  and _region = \'{region}\' '
-                          .format(tenant=tenant, region=region,
-                                  metric=metric, column=column))
-        expected_query += (' and time >= {start_timestamp}000000u'
-                           ' and time < {end_timestamp}000000u'
-                           .format(start_timestamp=start_timestamp,
-                                   end_timestamp=end_timestamp)
-                           if timestamp else '')
-        mock_client.query.assert_called_once_with(expected_query)
+        query = ('show tag values from "{metric}"'
+                 ' with key = "{column}"'
+                 ' where _region = \'{region}\''
+                 .format(region=region, metric=metric, column=column))
+        query += ('' if db_per_tenant else ' and _tenant_id = \'{tenant_id}\''
+                  .format(tenant_id=tenant_id))
+        query += (' and time >= {start_timestamp}000000u'
+                  ' and time < {end_timestamp}000000u'
+                  .format(start_timestamp=start_timestamp,
+                          end_timestamp=end_timestamp)
+                  if timestamp else '')
+        mock_client.query.assert_called_once_with(query, database=database)
 
     def test_list_dimension_values_with_timestamp(self):
         self.test_list_dimension_values(timestamp=True)
@@ -241,7 +244,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     def test_list_dimension_names(self, influxdb_client_mock, timestamp=False):
         mock_client = influxdb_client_mock.return_value
 
-        tenant = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
+        tenant_id = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
         region = u'useast'
         metric = u'custom_metric'
         start_timestamp = 1571917171275
@@ -257,11 +260,15 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
         repo = influxdb_repo.MetricsRepository()
         mock_client.query.reset_mock()
-        if timestamp:
-            result = repo.list_dimension_names(tenant, region, metric,
-                                               start_timestamp, end_timestamp)
-        else:
-            result = repo.list_dimension_names(tenant, region, metric)
+
+        db_per_tenant = repo.conf.influxdb.db_per_tenant
+        database = repo.conf.influxdb.database_name
+        database += "_%s" % tenant_id if db_per_tenant else ""
+
+        result = (repo.list_dimension_names(tenant_id, region, metric,
+                                            start_timestamp, end_timestamp)
+                  if timestamp else
+                  repo.list_dimension_names(tenant_id, region, metric))
 
         self.assertEqual(result,
                          [
@@ -269,17 +276,18 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                              {u'dimension_name': u'service'}
                          ])
 
-        expected_query = ('show tag keys from "{metric}"'
-                          ' where _tenant_id = \'{tenant}\''
-                          '  and _region = \'{region}\' '
-                          .format(tenant=tenant, region=region, metric=metric))
-        expected_query += (' and time >= {start_timestamp}000000u'
-                           ' and time < {end_timestamp}000000u'
-                           .format(start_timestamp=start_timestamp,
-                                   end_timestamp=end_timestamp)
-                           if timestamp else '')
+        query = ('show tag keys from "{metric}"'
+                 ' where _region = \'{region}\''
+                 .format(region=region, metric=metric))
+        query += ('' if db_per_tenant else ' and _tenant_id = \'{tenant_id}\''
+                  .format(tenant_id=tenant_id))
+        query += (' and time >= {start_timestamp}000000u'
+                  ' and time < {end_timestamp}000000u'
+                  .format(start_timestamp=start_timestamp,
+                          end_timestamp=end_timestamp)
+                  if timestamp else '')
 
-        mock_client.query.assert_called_once_with(expected_query)
+        mock_client.query.assert_called_once_with(query, database=database)
 
     def test_list_dimension_names_with_timestamp(self):
         self.test_list_dimension_names(timestamp=True)

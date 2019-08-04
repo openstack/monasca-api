@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Configuration option `db_per_tenant` added for InfluxDB to allow
+    data points to be written to dedicated tenant database where the
+    `database_name` prefixes the tenant ID, e.g. monasca_tenantid.

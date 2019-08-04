@@ -22,6 +22,10 @@ influxdb_opts = [
                help='''
 Database name where metrics are stored
 '''),
+    cfg.BoolOpt('db_per_tenant', default=False,
+                help='''
+Whether to use a separate database per tenant
+'''),
     cfg.HostAddressOpt('ip_address', default='127.0.0.1',
                        help='''
 IP address to Influxdb server

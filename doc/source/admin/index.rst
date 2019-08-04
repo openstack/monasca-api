@@ -72,3 +72,18 @@ Enabling InfluxDB Time Series Index in existing deployments
 If enabling TSI on an existing InfluxDB install please follow the instructions
 for migrating existing data here:
 https://docs.influxdata.com/influxdb/v1.7/administration/upgrading/#upgrading-influxdb-1-3-1-4-no-tsi-preview-to-1-7-x-tsi-enabled
+
+Database Per Tenant
+-------------------
+
+It is envisaged that separate database per tenant will be the default
+behaviour in a future release of Monasca. Not only would it make queries
+faster for tenants, it would also allow administrators to define
+retention policy per tenancy. To enable this, set
+`influxdb.db_per_tenant` to `True` in `monasca-{api,persister}` config
+(it defaults to `False` at the moment if not set).
+
+To migrate existing data to database per tenant, refer to README.rst
+under the following URL which also contains the Python script to
+facilitate migration:
+https://opendev.org/openstack/monasca-persister/src/branch/master/monasca_persister/tools/db-per-tenant/
