@@ -24,7 +24,7 @@ from oslo_utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse
 
-from monasca_common.rest import utils as rest_utils
+from monasca_api.common.rest import utils as rest_utils
 from monasca_common.validation import metrics as metric_validation
 
 from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
