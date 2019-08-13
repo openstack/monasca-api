@@ -829,6 +829,7 @@ function configure_monasca_api_python {
         # messaging
         iniset "$MONASCA_API_CONF" messaging driver "monasca_api.common.messaging.kafka_publisher:KafkaPublisher"
         iniset "$MONASCA_API_CONF" kafka uri "$SERVICE_HOST:9092"
+        iniset "$MONASCA_API_CONF" kafka legacy_kafka_client_enabled false
 
         # databases
         iniset "$MONASCA_API_CONF" database connection $dbAlarmUrl

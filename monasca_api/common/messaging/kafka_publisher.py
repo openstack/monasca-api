@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from monasca_common.kafka import client_factory
+import monasca_common.kafka_lib.common as kafka_common
 from oslo_config import cfg
 from oslo_log import log
 
 from monasca_api.common.messaging import exceptions
 from monasca_api.common.messaging import publisher
 
-import monasca_common.kafka.producer as kafka_producer
-import monasca_common.kafka_lib.common as kafka_common
 
 LOG = log.getLogger(__name__)
 
@@ -44,7 +44,8 @@ class KafkaPublisher(publisher.Publisher):
         self.partitions = cfg.CONF.kafka.partitions
         self.drop_data = cfg.CONF.kafka.drop_data
 
-        self._producer = kafka_producer.KafkaProducer(self.uri)
+        self._producer = client_factory.get_kafka_producer(
+            self.uri, cfg.CONF.kafka.legacy_kafka_client_enabled)
 
     def close(self):
         pass
