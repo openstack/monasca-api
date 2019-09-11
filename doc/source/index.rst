@@ -124,6 +124,7 @@ Configuration
    admin/index
    cli/index
    configuration/sample
+.. only:: html
    glossary
    install/index
    user/index
