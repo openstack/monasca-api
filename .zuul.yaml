@@ -119,6 +119,7 @@
 - job:
     name: monasca-tempest-python2-java-cassandra
     parent: monasca-tempest-base
+    voting: false
     vars:
       devstack_localrc:
         USE_PYTHON3: false
@@ -163,7 +164,6 @@
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
         - monasca-tempest-python2-cassandra
-        - monasca-tempest-python2-java-cassandra
         - monascalog-python3-tempest
     post:
       jobs:
