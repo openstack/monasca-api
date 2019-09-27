@@ -24,12 +24,14 @@ from oslo_utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse
 
-from monasca_api.common.rest import utils as rest_utils
+from monasca_api import conf
+from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
+from monasca_common.rest import utils as rest_utils
 from monasca_common.validation import metrics as metric_validation
 
-from monasca_api.v2.common.exceptions import HTTPUnprocessableEntityError
 
 LOG = log.getLogger(__name__)
+CONF = conf.CONF
 
 
 def from_json(req):
@@ -89,6 +91,36 @@ def validate_authorization(http_request, authorized_rules_list):
     raise falcon.HTTPUnauthorized('Forbidden',
                                   'The request does not have access to this service',
                                   challenge)
+
+
+def validate_payload_size(content_length):
+    """Validates payload size.
+
+    Method validates payload size, this method used req.content_length to determinate
+    payload size
+
+        [service]
+        max_log_size = 1048576
+
+    **max_log_size** refers to the maximum allowed content length.
+    If it is exceeded :py:class:`falcon.HTTPRequestEntityTooLarge` is
+    thrown.
+
+    :param  content_length: size of payload
+
+    :exception: :py:class:`falcon.HTTPLengthRequired`
+    :exception: :py:class:`falcon.HTTPRequestEntityTooLarge`
+
+    """
+    max_size = CONF.log_publisher.max_log_size
+
+    LOG.debug('Payload (content-length) is %s', str(content_length))
+
+    if content_length >= max_size:
+        raise falcon.HTTPPayloadTooLarge(
+            title='Log payload size exceeded',
+            description='Maximum allowed size is %d bytes' % max_size
+        )
 
 
 def get_x_tenant_or_tenant_id(http_request, delegate_authorized_rules_list):

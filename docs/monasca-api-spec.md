@@ -360,6 +360,17 @@ Document Version: v2.0
       - [Status Code](#status-code-26)
       - [Response Body](#response-body-28)
       - [Response Examples](#response-examples-24)
+- [Logs](#logs)
+  - [Create Logs](#create-logs)
+    - [POST /v2.0/logs](#post-logs)
+      - [Headers](#headers-29)
+      - [Path Parameters](#path-parameters-28)
+      - [Query Parameters](#query-parameters-29)
+      - [Request Body](#request-body-29)
+      - [Request Examples](#request-examples-25)
+    - [Response](#response-29)
+      - [Status Code](#status-code-27)
+      - [Response Body](#response-body-28)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -367,17 +378,19 @@ Document Version: v2.0
 # Overview
 This document describes the Monasca API v2.0, which supports Monitoring as a Service (MONaaS). The Monasca API provides a RESTful JSON interface for interacting with and managing monitoring related resources.
 
-The API consists of six main resources:
+The API consists of eight main resources:
 
 1. Versions  - Provides information about the supported versions of the API.
 2. Metrics - Provides for storage and retrieval of metrics.
 3. Measurements - Operations for querying measurements of metrics.
 4. Statistics -  Operations for evaluating statistics of metrics.
 5. Notification Methods - Represents a method, such as email, which can be associated with an alarm definition via an action. When an alarm is triggered notification methods associated with the alarm definition are triggered.
-5. Alarm Definitions - Provides CRUD operations for alarm definitions.
-6. Alarms - Provides CRUD operations for alarms, and querying the alarm state history.
+6. Alarm Definitions - Provides CRUD operations for alarm definitions.
+7. Alarms - Provides CRUD operations for alarms, and querying the alarm state history.
+8. Logs - Provides for storage of logs.
 
 Before using the API, you must first get a valid auth token from Keystone. All API operations require an auth token specified in the header of the http request.
+
 
 ## Metric Name and Dimensions
 A metric is uniquely identified by a name and set of dimensions.
@@ -3594,6 +3607,88 @@ Returns a JSON object with a 'links' array of links and an 'elements' array of a
 }
 
 ```
+___
+
+# Logs
+The logs resource allows logs to be created and queried.
+
+## Create Logs
+Create logs.
+
+### POST /v2.0/logs
+
+#### Headers
+* X-Auth-Token (string, required) - Keystone auth token
+* Content-Type (string, required) - application/json
+
+#### Path Parameters
+None.
+
+#### Query Parameters
+* tenant_id (string, optional, restricted) - Tenant ID (project ID) to create
+  log on behalf of. Usage of this query parameter requires the role specified
+  in the configuration option `delegate_roles` .
+
+#### Request Body
+JSON object which can have a maximum size of 5 MB. It consists of global
+dimensions (optional) and array of logs. Each single log message with
+resulting envelope can have a maximum size of 1 MB.
+Dimensions is a dictionary of key-value pairs and should be consistent with
+metric dimensions.
+
+Logs is an array of JSON objects describing the log entries. Every log object
+can have individual set of dimensions which has higher precedence than global
+ones. It should be noted that dimensions presented in each log record are also
+optional.
+
+    If both global (at the root level) and local (at log entry level)
+    dimensions would be present, they will be merged into one dictionary.
+    Please note that local dimensions are logically considered as more
+    specific thus in case of conflict (i.e. having two entries with the same
+    key in both global and local dimensions) local dimensions take
+    precedence over global dimensions.
+
+#### Request Examples
+
+POST logs
+
+```
+POST /v2.0/logs HTTP/1.1
+Host: 192.168.10.4:5607
+Content-Type: application/json
+X-Auth-Token: 27feed73a0ce4138934e30d619b415b0
+Cache-Control: no-cache
+
+{
+    "dimensions":{
+        "hostname":"mini-mon",
+        "service":"monitoring"
+    },
+    "logs":[
+        {
+            "message":"msg1",
+            "dimensions":{
+                "component":"mysql",
+                "path":"/var/log/mysql.log"
+            }
+        },
+        {
+            "message":"msg2",
+            "dimensions":{
+                "component":"monasca-api",
+                "path":"/var/log/monasca/monasca-api.log"
+            }
+        }
+    ]
+}
+```
+
+### Response
+#### Status Code
+* 204 - No content
+
+#### Response Body
+This request does not return a response body.
 ___
 
 # License

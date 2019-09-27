@@ -18,9 +18,13 @@ from oslo_config import cfg
 
 security_opts = [
     cfg.ListOpt('healthcheck_roles', default=['@'],
-                help='Roles that are allowed to check the health'),
+                help='''
+Roles that are allowed to check the health
+'''),
     cfg.ListOpt('versions_roles', default=['@'],
-                help='Roles that are allowed to check the versions'),
+                help='''
+Roles that are allowed to check the versions
+'''),
     cfg.ListOpt('default_authorized_roles', default=['monasca-user'],
                 help='''
 Roles that are allowed full access to the API
@@ -36,8 +40,7 @@ Roles that are only allowed to GET from the API
 '''),
     cfg.ListOpt('delegate_authorized_roles', default=['admin'],
                 help='''
-Roles that are allowed to POST metrics on
-behalf of another tenant
+Roles that are allowed to POST metrics on behalf of another tenant
 ''')
 ]
 

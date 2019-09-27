@@ -28,7 +28,6 @@ java/debs/*
 target
 test-output/
 logs/
-log/
 *config*.yml
 db/config.yml
 virtenv/*

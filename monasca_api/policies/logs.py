@@ -12,29 +12,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from monasca_api import policies
 from oslo_config import cfg
 from oslo_policy import policy
 
-from monasca_api import policies
 
-CONF = cfg.CONF
-HEALTHCHECK_ROLES = policies.roles_list_to_check_str(cfg.CONF.security.healthcheck_roles)
+DEFAULT_AUTHORIZED_ROLES = policies.roles_list_to_check_str(
+    cfg.CONF.security.default_authorized_roles)
+AGENT_AUTHORIZED_ROLES = policies.roles_list_to_check_str(
+    cfg.CONF.security.agent_authorized_roles)
+DELEGATE_AUTHORIZED_ROLES = policies.roles_list_to_check_str(
+    cfg.CONF.security.delegate_authorized_roles)
 
 rules = [
     policy.DocumentedRuleDefault(
-        name='api:healthcheck',
-        check_str=HEALTHCHECK_ROLES,
-        description='Check healthiness.',
+        name='api:logs:post',
+        check_str=' or '.join(filter(None, [AGENT_AUTHORIZED_ROLES,
+                                            DEFAULT_AUTHORIZED_ROLES,
+                                            DELEGATE_AUTHORIZED_ROLES])),
+        description='Logs post rule',
         operations=[
-            {'path': '/healthcheck', 'method': 'GET'}
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name='api:healthcheck:head',
-        check_str=HEALTHCHECK_ROLES,
-        description='Healthcheck head rule',
-        operations=[
-            {'path': '/healthcheck', 'method': 'HEAD'}
+            {'path': '/logs', 'method': 'POST'},
         ]
     )
 ]
