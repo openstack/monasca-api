@@ -289,18 +289,24 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
         dimension_name = helpers.get_query_param(req, 'dimension_name',
                                                  required=True)
         offset = helpers.get_query_param(req, 'offset')
+        start_timestamp = helpers.get_query_starttime_timestamp(req, False)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         result = self._dimension_values(tenant_id, req.uri, metric_name,
-                                        dimension_name, offset, req.limit)
+                                        dimension_name, offset, req.limit,
+                                        start_timestamp, end_timestamp)
         res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _dimension_values(self, tenant_id, req_uri, metric_name,
-                          dimension_name, offset, limit):
+                          dimension_name, offset, limit, start_timestamp,
+                          end_timestamp):
 
         result = self._metrics_repo.list_dimension_values(tenant_id,
                                                           self._region,
                                                           metric_name,
-                                                          dimension_name)
+                                                          dimension_name,
+                                                          start_timestamp,
+                                                          end_timestamp)
 
         return helpers.paginate_with_no_id(result, req_uri, offset, limit)
 
@@ -324,15 +330,21 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         metric_name = helpers.get_query_param(req, 'metric_name')
         offset = helpers.get_query_param(req, 'offset')
+        start_timestamp = helpers.get_query_starttime_timestamp(req, False)
+        end_timestamp = helpers.get_query_endtime_timestamp(req, False)
         result = self._dimension_names(tenant_id, req.uri, metric_name,
-                                       offset, req.limit)
+                                       offset, req.limit,
+                                       start_timestamp, end_timestamp)
         res.body = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
-    def _dimension_names(self, tenant_id, req_uri, metric_name, offset, limit):
+    def _dimension_names(self, tenant_id, req_uri, metric_name, offset, limit,
+                         start_timestamp, end_timestamp):
 
         result = self._metrics_repo.list_dimension_names(tenant_id,
                                                          self._region,
-                                                         metric_name)
+                                                         metric_name,
+                                                         start_timestamp,
+                                                         end_timestamp)
 
         return helpers.paginate_with_no_id(result, req_uri, offset, limit)

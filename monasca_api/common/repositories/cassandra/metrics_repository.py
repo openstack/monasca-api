@@ -157,7 +157,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         self.epoch = datetime.utcfromtimestamp(0)
 
     def list_dimension_values(self, tenant_id, region, metric_name,
-                              dimension_name):
+                              dimension_name, start_timestamp=None,
+                              end_timestamp=None):
+
+        if start_timestamp or end_timestamp:
+            # NOTE(brtknr): For more details, see story
+            # https://storyboard.openstack.org/#!/story/2006204
+            LOG.info("Scoping by timestamp not implemented for cassandra.")
 
         try:
             if metric_name:
@@ -185,7 +191,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return json_dim_value_list
 
-    def list_dimension_names(self, tenant_id, region, metric_name):
+    def list_dimension_names(self, tenant_id, region, metric_name,
+                             start_timestamp=None, end_timestamp=None):
+
+        if start_timestamp or end_timestamp:
+            # NOTE(brtknr): For more details, see story
+            # https://storyboard.openstack.org/#!/story/2006204
+            LOG.info("Scoping by timestamp not implemented for cassandra.")
 
         try:
             if metric_name:
