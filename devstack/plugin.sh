@@ -210,12 +210,6 @@ function start_monasca_services {
     fi
     if is_service_enabled monasca-agent; then
         sudo /usr/local/bin/monasca-reconfigure
-        if [ -f /etc/systemd/system/monasca-agent.target ]; then
-            start_service monasca-agent.target || restart_service monasca-agent.target
-        fi
-        if [ -f /etc/systemd/system/monasca-agent.service ]; then
-            start_service monasca-agent.service || restart_service monasca-agent.service
-        fi
         if is_service_enabled nova && [ "$VIRT_DRIVER" = "libvirt" ]; then
             sudo /opt/monasca-agent/bin/monasca-setup -d libvirt
         fi
@@ -242,7 +236,6 @@ function unstack_monasca {
     stop_service grafana-server || true
 
     [[ -f /etc/systemd/system/monasca-agent.target ]] && stop_service monasca-agent.target || true
-    [[ -f /etc/systemd/system/monasca-agent.service ]] && stop_service monasca-agent.service || true
 
     stop_service monasca-thresh || true
 
