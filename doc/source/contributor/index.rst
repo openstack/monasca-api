@@ -8,6 +8,21 @@ Kanban Board
 Progress on implementation of important stories in Stein release is tracked in
 `Monasca Board on StoryBoard <https://storyboard.openstack.org/#!/board/111>`_.
 
+Reviews Prioritisation
+~~~~~~~~~~~~~~~~~~~~~~
+
+Monasca project uses *Review-Priority* field in Gerrit to emphasize
+prioritized code changes.
+
+Every developer can propose the changes which should be prioritized
+in `weekly team meeting <http://eavesdrop.openstack.org/#Monasca_Team_Meeting>`_
+or in the mailing list. Any core reviewer,
+preferably from a different company, can confirm such proposed change
+by setting *Review-Priority* +1.
+
+Prioritized changes can be listed in this
+`dashboard <http://www.tinyurl.com/monasca>`_.
+
 Workflow
 ~~~~~~~~
 
