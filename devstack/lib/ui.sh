@@ -34,9 +34,11 @@ function configure_ui {
     if is_ui_enabled; then
         _link_ui_files
 
+        cp $MONASCA_UI_DIR/monitoring/config/local_settings.py \
+            $HORIZON_DIR/openstack_dashboard/local/local_settings.d/_50_monasca_ui_settings.py
         sed -e "
             s#getattr(settings, 'GRAFANA_URL', None)#{'RegionOne': \"http:\/\/${SERVICE_HOST}:3000\", }#g;
-        " -i "${MONASCA_BASE}"/monasca-ui/monitoring/config/local_settings.py
+        " -i $HORIZON_DIR/openstack_dashboard/local/local_settings.d/_50_monasca_ui_settings.py
         if python3_enabled; then
             DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python3 "${MONASCA_BASE}"/horizon/manage.py collectstatic --noinput
             DJANGO_SETTINGS_MODULE=openstack_dashboard.settings python3 "${MONASCA_BASE}"/horizon/manage.py compress --force
