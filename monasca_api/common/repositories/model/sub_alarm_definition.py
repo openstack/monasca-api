@@ -48,7 +48,7 @@ class SubAlarmDefinition(object):
             self.period = row['period']
             self.periods = row['periods']
             self.threshold = row['threshold']
-            self.deterministic = str(row['is_deterministic']) == '1'
+            self.deterministic = row['is_deterministic']
 
         if sub_expr:
             # id is not used for compare or hash.
