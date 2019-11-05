@@ -19,6 +19,14 @@ region = {{ DEFAULT_REGION }}
 #valid_notification_periods = 0,60
 
 #
+# Enable Metrics api endpoints (boolean value)
+enable_metrics_api = {{ ENABLE_METRICS_API }}
+
+#
+# Enable Logs api endpoints (boolean value)
+enable_logs_api = {{ ENABLE_LOGS_API }}
+
+#
 # From oslo.log
 #
 
@@ -423,6 +431,9 @@ metrics_topic = metrics
 # The topic that events will be published too
 #  (string value)
 #events_topic = events
+
+# The topic that logs will be published to (multi valued)
+#logs_topics = log
 
 #
 # The topic that alarm state will be published too
