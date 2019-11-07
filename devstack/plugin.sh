@@ -593,7 +593,11 @@ function install_schema_metric_database_influxdb {
     sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/influxdb_setup.py $MONASCA_SCHEMA_DIR/influxdb_setup.py
     sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
     sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    sudo $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    if python3_enabled; then
+        sudo python3 $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    else
+        sudo python $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    fi
 }
 
 function install_schema_metric_database_vertica {
@@ -1241,7 +1245,12 @@ function init_monasca_grafana {
     sudo chown -R root:root "${DASHBOARDS_DIR}"
     sudo chmod -R 0644 "${DASHBOARDS_DIR}"
 
-    sudo python "${MONASCA_API_DIR}"/devstack/files/grafana/grafana-init.py
+
+    if python3_enabled; then
+        sudo python3 "${MONASCA_API_DIR}"/devstack/files/grafana/grafana-init.py
+    else
+        sudo python "${MONASCA_API_DIR}"/devstack/files/grafana/grafana-init.py
+    fi
 
     sudo rm -rf "${DASHBOARDS_DIR}"
 }

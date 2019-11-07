@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 
 # (C) Copyright 2017 Hewlett Packard Enterprise Development LP
