@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # (C) Copyright 2015,2016 Hewlett Packard Enterprise Development LP
 #
@@ -22,6 +20,14 @@
    python based influxdb clients are available on this system.
 """
 
+import json
+import sys
+
+from oslo_utils.encodeutils import safe_decode
+from oslo_utils.encodeutils import safe_encode
+import six.moves.urllib.parse as urlparse
+from six.moves import urllib
+
 ADMIN = 'root'
 ADMIN_PASS = 'root'
 DBNAME = 'mon'
@@ -35,12 +41,6 @@ SHARDSPACE_NAME = 'persister_all'
 REPLICATION = 1
 RETENTION = '90d'
 
-import json
-import sys
-import time
-import six.moves.urllib.parse as urlparse
-import urllib2
-
 
 def format_response(req):
     try:
@@ -52,8 +52,9 @@ def format_response(req):
         else:
             return []
     except KeyError:
-        print "Query returned a non-successful result: {0}".format(json_value['results'])
+        print("Query returned a non-successful result: {0}".format(json_value['results']))
         raise
+
 
 def influxdb_get(uri, query, db=None):
     """Runs a query via HTTP GET and returns the response as a Python list."""
@@ -64,12 +65,13 @@ def influxdb_get(uri, query, db=None):
 
     try:
         params = urlparse.urlencode(getparams)
-        uri = "{}&{}".format(uri,params)
-        req = urllib2.urlopen(uri)
+        uri = "{}&{}".format(uri, params)
+        req = urllib.request.urlopen(uri)
         return format_response(req)
 
     except KeyError:
         sys.exit(1)
+
 
 def influxdb_get_post(uri, query, db=None):
     """Runs a query using HTTP GET or POST and returns the response as a Python list.
@@ -82,19 +84,19 @@ def influxdb_get_post(uri, query, db=None):
         query_params['db'] = db
 
     try:
-        encoded_params = urlparse.urlencode(query_params)
-
+        encoded_params = safe_encode(urlparse.urlencode(query_params))
         try:
-            req = urllib2.urlopen(uri, encoded_params)
+            req = urllib.request.urlopen(uri, encoded_params)
             return format_response(req)
 
-        except urllib2.HTTPError:
+        except urllib.error.HTTPError:
             uri = "{}&{}".format(uri, encoded_params)
-            req = urllib2.urlopen(uri)
+            req = urllib.request.urlopen(uri)
             return format_response(req)
 
     except KeyError:
         sys.exit(1)
+
 
 def main(argv=None):
     """If necessary, create the database, retention policy, and users"""
@@ -104,9 +106,9 @@ def main(argv=None):
     # List current databases
     dbs = influxdb_get(uri=api_uri, query="SHOW DATABASES")
     if [DBNAME] not in dbs:
-        print "Creating database '{}'".format(DBNAME)
+        print("Creating database '{}'".format(DBNAME))
         influxdb_get_post(uri=api_uri, query="CREATE DATABASE {0}".format(DBNAME))
-        print "...created!"
+        print("...created!")
 
     # Check retention policy
     policies = influxdb_get(uri=api_uri,
@@ -124,7 +126,8 @@ def main(argv=None):
     for name, password in USERS.items():
         if not any(user[0] == name for user in users):
             influxdb_get_post(uri=api_uri,
-                              query=unicode("CREATE USER {0} WITH PASSWORD '{1}'".format(name, password)),
+                              query=safe_decode("CREATE USER {0} WITH PASSWORD '{1}'"
+                                                .format(name, password)),
                               db=DBNAME)
 
 if __name__ == "__main__":
