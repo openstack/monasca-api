@@ -1673,7 +1673,7 @@ None.
 * name (string(250), required) - A descriptive name of the notification method.
 * type (string(100), required) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), required) - The email/url address to notify.
-* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
+* period (integer, optional) - The interval in seconds to periodically send the notification. Supported periods are defined in the Monasca API and Notification service config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ```
@@ -1889,7 +1889,7 @@ None.
 * name (string(250), required) - A descriptive name of the notification method.
 * type (string(100), required) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), required) - The email/url address to notify.
-* period (integer, required) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
+* period (integer, required) - The interval in seconds to periodically send the notification. Supported periods are defined in the Monasca API and Notification service config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ````
@@ -1960,7 +1960,7 @@ None.
 * name (string(250), optional) - A descriptive name of the notification method.
 * type (string(100), optional) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), optional) - The email/url address to notify.
-* period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
+* period (integer, optional) - The interval in seconds to periodically send the notification. Supported periods are defined in the Monasca API and Notification service config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
 #### Request Examples
 ````

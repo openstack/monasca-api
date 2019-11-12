@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Adds support for configuring periodic notifications for all notification types.

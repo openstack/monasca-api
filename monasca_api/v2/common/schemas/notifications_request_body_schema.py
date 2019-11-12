@@ -60,9 +60,6 @@ def parse_and_validate(msg, valid_periods, require_all=False):
     elif notification_type == 'WEBHOOK':
         _validate_url(msg['address'])
 
-    if notification_type != 'WEBHOOK' and msg['period'] != 0:
-        raise exceptions.ValidationException("Period can only be set with webhooks")
-
 
 def _validate_email(address):
     if not validation.validate_email_address(address):
@@ -92,5 +89,5 @@ def _parse_and_validate_period(period, valid_periods):
         raise exceptions.ValidationException("Period {} must be a valid integer".format(period))
     if period != 0 and period not in valid_periods:
         raise exceptions.ValidationException(
-            "{} is not a valid period, not in {}".format(period, valid_periods))
+            "{} is not in the configured list of valid periods: {}".format(period, valid_periods))
     return period
