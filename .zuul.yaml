@@ -45,6 +45,8 @@
         horizon: false
         monasca-log: false
       tox_envlist: all
+      devstack_localrc:
+        USE_PYTHON3: true
       tempest_test_regex: monasca_tempest_tests.tests.api
       devstack_plugins:
         monasca-api: https://opendev.org/openstack/monasca-api
@@ -109,6 +111,8 @@
         cinder: false
         horizon: false
       tox_envlist: all
+      devstack_localrc:
+        USE_PYTHON3: true
       tempest_test_regex: monasca_tempest_tests.tests.log_api
       devstack_plugins:
         monasca-api: https://opendev.org/openstack/monasca-api
@@ -126,21 +130,10 @@
       - ^releasenotes/.*$
 
 - job:
-    name: monasca-tempest-python2-influxdb
-    parent: monasca-tempest-base
-    vars:
-      devstack_localrc:
-        MONASCA_API_IMPLEMENTATION_LANG: python
-        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
-        MONASCA_METRICS_DB: influxdb
-        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
-
-- job:
     name: monasca-tempest-python3-influxdb
     parent: monasca-tempest-base
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: influxdb
@@ -152,23 +145,10 @@
     voting: false
     vars:
       devstack_localrc:
-        USE_PYTHON3: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: influxdb
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
-
-- job:
-    name: monasca-tempest-python2-cassandra
-    parent: monasca-tempest-base
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: false
-        MONASCA_API_IMPLEMENTATION_LANG: python
-        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
-        MONASCA_METRICS_DB: cassandra
-        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
-      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 - job:
     name: monasca-tempest-python3-cassandra
@@ -176,22 +156,8 @@
     voting: false
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
-        MONASCA_METRICS_DB: cassandra
-        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
-      tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
-
-- job:
-    name: monasca-tempest-python2-java-cassandra
-    parent: monasca-tempest-base
-    voting: false
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: false
-        MONASCA_API_IMPLEMENTATION_LANG: python
-        MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
       tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
@@ -202,7 +168,6 @@
     voting: false
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: java
         MONASCA_METRICS_DB: cassandra
@@ -214,19 +179,6 @@
     parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
-        USE_OLD_LOG_API: false
-        MONASCA_API_IMPLEMENTATION_LANG: python
-        MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
-        MONASCA_METRICS_DB: influxdb
-        TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
-
-- job:
-    name: monasca-tempest-log-python2-influxdb
-    parent: monasca-tempest-log-base
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: false
         USE_OLD_LOG_API: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
@@ -238,7 +190,6 @@
     parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
         USE_OLD_LOG_API: false
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
@@ -250,25 +201,20 @@
       - check-requirements
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
-      - openstack-python-jobs
-      - openstack-python3-train-jobs
+      - openstack-python3-ussuri-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
     check:
       jobs:
         - monasca-tempest-log-python3-influxdb
-        - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
-        - monasca-tempest-python2-cassandra
-        - monasca-tempest-python2-java-cassandra
+        - monasca-tempest-python3-cassandra
         - build-monasca-docker-image
     gate:
       queue: monasca
       jobs:
         - monasca-tempest-log-python3-influxdb
-        - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
-        - monasca-tempest-python2-cassandra
     post:
       jobs:
         - publish-monasca-api-docker-image

@@ -62,7 +62,7 @@ directory of this project
 
 ::
 
-   $ tox -e py27
+   $ tox -e py36
 
 Start the Server - for Apache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
