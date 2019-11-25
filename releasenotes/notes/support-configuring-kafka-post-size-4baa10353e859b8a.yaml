@@ -1,0 +1,4 @@
+---
+features:
+  - A new config option, queue_buffering_max_messages, has been added to
+    support controlling the size of posts to Kafka from the Monasca API.
