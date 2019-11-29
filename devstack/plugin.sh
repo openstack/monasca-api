@@ -127,8 +127,12 @@ function install_monasca {
     echo_summary "Installing Monasca"
 
     install_monasca_common_java
-    stack_install_service monasca-persister
-    stack_install_service monasca-notification
+    if is_service_enabled monasca-persister; then
+        stack_install_service monasca-persister
+    fi
+    if is_service_enabled monasca-notification; then
+        stack_install_service monasca-notification
+    fi
 
     if is_service_enabled monasca-thresh; then
         if ! is_storm_enabled; then
@@ -413,30 +417,32 @@ function clean_kafka {
 
 function install_monasca_influxdb {
 
-    echo_summary "Install Monasca Influxdb"
+    if is_service_enabled monasca-persister; then
+        echo_summary "Install Monasca Influxdb"
 
-    local influxdb_deb=influxdb_${INFLUXDB_VERSION}_amd64.deb
-    local influxdb_deb_url=https://dl.influxdata.com/influxdb/releases/${influxdb_deb}
+        local influxdb_deb=influxdb_${INFLUXDB_VERSION}_amd64.deb
+        local influxdb_deb_url=https://dl.influxdata.com/influxdb/releases/${influxdb_deb}
 
-    local influxdb_deb_dest
-    influxdb_deb_dest=`get_extra_file ${influxdb_deb_url}`
+        local influxdb_deb_dest
+        influxdb_deb_dest=`get_extra_file ${influxdb_deb_url}`
 
-    sudo dpkg --skip-same-version -i ${influxdb_deb_dest}
+        sudo dpkg --skip-same-version -i ${influxdb_deb_dest}
 
-    # Validate INFLUXDB_VERSION
-    validate_version ${INFLUXDB_VERSION}
+        # Validate INFLUXDB_VERSION
+        validate_version ${INFLUXDB_VERSION}
 
-    if [[ $? -ne 0 ]]; then
-        echo "Found invalid value for variable INFLUXDB_VERSION: $INFLUXDB_VERSION"
-        echo "Valid values for INFLUXDB_VERSION must be in the form of 1.0.0"
-        die "Please set INFLUXDB_VERSION to a correct value"
+        if [[ $? -ne 0 ]]; then
+            echo "Found invalid value for variable INFLUXDB_VERSION: $INFLUXDB_VERSION"
+            echo "Valid values for INFLUXDB_VERSION must be in the form of 1.0.0"
+            die "Please set INFLUXDB_VERSION to a correct value"
+        fi
+
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/influxdb/influxdb.conf /etc/influxdb/influxdb.conf
+
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/influxdb/influxdb /etc/default/influxdb
+
+        sudo systemctl start influxdb || sudo systemctl restart influxdb
     fi
-
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/influxdb/influxdb.conf /etc/influxdb/influxdb.conf
-
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/influxdb/influxdb /etc/default/influxdb
-
-    sudo systemctl start influxdb || sudo systemctl restart influxdb
 
 }
 
@@ -474,44 +480,45 @@ function install_monasca_vertica {
 
 function install_monasca_cassandra {
 
-    echo_summary "Install Monasca Cassandra"
+    if is_service_enabled monasca-persister; then
+        echo_summary "Install Monasca Cassandra"
 
-    if [[ "$OFFLINE" != "True" ]]; then
-        sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian ${CASSANDRA_VERSION} main' > /etc/apt/sources.list.d/cassandra.sources.list"
-        REPOS_UPDATED=False
-        curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
-        PUBLIC_KEY=`sudo apt_get update 2>&1 | awk '/NO_PUBKEY/ {print $NF}'`
-        if [ -n "${PUBLIC_KEY}" ]; then
-            sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-key  ${PUBLIC_KEY}
+        if [[ "$OFFLINE" != "True" ]]; then
+            sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian ${CASSANDRA_VERSION} main' > /etc/apt/sources.list.d/cassandra.sources.list"
+            REPOS_UPDATED=False
+            curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+            PUBLIC_KEY=`sudo apt_get update 2>&1 | awk '/NO_PUBKEY/ {print $NF}'`
+            if [ -n "${PUBLIC_KEY}" ]; then
+                sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-key  ${PUBLIC_KEY}
+            fi
         fi
+
+        REPOS_UPDATED=False
+        apt_get_update
+        apt_get install cassandra
+
+        if [[ ${SERVICE_HOST} ]]; then
+
+            # set cassandra server listening ip address
+            sudo sed -i "s/^rpc_address: localhost/rpc_address: ${SERVICE_HOST}/g" /etc/cassandra/cassandra.yaml
+
+        fi
+
+        # set batch size larger
+        sudo sed -i "s/^batch_size_warn_threshold_in_kb: 5/batch_size_warn_threshold_in_kb: 50/g" /etc/cassandra/cassandra.yaml
+
+        sudo sed -i "s/^batch_size_fail_threshold_in_kb: 50/batch_size_fail_threshold_in_kb: 500/g" /etc/cassandra/cassandra.yaml
+
+        sudo service cassandra restart
+
+        echo "Sleep for 15 seconds to wait starting up Cassandra"
+        sleep 15s
+
+        export CQLSH_NO_BUNDLED=true
+
+        # always needed for Monasca api
+        pip_install_gr cassandra-driver
     fi
-
-    REPOS_UPDATED=False
-    apt_get_update
-    apt_get install cassandra
-
-    if [[ ${SERVICE_HOST} ]]; then
-
-        # set cassandra server listening ip address
-        sudo sed -i "s/^rpc_address: localhost/rpc_address: ${SERVICE_HOST}/g" /etc/cassandra/cassandra.yaml
-
-    fi
-
-    # set batch size larger
-    sudo sed -i "s/^batch_size_warn_threshold_in_kb: 5/batch_size_warn_threshold_in_kb: 50/g" /etc/cassandra/cassandra.yaml
-
-    sudo sed -i "s/^batch_size_fail_threshold_in_kb: 50/batch_size_fail_threshold_in_kb: 500/g" /etc/cassandra/cassandra.yaml
-
-    sudo service cassandra restart
-
-    echo "Sleep for 15 seconds to wait starting up Cassandra"
-    sleep 15s
-
-    export CQLSH_NO_BUNDLED=true
-
-    # always needed for Monasca api
-    pip_install_gr cassandra-driver
-
 }
 
 function clean_monasca_influxdb {
@@ -611,12 +618,14 @@ function install_schema_metric_database_vertica {
 }
 
 function install_schema_metric_database_cassandra {
-    local CASSANDRA_CONNECT_TIMEOUT=300
-    local CASSANDRA_REQUEST_TIMEOUT=300
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/cassandra/*.cql $MONASCA_SCHEMA_DIR
-    /usr/bin/cqlsh ${SERVICE_HOST} -f $MONASCA_SCHEMA_DIR/monasca_schema.cql \
-        --connect-timeout="${CASSANDRA_CONNECT_TIMEOUT}" \
-        --request-timeout="${CASSANDRA_REQUEST_TIMEOUT}"
+    if is_service_enabled monasca-persister; then
+        local CASSANDRA_CONNECT_TIMEOUT=300
+        local CASSANDRA_REQUEST_TIMEOUT=300
+        sudo cp -f "${MONASCA_API_DIR}"/devstack/files/cassandra/*.cql $MONASCA_SCHEMA_DIR
+        /usr/bin/cqlsh ${SERVICE_HOST} -f $MONASCA_SCHEMA_DIR/monasca_schema.cql \
+            --connect-timeout="${CASSANDRA_CONNECT_TIMEOUT}" \
+            --request-timeout="${CASSANDRA_REQUEST_TIMEOUT}"
+    fi
 }
 
 function install_schema_kafka_topics {

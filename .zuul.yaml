@@ -71,23 +71,20 @@
     timeout: 7800
     required-projects:
       - openstack/devstack-gate
-      - openstack/monasca-agent
       - openstack/monasca-api
       - openstack/monasca-common
-      - openstack/monasca-grafana-datasource
-      - openstack/monasca-notification
-      - openstack/monasca-persister
-      - openstack/monasca-statsd
-      - openstack/monasca-thresh
-      - openstack/monasca-ui
       - openstack/python-monascaclient
       - openstack/tempest
-      - openstack/monasca-kibana-plugin
       - openstack/monasca-tempest-plugin
     vars:
       devstack_services:
         monasca-log: true
         # Disable unneeded services.
+        monasca-agent: false
+        monasca-notification: false
+        monasca-persister: false
+        monasca-thresh: false
+        monasca-storm: false
         etcd3: false
         g-api: false
         g-reg: false
