@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Guide to upgrading to Elasticsearch 7.x can be found here:
+    https://www.elastic.co/guide/en/cloud/current/ec-upgrading-v7.html

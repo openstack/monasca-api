@@ -1,3 +1,7 @@
 init_config:
 instances:
-  - url: http://{{IP}}:9200
+-   url: http://{{IP}}:9200
+    cluster_stats: true
+    pshard_stats: true
+    index_stats: true
+    pending_task_stats: true
