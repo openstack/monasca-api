@@ -3693,6 +3693,7 @@ ___
 
 # License
 (C) Copyright 2014-2016 Hewlett Packard Enterprise Development LP
+(C) Copyright 2019 FUJITSU LIMITED
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
