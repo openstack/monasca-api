@@ -62,7 +62,7 @@
       - ^releasenotes/.*$
 
 - job:
-    name: monasca-log-tempest-base
+    name: monasca-tempest-log-base
     parent: devstack-tempest
     description: |
       Base job for running tempest tests with monasca-log-api devstack plugin.
@@ -210,8 +210,8 @@
       tempest_test_regex: (?!.*\[.*\btimerange\b.*\])(^monasca_tempest_tests.tests.api)
 
 - job:
-    name: monasca-log-tempest-python3-influxdb
-    parent: monasca-log-tempest-base
+    name: monasca-tempest-log-python3-influxdb
+    parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
         USE_PYTHON3: true
@@ -222,8 +222,8 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - job:
-    name: monasca-log-tempest-python2-influxdb
-    parent: monasca-log-tempest-base
+    name: monasca-tempest-log-python2-influxdb
+    parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
         USE_PYTHON3: false
@@ -234,8 +234,8 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - job:
-    name: monasca-log-tempest-oldapi-python3-influxdb
-    parent: monasca-log-tempest-base
+    name: monasca-tempest-log-oldapi-python3-influxdb
+    parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
         USE_PYTHON3: true
@@ -256,7 +256,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - monasca-log-tempest-python3-influxdb
+        - monasca-tempest-log-python3-influxdb
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
         - monasca-tempest-python2-cassandra
@@ -265,7 +265,7 @@
     gate:
       queue: monasca
       jobs:
-        - monasca-log-tempest-python3-influxdb
+        - monasca-tempest-log-python3-influxdb
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
         - monasca-tempest-python2-cassandra
