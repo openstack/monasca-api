@@ -10,10 +10,8 @@ coverage!=4.4,>=4.0 # Apache-2.0
 cassandra-driver!=3.6.0,>=3.3.0 # Apache-2.0
 fixtures>=3.0.0 # Apache-2.0/BSD
 httplib2>=0.9.1 # MIT
-influxdb>=2.9.2,!=5.2.0,!=5.2.1,!=5.2.2;python_version<'3.0' # MIT
 influxdb>=2.9.2;python_version>='3.0' # MIT
 mock>=2.0.0 # BSD
-funcsigs>=1.0.0;python_version=='2.7' or python_version=='2.6' # Apache-2.0
 oslotest>=3.2.0 # Apache-2.0
 requests-mock>=1.2.0 # Apache-2.0
 stestr>=1.0.0 # Apache-2.0
@@ -27,7 +25,6 @@ tempest>=17.1.0 # Apache-2.0
 
 # documentation
 doc8>=0.6.0 # Apache-2.0
-sphinx!=1.6.6,!=1.6.7,>=1.6.2,<2.0.0;python_version=='2.7' # BSD
 sphinx!=1.6.6,!=1.6.7,!=2.1.0,>=1.6.2;python_version>='3.4' # BSD
 os-api-ref>=1.4.0 # Apache-2.0
 reno>=2.5.0 # Apache-2.0
