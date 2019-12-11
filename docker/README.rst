@@ -70,6 +70,8 @@ LOG_LEVEL_ROOT                 WARN                                             
 LOG_LEVEL_CONSOLE              INFO                                                                    Log level for console logging
 LOG_LEVEL_ACCESS               INFO                                                                    Log level for access logging
 STAY_ALIVE_ON_FAILURE          false                                                                   If true, container runs 2 hours after service fail
+ENABLE_METRICS_API             true                                                                    Enable/Disable metrics endpoints
+ENABLE_LOGS_API                false                                                                   Enable/disable logs endpoints
 ============================== ======================================================================= ==========================================
 
 Wait scripts environment variables

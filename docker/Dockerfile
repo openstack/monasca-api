@@ -56,7 +56,9 @@ ENV \
     LOG_LEVEL_ROOT=WARN \
     LOG_LEVEL_CONSOLE=INFO \
     LOG_LEVEL_ACCESS=INFO \
-    STAY_ALIVE_ON_FAILURE=false
+    STAY_ALIVE_ON_FAILURE=false \
+    ENABLE_METRICS_API=true \
+    ENABLE_LOGS_API=false
 
 # Copy all neccessary files to proper locations.
 COPY api-* /etc/monasca/
