@@ -28,28 +28,26 @@ DATABASE_PASSWORD=secretdatabase
 RABBIT_PASSWORD=secretrabbit
 ADMIN_PASSWORD=secretadmin
 SERVICE_PASSWORD=secretservice
-SERVICE_TOKEN=111222333444
 
 LOGFILE=$DEST/logs/stack.sh.log
 LOGDIR=$DEST/logs
 LOG_COLOR=False
 
-# The following two variables allow switching between Java and Python for the implementations
-# of the Monasca API and the Monasca Persister. If these variables are not set, then the
-# default is to install the Python implementations of both the Monasca API and the Monasca Persister.
+# The following variable allow switching between Java and Python for
+# the implementations of the Monasca Persister. If this variable is not set,
+# then the default is to install the Python implementation of
+# the Monasca Persister.
 
-# Uncomment one of the following two lines to choose Java or Python for the Monasca API.
-MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-java}
-# MONASCA_API_IMPLEMENTATION_LANG=${MONASCA_API_IMPLEMENTATION_LANG:-python}
+# Uncomment of the following two lines to choose Java or Python for
+# the Monasca Pesister.
+# MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
+MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
 
-# Uncomment of the following two lines to choose Java or Python for the Monasca Pesister.
-MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-java}
-# MONASCA_PERSISTER_IMPLEMENTATION_LANG=${MONASCA_PERSISTER_IMPLEMENTATION_LANG:-python}
-
-# Uncomment one of the following two lines to choose either InfluxDB or Vertica.
-# default "influxdb" is selected as metric DB
+# Uncomment one of the following two lines to choose either InfluxDB or
+# Apache Cassandra.
+# default "influxdb" is selected as metric DB.
 MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-influxdb}
-# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
+# MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-cassandra}
 
 # This line will enable all of Monasca.
 enable_plugin monasca-api https://opendev.org/openstack/monasca-api
@@ -67,10 +65,12 @@ disable_all_services
 enable_service rabbit mysql key
 ```
 
-If you also want the Tempest tests to be installed then add `tempest`
+If you also want the Tempest tests to be installed then add `tempest` and
+ `monasca-tempest-plugin`.
 
 ```
 enable_service rabbit mysql key tempest
+enable_plugin monasca-tempest-plugin https://opendev.org/openstack/monasca-tempest-plugin
 ```
 
 To enable Horizon and the Monasca UI add `horizon`
@@ -85,54 +85,6 @@ Vagrant can be used to deploy a VM with Devstack and Monasca running in it using
 
 To use local repositories in the devstack install, commit your changes to the master branch of the local repo, then modify the `_REPO` variable in the settings file that corresponds to the local repo to use ```file://my/local/repo/location```.
 To use a local instance of the monasca-api repo, change the ```enable_plugin monasca-api https://opendev.org/openstack/monasca-api``` to ```enable_plugin monasca-api file://my/repo/is/here```. Both of these settings will only take effect on a rebuild of the devstack VM.
-
-## Enable Vertica as the Metrics DB using Vagrant
-
-Monasca supports using both InfluxDB and Vertica for storing metrics and alarm state history.
-InfluxDB is enabled by default in the DevStack environment.
-
-Vertica is a commercial database from Hewlett Packard Enterprise.
-A free Community Edition (CE) installer is available for download.
-
-To enable Vertica, do the following:
-
-1. Register and download the Vertica Debian installer from `https://my.vertica.com/download/vertica/community-edition/` and put it in your home directory.
-Unfortunately, there isn't a URL that the DevStack installer can automatically use, so it must be downloaded separately, and put in a location where the installer can find it when it runs.
-The installer assumes this location is your home directory.
-When using Vagrant, your home directory will normally be mounted inside the VM as "/vagrant_home".
-
-2. Modify the environment variable `MONASCA_METRICS_DB` in the `local.conf`, `settings` or `Vagrantfile` file from influxdb to vertica as follows:
-
-```
-MONASCA_METRICS_DB=${MONASCA_METRICS_DB:-vertica}
-```
-
-## Using PostgreSQL or MySQL
-
-Monasca supports using both PostgreSQL and MySQL and so does this devstack plugin.
-Enable either ```postgresql``` or ```mysql``` to use either of them.
-
-To setup environment with MySQL use:
-
-```sh
-enable_service mysql
-```
-
-Alternatively, for PostgreSQL, use:
-
-```
-enable_service postgresql
-```
-
-## Using ORM support
-
-ORM support can be controlled with ```MONASCA_DATABASE_USE_ORM``` variable.
-However ORM support is enforced if PostgreSQL is enabled, as the database backend,
-a.k.a.
-
-```sh
-enable_service postgresql
-```
 
 ## Enforcing Apache mirror
 
@@ -156,7 +108,7 @@ MONASCA_API_USE_MOD_WSGI=False
 
 # License
 
-(c) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP
+(c) Copyright 2015-2016 Hewlett Packard Enterprise Development Company LP  
 Copyright Fujitsu LIMITED 2017
 
 Licensed under the Apache License, Version 2.0 (the "License");
