@@ -743,7 +743,7 @@ The only option to change metrics or match_by is to delete the existing Alarm De
 ## Notification Methods
 Notification methods are resources used to specify a notification name, type and address that notifications can be sent to. After a notification method has been created, it can be associated with actions in alarm definitions, such that when an alarm state transition occurs, one or more notifications can be sent.
 
-Currently, notification method types of email, PagerDuty and webhooks are supported. In the case of email, the address is the email address. In the case of PagerDuty, the address is the PagerDuty Service API Key. In the case of a webhook, the address is the URL of the webhook.
+Currently, notification method types of email, PagerDuty, webhook, Slack, Hipchat (discontinued) and Jira are supported. In the case of email, the address is the email address. In the case of PagerDuty, the address is the PagerDuty Service API Key. In the case of a webhook, the address is the URL of the webhook. See the Monasca Notification service plugin [documentation](https://opendev.org/openstack/monasca-notification#plugins) for more information.
 
 # Common Request Headers
 This section documents the common request headers that are used in requests.
@@ -1671,7 +1671,7 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notification method.
-* type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
+* type (string(100), required) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), required) - The email/url address to notify.
 * period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
@@ -1887,7 +1887,7 @@ None.
 
 #### Request Body
 * name (string(250), required) - A descriptive name of the notification method.
-* type (string(100), required) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
+* type (string(100), required) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), required) - The email/url address to notify.
 * period (integer, required) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
@@ -1958,7 +1958,7 @@ None.
 
 #### Request Body
 * name (string(250), optional) - A descriptive name of the notification method.
-* type (string(100), optional) - The type of notification method (`EMAIL`, `WEBHOOK`, or `PAGERDUTY` ).
+* type (string(100), optional) - The type of notification method (see [List supported Notification Method Types](#list-supported-notification-method-types) for supported types).
 * address (string(100), optional) - The email/url address to notify.
 * period (integer, optional) - The interval in seconds to periodically send the notification. Only can be set as a non zero value for WEBHOOK methods. Allowed periods for Webhooks by default are 0, 60. You can change allow periods for webhooks in the api config. The notification will continue to be sent at the defined interval until the alarm it is associated with changes state.
 
