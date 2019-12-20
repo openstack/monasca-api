@@ -22,6 +22,8 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import table
 
+_NM_BUILT_IN_TYPES = set(['EMAIL', 'WEBHOOK', 'PAGERDUTY'])
+
 # revision identifiers, used by Alembic.
 revision = '26083b298bb7'
 down_revision = 'f69cb3152a76'
@@ -34,13 +36,29 @@ _nm_types = table(
               sa.String(length=20),
               nullable=False))
 
+_nm = table(
+    'notification_method',
+    sa.Column('type',
+              sa.String(length=20),
+              nullable=False))
+
 
 def upgrade():
     # Built-in notification types have been removed. Here, we
-    # remove them and rely on monasca_notification to re-populate
-    # the table according to what is set in its config file.
+    # remove them (where not in use) and rely on Monasca Notification
+    # to re-populate the table according to what is set in its config file.
+
+    # Start by creating a set of all notification method types currently
+    # configured in the Monasca DB
+    connection = op.get_bind()
+    nm_types_configured = connection.execute(_nm.select()).fetchall()
+    nm_types_configured = set([nm_type[0] for nm_type in nm_types_configured])
+
+    # Remove all built in notification types which are currently *not*
+    # configured.
+    nm_types_to_remove = _NM_BUILT_IN_TYPES.difference(nm_types_configured)
     op.execute(_nm_types.delete().where(
-        _nm_types.c.name.in_(('EMAIL', 'WEBHOOK', 'PAGERDUTY'))))
+        _nm_types.c.name.in_(nm_types_to_remove)))
 
 
 def downgrade():

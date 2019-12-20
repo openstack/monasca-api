@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    An issue with migrating the DB schema in the Stein release
+    which can cause an upgrade to fail. See `story
+    2006984 <https://storyboard.openstack.org/#!/story/2006984>`__
