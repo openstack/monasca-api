@@ -15,3 +15,13 @@ instances:
       service: influxdb
     timeout: 3
     url: http://127.0.0.1:8086/ping
+  - name: elasticsearch
+    dimensions:
+      service: elasticsearch
+    timeout: 3
+    url: http://{{IP}}:9200/_cat/health
+-   name: kibana
+    dimensions:
+      service: kibana
+    timeout: 3
+    url: http://{{IP}}:5601/api/status

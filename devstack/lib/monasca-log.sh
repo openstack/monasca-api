@@ -38,7 +38,7 @@ KIBANA_DIR=$DEST/kibana
 KIBANA_CFG_DIR=$KIBANA_DIR/config
 
 LOGSTASH_DIR=$DEST/logstash
-
+LOGSTASH_DATA_DIR=$DEST/logstash-data
 
 ES_SERVICE_BIND_HOST=${ES_SERVICE_BIND_HOST:-${SERVICE_HOST}}
 ES_SERVICE_BIND_PORT=${ES_SERVICE_BIND_PORT:-9200}
@@ -49,7 +49,14 @@ KIBANA_SERVICE_HOST=${KIBANA_SERVICE_HOST:-${SERVICE_HOST}}
 KIBANA_SERVICE_PORT=${KIBANA_SERVICE_PORT:-5601}
 KIBANA_SERVER_BASE_PATH=${KIBANA_SERVER_BASE_PATH:-"/dashboard/monitoring/logs_proxy"}
 
-
+# Settings needed for Elasticsearch
+# Elasticsearch uses a lot of file descriptors or file handles.
+# Increase the limit on the number of open files descriptors for the user running Elasticsearch to 65,536 or higher.
+LIMIT_NOFILE=${LIMIT_NOFILE:-65535}
+# Elasticsearch uses a mmapfs directory by default to store its indices.
+# The default operating system limits on mmap counts is likely to be too low,
+# which may result in out of memory exceptions, increase to at least 262144.
+VM_MAX_MAP_COUNT=${VM_MAX_MAP_COUNT:-262144}
 
 MONASCA_LOG_API_BASE_URI=https://${MONASCA_API_BASE_URI}/logs
 
@@ -79,7 +86,6 @@ function pre_install_logs_services {
 }
 
 function install_monasca_log {
-    build_kibana_plugin
     install_log_agent
     if $USE_OLD_LOG_API = true; then
         install_old_log_api
@@ -107,7 +113,6 @@ function configure_monasca_log {
     configure_kafka
     configure_elasticsearch
     configure_kibana
-    install_kibana_plugin
     if $USE_OLD_LOG_API = true; then
         configure_old_monasca_log_api
     fi
@@ -258,6 +263,7 @@ function start_monasca_log {
         start_monasca_log_api
     fi
     start_monasca_log_agent
+    create_default_index_pattern
 }
 
 function clean_monasca_log {
@@ -287,8 +293,8 @@ function install_logstash {
     if is_logstash_required; then
         echo_summary "Installing Logstash ${LOGSTASH_VERSION}"
 
-        local logstash_tarball=logstash-${LOGSTASH_VERSION}.tar.gz
-        local logstash_url=http://download.elastic.co/logstash/logstash/${logstash_tarball}
+        local logstash_tarball=logstash-oss-${LOGSTASH_VERSION}.tar.gz
+        local logstash_url=https://artifacts.elastic.co/downloads/logstash/${logstash_tarball}
 
         local logstash_dest
         logstash_dest=`get_extra_file ${logstash_url}`
@@ -297,6 +303,9 @@ function install_logstash {
 
         sudo chown -R $STACK_USER $DEST/logstash-${LOGSTASH_VERSION}
         ln -sf $DEST/logstash-${LOGSTASH_VERSION} $LOGSTASH_DIR
+
+        sudo mkdir -p $LOGSTASH_DATA_DIR
+        sudo chown $STACK_USER:monasca $LOGSTASH_DATA_DIR
     fi
 }
 
@@ -314,8 +323,8 @@ function install_elasticsearch {
     if is_service_enabled elasticsearch; then
         echo_summary "Installing ElasticSearch ${ELASTICSEARCH_VERSION}"
 
-        local es_tarball=elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-        local es_url=https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ELASTICSEARCH_VERSION}/${es_tarball}
+        local es_tarball=elasticsearch-oss-${ELASTICSEARCH_VERSION}-linux-x86_64.tar.gz
+        local es_url=https://artifacts.elastic.co/downloads/elasticsearch/${es_tarball}
 
         local es_dest
         es_dest=`get_extra_file ${es_url}`
@@ -344,13 +353,17 @@ function configure_elasticsearch {
         sudo sed -e "
             s|%ES_SERVICE_BIND_HOST%|$ES_SERVICE_BIND_HOST|g;
             s|%ES_SERVICE_BIND_PORT%|$ES_SERVICE_BIND_PORT|g;
-            s|%ES_SERVICE_PUBLISH_HOST%|$ES_SERVICE_PUBLISH_HOST|g;
-            s|%ES_SERVICE_PUBLISH_PORT%|$ES_SERVICE_PUBLISH_PORT|g;
             s|%ES_DATA_DIR%|$ELASTICSEARCH_DATA_DIR|g;
             s|%ES_LOG_DIR%|$ELASTICSEARCH_LOG_DIR|g;
         " -i $ELASTICSEARCH_CFG_DIR/elasticsearch.yml
 
         ln -sf $ELASTICSEARCH_CFG_DIR/elasticsearch.yml $GATE_CONFIGURATION_DIR/elasticsearch.yml
+
+        echo "[Service]" | sudo tee --append /etc/systemd/system/devstack\@elasticsearch.service > /dev/null
+        echo "LimitNOFILE=$LIMIT_NOFILE" | sudo tee --append /etc/systemd/system/devstack\@elasticsearch.service > /dev/null
+
+        echo "vm.max_map_count=$VM_MAX_MAP_COUNT" | sudo tee --append /etc/sysctl.conf > /dev/null
+        sudo sysctl -w vm.max_map_count=$VM_MAX_MAP_COUNT
     fi
 }
 
@@ -380,9 +393,8 @@ function install_kibana {
     if is_service_enabled kibana; then
         echo_summary "Installing Kibana ${KIBANA_VERSION}"
 
-        local kibana_tarball=kibana-${KIBANA_VERSION}.tar.gz
-        local kibana_tarball_url=http://download.elastic.co/kibana/kibana/${kibana_tarball}
-
+        local kibana_tarball=kibana-oss-${KIBANA_VERSION}.tar.gz
+        local kibana_tarball_url=https://artifacts.elastic.co/downloads/kibana/${kibana_tarball}
         local kibana_tarball_dest
         kibana_tarball_dest=`get_extra_file ${kibana_tarball_url}`
 
@@ -406,27 +418,13 @@ function configure_kibana {
         sudo sed -e "
             s|%KIBANA_SERVICE_HOST%|$KIBANA_SERVICE_HOST|g;
             s|%KIBANA_SERVICE_PORT%|$KIBANA_SERVICE_PORT|g;
-            s|%KIBANA_SERVER_BASE_PATH%|$KIBANA_SERVER_BASE_PATH|g;
             s|%ES_SERVICE_BIND_HOST%|$ES_SERVICE_BIND_HOST|g;
             s|%ES_SERVICE_BIND_PORT%|$ES_SERVICE_BIND_PORT|g;
+            s|%KIBANA_SERVER_BASE_PATH%|$KIBANA_SERVER_BASE_PATH|g;
             s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
         " -i $KIBANA_CFG_DIR/kibana.yml
 
         ln -sf $KIBANA_CFG_DIR/kibana.yml $GATE_CONFIGURATION_DIR/kibana.yml
-    fi
-}
-
-function install_kibana_plugin {
-    if is_service_enabled kibana; then
-        echo_summary "Install Kibana plugin"
-
-        # note(trebskit) that needs to happen after kibana received
-        # its configuration otherwise the plugin fails to be installed
-
-        local pkg=file://$DEST/monasca-kibana-plugin.tar.gz
-
-        $KIBANA_DIR/bin/kibana plugin -r monasca-kibana-plugin
-        $KIBANA_DIR/bin/kibana plugin -i monasca-kibana-plugin -u $pkg
     fi
 }
 
@@ -443,10 +441,20 @@ function clean_kibana {
 function start_kibana {
     if is_service_enabled kibana; then
         echo_summary "Starting Kibana ${KIBANA_VERSION}"
-        local kibanaSleepTime=${KIBANA_SLEEP_TIME:-90}     # kibana takes some time to load up
+        local kibanaSleepTime=${KIBANA_SLEEP_TIME:-120}     # kibana takes some time to load up
         local kibanaCFG="$KIBANA_CFG_DIR/kibana.yml"
         run_process_sleep "kibana" "$KIBANA_DIR/bin/kibana --config $kibanaCFG" $kibanaSleepTime
     fi
+}
+
+function create_default_index_pattern {
+    local tenant_id
+    tenant_id=`get_or_create_project "mini-mon"`
+    local index_pattern="logs-$tenant_id*"
+
+    curl -XPOST "$KIBANA_SERVICE_HOST:$KIBANA_SERVICE_PORT/api/saved_objects/index-pattern/$index_pattern" \
+        -H 'kbn-xsrf: true' -H "Content-Type: application/json" -d '{"attributes":{"title":"'$index_pattern'", "timeFieldName": "@timestamp"}}'
+    curl -X GET "$KIBANA_SERVICE_HOST:$KIBANA_SERVICE_PORT/api/saved_objects/index-pattern/$index_pattern" -H 'kbn-xsrf: true'
 }
 
 function configure_monasca_log_persister {
@@ -461,6 +469,8 @@ function configure_monasca_log_persister {
 
         sudo sed -e "
             s|%ES_SERVICE_BIND_HOST%|$ES_SERVICE_BIND_HOST|g;
+            s|%KAFKA_SERVICE_HOST%|$KAFKA_SERVICE_HOST|g;
+            s|%KAFKA_SERVICE_PORT%|$KAFKA_SERVICE_PORT|g;
         " -i $LOG_PERSISTER_DIR/persister.conf
 
         ln -sf $LOG_PERSISTER_DIR/persister.conf $GATE_CONFIGURATION_DIR/log-persister.conf
@@ -478,7 +488,7 @@ function start_monasca_log_persister {
     if is_service_enabled monasca-log-persister; then
         echo_summary "Starting monasca-log-persister"
         local logstash="$LOGSTASH_DIR/bin/logstash"
-        run_process "monasca-log-persister" "$logstash -f $LOG_PERSISTER_DIR/persister.conf"
+        run_process "monasca-log-persister" "$logstash -f $LOG_PERSISTER_DIR/persister.conf --path.data $LOGSTASH_DATA_DIR/monasca-log-persister"
     fi
 }
 
@@ -512,7 +522,7 @@ function start_monasca_log_transformer {
     if is_service_enabled monasca-log-transformer; then
         echo_summary "Starting monasca-log-transformer"
         local logstash="$LOGSTASH_DIR/bin/logstash"
-        run_process "monasca-log-transformer" "$logstash -f $LOG_TRANSFORMER_DIR/transformer.conf"
+        run_process "monasca-log-transformer" "$logstash -f $LOG_TRANSFORMER_DIR/transformer.conf --path.data $LOGSTASH_DATA_DIR/monasca-log-transformer"
     fi
 }
 
@@ -546,15 +556,15 @@ function start_monasca_log_metrics {
     if is_service_enabled monasca-log-metrics; then
         echo_summary "Starting monasca-log-metrics"
         local logstash="$LOGSTASH_DIR/bin/logstash"
-        run_process "monasca-log-metrics" "$logstash -f $LOG_METRICS_DIR/log-metrics.conf"
+        run_process "monasca-log-metrics" "$logstash -f $LOG_METRICS_DIR/log-metrics.conf --path.data $LOGSTASH_DATA_DIR/monasca-log-metrics"
     fi
 }
 
 function install_log_agent {
     if is_service_enabled monasca-log-agent; then
-        echo_summary "Installing monasca-log-agent [monasca-output-plugin]"
+        echo_summary "Installing monasca-log-agent [logstash-output-monasca-plugin]"
 
-        $LOGSTASH_DIR/bin/plugin install --version \
+        $LOGSTASH_DIR/bin/logstash-plugin install --version \
             "${LOGSTASH_OUTPUT_MONASCA_VERSION}" logstash-output-monasca_log_api
     fi
 }
@@ -633,7 +643,7 @@ function start_monasca_log_agent {
     if is_service_enabled monasca-log-agent; then
         echo_summary "Starting monasca-log-agent"
         local logstash="$LOGSTASH_DIR/bin/logstash"
-        run_process "monasca-log-agent" "$logstash -f $LOG_AGENT_DIR/agent.conf" "root" "root"
+        run_process "monasca-log-agent" "$logstash -f $LOG_AGENT_DIR/agent.conf --path.data $LOGSTASH_DATA_DIR/monasca-log-agent" "root" "root"
     fi
 }
 
@@ -658,31 +668,6 @@ function clean_nodejs {
 
 function clean_gate_config_holder {
     sudo rm -rf $GATE_CONFIGURATION_DIR || true
-}
-
-function build_kibana_plugin {
-    if is_service_enabled kibana; then
-        echo "Building Kibana plugin"
-
-        git_clone $MONASCA_KIBANA_PLUGIN_REPO $MONASCA_KIBANA_PLUGIN_DIR \
-            $MONASCA_KIBANA_PLUGIN_BRANCH
-
-        pushd $MONASCA_KIBANA_PLUGIN_DIR
-
-        local monasca_kibana_plugin_version
-        monasca_kibana_plugin_version="$(python -c 'import json; \
-            obj = json.load(open("package.json")); print obj["version"]')"
-
-        npm install
-        npm run package
-
-        local pkg=$MONASCA_KIBANA_PLUGIN_DIR/target/monasca-kibana-plugin-${monasca_kibana_plugin_version}.tar.gz
-        local easyPkg=$DEST/monasca-kibana-plugin.tar.gz
-
-        ln -sf $pkg $easyPkg
-
-        popd
-    fi
 }
 
 function configure_kafka {
