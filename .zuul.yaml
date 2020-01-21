@@ -76,6 +76,7 @@
       - openstack/python-monascaclient
       - openstack/tempest
       - openstack/monasca-tempest-plugin
+      - openstack/monasca-kibana-plugin
     vars:
       devstack_services:
         monasca-log: true
