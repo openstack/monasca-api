@@ -35,8 +35,8 @@ EPOCH_START = datetime.datetime(1970, 1, 1)
 
 class TestSendMessage(base.BaseTestCase):
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_not_send_empty_message(self, _):
         instance = log_publisher.LogPublisher()
 
@@ -51,8 +51,8 @@ class TestSendMessage(base.BaseTestCase):
         not_dict_value = 123
         instance.send_message(not_dict_value)
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_not_send_message_missing_keys(self, _):
         # checks every combination of missing keys
         # test does not rely on those keys having a value or not,
@@ -75,8 +75,8 @@ class TestSendMessage(base.BaseTestCase):
                                   instance.send_message,
                                   message)
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_not_send_message_missing_values(self, _):
         # original message assumes that every property has value
         # test modify each property one by one by removing that value
@@ -99,8 +99,8 @@ class TestSendMessage(base.BaseTestCase):
                               instance.send_message,
                               tmp_message)
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_send_message(self, kafka_producer):
         instance = log_publisher.LogPublisher()
         instance._kafka_publisher = kafka_producer
@@ -134,8 +134,8 @@ class TestSendMessage(base.BaseTestCase):
             cfg.CONF.kafka.logs_topics[0],
             [ujson.dumps(msg, ensure_ascii=False).encode('utf-8')])
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_send_message_multiple_topics(self, _):
         topics = ['logs_topics', 'analyzer', 'tester']
         self.conf_override(logs_topics=topics,
@@ -179,8 +179,8 @@ class TestSendMessage(base.BaseTestCase):
                 topic,
                 [json_msg.encode('utf-8')])
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer'
-                '.KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_send_unicode_message(self, kp):
         instance = log_publisher.LogPublisher()
         instance._kafka_publisher = kp
@@ -217,9 +217,8 @@ class TestSendMessage(base.BaseTestCase):
                 raise
 
 
-@mock.patch(
-    'monasca_api.api.core.log.log_publisher.producer'
-    '.KafkaProducer')
+@mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+            '.get_kafka_producer')
 class TestTruncation(base.BaseTestCase):
     EXTRA_CHARS_SIZE = len(bytearray(ujson.dumps({
         'log': {

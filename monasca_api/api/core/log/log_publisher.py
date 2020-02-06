@@ -16,7 +16,7 @@
 import time
 
 import falcon
-from monasca_common.kafka import producer
+from monasca_common.kafka import client_factory
 from monasca_common.rest import utils as rest_utils
 from oslo_log import log
 from oslo_utils import encodeutils
@@ -63,9 +63,8 @@ class LogPublisher(object):
         self._topics = CONF.kafka.logs_topics
         self.max_message_size = CONF.log_publisher.max_message_size
 
-        self._kafka_publisher = producer.KafkaProducer(
-            url=CONF.kafka.uri
-        )
+        self._kafka_publisher = client_factory.get_kafka_producer(
+            CONF.kafka.uri, CONF.kafka.legacy_kafka_client_enabled)
 
         LOG.info('Initializing LogPublisher <%s>', self)
 

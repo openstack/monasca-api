@@ -157,8 +157,8 @@ class TestApiLogs(base.BaseApiTestCase):
 
 class TestUnicodeLogs(base.BaseApiTestCase):
 
-    @mock.patch('monasca_api.api.core.log.log_publisher.producer.'
-                'KafkaProducer')
+    @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
+                '.get_kafka_producer')
     def test_should_send_unicode_messages(self, _):
         _init_resource(self)
 
