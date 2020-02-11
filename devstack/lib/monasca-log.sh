@@ -385,7 +385,7 @@ function start_elasticsearch {
         echo_summary "Starting ElasticSearch ${ELASTICSEARCH_VERSION}"
         # 5 extra seconds to ensure that ES started properly
         local esSleepTime=${ELASTICSEARCH_SLEEP_TIME:-5}
-        run_process_sleep "elasticsearch" "$ELASTICSEARCH_DIR/bin/elasticsearch" $esSleepTime
+        run_process_sleep "elasticsearch" "$ELASTICSEARCH_DIR/bin/elasticsearch -E logger.org.elasticsearch=DEBUG" $esSleepTime
     fi
 }
 
