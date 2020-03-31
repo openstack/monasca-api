@@ -14,17 +14,15 @@
 
 import re
 
+from hacking import core
 
 assert_no_xrange_re = re.compile(r"\s*xrange\s*\(")
 
 
+@core.flake8ext
 def no_xrange(logical_line):
     """Do not use 'xrange'
     B319
     """
     if assert_no_xrange_re.match(logical_line):
         yield (0, "B319: Do not use xrange().")
-
-
-def factory(register):
-    register(no_xrange)

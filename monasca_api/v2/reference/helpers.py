@@ -713,7 +713,7 @@ def paginate_statistics(statistics, uri, limit):
 
 def create_alarms_count_next_link(uri, offset, limit):
     if offset is None:
-            offset = 0
+        offset = 0
     parsed_url = urlparse.urlparse(uri)
     base_url = build_base_uri(parsed_url)
     new_query_params = [u'offset=' + urlparse.quote(str(offset + limit))]

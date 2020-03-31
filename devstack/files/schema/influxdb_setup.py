@@ -25,8 +25,8 @@ import sys
 
 from oslo_utils.encodeutils import safe_decode
 from oslo_utils.encodeutils import safe_encode
-import six.moves.urllib.parse as urlparse
 from six.moves import urllib
+import six.moves.urllib.parse as urlparse
 
 ADMIN = 'root'
 ADMIN_PASS = 'root'
@@ -46,8 +46,8 @@ def format_response(req):
     try:
         json_value = json.loads(req.read())
         if (len(json_value['results'][0]) > 0 and
-           'series' in json_value['results'][0] and
-           'values' in json_value['results'][0]['series'][0]):
+                'series' in json_value['results'][0] and
+                'values' in json_value['results'][0]['series'][0]):
             return json_value['results'][0]['series'][0]['values']
         else:
             return []
@@ -77,7 +77,8 @@ def influxdb_get_post(uri, query, db=None):
     """Runs a query using HTTP GET or POST and returns the response as a Python list.
        At some InfluxDB release several ops changed from using GET to POST. For example,
        CREATE DATABASE. To maintain backward compatibility, this function first trys the
-       query using POST and if that fails it retries again using GET."""
+       query using POST and if that fails it retries again using GET.
+    """
 
     query_params = {"q": query}
     if db:
@@ -115,10 +116,12 @@ def main(argv=None):
                             query="SHOW RETENTION POLICIES ON {0}".format(DBNAME))
     if not any(pol[0] == SHARDSPACE_NAME for pol in policies):
         # Set retention policy
-        policy = "CREATE RETENTION POLICY {0} ON {1} DURATION {2} REPLICATION {3} DEFAULT".format(SHARDSPACE_NAME,
-                                                                                          DBNAME,
-                                                                                          RETENTION,
-                                                                                          REPLICATION)
+        policy = ("CREATE RETENTION POLICY {0} ON {1} DURATION {2} "
+                  "REPLICATION {3} DEFAULT".format(SHARDSPACE_NAME,
+                                                   DBNAME,
+                                                   RETENTION,
+                                                   REPLICATION)
+                  )
         influxdb_get_post(uri=api_uri, db=DBNAME, query=policy)
 
     # Create the users
@@ -129,6 +132,7 @@ def main(argv=None):
                               query=safe_decode("CREATE USER {0} WITH PASSWORD '{1}'"
                                                 .format(name, password)),
                               db=DBNAME)
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -103,7 +103,7 @@ class TestTimestampsValidation(base.BaseTestCase):
         try:
             helpers.validate_start_end_timestamps(start_timestamp,
                                                   end_timestamp)
-        except:
+        except Exception:
             self.fail("shouldn't happen")
 
     def test_same_timestamps(self):
@@ -155,6 +155,7 @@ class TestConvertTimeString(base.BaseTestCase):
         self.assertRaises(
             ValueError,
             helpers._convert_time_string, date_time_string)
+
 
 valid_periods = [0, 60]
 

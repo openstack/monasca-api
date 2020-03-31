@@ -59,6 +59,7 @@ def validate_alarm_action_list(v):
 def validate_undetermined_action_list(v):
     validate_action_list(v, 'UNDETERMINED')
 
+
 alarm_definition_schema = {
     Required('name'): All(Any(str, six.text_type), Length(max=255)),
     Required('expression'): All(Any(str, six.text_type)),
