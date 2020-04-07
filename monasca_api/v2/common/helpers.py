@@ -20,7 +20,7 @@ from oslo_log import log
 
 from monasca_api.api.core.log import exceptions
 from monasca_api.api.core.log import validation
-from monasca_common.rest import utils as rest_utils
+from monasca_api.common.rest import utils as rest_utils
 
 
 LOG = log.getLogger(__name__)

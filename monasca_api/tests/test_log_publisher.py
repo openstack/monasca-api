@@ -20,8 +20,8 @@ import random
 import mock
 from oslo_config import cfg
 from oslo_log import log
+import simplejson as json
 import six
-import ujson
 import unittest
 
 from monasca_api.api.core.log import log_publisher
@@ -132,7 +132,7 @@ class TestSendMessage(base.BaseTestCase):
 
         instance._kafka_publisher.publish.assert_called_once_with(
             cfg.CONF.kafka.logs_topics[0],
-            [ujson.dumps(msg, ensure_ascii=False).encode('utf-8')])
+            [json.dumps(msg, ensure_ascii=False).encode('utf-8')])
 
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
@@ -168,7 +168,7 @@ class TestSendMessage(base.BaseTestCase):
             }
         )
         msg['creation_time'] = creation_time
-        json_msg = ujson.dumps(msg, ensure_ascii=False)
+        json_msg = json.dumps(msg, ensure_ascii=False)
 
         instance.send_message(msg)
 
@@ -203,7 +203,7 @@ class TestSendMessage(base.BaseTestCase):
                 )
                 instance.send_message(envelope)
 
-                expected_message = ujson.dumps(envelope, ensure_ascii=False)
+                expected_message = json.dumps(envelope, ensure_ascii=False)
 
                 if six.PY3:
                     expected_message = expected_message.encode('utf-8')
@@ -220,7 +220,7 @@ class TestSendMessage(base.BaseTestCase):
 @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
             '.get_kafka_producer')
 class TestTruncation(base.BaseTestCase):
-    EXTRA_CHARS_SIZE = len(bytearray(ujson.dumps({
+    EXTRA_CHARS_SIZE = len(bytearray(json.dumps({
         'log': {
             'message': None
         }
@@ -276,7 +276,7 @@ class TestTruncation(base.BaseTestCase):
         envelope_copy = copy.deepcopy(envelope)
         json_envelope = instance._truncate(envelope_copy)
 
-        parsed_envelope = ujson.loads(json_envelope)
+        parsed_envelope = json.loads(json_envelope)
 
         parsed_log_message = parsed_envelope['log']['message']
         parsed_log_message_len = len(parsed_log_message)

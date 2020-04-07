@@ -22,7 +22,7 @@ from monasca_api.common.policy import policy_engine as policy
 from monasca_api.tests import base
 import monasca_api.v2.reference.helpers as helpers
 
-from monasca_common.rest import utils as rest_utils
+from monasca_api.common.rest import utils as rest_utils
 
 
 class TestHelpersFunction(base.BaseTestCase):
@@ -47,7 +47,7 @@ class TestHelpersFunction(base.BaseTestCase):
 
     def test_to_json(self):
         test_dict = {'test_body': 'test'}
-        expected_json = '{"test_body":"test"}'
+        expected_json = '{"test_body": "test"}'
         response = helpers.to_json(test_dict)
         self.assertEqual(expected_json, response)
 

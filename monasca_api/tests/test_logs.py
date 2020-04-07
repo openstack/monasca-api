@@ -14,7 +14,7 @@
 
 import falcon
 import mock
-import ujson as json
+import simplejson as json
 
 from monasca_api.tests import base
 from monasca_api.v2.reference import logs
