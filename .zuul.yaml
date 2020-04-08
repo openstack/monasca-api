@@ -80,6 +80,7 @@
     vars:
       devstack_services:
         monasca-log: true
+        monasca-log-api: true
         # Disable unneeded services.
         monasca-agent: false
         monasca-notification: false
@@ -188,7 +189,7 @@
     parent: monasca-tempest-log-base
     vars:
       devstack_localrc:
-        USE_OLD_LOG_API: false
+        USE_OLD_LOG_API: true
         MONASCA_API_IMPLEMENTATION_LANG: python
         MONASCA_PERSISTER_IMPLEMENTATION_LANG: python
         MONASCA_METRICS_DB: influxdb
