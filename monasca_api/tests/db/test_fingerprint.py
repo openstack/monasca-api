@@ -13,7 +13,7 @@
 # under the License.
 
 import hashlib
-import mock
+from unittest import mock
 
 import monasca_api.db.fingerprint as fingerprint
 from monasca_api.tests import base

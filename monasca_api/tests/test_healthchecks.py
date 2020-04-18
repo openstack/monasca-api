@@ -13,7 +13,7 @@
 # under the License.
 
 import falcon
-import mock
+from unittest import mock
 
 from monasca_api import config
 from monasca_api.healthcheck import base

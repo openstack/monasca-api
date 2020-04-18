@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-import mock
+from unittest import mock
 
 from monasca_api.common.messaging.message_formats.metrics import transform
 from monasca_api.tests import base

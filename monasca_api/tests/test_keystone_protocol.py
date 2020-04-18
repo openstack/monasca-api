@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from monasca_api.healthcheck import keystone_protocol
 from monasca_api.tests import base
