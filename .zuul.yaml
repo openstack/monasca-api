@@ -129,7 +129,6 @@
 - job:
     name: monasca-tempest-python3-influxdb
     parent: monasca-tempest-base
-    voting: false
     vars:
       devstack_localrc:
         MONASCA_API_IMPLEMENTATION_LANG: python
@@ -212,6 +211,7 @@
     gate:
       queue: monasca
       jobs:
+        - monasca-tempest-python3-influxdb
         - monasca-tempest-log-python3-influxdb
 
 - job:
