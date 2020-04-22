@@ -175,16 +175,16 @@ class TestNotificationValidation(base.BaseTestCase):
                                notification, valid_periods)
         self.assertEqual("Address name@ is not of correct format", str(ex))
 
-    def test_validation_exception_for_invalid_period_for_email(self):
+    def test_validation_for_email_non_zero_period(self):
         notification = {
             "name": "MyEmail",
             "type": "EMAIL",
             "address": "name@domain.com",
             "period": "60"}
-        ex = self.assertRaises(schemas_exceptions.ValidationException,
-                               schemas_notifications.parse_and_validate,
-                               notification, valid_periods)
-        self.assertEqual("Period can only be set with webhooks", str(ex))
+        try:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
 
     def test_validation_for_webhook(self):
         notification = {"name": "MyWebhook", "type": "WEBHOOK", "address": "http://somedomain.com"}
@@ -228,7 +228,7 @@ class TestNotificationValidation(base.BaseTestCase):
         ex = self.assertRaises(schemas_exceptions.ValidationException,
                                schemas_notifications.parse_and_validate,
                                notification, valid_periods)
-        self.assertEqual("10 is not a valid period, not in [0, 60]", str(ex))
+        self.assertEqual("10 is not in the configured list of valid periods: [0, 60]", str(ex))
 
     def test_validation_for_pagerduty(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
@@ -238,13 +238,13 @@ class TestNotificationValidation(base.BaseTestCase):
         except schemas_exceptions.ValidationException:
             self.fail("shouldn't happen")
 
-    def test_validation_exception_for_invalid_period_for_pagerduty(self):
+    def test_validation_for_pagerduty_non_zero_period(self):
         notification = {"name": "MyPagerduty", "type": "PAGERDUTY",
                         "address": "nzH2LVRdMzun11HNC2oD", "period": 60}
-        ex = self.assertRaises(schemas_exceptions.ValidationException,
-                               schemas_notifications.parse_and_validate,
-                               notification, valid_periods)
-        self.assertEqual("Period can only be set with webhooks", str(ex))
+        try:
+            schemas_notifications.parse_and_validate(notification, valid_periods)
+        except schemas_exceptions.ValidationException:
+            self.fail("shouldn't happen")
 
     def test_validation_for_max_name_address(self):
         name = "A" * 250
