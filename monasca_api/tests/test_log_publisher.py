@@ -16,8 +16,8 @@
 import copy
 import datetime
 import random
+from unittest import mock
 
-import mock
 from oslo_config import cfg
 from oslo_log import log
 import simplejson as json

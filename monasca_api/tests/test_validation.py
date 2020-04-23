@@ -15,7 +15,7 @@
 # under the License.
 
 import falcon
-import mock
+from unittest import mock
 
 from monasca_api.tests import base
 import monasca_api.v2.common.exceptions as common_exceptions

@@ -14,8 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 import requests_mock
+from unittest import mock
 
 from oslo_context import context
 from oslo_policy import policy as os_policy
