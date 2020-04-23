@@ -18,9 +18,9 @@
 """Health check will returns 0 when service is working properly."""
 
 import logging
-from urllib import request
 import os
 import sys
+from urllib import request
 
 
 LOG_LEVEL = logging.getLevelName(os.environ.get('LOG_LEVEL', 'INFO'))

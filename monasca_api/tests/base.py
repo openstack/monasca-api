@@ -180,6 +180,7 @@ def _hex_to_unicode(hex_raw):
     hex_str = hex_str_raw.decode('utf-8', 'replace')
     return hex_str
 
+
 # NOTE(trebskit) => http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
 UNICODE_MESSAGES = [
     # Unicode is evil...

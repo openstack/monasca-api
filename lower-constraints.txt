@@ -22,7 +22,6 @@ extras==1.0.0
 falcon==2.0.0
 fasteners==0.7.0
 fixtures==3.0.0
-flake8==2.5.5
 funcsigs==1.0.0
 future==0.16.0
 futures==3.0.0
@@ -30,7 +29,6 @@ gevent==1.2.2
 gitdb==0.6.4
 GitPython==1.0.1
 greenlet==0.4.10
-hacking==1.1.0
 httplib2==0.9.1
 idna==2.6
 imagesize==0.7.1
@@ -72,13 +70,11 @@ paramiko==2.0.0
 PasteDeploy==1.5.0
 Paste==2.0.2
 pbr==2.0.0
-pep8==1.5.7
 positional==1.2.1
 prettytable==0.7.2
 pyasn1==0.1.8
 pycadf==1.1.0
 pycparser==2.18
-pyflakes==0.8.1
 Pygments==2.2.0
 pyinotify==0.9.6
 PyMySQL==0.7.6

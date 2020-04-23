@@ -111,41 +111,41 @@ def do_version():
 
 
 def add_command_parsers(subparsers):
-        parser = subparsers.add_parser('fingerprint',
-                                       help="Compute SHA1 fingerprint of "
-                                            "current database schema ")
-        parser.add_argument('-r', '--raw', action='store_true',
-                            help='Print raw schema dump used for '
-                                 'fingerprinting')
-        parser.set_defaults(func=do_fingerprint)
+    parser = subparsers.add_parser('fingerprint',
+                                   help="Compute SHA1 fingerprint of "
+                                        "current database schema ")
+    parser.add_argument('-r', '--raw', action='store_true',
+                        help='Print raw schema dump used for '
+                             'fingerprinting')
+    parser.set_defaults(func=do_fingerprint)
 
-        parser = subparsers.add_parser('detect-revision',
-                                       help="Attempt to detect revision "
-                                            "matching current database "
-                                            " schema ")
-        parser.set_defaults(func=do_detect_revision)
+    parser = subparsers.add_parser('detect-revision',
+                                   help="Attempt to detect revision "
+                                        "matching current database "
+                                        " schema ")
+    parser.set_defaults(func=do_detect_revision)
 
-        parser = subparsers.add_parser('stamp', help='Stamp database with an '
-                                                     'Alembic revision')
-        parser.add_argument('revision', nargs='?', metavar='VERSION',
-                            help='Revision to stamp database with',
-                            default=None)
-        parser.add_argument('-f', '--from-fingerprint', action='store_true',
-                            help='Try to determine VERSION from fingerprint')
-        parser.set_defaults(func=do_stamp)
+    parser = subparsers.add_parser('stamp', help='Stamp database with an '
+                                                 'Alembic revision')
+    parser.add_argument('revision', nargs='?', metavar='VERSION',
+                        help='Revision to stamp database with',
+                        default=None)
+    parser.add_argument('-f', '--from-fingerprint', action='store_true',
+                        help='Try to determine VERSION from fingerprint')
+    parser.set_defaults(func=do_stamp)
 
-        parser = subparsers.add_parser('upgrade',
-                                       help='Upgrade database to given or '
-                                            'latest revision')
-        parser.add_argument('revision', metavar='VERSION', nargs='?',
-                            help='Alembic revision to upgrade database to',
-                            default='head')
-        parser.add_argument('-f', '--from-fingerprint', action='store_true',
-                            help='Try to determine VERSION from fingerprint')
-        parser.set_defaults(func=do_upgrade)
+    parser = subparsers.add_parser('upgrade',
+                                   help='Upgrade database to given or '
+                                        'latest revision')
+    parser.add_argument('revision', metavar='VERSION', nargs='?',
+                        help='Alembic revision to upgrade database to',
+                        default='head')
+    parser.add_argument('-f', '--from-fingerprint', action='store_true',
+                        help='Try to determine VERSION from fingerprint')
+    parser.set_defaults(func=do_upgrade)
 
-        parser = subparsers.add_parser('version', help="Show database's current Alembic version")
-        parser.set_defaults(func=do_version)
+    parser = subparsers.add_parser('version', help="Show database's current Alembic version")
+    parser.set_defaults(func=do_version)
 
 
 command_opt = cfg.SubCommandOpt('command',

@@ -221,6 +221,7 @@ def periodsValidation(instr, loc, tokens):
     # Must return the string
     return tokens[0]
 
+
 # Initialize non-ascii unicode code points in the Basic Multilingual Plane.
 unicode_printables = u''.join(
     six.unichr(c) for c in range(128, 65536) if not six.unichr(c).isspace())
