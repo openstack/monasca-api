@@ -48,13 +48,15 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                         ["2015-03-14T09:26:53.59Z", 2, None],
                         ["2015-03-14T09:26:53.591Z", 2.5, ''],
                         ["2015-03-14T09:26:53.6Z", 4.0, '{}'],
-                        ["2015-03-14T09:26:54Z", 4, '{"key": "value"}']
+                        ["2015-03-14T09:26:54Z", 4, '{"key": "value"}'],
+                        ["2015-03-14T09:26:53.1234567Z", 1, '{}']
                     ]
                 }
             ]
         }
 
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         result = repo.measurement_list(
             "tenant_id",
             "region",
@@ -79,7 +81,8 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
             [["2015-03-14T09:26:53.590Z", 2, {}],
              ["2015-03-14T09:26:53.591Z", 2.5, {}],
              ["2015-03-14T09:26:53.600Z", 4.0, {}],
-             ["2015-03-14T09:26:54.000Z", 4, {"key": "value"}]],
+             ["2015-03-14T09:26:54.000Z", 4, {"key": "value"}],
+             ["2015-03-14T09:26:53.123Z", 1, {}]],
             measurements
         )
 
@@ -92,23 +95,14 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                 u'values': [[
                     u'disk.space_used_perc,_region=region,_tenant_id='
                     u'0b5e7d8c43f74430add94fba09ffd66e,device=rootfs,'
-                    'hostname=host0,hosttype=native,mount_point=/',
-                    u'region',
-                    u'0b5e7d8c43f74430add94fba09ffd66e',
-                    u'rootfs',
-                    u'host0',
-                    u'native',
-                    u'',
-                    u'/'
+                    'hostname=host0,hosttype=native,mount_point=/'
                 ]],
-                u'name': u'disk.space_used_perc',
-                u'columns': [u'_key', u'_region', u'_tenant_id', u'device',
-                             u'hostname', u'hosttype', u'extra', u'mount_point']
+                u'columns':[u'key']
             }]
         }
 
         repo = influxdb_repo.MetricsRepository()
-
+        repo._version = 'from_0.11.0'
         result = repo.list_metrics(
             "0b5e7d8c43f74430add94fba09ffd66e",
             "region",
@@ -160,6 +154,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         group_by = None
 
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         stats_list = repo.metrics_statistics(tenant_id, region, name,
                                              dimensions, start_timestamp,
                                              end_timestamp, statistics,
@@ -167,7 +162,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                                              merge_metrics_flag, group_by)
         expected_result = [{
             u'columns': [u'timestamp', u'avg'],
-            u'dimensions': {u'mean': 0.047, u'time': u'1970-01-01T00:00:00Z'},
+            u'dimensions': {},
             u'id': '0',
             u'name': u'cpu.utilization',
             u'statistics': [[u'1970-01-01T00:00:00Z', 0.047]]}]
@@ -179,6 +174,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         expected_clause = ' group by hostname,service,time(300s) fill(none)'
 
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         clause = repo._build_group_by_clause(group_by, period)
         self.assertEqual(clause, expected_clause)
 
@@ -187,6 +183,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         expected_clause = ' group by hostname,service'
 
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         clause = repo._build_group_by_clause(group_by)
         self.assertEqual(clause, expected_clause)
 
@@ -204,12 +201,13 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         end_timestamp = 1572917171275
         mock_client.query.return_value.raw = {
             u'series': [{
-                u'values': [[hostname]],
+                u'values': [[column, hostname]],
                 u'name': metric,
-                u'columns': [column]
+                u'columns': [u'key', u'value']
             }]
         }
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         mock_client.query.reset_mock()
 
         db_per_tenant = repo.conf.influxdb.db_per_tenant
@@ -259,6 +257,7 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         }
 
         repo = influxdb_repo.MetricsRepository()
+        repo._version = 'from_0.11.0'
         mock_client.query.reset_mock()
 
         db_per_tenant = repo.conf.influxdb.db_per_tenant

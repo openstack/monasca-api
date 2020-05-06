@@ -51,8 +51,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
         self._serie_builders_version_map = {
-            'to_0.11.0': (self._build_serie_dimension_values_to_v0_11_0,
-                          self._build_serie_metric_list_to_v0_11_0),
             'from_0.11.0': (self._build_serie_dimension_values_from_v0_11_0,
                             self._build_serie_metric_list_from_v0_11_0)}
 
@@ -90,8 +88,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         try:
             influxdb_version = self._get_influxdb_version()
             if influxdb_version < version.StrictVersion('0.11.0'):
-                self._version = 'to_0.11.0'
-                LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
+                raise Exception('Influxdb < v0.11.0 is not supported')
             else:
                 self._version = 'from_0.11.0'
                 LOG.info('Initialize InfluxDB serie builders >=  v0.11.0')
@@ -102,18 +99,27 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             LOG.warning('influxdb is not ready yet')
         except Exception as ex:
             LOG.exception(ex)
-            # Initialize the serie builders to v0_11_0. Not sure when SHOW DIAGNOSTICS added
-            # support for a version string so to address backward compatibility initialize
-            # InfluxDB serie builders <  v0.11.0
-            self._version = 'to_0.11.0'
-            LOG.info('Initialize InfluxDB serie builders <  v0.11.0')
+            self._version = 'from_0.11.0'
+            LOG.info('Initialize InfluxDB serie builders >=  v0.11.0')
 
     def _get_influxdb_version(self):
-        '''If Version found in the result set, return the InfluxDB Version,
+        '''New versions of InfluxDB implements the method ping() which returns
+        the version. In case that the method isn't present, the query SHOW DIAGNOSTICS
+        will be used.
+        If Version found in the result set, return the InfluxDB Version,
         otherwise raise an exception. InfluxDB has changed the format of their
         result set and SHOW DIAGNOSTICS was introduced at some point so earlier releases
         of InfluxDB might not return a Version.
         '''
+        try:
+            result = self.influxdb_client.ping()
+            LOG.info("Found Influxdb version {0}".format(result))
+            return version.StrictVersion(result)
+        except Exception as ex:
+            LOG.warn(ex)
+            LOG.warn("Getting version from method ping failed,"
+                     " now trying with SHOW DIAGNOSTICS")
+
         try:
             result = self.influxdb_client.query('SHOW DIAGNOSTICS')
         except InfluxDBClientError as ex:
@@ -358,31 +364,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
 
-    def _build_serie_dimension_values_to_v0_11_0(self, series_names, dimension_name):
-        dim_value_set = set()
-        json_dim_value_list = []
-
-        if not series_names:
-            return json_dim_value_list
-        if 'series' not in series_names.raw:
-            return json_dim_value_list
-        if not dimension_name:
-            return json_dim_value_list
-
-        for series in series_names.raw['series']:
-            if 'columns' not in series:
-                continue
-            if u'values' not in series:
-                continue
-            for value in series[u'values']:
-                dim_value_set.add(value[0])
-
-        for value in dim_value_set:
-            json_dim_value_list.append({u'dimension_value': value})
-
-        json_dim_value_list = sorted(json_dim_value_list, key=lambda x: x[u'dimension_value'])
-        return json_dim_value_list
-
     def _build_serie_dimension_values_from_v0_11_0(self, series_names, dimension_name):
         '''In InfluxDB v0.11.0 the SHOW TAG VALUES output changed.
         See, https://github.com/influxdata/influxdb/blob/master/CHANGELOG.md#v0110-2016-03-22
@@ -442,46 +423,6 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         json_dim_name_list = sorted(json_dim_name_list, key=lambda x: x[u'dimension_name'])
         return json_dim_name_list
-
-    def _build_serie_metric_list_to_v0_11_0(self, series_names, tenant_id, region,
-                                            start_timestamp, end_timestamp,
-                                            offset):
-        json_metric_list = []
-
-        if not series_names:
-            return json_metric_list
-
-        if 'series' not in series_names.raw:
-            return json_metric_list
-
-        metric_id = 0
-        if offset:
-            metric_id = int(offset) + 1
-
-        for series in series_names.raw['series']:
-
-            for tag_values in series[u'values']:
-
-                dimensions = {
-                    name: value
-                    for name, value in zip(series[u'columns'], tag_values)
-                    if value and not name.startswith(u'_')
-                }
-
-                if self._has_measurements(tenant_id,
-                                          region,
-                                          series[u'name'],
-                                          dimensions,
-                                          start_timestamp,
-                                          end_timestamp):
-                    metric = {u'id': str(metric_id),
-                              u'name': series[u'name'],
-                              u'dimensions': dimensions}
-                    metric_id += 1
-
-                    json_metric_list.append(metric)
-
-        return json_metric_list
 
     def _build_serie_metric_list_from_v0_11_0(self, series_names, tenant_id, region,
                                               start_timestamp, end_timestamp, offset):
@@ -613,7 +554,9 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                     measurements_list = []
                     for point in serie['values']:
                         value_meta = rest_utils.from_json(point[2]) if point[2] else {}
-                        timestamp = point[0][:19] + '.' + point[0][20:-1].ljust(3, '0') + 'Z'
+                        datetime = point[0][:19]
+                        fraction = point[0][20:-1].ljust(3, '0')
+                        timestamp = datetime + '.' + fraction[:3] + 'Z'
 
                         measurements_list.append([timestamp,
                                                   point[1],
