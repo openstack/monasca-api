@@ -6,4 +6,5 @@ Contribution documentation
    :maxdepth: 1
 
    contributing.rst
+   db_migrations.rst
    code.rst
