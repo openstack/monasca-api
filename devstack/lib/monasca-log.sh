@@ -716,25 +716,6 @@ function start_monasca_log_agent {
     fi
 }
 
-function install_nodejs {
-    if is_service_enabled kibana; then
-        # refresh installation
-        apt_get install nodejs npm
-        (
-            npm config set registry "http://registry.npmjs.org/"; \
-            npm config set proxy "${HTTP_PROXY}"; \
-            npm set strict-ssl false;
-        )
-    fi
-}
-
-function clean_nodejs {
-    if is_service_enabled kibana; then
-        echo_summary "Cleaning Node.js"
-        apt_get purge nodejs npm
-    fi
-}
-
 function clean_gate_config_holder {
     sudo rm -rf $GATE_CONFIGURATION_DIR || true
 }
