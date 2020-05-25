@@ -396,19 +396,31 @@ function start_elasticsearch {
     fi
 }
 
+function _get_kibana_version_name {
+    echo "kibana-${KIBANA_VERSION}-linux-x86_64"
+}
+
+function _get_kibana_oss_version_name {
+    echo "kibana-oss-${KIBANA_VERSION}-linux-x86_64"
+}
+
 function install_kibana {
     if is_service_enabled kibana; then
         echo_summary "Installing Kibana ${KIBANA_VERSION}"
 
-        local kibana_tarball=kibana-oss-${KIBANA_VERSION}.tar.gz
+        local kibana_oss_version_name
+        kibana_oss_version_name=`_get_kibana_oss_version_name`
+        local kibana_tarball=${kibana_oss_version_name}.tar.gz
         local kibana_tarball_url=https://artifacts.elastic.co/downloads/kibana/${kibana_tarball}
         local kibana_tarball_dest
         kibana_tarball_dest=`get_extra_file ${kibana_tarball_url}`
 
         tar xzf ${kibana_tarball_dest} -C $DEST
 
-        sudo chown -R $STACK_USER $DEST/kibana-${KIBANA_VERSION}
-        ln -sf $DEST/kibana-${KIBANA_VERSION} $KIBANA_DIR
+        local kibana_version_name
+        kibana_version_name=`_get_kibana_version_name`
+        sudo chown -R $STACK_USER $DEST/${kibana_version_name}
+        ln -sf $DEST/${kibana_version_name} $KIBANA_DIR
     fi
 }
 
@@ -439,8 +451,10 @@ function clean_kibana {
     if is_service_enabled kibana; then
         echo_summary "Cleaning Kibana ${KIBANA_VERSION}"
 
+        local kibana_tarball
+        kibana_tarball=`_get_kibana_oss_version_name`.tar.gz
         sudo rm -rf $KIBANA_DIR || true
-        sudo rm -rf $FILES/kibana-${KIBANA_VERSION}.tar.gz || true
+        sudo rm -rf $FILES/${kibana_tarball} || true
         sudo rm -rf $KIBANA_CFG_DIR || true
     fi
 }
@@ -500,6 +514,8 @@ function build_kibana_plugin {
         git clone $KIBANA_DEV_REPO $KIBANA_DEV_DIR --branch $KIBANA_DEV_BRANCH --depth 1
 
         git_clone $MONASCA_KIBANA_PLUGIN_REPO $MONASCA_KIBANA_PLUGIN_DIR $MONASCA_KIBANA_PLUGIN_BRANCH
+        cd $MONASCA_KIBANA_PLUGIN_DIR
+        git_update_branch $MONASCA_KIBANA_PLUGIN_BRANCH
         cp -r $MONASCA_KIBANA_PLUGIN_DIR "$KIBANA_DEV_DIR/plugins"
         local plugin_dir="$KIBANA_DEV_DIR/plugins/monasca-kibana-plugin"
 

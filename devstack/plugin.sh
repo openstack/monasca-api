@@ -1445,6 +1445,10 @@ function init_collector_service {
     fi
 }
 
+function configure_tempest_for_monasca {
+    iniset $TEMPEST_CONFIG monitoring kibana_version $KIBANA_VERSION
+}
+
 # check for service enabled
 if is_service_enabled monasca; then
 
@@ -1457,6 +1461,12 @@ if is_service_enabled monasca; then
         # Perform installation of service source
         echo_summary "Installing Monasca"
         install_monasca
+
+    elif [[ "$1" == "stack" && "$2" == "test-config" ]]; then
+        if is_service_enabled tempest; then
+            echo_summary "Configuring Tempest for Monasca"
+            configure_tempest_for_monasca
+        fi
 
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         # Configure after the other layer 1 and 2 services have been configured
