@@ -96,6 +96,7 @@
 - job:
     name: monasca-tempest-python2-cassandra
     parent: monasca-tempest-base
+    voting: false
     vars:
       devstack_localrc:
         USE_PYTHON3: false
