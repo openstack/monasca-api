@@ -40,9 +40,9 @@ extensions = [
 ]
 
 # geeneral information about project
-repository_name = u'openstack/monasca-api'
-bug_project = u'863'
-bug_tag = u''
+openstackdocs_repo_name = u'openstack/monasca-api'
+openstackdocs_pdf_link = True
+openstackdocs_use_storyboard = True
 copyright = u'2014-present, OpenStack Foundation'
 author = u'OpenStack Foundation'
 
@@ -85,7 +85,7 @@ add_module_names = True
 show_authors = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['monasca_api.', 'monasca']

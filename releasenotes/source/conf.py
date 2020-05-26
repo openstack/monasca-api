@@ -37,14 +37,13 @@ source_encoding = 'utf-8'
 master_doc = 'index'
 
 # General information about the project.
-repository_name = u'openstack/monasca-api'
+openstackdocs_repo_name = u'openstack/monasca-api'
+openstackdocs_use_storyboard = True
 
 # Release notes do not need a version number in the title, they
 # cover multiple releases.
 version = ''
 release = ''
-bug_project = u'863'
-bug_tag = u''
 copyright = u'2014-present, OpenStack Foundation'
 author = u'OpenStack Foundation'
 
@@ -78,7 +77,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
