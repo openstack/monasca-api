@@ -16,8 +16,6 @@
    CLI interface for monasca database management.
 """
 
-from __future__ import print_function
-
 from oslo_config import cfg
 from oslo_db.sqlalchemy.migration_cli.ext_alembic import AlembicExtension
 
