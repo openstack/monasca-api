@@ -1218,8 +1218,9 @@ function clean_monasca_agent {
 function install_nodejs {
 
     echo_summary "Install Node.js"
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
 
-    apt_get install nodejs npm
+    apt_get install nodejs
     npm config set registry "http://registry.npmjs.org/"; \
     npm config set proxy "${HTTP_PROXY}"; \
     npm set strict-ssl false;
@@ -1245,8 +1246,7 @@ function install_monasca_grafana {
         git_timed clone $GRAFANA_REPO $GRAFANA_DIR --branch $GRAFANA_BRANCH --depth 1
     fi
 
-    # Is required to use python2.7 to build grafana because node-gyp support only python2
-    npm config set python /usr/bin/python2.7
+    npm config set python /usr/bin/python3
 
     cd "${MONASCA_BASE}"
 
