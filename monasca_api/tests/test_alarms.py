@@ -24,7 +24,7 @@ import falcon.testing
 import fixtures
 import testtools.matchers as matchers
 
-from mock import Mock
+from unittest.mock import Mock
 
 import oslo_config.fixture
 import six

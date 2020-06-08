@@ -21,7 +21,7 @@ from datetime import datetime
 
 import cassandra
 from cassandra.auth import PlainTextAuthProvider
-from mock import patch
+from unittest.mock import patch
 
 from oslo_config import cfg
 from oslo_utils import timeutils

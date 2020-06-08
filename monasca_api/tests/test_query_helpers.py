@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from mock import Mock
+from unittest.mock import Mock
 
 from monasca_api.tests import base
 from monasca_api.v2.reference import helpers
