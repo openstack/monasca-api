@@ -59,7 +59,7 @@ kafka_opts = [
     cfg.BoolOpt('drop_data', default=False,
                 help='Specify if received data should be simply dropped. '
                      'This parameter is only for testing purposes. (NOT USED)'),
-    cfg.BoolOpt(name='legacy_kafka_client_enabled', default=True,
+    cfg.BoolOpt(name='legacy_kafka_client_enabled', default=False,
                 required=True, advanced=True,
                 help='Enable legacy Kafka client. When set old version of '
                      'kafka-python library is used. Message format version '
