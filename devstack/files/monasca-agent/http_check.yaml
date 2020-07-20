@@ -20,7 +20,7 @@ instances:
       service: elasticsearch
     timeout: 3
     url: http://{{IP}}:9200/_cat/health
--   name: kibana
+  - name: kibana
     dimensions:
       service: kibana
     timeout: 3
