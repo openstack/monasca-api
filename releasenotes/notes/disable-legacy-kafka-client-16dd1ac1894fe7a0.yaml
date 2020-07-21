@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The default value of ``kafka.legacy_kafka_client_enabled`` has changed
+    from ``True`` to ``False``. The use of new Confluent Kafka client is
+    recommended.
