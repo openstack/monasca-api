@@ -38,13 +38,13 @@ migration_config = {'alembic_ini_path': env.ini_file_path}
 
 
 def do_detect_revision():
-    fp = Fingerprint(sql_repository.get_engine())
+    fingerprint = Fingerprint(sql_repository.get_engine())
 
-    if fp.revision is None:
-        print(_FP_NOREVISION % fp.sha1)
+    if fingerprint.revision is None:
+        print(_FP_NOREVISION % fingerprint.sha1)
         sys.exit(1)
     else:
-        print(fp.revision)
+        print(fingerprint.revision)
 
 
 def do_fingerprint():
