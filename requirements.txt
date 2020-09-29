@@ -1,7 +1,7 @@
 # The order of packages is significant, because pip processes them in the order
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
-oslo.db>=4.27.0 # Apache-2.0
+oslo.db>=6.0.0 # Apache-2.0
 oslo.config>=5.2.0 # Apache-2.0
 oslo.context>=2.19.2 # Apache-2.0
 oslo.log>=3.36.0 # Apache-2.0
@@ -20,8 +20,8 @@ PasteDeploy>=1.5.0 # MIT
 pbr!=2.1.0,>=2.0.0 # Apache-2.0
 six>=1.10.0 # MIT
 pyparsing>=2.1.0 # MIT
-voluptuous>=0.8.9 # BSD License
+voluptuous>=0.11.1 # BSD License
 eventlet!=0.18.3,!=0.20.1,!=0.21.0,!=0.23.0,!=0.25.0,>=0.18.2 # MIT
 monasca-common>=2.16.0 # Apache-2.0
-SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
+SQLAlchemy>=1.3.0 # MIT
 simplejson>=3.8.1 # MIT
