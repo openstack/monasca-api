@@ -1620,7 +1620,7 @@ class TestAlarmDefinition(AlarmTestBase):
         result_def = result.json
         self.assertEqual(result_def, expected_def)
 
-        for key, value in alarm_def.items():
+        for key, value in list(alarm_def.items()):
             del alarm_def[key]
 
             response = self.simulate_request(

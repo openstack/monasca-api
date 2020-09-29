@@ -109,7 +109,7 @@ sporadicMetricNamespaces:
 
 database:
   driverClass: %MONASCA_THRESH_DATABASE_ENGINE%
-  url: "jdbc:drizzle://%DATABASE_HOST%:%DATABASE_PORT%/mon"
+  url: "jdbc:mariadb://%DATABASE_HOST%:%DATABASE_PORT%/mon"
   user: "%DATABASE_USER%"
   password: "%DATABASE_PASSWORD%"
   properties:
