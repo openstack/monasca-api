@@ -498,6 +498,13 @@ wait_time = 1
 # effect on stability and/or performance.
 #auto_commit = false
 
+#
+# Enable legacy Kafka client. When set old version of
+# kafka-python library is used. Message format version
+# for the brokers should be set to 0.9.0.0 to avoid
+# performance issues until all consumers are upgraded.
+legacy_kafka_client_enabled = {{ KAFKA_LEGACY_CLIENT_ENABLED | default(false) }}
+
 
 [keystone_authtoken]
 
