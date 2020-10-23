@@ -18,6 +18,7 @@ FROM monasca/base:$BASE_TAG
 ENV \
     KAFKA_URI=kafka:9092 \
     KAFKA_WAIT_FOR_TOPICS=alarm-state-transitions,metrics \
+    KAFKA_LEGACY_CLIENT_ENABLED=false \
     MONASCA_CONTAINER_API_PORT=8070 \
     DATABASE_BACKEND=influxdb \
     INFLUX_HOST=influxdb \
