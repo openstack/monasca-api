@@ -25,6 +25,7 @@ Environment variables
 Variable                       Default                                                                 Description
 ============================== ======================================================================= ==========================================
 KAFKA_URI                      kafka:9092                                                              URI to Apache Kafka (distributed streaming platform)
+KAFKA_LEGACY_CLIENT_ENABLED    false                                                                   Enable legacy Kafka client
 MONASCA_CONTAINER_API_PORT     8070                                                                    The port from the metric pipeline endpoint
 DATABASE_BACKEND               influxdb                                                                Select for backend database
 INFLUX_HOST                    influxdb                                                                The host for influxdb
