@@ -39,6 +39,13 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_measurement_list(self, influxdb_client_mock):
+        """
+        Test for influxdb summary.
+
+        Args:
+            self: (todo): write your description
+            influxdb_client_mock: (todo): write your description
+        """
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
             "series": [
@@ -86,6 +93,13 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_list_metrics(self, influxdb_client_mock):
+        """
+        List all metrics.
+
+        Args:
+            self: (todo): write your description
+            influxdb_client_mock: (todo): write your description
+        """
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
             u'series': [{
@@ -135,6 +149,13 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     @patch('monasca_api.common.repositories.influxdb.'
            'metrics_repository.client.InfluxDBClient')
     def test_metrics_statistics(self, influxdb_client_mock):
+        """
+        Get metrics for a single metric.
+
+        Args:
+            self: (todo): write your description
+            influxdb_client_mock: (todo): write your description
+        """
         mock_client = influxdb_client_mock.return_value
         mock_client.query.return_value.raw = {
             u'series': [{
@@ -174,6 +195,12 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         self.assertEqual(stats_list, expected_result)
 
     def test_build_group_by_clause_with_period(self):
+        """
+        Perform a test group by clause
+
+        Args:
+            self: (todo): write your description
+        """
         group_by = 'hostname,service'
         period = 300
         expected_clause = ' group by hostname,service,time(300s) fill(none)'
@@ -183,6 +210,12 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         self.assertEqual(clause, expected_clause)
 
     def test_build_group_by_clause_without_period(self):
+        """
+        Factory method to find_bygroupgroup object for each group
+
+        Args:
+            self: (todo): write your description
+        """
         group_by = 'hostname,service'
         expected_clause = ' group by hostname,service'
 
@@ -193,6 +226,14 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_list_dimension_values(self, influxdb_client_mock, timestamp=False):
+        """
+        Lists all influxdb metrics.
+
+        Args:
+            self: (todo): write your description
+            influxdb_client_mock: (todo): write your description
+            timestamp: (todo): write your description
+        """
         mock_client = influxdb_client_mock.return_value
 
         tenant_id = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
@@ -237,11 +278,25 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         mock_client.query.assert_called_once_with(query, database=database)
 
     def test_list_dimension_values_with_timestamp(self):
+        """
+        Returns a list of test values.
+
+        Args:
+            self: (todo): write your description
+        """
         self.test_list_dimension_values(timestamp=True)
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.client.InfluxDBClient")
     def test_list_dimension_names(self, influxdb_client_mock, timestamp=False):
+        """
+        Get all influxdb names in the database.
+
+        Args:
+            self: (todo): write your description
+            influxdb_client_mock: (str): write your description
+            timestamp: (todo): write your description
+        """
         mock_client = influxdb_client_mock.return_value
 
         tenant_id = u'38dc2a2549f94d2e9a4fa1cc45a4970c'
@@ -290,11 +345,24 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
         mock_client.query.assert_called_once_with(query, database=database)
 
     def test_list_dimension_names_with_timestamp(self):
+        """
+        Takes a list of test_names.
+
+        Args:
+            self: (todo): write your description
+        """
         self.test_list_dimension_names(timestamp=True)
 
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.requests.head")
     def test_check_status(self, head_mock):
+        """
+        Checks status of a head.
+
+        Args:
+            self: (todo): write your description
+            head_mock: (todo): write your description
+        """
         head_mock.return_value.ok = True
         head_mock.return_value.status_code = 204
 
@@ -305,6 +373,13 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
     @patch("monasca_api.common.repositories.influxdb."
            "metrics_repository.requests.head")
     def test_check_status_server_error(self, head_mock):
+        """
+        Checks if the server status server.
+
+        Args:
+            self: (todo): write your description
+            head_mock: (todo): write your description
+        """
         head_mock.return_value.status_code = 500
         head_mock.return_value.ok = False
 
@@ -315,6 +390,12 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
 class TestRepoMetricsCassandra(base.BaseTestCase):
     def setUp(self):
+        """
+        Sets the high level
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestRepoMetricsCassandra, self).setUp()
         self.conf_default(contact_points='127.0.0.1',
                           group='cassandra')
@@ -322,6 +403,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_init(self, cassandra_connect_mock):
+        """
+        Initialize a connection to the device.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         repo = cassandra_repo.MetricsRepository()
         self.assertIsNone(
             repo.cluster.auth_provider,
@@ -340,6 +428,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metrics(self, cassandra_connect_mock):
+        """
+        Return a list of a metric.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_future_mock = cassandra_session_mock.execute_async.return_value
 
@@ -385,6 +480,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metrics_empty_metric_id(self, cassandra_connect_mock):
+        """
+        Get metrics for a metric.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_future_mock = cassandra_session_mock.execute_async.return_value
 
@@ -429,6 +531,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_list_metric_names(self, cassandra_connect_mock):
+        """
+        Returns a list of metric names.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         cassandra_session_mock = cassandra_connect_mock.return_value
         cassandra_future_mock = cassandra_session_mock.execute_async.return_value
 
@@ -466,6 +575,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_measurement_list(self, cassandra_connect_mock):
+        """
+        Test if a namedtuple.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
 
         cassandra_session_mock = cassandra_connect_mock.return_value
@@ -526,6 +642,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_metrics_statistics(self, cassandra_connect_mock):
+        """
+        Get statistics for a metrics.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         Measurement = namedtuple('Measurement', 'time_stamp value value_meta')
 
         cassandra_session_mock = cassandra_connect_mock.return_value
@@ -639,6 +762,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_alarm_history(self, cassandra_connect_mock):
+        """
+        Alarm history history of history.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         AlarmHistory = namedtuple('AlarmHistory', 'alarm_id, time_stamp, metrics, '
                                                   'new_state, old_state, reason, '
                                                   'reason_data, sub_alarms, tenant_id')
@@ -726,6 +856,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_check_status(self, _):
+        """
+        Check the status of a test.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         repo = cassandra_repo.MetricsRepository()
 
         result = repo.check_status()
@@ -735,6 +872,13 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
     @patch("monasca_api.common.repositories.cassandra."
            "metrics_repository.Cluster.connect")
     def test_check_status_server_error(self, cassandra_connect_mock):
+        """
+        Check if the connection is ok.
+
+        Args:
+            self: (todo): write your description
+            cassandra_connect_mock: (todo): write your description
+        """
         repo = cassandra_repo.MetricsRepository()
         cassandra_connect_mock.side_effect = \
             cassandra.DriverException("Cluster is already shut down")
@@ -745,6 +889,12 @@ class TestRepoMetricsCassandra(base.BaseTestCase):
 
     @staticmethod
     def _convert_time_string(date_time_string):
+        """
+        Convert a date string to a datetime object.
+
+        Args:
+            date_time_string: (str): write your description
+        """
         dt = timeutils.parse_isotime(date_time_string)
         dt = timeutils.normalize_time(dt)
         return dt

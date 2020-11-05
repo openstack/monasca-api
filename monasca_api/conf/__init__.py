@@ -43,6 +43,11 @@ def load_conf_modules():
 
 
 def _list_module_names():
+    """
+    Return a list of all sub - modules.
+
+    Args:
+    """
     package_path = os.path.dirname(os.path.abspath(__file__))
     for _, modname, ispkg in pkgutil.iter_modules(path=[package_path]):
         if not (modname == "opts" and ispkg):
@@ -61,11 +66,21 @@ def register_opts():
 
 
 def _register_api_opts():
+    """
+    Register modules ini modules.
+
+    Args:
+    """
     for mod in load_conf_modules():
         mod.register_opts(CONF)
 
 
 def _register_db_opts():
+    """
+    Registers db operations.
+
+    Args:
+    """
     oslo_db_opts.set_defaults(CONF, connection='sqlite://',
                               max_pool_size=10, max_overflow=20,
                               pool_timeout=10)

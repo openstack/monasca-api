@@ -39,6 +39,14 @@ request_body_schema = Schema(Any(notification_schema))
 
 
 def parse_and_validate(msg, valid_periods, require_all=False):
+    """
+    Validate a message.
+
+    Args:
+        msg: (str): write your description
+        valid_periods: (todo): write your description
+        require_all: (bool): write your description
+    """
     try:
         request_body_schema(msg)
     except Exception as ex:
@@ -62,11 +70,23 @@ def parse_and_validate(msg, valid_periods, require_all=False):
 
 
 def _validate_email(address):
+    """
+    Validate an email address.
+
+    Args:
+        address: (str): write your description
+    """
     if not validation.validate_email_address(address):
         raise exceptions.ValidationException("Address {} is not of correct format".format(address))
 
 
 def _validate_url(address):
+    """
+    Validate url.
+
+    Args:
+        address: (str): write your description
+    """
     try:
         parsed = urlparse.urlparse(address)
     except Exception:
@@ -83,6 +103,13 @@ def _validate_url(address):
 
 
 def _parse_and_validate_period(period, valid_periods):
+    """
+    Parse a period.
+
+    Args:
+        period: (str): write your description
+        valid_periods: (todo): write your description
+    """
     try:
         period = int(period)
     except Exception:

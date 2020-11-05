@@ -55,9 +55,20 @@ cassandra_group = cfg.OptGroup(name='cassandra')
 
 
 def register_opts(conf):
+    """
+    Registers the options for the conf. conf.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(cassandra_group)
     conf.register_opts(cassandra_opts, cassandra_group)
 
 
 def list_opts():
+    """
+    Returns a list of optts_group_group_group.
+
+    Args:
+    """
     return cassandra_group, cassandra_opts

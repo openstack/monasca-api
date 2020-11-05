@@ -84,6 +84,14 @@ ALARM_HISTORY = OrderedDict((
 
 class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
     def _build_series(self, name, column_dict):
+        """
+        Build a dataframe from a column name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            column_dict: (dict): write your description
+        """
         return {
             "name": name,
             "columns": column_dict.keys(),
@@ -91,6 +99,12 @@ class InfluxClientAlarmHistoryResponseFixture(fixtures.MockPatch):
         }
 
     def _setUp(self):
+        """
+        Sets the history of the history of a series.
+
+        Args:
+            self: (todo): write your description
+        """
         super(InfluxClientAlarmHistoryResponseFixture, self)._setUp()
 
         mock_data = copy.deepcopy(ALARM_HISTORY)
@@ -114,15 +128,35 @@ class RESTResponseEquals(object):
     """
 
     def __init__(self, expected_data):
+        """
+        Initialize expected data.
+
+        Args:
+            self: (todo): write your description
+            expected_data: (todo): write your description
+        """
         self.expected_data = expected_data
 
         if u"links" in expected_data:
             del expected_data[u"links"]
 
     def __str__(self):
+        """
+        Return the string representation of this parameter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'RESTResponseEquals(%s)' % (self.expected,)
 
     def match(self, actual):
+        """
+        Match the expected match.
+
+        Args:
+            self: (todo): write your description
+            actual: (todo): write your description
+        """
         response_data = actual.json
 
         if u"links" in response_data:
@@ -133,6 +167,12 @@ class RESTResponseEquals(object):
 
 class AlarmTestBase(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Set the alarm configuration
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmTestBase, self).setUp()
 
         self.useFixture(fixtures.MockPatch(
@@ -162,6 +202,12 @@ class AlarmTestBase(base.BaseApiTestCase):
 
 class TestAlarmsStateHistory(AlarmTestBase):
     def setUp(self):
+        """
+        Sets up the history.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarmsStateHistory, self).setUp()
 
         self.useFixture(fixtures.MockPatch(
@@ -179,6 +225,12 @@ class TestAlarmsStateHistory(AlarmTestBase):
             '/v2.0/alarms/state-history/', self.alarms_resource)
 
     def test_alarm_state_history(self):
+        """
+        Simulate state history of state of the state.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = {u"elements": [dict(ALARM_HISTORY)]}
         del expected_elements[u"elements"][0][u"time"]
         del (expected_elements[u"elements"][0][u"sub_alarms"][0]
@@ -194,6 +246,12 @@ class TestAlarmsStateHistory(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_alarm_state_history_no_alarm_id(self):
+        """
+        : return :
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = {u'elements': []}
 
         response = self.simulate_request(
@@ -208,6 +266,12 @@ class TestAlarmsStateHistory(AlarmTestBase):
 
 class TestAlarmsCount(AlarmTestBase):
     def setUp(self):
+        """
+        Sets the alignment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarmsCount, self).setUp()
 
         self.alarms_get_alarms_count_mock = self.useFixture(fixtures.MockPatch(
@@ -219,6 +283,12 @@ class TestAlarmsCount(AlarmTestBase):
                            self.alarms_count_resource)
 
     def test_get_alarm_count(self):
+        """
+        Return the number of alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'counts': [[4]], 'columns': ['count']}
 
@@ -234,6 +304,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_state_parameter(self):
+        """
+        Count the state of a state count.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'counts': [[4]], 'columns': ['count']}
 
@@ -250,6 +326,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_severity_parameter(self):
+        """
+        Get the number of alarms for an alarm is alive.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'counts': [[4]], 'columns': ['count']}
 
@@ -266,6 +348,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_group_by_parameter(self):
+        """
+        Get the number of alarm alive for an alarm group.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'columns': ['count', 'metric_name'],
                              'counts': [[2, 'cpu.idle_perc'],
@@ -306,6 +394,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_incorrect_group_by_parameter(self):
+        """
+        The number of alarm alarm alarm count count.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
 
         return_value.get_alarms_count.return_value = [{'metric_name': u'cpu.idle_perc', 'count': 2},
@@ -321,6 +415,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_get_alarm_count_offset(self):
+        """
+        Simulate the alarm count.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'columns': ['count', 'metric_name'],
                              'counts': [[2, 'cpu.idle_perc']]}
@@ -337,6 +437,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_incorrect_offset(self):
+        """
+        Simulate the alarm count.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'description': 'Offset must be a valid integer, was hahahah',
                              'title': 'Unprocessable Entity'}
@@ -353,6 +459,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_limit_parameter(self):
+        """
+        Return the number of the alarms for this alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'counts': [[4]], 'columns': ['count']}
 
@@ -382,6 +494,12 @@ class TestAlarmsCount(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_elements))
 
     def test_get_alarm_count_when_count_is_zero(self):
+        """
+        Simulate number of alive alive count.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_get_alarms_count_mock.return_value
         expected_elements = {'columns': ['count', 'metric_name'], 'counts': [[0, None]]}
 
@@ -410,6 +528,12 @@ class TestAlarmsCount(AlarmTestBase):
 
 class TestAlarms(AlarmTestBase):
     def setUp(self):
+        """
+        Set up the application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarms, self).setUp()
 
         self.alarms_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -423,6 +547,12 @@ class TestAlarms(AlarmTestBase):
                            self.alarms_resource)
 
     def test_alarms_get_alarms(self):
+        """
+        Get alarms. alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -473,6 +603,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarm(self):
+        """
+        : return : return :
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarm.return_value = \
             [{'alarm_definition_id': '1',
@@ -521,6 +657,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_state_parameter(self):
+        """
+        Get alarms state.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -571,6 +713,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_severity_parameter(self):
+        """
+        Returns the alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -621,6 +769,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_with_offset(self):
+        """
+        Get alarms alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -671,6 +825,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_with_incorrect_offset(self):
+        """
+        Get alarms alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -696,6 +856,12 @@ class TestAlarms(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarms_get_alarms_sort_by_parameter(self):
+        """
+        Get alarms of alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -746,6 +912,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarms))
 
     def test_alarms_get_alarms_incorrect_sort_by_parameter(self):
+        """
+        : return : return :
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarms.return_value = \
             [{'alarm_definition_id': '1',
@@ -771,6 +943,12 @@ class TestAlarms(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarms_delete_alarms(self):
+        """
+        Simulate the alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarm_metrics.return_value = \
             [{'alarm_id': u'2',
@@ -789,6 +967,12 @@ class TestAlarms(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_204)
 
     def test_alarms_put(self):
+        """
+        Returns alarm alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarm_metrics.return_value = \
             [{'alarm_id': u'2',
@@ -862,6 +1046,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarm))
 
     def test_alarms_put_without_link(self):
+        """
+        Simulate a new alarms link.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_new_fields = {'state': 'ALARM',
                             'lifecycle_state': 'OPEN'}
         expected_response = {u'description': u"Field 'link' is required",
@@ -877,6 +1067,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_put_without_lifecycle_state(self):
+        """
+        Api call : post - lifecycle state.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_new_fields = {'state': 'ALARM',
                             'link': 'http://somesite.com/this-alarm-info'}
         expected_response = {u'description': u"Field 'lifecycle_state' is required",
@@ -892,6 +1088,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_put_without_state(self):
+        """
+        This method is used to update the state of the state.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_new_fields = {'lifecycle_state': 'OPEN',
                             'link': 'http://somesite.com/this-alarm-info'}
         expected_response = {u'description': u"Field 'state' is required",
@@ -907,6 +1109,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_response))
 
     def test_alarms_patch(self):
+        """
+        Sends alignment.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarm_metrics.return_value = \
             [{'alarm_id': u'2',
@@ -980,6 +1188,12 @@ class TestAlarms(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_alarm))
 
     def test_alarms_patch_without_new_fields(self):
+        """
+        Returns a dict of alarms for a new_value.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarms_repo_mock.return_value
         return_value.get_alarm_metrics.return_value = \
             [{'alarm_id': u'2',
@@ -1053,6 +1267,12 @@ class TestAlarms(AlarmTestBase):
 
 class TestAlarmDefinition(AlarmTestBase):
     def setUp(self):
+        """
+        Sets the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarmDefinition, self).setUp()
 
         self.alarm_def_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -1070,6 +1290,12 @@ class TestAlarmDefinition(AlarmTestBase):
                            self.alarm_definition_resource)
 
     def test_alarm_definition_create(self):
+        """
+        Create an alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarm_def_repo_mock.return_value
         return_value.get_alarm_definitions.return_value = []
         return_value.create_alarm_definition.return_value = u"00000001-0001-0001-0001-000000000001"
@@ -1104,6 +1330,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_create_with_valid_expressions(self):
+        """
+        Create a new alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.alarm_def_repo_mock.return_value
         return_value.get_alarm_definitions.return_value = []
         return_value.create_alarm_definition.return_value = u"00000001-0001-0001-0001-000000000001"
@@ -1163,6 +1395,12 @@ class TestAlarmDefinition(AlarmTestBase):
             self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_create_with_invalid_expressions(self):
+        """
+        Validate alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         bad_expressions = [
             "test=metric > 10",
             "test.metric{dim=this=that} > 10",
@@ -1188,6 +1426,12 @@ class TestAlarmDefinition(AlarmTestBase):
                              u'Expression {} should have failed'.format(expression))
 
     def test_alarm_definition_create_with_occupied_alarm_definition_name(self):
+        """
+        Creates an alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = [{
             'alarm_actions': None,
             'ok_actions': None,
@@ -1213,6 +1457,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_409)
 
     def test_alarm_definition_update(self):
+        """
+        Update the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         self.alarm_def_repo_mock.return_value.update_or_patch_alarm_definition.return_value = (
             {u'alarm_actions': [],
@@ -1293,6 +1543,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(result_def, expected_def)
 
     def test_alarm_definition_patch_incorrect_id(self):
+        """
+        Partially alarm alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = [{
             'alarm_actions': None,
             'ok_actions': None,
@@ -1319,6 +1575,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_409)
 
     def test_alarm_definition_put_incorrect_period_value(self):
+        """
+        Returns the alarm alarm value.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         period = 'times 0'
         alarm_def = {
@@ -1344,6 +1606,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarm_definition_patch_no_id(self):
+        """
+        Partially update the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'name': u'Test Alarm Definition Updated',
         }
@@ -1359,6 +1627,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_update_no_id(self):
+        """
+        Update the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'name': u'Test Alarm Definition Updated',
         }
@@ -1374,6 +1648,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_delete(self):
+        """
+        Delete the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.alarm_def_repo_mock.return_value.get_get_sub_alarm_definitions.return_value = [{
             'alarm_definition_id': '123',
@@ -1407,6 +1687,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_204)
 
     def test_alarm_definition_delete_alarm_definition_not_exist(self):
+        """
+        Delete the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_get_sub_alarm_definitions.return_value = []
         self.alarm_def_repo_mock.return_value.get_alarm_metrics.return_value = []
         self.alarm_def_repo_mock.return_value.get_sub_alarms.return_value = []
@@ -1422,6 +1708,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_404)
 
     def test_alarm_definition_delete_no_id(self):
+        """
+        Delete a test definition.
+
+        Args:
+            self: (todo): write your description
+        """
 
         response = self.simulate_request(
             path="/v2.0/alarm-definitions/",
@@ -1433,6 +1725,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_400)
 
     def test_alarm_definition_patch(self):
+        """
+        Patch alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         description = u'Non-ASCII character: \u2603'
         new_name = u'Test Alarm Updated'
@@ -1542,6 +1840,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(reference, event)
 
     def test_alarm_definition_update_missing_fields(self):
+        """
+        Returns a dict with fields fields to update fields.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = []
         self.alarm_def_repo_mock.return_value.update_or_patch_alarm_definition.return_value = (
             {u'alarm_actions': [],
@@ -1635,6 +1939,12 @@ class TestAlarmDefinition(AlarmTestBase):
             alarm_def[key] = value
 
     def test_alarm_definition_get_specific_alarm(self):
+        """
+        Get alarm alarms.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.alarm_def_repo_mock.return_value.get_alarm_definition.return_value = {
             'alarm_actions': None,
@@ -1677,6 +1987,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_specific_alarm_description_none(self):
+        """
+        : rtype : rtype : dict
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.alarm_def_repo_mock.return_value.get_alarm_definition.return_value = {
             'alarm_actions': None,
@@ -1716,6 +2032,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_get_alarm_definitions_with_multibyte_character(self):
+        """
+        : return : class :.
+
+        Args:
+            self: (todo): write your description
+        """
         def_name = 'ａｌａｒｍ＿ｄｅｆｉｎｉｔｉｏｎ'
         if six.PY2:
             def_name = def_name.decode('utf8')
@@ -1754,6 +2076,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_alarm_definition_list(self):
+        """
+        Get alarm alarm alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         self.alarm_def_repo_mock.return_value.get_alarm_definitions.return_value = [{
             'alarm_actions': None,
             'ok_actions': None,
@@ -1829,6 +2157,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertThat(response, RESTResponseEquals(expected_data))
 
     def test_alarm_definition_get_alarm_definition_list_incorrect(self):
+        """
+        Get alarm alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(
             path='/v2.0/alarm-definitions',
             headers={
@@ -1839,6 +2173,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertEqual(response.status, falcon.HTTP_422)
 
     def test_alarm_definition_get_query_alarm_definition_name(self):
+        """
+        Creates an alarm definition definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': [],
             u'ok_actions': [],
@@ -1864,6 +2204,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(name)
 
     def test_alarm_definition_get_query_alarm_definition_expression(self):
+        """
+        Get a new alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': [],
             u'ok_actions': [],
@@ -1890,6 +2236,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(expression)
 
     def test_alarm_definition_get_query_alarm_definition_description(self):
+        """
+        Returns a alarm definition query.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': [],
             u'ok_actions': [],
@@ -1915,6 +2267,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(description)
 
     def test_alarm_definition_get_query_alarm_definition_severity(self):
+        """
+        Creates an alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': [],
             u'ok_actions': [],
@@ -1944,6 +2302,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(severity)
 
     def test_alarm_definition_get_query_alarm_definition_match_by(self):
+        """
+        Creates an alarm definition query.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': [],
             u'ok_actions': [],
@@ -1969,6 +2333,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(expression)
 
     def test_alarm_definition_get_query_alarm_definition_alarm_actions(self):
+        """
+        Test for alarm definition query.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': 'c60ec47e-5038-4bf1-9f95-4046c6e9a759',
             u'ok_actions': [],
@@ -1994,6 +2364,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(alarm_actions)
 
     def test_alarm_definition_get_query_alarm_definition_undetermined_actions(self):
+        """
+        Test for alarm actions.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': 'c60ec47e-5038-4bf1-9f95-4046c6e9a759',
             u'ok_actions': [],
@@ -2022,6 +2398,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(undetermined_actions)
 
     def test_alarm_definition_get_query_alarm_definition_ok_actions(self):
+        """
+        Get the alarm definition query.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'ok_actions': 'c60ec47e-5038-4bf1-9f95-4046c6e9a759',
             u'description': u'',
@@ -2045,6 +2427,12 @@ class TestAlarmDefinition(AlarmTestBase):
         self.assertIsNone(ok_actions)
 
     def test_alarm_definition_get_query_alarm_definition_actions_enabled(self):
+        """
+        Get the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_def = {
             u'alarm_actions': 'c60ec47e-5038-4bf1-9f95-4046c6e9a759',
             u'ok_actions': [],
@@ -2083,6 +2471,12 @@ class TestAlarmDefinition(AlarmTestBase):
                           return_none=False)
 
     def test_alarm_definition_get_query_alarm_definition_is_definition_deterministic(self):
+        """
+        Test for the expression definition of the alarm definition.
+
+        Args:
+            self: (todo): write your description
+        """
         expression = u'max(test.metric{hostname=host}) gte 1'
         is_deterministic = alarm_definitions.is_definition_deterministic(expression)
         self.assertEqual(False, is_deterministic)

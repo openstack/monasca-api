@@ -44,9 +44,20 @@ messaging_group = cfg.OptGroup(name='messaging', title='messaging')
 
 
 def register_opts(conf):
+    """
+    Register the given group of the given group.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(messaging_group)
     conf.register_opts(messaging_opts, messaging_group)
 
 
 def list_opts():
+    """
+    Returns a list of all opts for a group.
+
+    Args:
+    """
     return messaging_group, messaging_opts

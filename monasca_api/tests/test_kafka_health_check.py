@@ -40,15 +40,34 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
     }
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the kafka configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestKafkaHealthCheckLogic, self).__init__(*args, **kwargs)
         self._conf = None
 
     def setUp(self):
+        """
+        Sets the default configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestKafkaHealthCheckLogic, self).setUp()
         self.conf_default(group='kafka', **self.mocked_config)
 
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_fail_kafka_unavailable(self, kafka_client):
+        """
+        Check if kafka kafka client.
+
+        Args:
+            self: (todo): write your description
+            kafka_client: (todo): write your description
+        """
         kafka = mock.Mock()
         kafka_client.side_effect = client.KafkaUnavailableError()
         kafka_client.return_value = kafka
@@ -61,6 +80,13 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
 
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_fail_missing_topic(self, kafka_client):
+        """
+        Check if there is a kafka is missing.
+
+        Args:
+            self: (todo): write your description
+            kafka_client: (todo): write your description
+        """
         kafka = mock.Mock()
         kafka.topics = ['topic1']
         kafka_client.return_value = kafka
@@ -73,6 +99,13 @@ class TestKafkaHealthCheckLogic(base.BaseTestCase):
 
     @mock.patch('monasca_api.healthcheck.kafka_check.client.KafkaClient')
     def test_should_pass(self, kafka_client):
+        """
+        Check if the health check was received.
+
+        Args:
+            self: (todo): write your description
+            kafka_client: (todo): write your description
+        """
         kafka = mock.Mock()
         kafka.topics = [self.mocked_topics,
                         self.mocked_event_topic,

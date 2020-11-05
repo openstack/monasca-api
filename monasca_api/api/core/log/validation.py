@@ -59,6 +59,11 @@ def validate_application_type(application_type=None):
        """
 
     def validate_length():
+        """
+        Validate the length of the application.
+
+        Args:
+        """
         if (len(application_type) >
                 APPLICATION_TYPE_CONSTRAINTS['MAX_LENGTH']):
             msg = ('Application type {type} must be '
@@ -72,6 +77,11 @@ def validate_application_type(application_type=None):
             )
 
     def validate_match():
+        """
+        Validate the given match.
+
+        Args:
+        """
         if (not APPLICATION_TYPE_CONSTRAINTS['PATTERN']
                 .match(application_type)):
             raise exceptions.HTTPUnprocessableEntity(
@@ -85,6 +95,12 @@ def validate_application_type(application_type=None):
 
 
 def _validate_dimension_name(name):
+    """
+    Validate the dimension name is valid.
+
+    Args:
+        name: (str): write your description
+    """
     try:
         if len(name) > DIMENSION_NAME_CONSTRAINTS['MAX_LENGTH']:
             raise exceptions.HTTPUnprocessableEntity(
@@ -108,6 +124,12 @@ def _validate_dimension_name(name):
 
 
 def _validate_dimension_value(value):
+    """
+    Validates that value is a valid dimension.
+
+    Args:
+        value: (todo): write your description
+    """
     try:
         value[0]
         if len(value) > DIMENSION_VALUE_CONSTRAINTS['MAX_LENGTH']:
@@ -214,6 +236,12 @@ def validate_payload_size(req):
 
 
 def validate_is_delegate(roles):
+    """
+    Checks if the given list of the roles.
+
+    Args:
+        roles: (str): write your description
+    """
     delegate_roles = CONF.roles_middleware.delegate_roles
     if roles and delegate_roles:
         roles = roles.split(',') if isinstance(roles, six.string_types) \
@@ -223,6 +251,14 @@ def validate_is_delegate(roles):
 
 
 def validate_cross_tenant(tenant_id, cross_tenant_id, roles):
+    """
+    Ensure the tenant.
+
+    Args:
+        tenant_id: (str): write your description
+        cross_tenant_id: (str): write your description
+        roles: (list): write your description
+    """
 
     if not validate_is_delegate(roles):
         if cross_tenant_id:

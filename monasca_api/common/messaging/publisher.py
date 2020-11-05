@@ -21,4 +21,11 @@ import six
 class Publisher(object):
     @abc.abstractmethod
     def send_message(self, message):
+        """
+        Send a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         return

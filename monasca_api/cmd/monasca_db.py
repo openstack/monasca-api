@@ -38,6 +38,11 @@ migration_config = {'alembic_ini_path': env.ini_file_path}
 
 
 def do_detect_revision():
+    """
+    Detect the revision.
+
+    Args:
+    """
     fingerprint = Fingerprint(sql_repository.get_engine())
 
     if fingerprint.revision is None:
@@ -48,6 +53,11 @@ def do_detect_revision():
 
 
 def do_fingerprint():
+    """
+    Print fingerprint ]
+
+    Args:
+    """
     fingerprint = Fingerprint(sql_repository.get_engine())
     if CONF.command.raw:
         print(fingerprint.schema_raw, end="")
@@ -56,6 +66,11 @@ def do_fingerprint():
 
 
 def do_stamp():
+    """
+    Stamp / : commit the revision.
+
+    Args:
+    """
     rev = CONF.command.revision
     from_fingerprint = CONF.command.from_fingerprint
 
@@ -79,6 +94,11 @@ def do_stamp():
 
 
 def do_upgrade():
+    """
+    Upgrade the database.
+
+    Args:
+    """
     engine = sql_repository.get_engine()
     alembic_ext = AlembicExtension(engine, migration_config)
 
@@ -97,6 +117,11 @@ def do_upgrade():
 
 
 def do_version():
+    """
+    Version of the database.
+
+    Args:
+    """
     engine = sql_repository.get_engine()
     alembic_ext = AlembicExtension(engine, migration_config)
 
@@ -109,6 +134,12 @@ def do_version():
 
 
 def add_command_parsers(subparsers):
+    """
+    Add command line arguments to the subcommand.
+
+    Args:
+        subparsers: (todo): write your description
+    """
     parser = subparsers.add_parser('fingerprint',
                                    help="Compute SHA1 fingerprint of "
                                         "current database schema ")
@@ -153,6 +184,11 @@ command_opt = cfg.SubCommandOpt('command',
 
 
 def main():
+    """
+    Main entry point.
+
+    Args:
+    """
     CONF.register_cli_opt(command_opt)
     CONF(args=sys.argv[1:],
          default_config_files=monasca_api.config.get_config_files(),

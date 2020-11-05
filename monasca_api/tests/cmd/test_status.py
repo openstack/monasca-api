@@ -23,10 +23,22 @@ from monasca_api.cmd import status
 class TestUpgradeChecks(unittest.TestCase):
 
     def setUp(self):
+        """
+        Sets the daemon.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestUpgradeChecks, self).setUp()
         self.cmd = status.Checks()
 
     def test__check_placeholder(self):
+        """
+        Run placeholder.
+
+        Args:
+            self: (todo): write your description
+        """
         check_result = self.cmd._check_placeholder()
         self.assertEqual(
             Code.SUCCESS, check_result.code,

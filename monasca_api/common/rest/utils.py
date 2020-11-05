@@ -24,9 +24,20 @@ JSON_CONTENT_TYPE = 'application/json'
 
 
 def _try_catch(fun):
+    """
+    Decorator to catch exceptions.
+
+    Args:
+        fun: (todo): write your description
+    """
 
     @six.wraps(fun)
     def wrapper(*args, **kwargs):
+        """
+        Decorator todo a function and raise exceptions.
+
+        Args:
+        """
         try:
             return fun(*args, **kwargs)
         except Exception as ex:

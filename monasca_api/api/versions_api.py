@@ -19,8 +19,23 @@ LOG = log.getLogger(__name__)
 
 class VersionsAPI(object):
     def __init__(self):
+        """
+        Initialize the api.
+
+        Args:
+            self: (todo): write your description
+        """
         super(VersionsAPI, self).__init__()
         LOG.info('Initializing VersionsAPI!')
 
     def on_get(self, req, res, id):
+        """
+        Respond to get request
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            id: (str): write your description
+        """
         res.status = '501 Not Implemented'

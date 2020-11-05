@@ -66,6 +66,13 @@ class SubAlarmDefinition(object):
             self.deterministic = sub_expr.deterministic
 
     def _init_dimensions(self, dimensions_str):
+        """
+        Extract dimensions from a string.
+
+        Args:
+            self: (todo): write your description
+            dimensions_str: (str): write your description
+        """
 
         dimensions = {}
 
@@ -104,6 +111,12 @@ class SubAlarmDefinition(object):
         return result
 
     def __hash__(self):
+        """
+        Returns a hash of the metric.
+
+        Args:
+            self: (todo): write your description
+        """
 
         dimensions_str = "".join(sorted([name + value for name, value in
                                          self.dimensions.items()]))
@@ -121,6 +134,12 @@ class SubAlarmDefinition(object):
                 hash(float(self.threshold)))
 
     def __repr__(self):
+        """
+        Return a representation of this definition.
+
+        Args:
+            self: (todo): write your description
+        """
 
         result = 'id={},alarm_definition_id={},function={},metric_name={},dimensions={}' .format(
             self.id, self.alarm_definition_id, self.function, self.metric_name, self.dimensions)
@@ -129,6 +148,13 @@ class SubAlarmDefinition(object):
         return result
 
     def __eq__(self, other):
+        """
+        Determine if other is the same as other.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
 
         if id(self) == id(other):
             return True
@@ -149,6 +175,13 @@ class SubAlarmDefinition(object):
                 float(self.threshold) == float(other.threshold))
 
     def same_key_fields(self, other):
+        """
+        Return true if other fields of the same.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
 
         # The metrics matched can't change
         return (self.metric_name == other.metric_name and

@@ -23,6 +23,13 @@ class HostAddressPortOpt(cfg.Opt):
     Accept hostname or ip address with TCP/IP port number.
     """
     def __init__(self, name, **kwargs):
+        """
+        Initialize a new port.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         ip_port_type = HostAddressPortType()
         super(HostAddressPortOpt, self).__init__(name,
                                                  type=ip_port_type,
@@ -33,10 +40,24 @@ class HostAddressPortType(types.HostAddress):
     """HostAddress with additional port."""
 
     def __init__(self, version=None):
+        """
+        Initialize a connection.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+        """
         type_name = 'ip and port value'
         super(HostAddressPortType, self).__init__(version, type_name=type_name)
 
     def __call__(self, value):
+        """
+        Returns a string representing the port.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         addr, port = netutils.parse_host_port(value)
         # NOTE(gmann): parse_host_port() return port as None if no port is
         # supplied in value so setting port as string for correct
@@ -50,9 +71,22 @@ class HostAddressPortType(types.HostAddress):
 
     @staticmethod
     def _validate_port(port):
+        """
+        Validate a port.
+
+        Args:
+            port: (int): write your description
+        """
         return types.Port()(port)
 
     def validate_addr(self, addr):
+        """
+        Validate the given address.
+
+        Args:
+            self: (todo): write your description
+            addr: (str): write your description
+        """
         try:
             addr = self.ip_address(addr)
         except ValueError:

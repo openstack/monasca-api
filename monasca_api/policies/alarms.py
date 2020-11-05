@@ -163,4 +163,9 @@ rules = [
 
 
 def list_rules():
+    """
+    List all rules in the rules.
+
+    Args:
+    """
     return rules

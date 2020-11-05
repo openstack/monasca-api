@@ -31,6 +31,11 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.add_column('sub_alarm_definition',
                   sa.Column('is_deterministic',
                             sa.Boolean(),
@@ -39,4 +44,9 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     op.drop_column('sub_alarm_definition', 'is_deterministic')

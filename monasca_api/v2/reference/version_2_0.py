@@ -20,9 +20,23 @@ from monasca_api.v2.reference import helpers
 
 class Version2(object):
     def __init__(self):
+        """
+        Init the version
+
+        Args:
+            self: (todo): write your description
+        """
         super(Version2, self).__init__()
 
     def on_get(self, req, res):
+        """
+        Respond to get request
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req,
                                        ['api:versions'])
         result = {

@@ -23,6 +23,12 @@ from sqlalchemy import select
 class NotificationMethodTypeRepository(sql_repository.SQLRepository,
                                        nr.NotificationMethodTypeRepository):
     def __init__(self):
+        """
+        Initializes all the nmt objects.
+
+        Args:
+            self: (todo): write your description
+        """
 
         super(NotificationMethodTypeRepository, self).__init__()
 
@@ -34,6 +40,12 @@ class NotificationMethodTypeRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def list_notification_method_types(self):
+        """
+        List all notification types.
+
+        Args:
+            self: (todo): write your description
+        """
 
         with self._db_engine.connect() as conn:
             notification_method_types = conn.execute(self._nmt_query).fetchall()

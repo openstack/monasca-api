@@ -44,6 +44,11 @@ _nm = table(
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     # Built-in notification types have been removed. Here, we
     # remove them (where not in use) and rely on Monasca Notification
     # to re-populate the table according to what is set in its config file.
@@ -62,6 +67,11 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     # Some or all of these might be present if they have been explicitly
     # enabled in monasca-notification.
     op.execute(_nm_types.insert().prefix_with("IGNORE").values(

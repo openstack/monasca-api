@@ -24,6 +24,12 @@ EMAIL_PATTERN = '^.+@.+$'
 
 
 def validate_alarm_state(state):
+    """
+    Validate the state.
+
+    Args:
+        state: (todo): write your description
+    """
     if state.upper() not in VALID_ALARM_STATES:
         raise HTTPUnprocessableEntityError("Invalid State",
                                            "State {} must be one of {}".format(state.encode('utf8'),
@@ -31,6 +37,12 @@ def validate_alarm_state(state):
 
 
 def validate_alarm_definition_severity(severity):
+    """
+    Validates that the alarmdefinition.
+
+    Args:
+        severity: (todo): write your description
+    """
     if severity.upper() not in VALID_ALARM_DEFINITION_SEVERITIES:
         raise HTTPUnprocessableEntityError(
             "Invalid Severity",
@@ -39,12 +51,25 @@ def validate_alarm_definition_severity(severity):
 
 
 def validate_severity_query(severity_str):
+    """
+    Validate the severity query.
+
+    Args:
+        severity_str: (str): write your description
+    """
     severities = severity_str.split('|')
     for severity in severities:
         validate_alarm_definition_severity(severity)
 
 
 def validate_sort_by(sort_by_list, allowed_sort_by):
+    """
+    Validate sort_by_list.
+
+    Args:
+        sort_by_list: (list): write your description
+        allowed_sort_by: (bool): write your description
+    """
     for sort_by_field in sort_by_list:
         sort_by_values = sort_by_field.split()
         if len(sort_by_values) > 2:
@@ -62,6 +87,12 @@ def validate_sort_by(sort_by_list, allowed_sort_by):
 
 
 def validate_email_address(email):
+    """
+    Validate an email address.
+
+    Args:
+        email: (str): write your description
+    """
     if re.match(EMAIL_PATTERN, email) is None:
         return False
     else:

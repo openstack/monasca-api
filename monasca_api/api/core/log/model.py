@@ -42,6 +42,14 @@ class LogEnvelopeException(Exception):
 
 class Envelope(dict):
     def __init__(self, log, meta):
+        """
+        Initialize the logger.
+
+        Args:
+            self: (todo): write your description
+            log: (todo): write your description
+            meta: (todo): write your description
+        """
         if not log:
             error_msg = 'Envelope cannot be created without log'
             raise LogEnvelopeException(error_msg)
@@ -58,6 +66,11 @@ class Envelope(dict):
 
     @staticmethod
     def _get_creation_time():
+        """
+        Returns the current time of the current user.
+
+        Args:
+        """
         return timeutils.utcnow_ts()
 
     @classmethod
@@ -108,12 +121,30 @@ class Envelope(dict):
 
     @property
     def log(self):
+        """
+        Returns the log.
+
+        Args:
+            self: (dict): write your description
+        """
         return self.get('log', None)
 
     @property
     def creation_time(self):
+        """
+        The creation time.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.get('creation_time', None)
 
     @property
     def meta(self):
+        """
+        The meta data.
+
+        Args:
+            self: (dict): write your description
+        """
         return self.get('meta', None)

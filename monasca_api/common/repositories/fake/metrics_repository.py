@@ -17,7 +17,24 @@ from monasca_api.common.repositories import metrics_repository
 
 class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def __init__(self):
+        """
+        Initialize a function
+
+        Args:
+            self: (todo): write your description
+        """
         return
 
     def list_metrics(self, tenant_id, name, dimensions, offset, limit):
+        """
+        List the list for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
         return {}

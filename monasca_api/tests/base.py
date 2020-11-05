@@ -45,9 +45,21 @@ class ConfigFixture(oo_cfg.Config):
     """Mocks configuration"""
 
     def __init__(self):
+        """
+        Initialize the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ConfigFixture, self).__init__(config.CONF)
 
     def setUp(self):
+        """
+        Set configuration options.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ConfigFixture, self).setUp()
         self.addCleanup(self._clean_config_loaded_flag)
         conf.register_opts()
@@ -56,15 +68,32 @@ class ConfigFixture(oo_cfg.Config):
 
     @staticmethod
     def _clean_config_loaded_flag():
+        """
+        Cleanup the configuration flag flag.
+
+        Args:
+        """
         config._CONF_LOADED = False
 
     def _set_defaults(self):
+        """
+        Sets default defaults.
+
+        Args:
+            self: (todo): write your description
+        """
         self.conf.set_default('user', 'monasca', 'influxdb')
 
 
 class BaseTestCase(oslotest_base.BaseTestCase):
 
     def setUp(self):
+        """
+        Sets configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BaseTestCase, self).setUp()
         self.useFixture(ConfigFixture())
         self.useFixture(oo_ctx.ClearRequestContext())
@@ -88,6 +117,12 @@ class BaseTestCase(oslotest_base.BaseTestCase):
 class BaseApiTestCase(BaseTestCase, testing.TestCase):
 
     def setUp(self):
+        """
+        Sets the path.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BaseApiTestCase, self).setUp()
         # TODO(dszumski): Loading the app from api/server.py seems to make
         # more sense here so that we don't have to manually keep the tests in
@@ -100,6 +135,11 @@ class BaseApiTestCase(BaseTestCase, testing.TestCase):
 
     @staticmethod
     def create_environ(*args, **kwargs):
+        """
+        Create a new environ.
+
+        Args:
+        """
         return testing.create_environ(
             *args,
             **kwargs
@@ -115,12 +155,24 @@ class PolicyFixture(fixtures.Fixture):
      """
 
     def setUp(self):
+        """
+        Sets the policy.
+
+        Args:
+            self: (todo): write your description
+        """
         super(PolicyFixture, self).setUp()
         self._prepare_policy()
         policy.reset()
         policy.init()
 
     def _prepare_policy(self):
+        """
+        Prepare the policy.
+
+        Args:
+            self: (todo): write your description
+        """
         policy_dir = self.useFixture(fixtures.TempDir())
         policy_file = os.path.join(policy_dir.path, 'policy.yaml')
         # load the fake_policy data and add the missing default rules.
@@ -135,6 +187,12 @@ class PolicyFixture(fixtures.Fixture):
 
     @staticmethod
     def add_missing_default_rules(rules):
+        """
+        Add missing missing rules.
+
+        Args:
+            rules: (list): write your description
+        """
         for rule in policies.list_rules():
             if rule.name not in rules:
                 rules[rule.name] = rule.check_str
@@ -147,15 +205,35 @@ class RESTResponseEquals(object):
     """
 
     def __init__(self, expected_data):
+        """
+        Initialize expected data.
+
+        Args:
+            self: (todo): write your description
+            expected_data: (todo): write your description
+        """
         self.expected_data = expected_data
 
         if u"links" in expected_data:
             del expected_data[u"links"]
 
     def __str__(self):
+        """
+        Return the string representation of the expected string.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'RESTResponseEquals(%s)' % (self.expected_data,)
 
     def match(self, actual):
+        """
+        Match the expected match.
+
+        Args:
+            self: (todo): write your description
+            actual: (todo): write your description
+        """
         response_data = actual.json
 
         if u"links" in response_data:
@@ -165,9 +243,22 @@ class RESTResponseEquals(object):
 
 
 def generate_unique_message(size):
+    """
+    Generate a random message
+
+    Args:
+        size: (int): write your description
+    """
     letters = string.ascii_letters
 
     def rand(amount, space=True):
+        """
+        Generate a random string.
+
+        Args:
+            amount: (int): write your description
+            space: (todo): write your description
+        """
         space = ' ' if space else ''
         return ''.join((random.choice(letters + space) for _ in range(amount)))
 
@@ -175,6 +266,12 @@ def generate_unique_message(size):
 
 
 def _hex_to_unicode(hex_raw):
+    """
+    Convert a hex string to a hex string.
+
+    Args:
+        hex_raw: (str): write your description
+    """
     hex_raw = six.b(hex_raw.replace(' ', ''))
     hex_str_raw = codecs.getdecoder('hex')(hex_raw)[0]
     hex_str = hex_str_raw.decode('utf-8', 'replace')

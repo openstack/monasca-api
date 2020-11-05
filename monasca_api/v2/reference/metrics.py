@@ -50,6 +50,12 @@ def get_merge_metrics_flag(req):
 
 class Metrics(metrics_api_v2.MetricsV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(Metrics, self).__init__()
             self._region = cfg.CONF.region
@@ -65,6 +71,13 @@ class Metrics(metrics_api_v2.MetricsV2API):
                                                  str(ex))
 
     def _send_metrics(self, metrics):
+        """
+        Send metrics to the queue.
+
+        Args:
+            self: (todo): write your description
+            metrics: (todo): write your description
+        """
         try:
             for i in range(0, len(metrics), self._batch_size):
                 batch = metrics[i:i + self._batch_size]
@@ -76,6 +89,20 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     def _list_metrics(self, tenant_id, name, dimensions, req_uri, offset,
                       limit, start_timestamp, end_timestamp):
+        """
+        List metrics for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            req_uri: (todo): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (todo): write your description
+        """
 
         result = self._metrics_repo.list_metrics(tenant_id,
                                                  self._region,
@@ -89,6 +116,14 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     @resource.resource_try_catch_block
     def on_post(self, req, res):
+        """
+        Handle post request to post request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, ['api:metrics:post'])
         metrics = helpers.from_json(req)
@@ -106,6 +141,14 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:get'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req)
@@ -126,6 +169,12 @@ class Metrics(metrics_api_v2.MetricsV2API):
 
 class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(MetricsMeasurements, self).__init__()
             self._region = cfg.CONF.region
@@ -139,6 +188,14 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:get'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req, True)
@@ -164,6 +221,22 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
     def _measurement_list(self, tenant_id, name, dimensions, start_timestamp,
                           end_timestamp, req_uri, offset,
                           limit, merge_metrics_flag, group_by):
+        """
+        List a list of a list.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+            req_uri: (todo): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            merge_metrics_flag: (todo): write your description
+            group_by: (todo): write your description
+        """
 
         result = self._metrics_repo.measurement_list(tenant_id,
                                                      self._region,
@@ -181,6 +254,12 @@ class MetricsMeasurements(metrics_api_v2.MetricsMeasurementsV2API):
 
 class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(MetricsStatistics, self).__init__()
             self._region = cfg.CONF.region
@@ -194,6 +273,14 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Respond to get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:get'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         name = helpers.get_query_name(req, True)
@@ -221,6 +308,24 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
     def _metric_statistics(self, tenant_id, name, dimensions, start_timestamp,
                            end_timestamp, statistics, period, req_uri,
                            offset, limit, merge_metrics_flag, group_by):
+        """
+        Paginate metrics for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+            statistics: (str): write your description
+            period: (int): write your description
+            req_uri: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            merge_metrics_flag: (str): write your description
+            group_by: (array): write your description
+        """
 
         result = self._metrics_repo.metrics_statistics(tenant_id,
                                                        self._region,
@@ -239,6 +344,12 @@ class MetricsStatistics(metrics_api_v2.MetricsStatisticsV2API):
 
 class MetricsNames(metrics_api_v2.MetricsNamesV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(MetricsNames, self).__init__()
             self._region = cfg.CONF.region
@@ -252,6 +363,14 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:get'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         dimensions = helpers.get_query_dimensions(req)
@@ -264,6 +383,17 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
     def _list_metric_names(self, tenant_id, dimensions, req_uri, offset,
                            limit):
+        """
+        List metrics for a tenant names.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            dimensions: (int): write your description
+            req_uri: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         result = self._metrics_repo.list_metric_names(tenant_id,
                                                       self._region,
@@ -274,6 +404,12 @@ class MetricsNames(metrics_api_v2.MetricsNamesV2API):
 
 class DimensionValues(metrics_api_v2.DimensionValuesV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(DimensionValues, self).__init__()
             self._region = cfg.CONF.region
@@ -286,6 +422,14 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:dimension:values'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         metric_name = helpers.get_query_param(req, 'metric_name')
@@ -303,6 +447,20 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
     def _dimension_values(self, tenant_id, req_uri, metric_name,
                           dimension_name, offset, limit, start_timestamp,
                           end_timestamp):
+        """
+        Return a list of the metrics for a list.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            req_uri: (str): write your description
+            metric_name: (str): write your description
+            dimension_name: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
 
         result = self._metrics_repo.list_dimension_values(tenant_id,
                                                           self._region,
@@ -316,6 +474,12 @@ class DimensionValues(metrics_api_v2.DimensionValuesV2API):
 
 class DimensionNames(metrics_api_v2.DimensionNamesV2API):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(DimensionNames, self).__init__()
             self._region = cfg.CONF.region
@@ -329,6 +493,14 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:metrics:dimension:names'])
         tenant_id = helpers.get_x_tenant_or_tenant_id(req, ['api:delegate'])
         metric_name = helpers.get_query_param(req, 'metric_name')
@@ -343,6 +515,19 @@ class DimensionNames(metrics_api_v2.DimensionNamesV2API):
 
     def _dimension_names(self, tenant_id, req_uri, metric_name, offset, limit,
                          start_timestamp, end_timestamp):
+        """
+        Return a list of metrics.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            req_uri: (str): write your description
+            metric_name: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
 
         result = self._metrics_repo.list_dimension_names(tenant_id,
                                                          self._region,

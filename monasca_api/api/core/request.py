@@ -37,6 +37,14 @@ class Request(falcon.Request):
     """
 
     def __init__(self, env, options=None):
+        """
+        Initialize the context.
+
+        Args:
+            self: (todo): write your description
+            env: (todo): write your description
+            options: (dict): write your description
+        """
         super(Request, self).__init__(env, options)
         self.context = request_context.RequestContext.from_environ(self.env)
 
@@ -111,7 +119,21 @@ class Request(falcon.Request):
             return constants.PAGE_LIMIT
 
     def can(self, action, target=None):
+        """
+        Return true if the target can be triggered.
+
+        Args:
+            self: (todo): write your description
+            action: (str): write your description
+            target: (todo): write your description
+        """
         return self.context.can(action, target)
 
     def __repr__(self):
+        """
+        Return a human - readable representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return '%s, context=%s' % (self.path, self.context.to_dict())

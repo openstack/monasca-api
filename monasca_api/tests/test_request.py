@@ -23,6 +23,12 @@ from monasca_api.v2.common import exceptions
 
 class TestRequest(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Set the default rules.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestRequest, self).setUp()
         rules = [
             os_policy.RuleDefault("example:allowed", "user_id:222"),
@@ -32,6 +38,12 @@ class TestRequest(base.BaseApiTestCase):
         policy._ENFORCER.register_defaults(rules)
 
     def test_use_context_from_request(self):
+        """
+        Create a test context manager.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -53,6 +65,12 @@ class TestRequest(base.BaseApiTestCase):
         self.assertEqual('444', req.cross_project_id)
 
     def test_policy_validation_with_target(self):
+        """
+        Create the target policy policy.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -68,6 +86,12 @@ class TestRequest(base.BaseApiTestCase):
         self.assertEqual(True, req.can('example:allowed', target))
 
     def test_policy_validation_without_target(self):
+        """
+        Validate the policy policy.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -84,6 +108,12 @@ class TestRequest(base.BaseApiTestCase):
 class TestRequestLimit(base.BaseApiTestCase):
 
     def test_valid_limit(self):
+        """
+        Validate the test limit.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_limit = 10
         req = request.Request(
             self.create_environ(
@@ -100,6 +130,12 @@ class TestRequestLimit(base.BaseApiTestCase):
         self.assertEqual(expected_limit, req.limit)
 
     def test_invalid_limit(self):
+        """
+        This method is used to validate the test limit.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -116,6 +152,11 @@ class TestRequestLimit(base.BaseApiTestCase):
         # note(trebskit) assertRaises fails to call property
         # so we need the actual function
         def property_wrapper():
+            """
+            Decorator for making a request.
+
+            Args:
+            """
             return req.limit
 
         self.assertRaises(
@@ -124,6 +165,12 @@ class TestRequestLimit(base.BaseApiTestCase):
         )
 
     def test_default_limit(self):
+        """
+        Create default test limit.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',
@@ -138,6 +185,12 @@ class TestRequestLimit(base.BaseApiTestCase):
         self.assertEqual(const.PAGE_LIMIT, req.limit)
 
     def test_to_big_limit(self):
+        """
+        Test to see if the bigquery limit.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             self.create_environ(
                 path='/',

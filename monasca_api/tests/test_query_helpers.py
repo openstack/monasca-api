@@ -23,6 +23,12 @@ from monasca_api.v2.reference import helpers
 class TestGetQueryDimension(base.BaseTestCase):
 
     def test_no_dimensions(self):
+        """
+        Test for dimensions of the same.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
 
         req.query_string = "foo=bar"
@@ -32,6 +38,12 @@ class TestGetQueryDimension(base.BaseTestCase):
         self.assertEqual(result, {})
 
     def test_one_dimensions(self):
+        """
+        Test for one dimension.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
 
         req.query_string = "foo=bar&dimensions=Dimension:Value"
@@ -41,6 +53,12 @@ class TestGetQueryDimension(base.BaseTestCase):
         self.assertEqual(result, {"Dimension": "Value"})
 
     def test_comma_sep_dimensions(self):
+        """
+        Test for dimensions of the dimensions.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
 
         req.query_string = ("foo=bar&"
@@ -52,6 +70,12 @@ class TestGetQueryDimension(base.BaseTestCase):
             result, {"Dimension": "Value", "Dimension-2": "Value-2"})
 
     def test_multiple_dimension_params(self):
+        """
+        Test for multiple dimension dimension query parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
 
         req.query_string = ("foo=bar&"
@@ -64,6 +88,12 @@ class TestGetQueryDimension(base.BaseTestCase):
             result, {"Dimension": "Value", "Dimension-2": "Value-2"})
 
     def test_multiple_dimension_params_with_comma_sep_dimensions(self):
+        """
+        Test for multiple dimension dimension dimension dimension.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
 
         req.query_string = ("foo=bar&"
@@ -78,6 +108,12 @@ class TestGetQueryDimension(base.BaseTestCase):
                      "Dimension-3": "Value-3"})
 
     def test_dimension_no_value(self):
+        """
+        Set the dimension dimension.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
         req.query_string = ("foo=bar&dimensions=Dimension_no_value")
 
@@ -85,6 +121,12 @@ class TestGetQueryDimension(base.BaseTestCase):
         self.assertEqual(result, {"Dimension_no_value": ""})
 
     def test_dimension_multi_value(self):
+        """
+        Test for dimension dimension dimension.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
         req.query_string = ("foo=bar&dimensions=Dimension_multi_value:one|two|three")
 
@@ -92,6 +134,12 @@ class TestGetQueryDimension(base.BaseTestCase):
         self.assertEqual(result, {"Dimension_multi_value": "one|two|three"})
 
     def test_dimension_with_multi_colons(self):
+        """
+        Test if query query dimension.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
         req.query_string = ("foo=bar&dimensions=url:http://192.168.10.4:5601,"
                             "hostname:monasca,component:kibana,service:monitoring")
@@ -103,6 +151,12 @@ class TestGetQueryDimension(base.BaseTestCase):
                                   "service": "monitoring"})
 
     def test_empty_dimension(self):
+        """
+        Test if the dimension is empty.
+
+        Args:
+            self: (todo): write your description
+        """
         req = Mock()
         req.query_string = ("foo=bar&dimensions=")
 
@@ -113,6 +167,12 @@ class TestGetQueryDimension(base.BaseTestCase):
 class TestGetOldQueryParams(base.BaseTestCase):
 
     def test_old_query_params(self):
+        """
+        Gets the query query.
+
+        Args:
+            self: (todo): write your description
+        """
         uri = Mock()
         uri.query = "foo=bar&spam=ham"
 
@@ -120,6 +180,12 @@ class TestGetOldQueryParams(base.BaseTestCase):
         self.assertEqual(result, ["foo=bar", "spam=ham"])
 
     def test_old_query_params_with_equals(self):
+        """
+        Gets the query query params to the query.
+
+        Args:
+            self: (todo): write your description
+        """
         uri = Mock()
         uri.query = "foo=spam=ham"
 
@@ -127,6 +193,12 @@ class TestGetOldQueryParams(base.BaseTestCase):
         self.assertEqual(result, ["foo=spam%3Dham"])
 
     def test_old_query_params_except_offset(self):
+        """
+        Gets the query params.
+
+        Args:
+            self: (todo): write your description
+        """
         uri = Mock()
         uri.query = "foo=bar&spam=ham"
         result = []
@@ -135,6 +207,12 @@ class TestGetOldQueryParams(base.BaseTestCase):
         self.assertEqual(result, ["foo=bar", "spam=ham"])
 
     def test_old_query_params_except_offset_with_equals(self):
+        """
+        Gets the old query parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         uri = Mock()
         uri.query = "foo=spam=ham&offset=bar"
         result = []

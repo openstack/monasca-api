@@ -28,6 +28,12 @@ from monasca_api.common.rest import utils as rest_utils
 class TestHelpersFunction(base.BaseTestCase):
 
     def test_from_json(self):
+        """
+        Create a new test.
+
+        Args:
+            self: (todo): write your description
+        """
         body_json = {'test_body': 'test'}
         req = request.Request(
             testing.create_environ(
@@ -38,6 +44,12 @@ class TestHelpersFunction(base.BaseTestCase):
         self.assertEqual(body_json, response)
 
     def test_from_json_incorrect_message(self):
+        """
+        Sends the json payloads to test.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             testing.create_environ(
                 body='incorrect message',
@@ -46,12 +58,24 @@ class TestHelpersFunction(base.BaseTestCase):
         self.assertRaises(errors.HTTPBadRequest, helpers.from_json, req)
 
     def test_to_json(self):
+        """
+        : return : return :
+
+        Args:
+            self: (todo): write your description
+        """
         test_dict = {'test_body': 'test'}
         expected_json = '{"test_body": "test"}'
         response = helpers.to_json(test_dict)
         self.assertEqual(expected_json, response)
 
     def test_validate_json_content_type(self):
+        """
+        Validate the content type.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             testing.create_environ(
                 headers={'Content-Type': 'application/json'}
@@ -60,6 +84,12 @@ class TestHelpersFunction(base.BaseTestCase):
         helpers.validate_json_content_type(req)
 
     def test_validate_json_content_type_incorrect_content_type(self):
+        """
+        Validate the content type of - type validation.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(
             testing.create_environ(
                 headers={'Content-Type': 'multipart/form-data'}
@@ -68,12 +98,24 @@ class TestHelpersFunction(base.BaseTestCase):
         self.assertRaises(errors.HTTPBadRequest, helpers.validate_json_content_type, req)
 
     def test_validate_json_content_type_missing_content_type(self):
+        """
+        Validate the json content type against the content type.
+
+        Args:
+            self: (todo): write your description
+        """
         req = request.Request(testing.create_environ())
         self.assertRaises(errors.HTTPBadRequest, helpers.validate_json_content_type, req)
 
 
 class TestGetXTenantOrTenantId(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets the rules for this handler
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestGetXTenantOrTenantId, self).setUp()
         rules = [
             os_policy.RuleDefault("example:allowed", "@"),
@@ -86,6 +128,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
         policy._ENFORCER.register_defaults(rules)
 
     def test_return_tenant_id_on_authorized_roles(self):
+        """
+        Test if the service request is authorized.
+
+        Args:
+            self: (todo): write your description
+        """
 
         for role in ['role_1', 'role_2']:
             req_context = self._get_request_context(role)
@@ -97,6 +145,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
             )
 
     def test_return_tenant_id_on_allowed_rules(self):
+        """
+        Return the tenant rules are enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         req_context = self._get_request_context()
         self.assertEqual(
             'fake_tenant_id',
@@ -107,6 +161,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
         )
 
     def test_return_project_id_on_unauthorized_role(self):
+        """
+        Called when the project to make a project.
+
+        Args:
+            self: (todo): write your description
+        """
         req_context = self._get_request_context()
         self.assertEqual('fake_project_id',
                          helpers.get_x_tenant_or_tenant_id(
@@ -114,6 +174,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
                              ['example:authorized']))
 
     def test_return_project_id_on_denied_rules(self):
+        """
+        Called when the test is enabled state.
+
+        Args:
+            self: (todo): write your description
+        """
         req_context = self._get_request_context()
         self.assertEqual(
             'fake_project_id',
@@ -124,6 +190,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
         )
 
     def test_return_project_id_on_unavailable_tenant_id(self):
+        """
+        Called when the project is enabled
+
+        Args:
+            self: (todo): write your description
+        """
         req_context = self._get_request_context()
         req_context.query_string = ''
         self.assertEqual(
@@ -136,6 +208,12 @@ class TestGetXTenantOrTenantId(base.BaseApiTestCase):
 
     @staticmethod
     def _get_request_context(role='fake_role'):
+        """
+        Returns the context dictionary for the request.
+
+        Args:
+            role: (str): write your description
+        """
         return request.Request(
             testing.create_environ(
                 path="/",

@@ -38,6 +38,12 @@ LOG = log.getLogger(__name__)
 
 class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def __init__(self):
+        """
+        Initialize the infie client.
+
+        Args:
+            self: (todo): write your description
+        """
 
         try:
             self.conf = cfg.CONF
@@ -57,6 +63,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                             self._build_serie_metric_list_from_v0_11_0)}
 
     def _build_serie_dimension_values(self, *args, **kwargs):
+        """
+        Builds a seriedimension values.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._version:
             f = self._serie_builders_version_map[self._version][0]
             return f(*args, **kwargs)
@@ -69,6 +81,12 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException('Repository not available')
 
     def _build_serie_metric_list(self, *args, **kwargs):
+        """
+        Builds a metric list of the session.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._version:
             f = self._serie_builders_version_map[self._version][1]
             return f(*args, **kwargs)
@@ -140,6 +158,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def _build_show_series_query(self, dimensions, name, tenant_id, region,
                                  start_timestamp=None, end_timestamp=None):
+        """
+        Build a series query for a series.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (int): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
 
         where_clause = self._build_where_clause(dimensions, name, tenant_id,
                                                 region, start_timestamp,
@@ -150,6 +180,16 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return query
 
     def _build_show_measurements_query(self, dimensions, name, tenant_id, region):
+        """
+        Builds the query for a dimension.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (int): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+        """
 
         where_clause = self._build_where_clause(dimensions, name, tenant_id,
                                                 region)
@@ -161,6 +201,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def _build_show_tag_values_query(self, metric_name, dimension_name,
                                      tenant_id, region, start_timestamp,
                                      end_timestamp):
+        """
+        Builds a query for a specific metric values.
+
+        Args:
+            self: (todo): write your description
+            metric_name: (str): write your description
+            dimension_name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+        """
         from_with_clause = ''
         if metric_name:
             from_with_clause += ' from "{}"'.format(metric_name)
@@ -177,6 +229,17 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def _build_show_tag_keys_query(self, metric_name, tenant_id, region,
                                    start_timestamp, end_timestamp):
+        """
+        Create a metric_tag_keys_name.
+
+        Args:
+            self: (todo): write your description
+            metric_name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (int): write your description
+        """
         from_with_clause = ''
         if metric_name:
             from_with_clause += ' from "{}"'.format(metric_name)
@@ -191,6 +254,21 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def _build_select_measurement_query(self, dimensions, name, tenant_id,
                                         region, start_timestamp, end_timestamp,
                                         offset, group_by, limit):
+        """
+        Builds a select query.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (int): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+            offset: (int): write your description
+            group_by: (todo): write your description
+            limit: (int): write your description
+        """
 
         from_clause = self._build_from_clause(dimensions, name, tenant_id,
                                               region, start_timestamp,
@@ -211,6 +289,23 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def _build_statistics_query(self, dimensions, name, tenant_id,
                                 region, start_timestamp, end_timestamp,
                                 statistics, period, offset, group_by, limit):
+        """
+        Builds a query for the given dimension.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (int): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+            statistics: (str): write your description
+            period: (int): write your description
+            offset: (int): write your description
+            group_by: (str): write your description
+            limit: (int): write your description
+        """
 
         from_clause = self._build_from_clause(dimensions, name, tenant_id,
                                               region, start_timestamp,
@@ -249,6 +344,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def _build_where_clause(self, dimensions, name, tenant_id, region,
                             start_timestamp=None, end_timestamp=None):
+        """
+        Builds the where clause for the where clause.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (dict): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (int): write your description
+        """
 
         where_clause = ''
 
@@ -305,6 +412,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def _build_from_clause(self, dimensions, name, tenant_id, region,
                            start_timestamp=None, end_timestamp=None):
+        """
+        Factory method for creating a query from dimension.
+
+        Args:
+            self: (todo): write your description
+            dimensions: (int): write your description
+            name: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
 
         from_clause = self._build_where_clause(dimensions, name, tenant_id,
                                                region, start_timestamp,
@@ -312,6 +431,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return from_clause
 
     def query_tenant_db(self, query, tenant_id):
+        """
+        Query the influxdb database.
+
+        Args:
+            self: (todo): write your description
+            query: (str): write your description
+            tenant_id: (str): write your description
+        """
         database = ('%s_%s' % (self.conf.influxdb.database_name, tenant_id)
                     if self.conf.influxdb.db_per_tenant
                     else self.conf.influxdb.database_name)
@@ -326,6 +453,20 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def list_metrics(self, tenant_id, region, name, dimensions, offset,
                      limit, start_timestamp=None, end_timestamp=None):
+        """
+        List the list metrics for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (todo): write your description
+        """
 
         try:
 
@@ -359,6 +500,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def _build_serie_dimension_values_to_v0_11_0(self, series_names, dimension_name):
+        """
+        Build a series of serie series to a series.
+
+        Args:
+            self: (todo): write your description
+            series_names: (str): write your description
+            dimension_name: (str): write your description
+        """
         dim_value_set = set()
         json_dim_value_list = []
 
@@ -418,6 +567,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return json_dim_value_list
 
     def _build_serie_dimension_names(self, series_names):
+        """
+        Build series names of series names.
+
+        Args:
+            self: (todo): write your description
+            series_names: (str): write your description
+        """
         dim_name_set = set()
         json_dim_name_list = []
 
@@ -446,6 +602,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def _build_serie_metric_list_to_v0_11_0(self, series_names, tenant_id, region,
                                             start_timestamp, end_timestamp,
                                             offset):
+        """
+        Given a list of metric metric name.
+
+        Args:
+            self: (todo): write your description
+            series_names: (str): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+            offset: (int): write your description
+        """
         json_metric_list = []
 
         if not series_names:
@@ -561,6 +729,16 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return json_metric_list
 
     def _get_dimensions(self, tenant_id, region, name, dimensions):
+        """
+        Get metrics for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+        """
         metrics_list = self.list_metrics(tenant_id, region, name,
                                          dimensions, None, 2)
 
@@ -575,6 +753,22 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def measurement_list(self, tenant_id, region, name, dimensions,
                          start_timestamp, end_timestamp, offset,
                          limit, merge_metrics_flag, group_by):
+        """
+        Build a list of available measurements.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            merge_metrics_flag: (todo): write your description
+            group_by: (todo): write your description
+        """
 
         json_measurement_list = []
 
@@ -669,6 +863,15 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def list_metric_names(self, tenant_id, region, dimensions):
+        """
+        List all available metric names in the tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            dimensions: (int): write your description
+        """
 
         try:
 
@@ -688,6 +891,24 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                            start_timestamp, end_timestamp, statistics,
                            period, offset, limit, merge_metrics_flag,
                            group_by):
+        """
+        Get metrics for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (int): write your description
+            statistics: (str): write your description
+            period: (int): write your description
+            offset: (str): write your description
+            limit: (int): write your description
+            merge_metrics_flag: (str): write your description
+            group_by: (todo): write your description
+        """
 
         json_statistics_list = []
 
@@ -781,6 +1002,13 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def _build_offset_clause(self, offset):
+        """
+        Builds a clause for the given offset.
+
+        Args:
+            self: (todo): write your description
+            offset: (int): write your description
+        """
         if offset:
             # offset may be given as a timestamp or as epoch time in ms
             if str(offset).isdigit():
@@ -795,6 +1023,14 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return offset_clause
 
     def _build_group_by_clause(self, group_by, period=None):
+        """
+        Builds a group clause based on the given group_by_clause.
+
+        Args:
+            self: (todo): write your description
+            group_by: (todo): write your description
+            period: (int): write your description
+        """
         if group_by is not None and not isinstance(group_by, list):
             group_by = str(group_by).split(',')
         if group_by or period:
@@ -810,10 +1046,29 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         return clause
 
     def _build_limit_clause(self, limit):
+        """
+        Builds the clause for the query.
+
+        Args:
+            self: (todo): write your description
+            limit: (int): write your description
+        """
         return " limit {} ".format(str(limit + 1))
 
     def _has_measurements(self, tenant_id, region, name, dimensions,
                           start_timestamp, end_timestamp):
+        """
+        Returns true if the named measurements have the specified name.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            start_timestamp: (todo): write your description
+            end_timestamp: (todo): write your description
+        """
 
         has_measurements = True
 
@@ -847,6 +1102,18 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
     def alarm_history(self, tenant_id, alarm_id_list,
                       offset, limit, start_timestamp=None,
                       end_timestamp=None):
+        """
+        Get alarm history.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id_list: (list): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
 
         try:
 
@@ -933,12 +1200,31 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             raise exceptions.RepositoryException(ex)
 
     def _get_millis_from_timestamp(self, dt):
+        """
+        Get the epoch timestamp from a utc timestamp.
+
+        Args:
+            self: (todo): write your description
+            dt: (str): write your description
+        """
         dt = dt.replace(tzinfo=None)
         return int((dt - datetime(1970, 1, 1)).total_seconds() * 1000)
 
     def list_dimension_values(self, tenant_id, region, metric_name,
                               dimension_name, start_timestamp=None,
                               end_timestamp=None):
+        """
+        Lists the list of a specific tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            metric_name: (str): write your description
+            dimension_name: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
         try:
             query = self._build_show_tag_values_query(metric_name,
                                                       dimension_name,
@@ -955,6 +1241,17 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     def list_dimension_names(self, tenant_id, region, metric_name,
                              start_timestamp=None, end_timestamp=None):
+        """
+        List the names of the names in the tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            region: (str): write your description
+            metric_name: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+        """
         try:
             query = self._build_show_tag_keys_query(metric_name,
                                                     tenant_id, region,
@@ -969,6 +1266,11 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
     @staticmethod
     def check_status():
+        """
+        Check if the influxdb.
+
+        Args:
+        """
         uri = 'http://{0}:{1}/ping'.format(CONF.influxdb.ip_address,
                                            CONF.influxdb.port)
         try:

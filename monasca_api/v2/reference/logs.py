@@ -34,17 +34,39 @@ class Logs(logs_api.LogsApi):
     SUPPORTED_CONTENT_TYPES = {'application/json'}
 
     def __init__(self):
+        """
+        Initialize all init.
+
+        Args:
+            self: (todo): write your description
+        """
 
         super(Logs, self).__init__()
         self._processor = bulk_processor.BulkProcessor()
 
     def on_post(self, req, res):
+        """
+        Post post request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, ['api:logs:post'])
         helpers.validate_payload_size(req.content_length)
         self.process_on_post_request(req, res)
 
     def process_on_post_request(self, req, res):
+        """
+        Process a post request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         try:
             request_body = helpers.from_json(req)
             log_list = self._get_logs(request_body)

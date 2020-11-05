@@ -24,6 +24,14 @@ class TestFingerprint(base.BaseTestCase):
     @mock.patch('monasca_api.db.fingerprint.Fingerprint._get_metadata')
     @mock.patch('monasca_api.db.fingerprint.Fingerprint._get_schema_raw')
     def test_get_schema_raw_pre_alembic(self, mock_schema_raw, mock_metadata):
+        """
+        Get raw schema raw schema raw schema.
+
+        Args:
+            self: (todo): write your description
+            mock_schema_raw: (todo): write your description
+            mock_metadata: (todo): write your description
+        """
         mock_schema_raw.return_value = 'dummy_schema_raw'
 
         tables = mock.PropertyMock = {
@@ -47,6 +55,15 @@ class TestFingerprint(base.BaseTestCase):
     @mock.patch('monasca_api.db.fingerprint.Fingerprint._get_schema_raw')
     def test_get_schema_raw_post_alembic(
             self, mock_schema_raw, mock_metadata, mock_db_session):
+        """
+        Get raw postgres schema.
+
+        Args:
+            self: (todo): write your description
+            mock_schema_raw: (todo): write your description
+            mock_metadata: (todo): write your description
+            mock_db_session: (todo): write your description
+        """
         mock_schema_raw.return_value = 'dummy_schema_raw'
 
         tables = mock.PropertyMock = {

@@ -19,6 +19,11 @@ from monasca_api.api import server
 
 
 def main():
+    """
+    The main wsgi application.
+
+    Args:
+    """
     return server.get_wsgi_app(config_base_path='/etc/monasca')
 
 

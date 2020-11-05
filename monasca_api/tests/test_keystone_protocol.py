@@ -23,6 +23,12 @@ _CONF = {}
 class TestKeystoneProtocol(base.BaseTestCase):
 
     def test_should_return_none_if_healthcheck(self):
+        """
+        Checks if the health request was sent.
+
+        Args:
+            self: (todo): write your description
+        """
         mocked_api = mock.Mock()
         instance = keystone_protocol.SkippingAuthProtocol(mocked_api, _CONF)
         request = mock.Mock()
@@ -34,6 +40,13 @@ class TestKeystoneProtocol(base.BaseTestCase):
 
     @mock.patch('keystonemiddleware.auth_token.AuthProtocol.process_request')
     def test_should_enter_keystone_auth_if_not_healthcheck(self, proc_request):
+        """
+        Checks if the request should be sent.
+
+        Args:
+            self: (todo): write your description
+            proc_request: (todo): write your description
+        """
         mocked_api = mock.Mock()
         instance = keystone_protocol.SkippingAuthProtocol(mocked_api, _CONF)
         request = mock.Mock()

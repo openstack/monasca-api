@@ -24,21 +24,70 @@ class NotificationsRepository(object):
     @abc.abstractmethod
     def create_notification(self, tenant_id, name, notification_type,
                             address, period):
+        """
+        Create a notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            notification_type: (str): write your description
+            address: (str): write your description
+            period: (todo): write your description
+        """
         return
 
     @abc.abstractmethod
     def list_notifications(self, tenant_id, sort_by, offset, limit):
+        """
+        List notifications for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            sort_by: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
         return
 
     @abc.abstractmethod
     def delete_notification(self, tenant_id, notification_id):
+        """
+        Deletes a notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+        """
         return
 
     @abc.abstractmethod
     def list_notification(self, tenant_id, notification_id):
+        """
+        Get a list of notifications.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+        """
         return
 
     @abc.abstractmethod
     def update_notification(self, notification_id, tenant_id, name, notification_type,
                             address, period):
+        """
+        Update a notification.
+
+        Args:
+            self: (todo): write your description
+            notification_id: (str): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            notification_type: (str): write your description
+            address: (str): write your description
+            period: (todo): write your description
+        """
         return

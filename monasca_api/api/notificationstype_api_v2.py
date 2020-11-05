@@ -19,20 +19,66 @@ LOG = log.getLogger(__name__)
 
 class NotificationsTypeV2API(object):
     def __init__(self):
+        """
+        Initializes all the properties.
+
+        Args:
+            self: (todo): write your description
+        """
         super(NotificationsTypeV2API, self).__init__()
         LOG.info('Initializing NotificationsTypeV2API!')
 
     def on_post(self, req, res):
+        """
+        Respond to post request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_delete(self, req, res):
+        """
+        Delete a resource delete
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (todo): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_get(self, req, res):
+        """
+        Respond to get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_put(self, req, res):
+        """
+        Callback for put request
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_patch(self, req, res):
+        """
+        Hook for patch.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         res.status = '501 Not Implemented'

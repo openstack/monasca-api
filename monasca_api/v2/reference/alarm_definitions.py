@@ -43,6 +43,12 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                        alarming.Alarming):
 
     def __init__(self):
+        """
+        Initialize cfgarm region.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(AlarmDefinitions, self).__init__()
             self._region = cfg.CONF.region
@@ -55,6 +61,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_post(self, req, res):
+        """
+        Register a query.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         helpers.validate_authorization(req, ['api:alarms:definition:post'])
 
         alarm_definition = helpers.from_json(req)
@@ -84,6 +98,15 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_definition_id=None):
+        """
+        Responsys.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            alarm_definition_id: (str): write your description
+        """
         helpers.validate_authorization(req, ['api:alarms:definition:get'])
         if alarm_definition_id is None:
             name = helpers.get_query_name(req)
@@ -128,6 +151,15 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_definition_id=None):
+        """
+        Responsys.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_definition_id: (str): write your description
+        """
 
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
@@ -170,6 +202,15 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_patch(self, req, res, alarm_definition_id=None):
+        """
+        The update handler.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_definition_id: (str): write your description
+        """
 
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
@@ -219,6 +260,15 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     @resource.resource_try_catch_block
     def on_delete(self, req, res, alarm_definition_id=None):
+        """
+        Respond to the alarm definition.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (todo): write your description
+            alarm_definition_id: (str): write your description
+        """
 
         if not alarm_definition_id:
             raise HTTPBadRequestError('Bad Request', 'Alarm definition ID not provided')
@@ -228,6 +278,15 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         res.status = falcon.HTTP_204
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
+        """
+        Ensure that the name.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            expected_id: (str): write your description
+        """
         definitions = self._alarm_definitions_repo.get_alarm_definitions(tenant_id=tenant_id,
                                                                          name=name,
                                                                          dimensions=None,
@@ -252,6 +311,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                     .format(name, found_definition_id))
 
     def _alarm_definition_show(self, tenant_id, id):
+        """
+        Show the alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            id: (int): write your description
+        """
 
         alarm_definition_row = (
             self._alarm_definitions_repo.get_alarm_definition(tenant_id, id))
@@ -259,6 +326,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         return self._build_alarm_definition_show_result(alarm_definition_row)
 
     def _build_alarm_definition_show_result(self, alarm_definition_row):
+        """
+        Build an alarm result of an alarm definition.
+
+        Args:
+            self: (todo): write your description
+            alarm_definition_row: (todo): write your description
+        """
 
         match_by = get_comma_separated_str_as_list(
             alarm_definition_row['match_by'])
@@ -295,6 +369,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         return result
 
     def _alarm_definition_delete(self, tenant_id, id):
+        """
+        Deletes the alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            id: (str): write your description
+        """
 
         sub_alarm_definition_rows = (
             self._alarm_definitions_repo.get_sub_alarm_definitions(id))
@@ -315,6 +397,20 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     def _alarm_definition_list(self, tenant_id, name, dimensions, severity, req_uri, sort_by,
                                offset, limit):
+        """
+        Alarm alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (int): write your description
+            severity: (todo): write your description
+            req_uri: (str): write your description
+            sort_by: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         alarm_definition_rows = (
             self._alarm_definitions_repo.get_alarm_definitions(tenant_id, name,
@@ -359,6 +455,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         return result
 
     def _validate_alarm_definition(self, alarm_definition, require_all=False):
+        """
+        Validate alarms definition.
+
+        Args:
+            self: (todo): write your description
+            alarm_definition: (todo): write your description
+            require_all: (bool): write your description
+        """
 
         try:
             schema_alarms.validate(alarm_definition, require_all=require_all)
@@ -382,6 +486,24 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                           match_by,
                                           severity,
                                           patch):
+        """
+        Updates an alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            definition_id: (str): write your description
+            name: (str): write your description
+            expression: (str): write your description
+            actions_enabled: (bool): write your description
+            description: (str): write your description
+            alarm_actions: (todo): write your description
+            ok_actions: (todo): write your description
+            undetermined_actions: (todo): write your description
+            match_by: (todo): write your description
+            severity: (todo): write your description
+            patch: (todo): write your description
+        """
 
         if expression:
             try:
@@ -463,6 +585,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
         return result
 
     def _build_sub_alarm_def_update_dict(self, sub_alarm_def_dict):
+        """
+        Builds a dict with the alarm definition.
+
+        Args:
+            self: (todo): write your description
+            sub_alarm_def_dict: (dict): write your description
+        """
 
         sub_alarm_def_update_dict = {}
         for id, sub_alarm_def in sub_alarm_def_dict.items():
@@ -493,6 +622,21 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                  description, severity, match_by,
                                  alarm_actions, undetermined_actions,
                                  ok_actions):
+        """
+        Create an alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            expression: (str): write your description
+            description: (str): write your description
+            severity: (todo): write your description
+            match_by: (todo): write your description
+            alarm_actions: (todo): write your description
+            undetermined_actions: (todo): write your description
+            ok_actions: (todo): write your description
+        """
         try:
 
             sub_expr_list = (
@@ -542,6 +686,14 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
     def _send_alarm_definition_deleted_event(self, alarm_definition_id,
                                              sub_alarm_definition_rows):
+        """
+        Sends an alarm event.
+
+        Args:
+            self: (todo): write your description
+            alarm_definition_id: (str): write your description
+            sub_alarm_definition_rows: (todo): write your description
+        """
 
         sub_alarm_definition_deleted_event_msg = {}
         alarm_definition_deleted_event_msg = {u"alarm-definition-deleted": {
@@ -568,6 +720,19 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
                                              alarm_definition_id, name,
                                              expression, sub_expr_list,
                                              description, match_by):
+        """
+        Implements an alarm definition for a alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_definition_id: (str): write your description
+            name: (str): write your description
+            expression: (todo): write your description
+            sub_expr_list: (list): write your description
+            description: (str): write your description
+            match_by: (todo): write your description
+        """
 
         alarm_definition_created_event_msg = {
             u'alarm-definition-created': {u'tenantId': tenant_id,
@@ -606,6 +771,13 @@ class AlarmDefinitions(alarm_definitions_api_v2.AlarmDefinitionsV2API,
 
 
 def get_query_alarm_definition_name(alarm_definition, return_none=False):
+    """
+    Get alarm definition name.
+
+    Args:
+        alarm_definition: (todo): write your description
+        return_none: (bool): write your description
+    """
     try:
         if 'name' in alarm_definition:
             name = alarm_definition['name']
@@ -622,6 +794,13 @@ def get_query_alarm_definition_name(alarm_definition, return_none=False):
 
 def get_query_alarm_definition_expression(alarm_definition,
                                           return_none=False):
+    """
+    Get the alarm expression.
+
+    Args:
+        alarm_definition: (todo): write your description
+        return_none: (bool): write your description
+    """
     try:
         if 'expression' in alarm_definition:
             expression = alarm_definition['expression']
@@ -638,6 +817,13 @@ def get_query_alarm_definition_expression(alarm_definition,
 
 def get_query_alarm_definition_description(alarm_definition,
                                            return_none=False):
+    """
+    Returns the alarm description.
+
+    Args:
+        alarm_definition: (str): write your description
+        return_none: (bool): write your description
+    """
     if 'description' in alarm_definition:
         return alarm_definition['description']
     else:
@@ -648,6 +834,13 @@ def get_query_alarm_definition_description(alarm_definition,
 
 
 def get_query_alarm_definition_severity(alarm_definition, return_none=False):
+    """
+    Gets the alarm definition.
+
+    Args:
+        alarm_definition: (str): write your description
+        return_none: (bool): write your description
+    """
     if 'severity' in alarm_definition:
         severity = encodeutils.safe_decode(alarm_definition['severity'], 'utf-8').upper()
         if severity not in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
@@ -661,6 +854,13 @@ def get_query_alarm_definition_severity(alarm_definition, return_none=False):
 
 
 def get_query_alarm_definition_match_by(alarm_definition, return_none=False):
+    """
+    Get the alarm query.
+
+    Args:
+        alarm_definition: (todo): write your description
+        return_none: (bool): write your description
+    """
     if 'match_by' in alarm_definition:
         match_by = alarm_definition['match_by']
         return match_by
@@ -673,6 +873,13 @@ def get_query_alarm_definition_match_by(alarm_definition, return_none=False):
 
 def get_query_alarm_definition_alarm_actions(alarm_definition,
                                              return_none=False):
+    """
+    Returns the alarm actions.
+
+    Args:
+        alarm_definition: (str): write your description
+        return_none: (bool): write your description
+    """
     if 'alarm_actions' in alarm_definition:
         alarm_actions = alarm_definition['alarm_actions']
         return alarm_actions
@@ -685,6 +892,13 @@ def get_query_alarm_definition_alarm_actions(alarm_definition,
 
 def get_query_alarm_definition_undetermined_actions(alarm_definition,
                                                     return_none=False):
+    """
+    Get actions actions actions.
+
+    Args:
+        alarm_definition: (todo): write your description
+        return_none: (bool): write your description
+    """
     if 'undetermined_actions' in alarm_definition:
         undetermined_actions = alarm_definition['undetermined_actions']
         return undetermined_actions
@@ -696,6 +910,13 @@ def get_query_alarm_definition_undetermined_actions(alarm_definition,
 
 
 def get_query_ok_actions(alarm_definition, return_none=False):
+    """
+    Return the query actions for a query.
+
+    Args:
+        alarm_definition: (str): write your description
+        return_none: (bool): write your description
+    """
     if 'ok_actions' in alarm_definition:
         ok_actions = alarm_definition['ok_actions']
         return ok_actions
@@ -709,6 +930,14 @@ def get_query_ok_actions(alarm_definition, return_none=False):
 def get_query_alarm_definition_actions_enabled(alarm_definition,
                                                required=False,
                                                return_none=False):
+    """
+    Gets the alarm alarms.
+
+    Args:
+        alarm_definition: (str): write your description
+        required: (todo): write your description
+        return_none: (bool): write your description
+    """
     try:
         if 'actions_enabled' in alarm_definition:
             enabled_actions = alarm_definition['actions_enabled']
@@ -726,6 +955,12 @@ def get_query_alarm_definition_actions_enabled(alarm_definition,
 
 
 def get_comma_separated_str_as_list(comma_separated_str):
+    """
+    Convert comma separated list of comma separated string.
+
+    Args:
+        comma_separated_str: (todo): write your description
+    """
     if not comma_separated_str:
         return []
     else:

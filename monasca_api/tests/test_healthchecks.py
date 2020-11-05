@@ -29,10 +29,22 @@ class TestHealthChecks(test_base.BaseApiTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Tear down the class.
+
+        Args:
+            cls: (todo): write your description
+        """
         if hasattr(CONF, 'sql_engine'):
             delattr(CONF, 'sql_engine')
 
     def setUp(self):
+        """
+        Sets the route for this application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestHealthChecks, self).setUp()
         self.resources = healthchecks.HealthChecks()
         self.app.add_route(
@@ -44,6 +56,14 @@ class TestHealthChecks(test_base.BaseApiTestCase):
     @mock.patch(
         'monasca_api.healthcheck.metrics_db_check.MetricsDbCheck')
     def test_should_return_200_for_head(self, metrics_db_check, _):
+        """
+        Returns true if the given a list contains a test.
+
+        Args:
+            self: (todo): write your description
+            metrics_db_check: (bool): write your description
+            _: (todo): write your description
+        """
         result = self.simulate_request(path=ENDPOINT, method='HEAD')
         self.assertEqual(falcon.HTTP_NO_CONTENT, result.status)
 
@@ -58,6 +78,16 @@ class TestHealthChecks(test_base.BaseApiTestCase):
                                                            alarms_db_check,
                                                            metrics_db_check,
                                                            _):
+        """
+        Check if there s no health report?
+
+        Args:
+            self: (todo): write your description
+            kafka_check: (bool): write your description
+            alarms_db_check: (todo): write your description
+            metrics_db_check: (bool): write your description
+            _: (todo): write your description
+        """
         kafka_check.health_check.return_value = base.CheckResult(True, 'OK')
         alarms_db_check.health_check.return_value = base.CheckResult(True,
                                                                      'OK')
@@ -94,6 +124,16 @@ class TestHealthChecks(test_base.BaseApiTestCase):
                                                                   alarms_db_check,
                                                                   metrics_db_check,
                                                                   _):
+        """
+        Check if there is_shouldka.
+
+        Args:
+            self: (todo): write your description
+            kafka_check: (bool): write your description
+            alarms_db_check: (todo): write your description
+            metrics_db_check: (bool): write your description
+            _: (todo): write your description
+        """
         test_list = [
             {'kafka': {'healthy': False, 'message': 'Unavailable'},
              'alarms_db': {'healthy': True, 'message': 'OK'},

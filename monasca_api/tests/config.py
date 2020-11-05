@@ -22,6 +22,13 @@ class TestConfig(base.BaseTestCase):
 
     @mock.patch('monasca_log_api.config.sys')
     def test_should_return_true_if_runs_under_gunicorn(self, sys_patch):
+        """
+        Determine if the test starts with the test test.
+
+        Args:
+            self: (todo): write your description
+            sys_patch: (str): write your description
+        """
         sys_patch.argv = [
             '/bin/gunicorn',
             '--capture-output',
@@ -35,6 +42,13 @@ class TestConfig(base.BaseTestCase):
 
     @mock.patch('monasca_log_api.config.sys')
     def test_should_return_false_if_runs_without_gunicorn(self, sys_patch):
+        """
+        Determine if the test test_shouldicorn.
+
+        Args:
+            self: (todo): write your description
+            sys_patch: (str): write your description
+        """
         sys_patch.argv = ['/bin/monasca-log-api']
         sys_patch.executable = '/bin/python'
         self.assertFalse(config._is_running_under_gunicorn())

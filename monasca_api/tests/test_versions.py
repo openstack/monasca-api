@@ -24,11 +24,23 @@ from monasca_api.v2.reference import versions
 class TestVersions(base.BaseApiTestCase):
 
     def setUp(self):
+        """
+        Sets the extension.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestVersions, self).setUp()
         self.app.add_route('/', versions.Versions())
         self.app.add_route('/{version_id}', versions.Versions())
 
     def test_list_versions(self):
+        """
+        Get list of versions of all versions
+
+        Args:
+            self: (todo): write your description
+        """
         result = self.simulate_request(path='/')
         self.assertEqual(result.status, falcon.HTTP_200)
         response = result.json
@@ -44,6 +56,12 @@ class TestVersions(base.BaseApiTestCase):
         self.assertTrue(link['href'].endswith('/'))
 
     def test_valid_version_id(self):
+        """
+        Method to see if the version of the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         result = self.simulate_request(path='/v2.0')
         self.assertEqual(result.status, falcon.HTTP_200)
         response = result.json
@@ -65,5 +83,11 @@ class TestVersions(base.BaseApiTestCase):
         self.assertTrue(link['href'].endswith('/v2.0'))
 
     def test_invalid_version_id(self):
+        """
+        Method to test status.
+
+        Args:
+            self: (todo): write your description
+        """
         result = self.simulate_request(path='/v1.0')
         self.assertEqual(result.status, '422 Unprocessable Entity')

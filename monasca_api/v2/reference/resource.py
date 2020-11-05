@@ -23,7 +23,18 @@ LOG = log.getLogger(__name__)
 
 
 def resource_try_catch_block(fun):
+    """
+    Decorator to catch exceptions.
+
+    Args:
+        fun: (callable): write your description
+    """
     def try_it(*args, **kwargs):
+        """
+        Try to raise an exception.
+
+        Args:
+        """
         try:
             return fun(*args, **kwargs)
 

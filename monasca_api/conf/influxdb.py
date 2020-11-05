@@ -46,9 +46,20 @@ influxdb_group = cfg.OptGroup(name='influxdb', title='influxdb')
 
 
 def register_opts(conf):
+    """
+    Register influxdb configuration.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(influxdb_group)
     conf.register_opts(influxdb_opts, influxdb_group)
 
 
 def list_opts():
+    """
+    Returns a list of influxdb.
+
+    Args:
+    """
     return influxdb_group, influxdb_opts

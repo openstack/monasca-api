@@ -28,6 +28,13 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
 
     @mock.patch("monasca_api.healthcheck.metrics_db_check.simport")
     def test_health_check(self, simport_mock):
+        """
+        Perform health health health check.
+
+        Args:
+            self: (todo): write your description
+            simport_mock: (todo): write your description
+        """
         metrics_repo_mock = simport_mock.load.return_value
         metrics_repo_mock.check_status.return_value = (True, 'OK')
         db_health = tdc.MetricsDbCheck()
@@ -40,6 +47,13 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
 
     @mock.patch("monasca_api.healthcheck.metrics_db_check.simport")
     def test_health_check_failed(self, simport_mock):
+        """
+        Run health health health health. health.
+
+        Args:
+            self: (todo): write your description
+            simport_mock: (todo): write your description
+        """
         metrics_repo_mock = simport_mock.load.return_value
         metrics_repo_mock.check_status.return_value = (False, 'Error')
         db_health = tdc.MetricsDbCheck()
@@ -51,6 +65,13 @@ class TestMetricsDbHealthCheck(base.BaseTestCase):
 
     @mock.patch("monasca_api.healthcheck.metrics_db_check.simport")
     def test_health_check_load_failed(self, simport_mock):
+        """
+        Perform health health health of health.
+
+        Args:
+            self: (todo): write your description
+            simport_mock: (todo): write your description
+        """
         simport_mock.load.side_effect = simport.ImportFailed(
             "Failed to import 'foo'. Error: bar")
         self.assertRaises(simport.ImportFailed, tdc.MetricsDbCheck)

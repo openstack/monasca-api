@@ -32,6 +32,13 @@ MAX_ITEM_LENGTH = 50
 
 
 def validate_action_list(notification_ids, action_type):
+    """
+    Checks if a list of ids are valid.
+
+    Args:
+        notification_ids: (str): write your description
+        action_type: (str): write your description
+    """
     if not isinstance(notification_ids, list):
         raise Invalid('Not a list: {}'.format(type(notification_ids)))
     existing = []
@@ -49,14 +56,32 @@ def validate_action_list(notification_ids, action_type):
 
 
 def validate_ok_action_list(v):
+    """
+    Validate a list is a list of action.
+
+    Args:
+        v: (todo): write your description
+    """
     validate_action_list(v, 'OK')
 
 
 def validate_alarm_action_list(v):
+    """
+    Validate a list of an action list.
+
+    Args:
+        v: (todo): write your description
+    """
     validate_action_list(v, 'ALARM')
 
 
 def validate_undetermined_action_list(v):
+    """
+    Validate that the action list.
+
+    Args:
+        v: (todo): write your description
+    """
     validate_action_list(v, 'UNDETERMINED')
 
 
@@ -73,6 +98,13 @@ alarm_definition_schema = {
 
 
 def validate(msg, require_all=False):
+    """
+    Validate the message against the schema.
+
+    Args:
+        msg: (str): write your description
+        require_all: (bool): write your description
+    """
     try:
         request_body_schema = Schema(alarm_definition_schema,
                                      required=require_all,

@@ -34,6 +34,12 @@ class MetricsDbCheck(base.BaseHealthCheck):
     """
 
     def __init__(self):
+        """
+        Init the metrics
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             self._metrics_repo = simport.load(
                 CONF.repositories.metrics_driver)
@@ -43,6 +49,12 @@ class MetricsDbCheck(base.BaseHealthCheck):
             raise
 
     def health_check(self):
+        """
+        Get health check status.
+
+        Args:
+            self: (todo): write your description
+        """
         status = self._metrics_repo.check_status()
         return base.CheckResult(healthy=status[0],
                                 message=status[1])

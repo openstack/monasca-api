@@ -34,12 +34,24 @@ CONF = cfg.CONF
 
 class FakePolicy(object):
     def list_rules(self):
+        """
+        : return a list of all rules.
+
+        Args:
+            self: (todo): write your description
+        """
         return []
 
 
 class ConfigFixture(config_fixture.Config):
 
     def setUp(self):
+        """
+        Set the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ConfigFixture, self).setUp()
         CONF(args=[],
              prog='api',
@@ -51,6 +63,12 @@ class ConfigFixture(config_fixture.Config):
 
 class BaseTestCase(base.BaseTestCase):
     def setUp(self):
+        """
+        Sets the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BaseTestCase, self).setUp()
         self.useFixture(ConfigFixture(CONF))
         self.useFixture(EmptyPolicyFixture())
@@ -71,6 +89,12 @@ class EmptyPolicyFixture(fixtures.Fixture):
 
     """
     def setUp(self):
+        """
+        Set up the engine.
+
+        Args:
+            self: (todo): write your description
+        """
         super(EmptyPolicyFixture, self).setUp()
         self._prepare_policy()
         policy_engine.POLICIES = FakePolicy()
@@ -79,6 +103,12 @@ class EmptyPolicyFixture(fixtures.Fixture):
         self.addCleanup(policy_engine.reset)
 
     def _prepare_policy(self):
+        """
+        Prepare the policy.
+
+        Args:
+            self: (todo): write your description
+        """
 
         policy_dir = self.useFixture(fixtures.TempDir())
         policy_file = os.path.join(policy_dir.path, 'policy.yaml')
@@ -95,6 +125,13 @@ class EmptyPolicyFixture(fixtures.Fixture):
         BaseTestCase.conf_override(policy_dirs=[], group='oslo_policy')
 
     def add_missing_default_rules(self, rules):
+        """
+        Add the missing rules.
+
+        Args:
+            self: (todo): write your description
+            rules: (list): write your description
+        """
         policies = FakePolicy()
 
         for rule in policies.list_rules():

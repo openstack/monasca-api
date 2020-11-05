@@ -48,9 +48,20 @@ security_group = cfg.OptGroup(name='security', title='security')
 
 
 def register_opts(conf):
+    """
+    Registers a security group.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(security_group)
     conf.register_opts(security_opts, security_group)
 
 
 def list_opts():
+    """
+    Returns a list of security group options
+
+    Args:
+    """
     return security_group, security_opts

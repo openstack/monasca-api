@@ -18,6 +18,12 @@ from monasca_api.tests import base
 
 class TestSubAlarmDefinition(base.BaseTestCase):
     def test_init_from_row(self):
+        """
+        Initialize an alarm from an alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         sub_alarm_d_dict = {'id': '111',
                             'alarm_definition_id': '123',
                             'function': 'AVG',
@@ -44,6 +50,12 @@ class TestSubAlarmDefinition(base.BaseTestCase):
         self.assertEqual(True, sub_alarm_d.deterministic)
 
     def test_init_from_sub_expr(self):
+        """
+        Initialize expr from expr.
+
+        Args:
+            self: (todo): write your description
+        """
         sub_alarm_d_dict = {'function': 'AVG',
                             'metric_name': 'darth.vader',
                             'operator': 'GT',
@@ -68,6 +80,12 @@ class TestSubAlarmDefinition(base.BaseTestCase):
         self.assertEqual(False, sub_alarm_d.deterministic)
 
     def test_init_from_both_row_and_sub_expr(self):
+        """
+        Initialize expr expr from expr from expr.
+
+        Args:
+            self: (todo): write your description
+        """
         sub_alarm_d_dict = {'id': '111',
                             'alarm_definition_id': '123',
                             'function': 'AVG',
@@ -84,6 +102,12 @@ class TestSubAlarmDefinition(base.BaseTestCase):
                           sub_alarm_d_dict, sub_expr_list)  # noqa: E202
 
     def test_build_expression_all_parameters(self):
+        """
+        Test for all parameters of the expr.
+
+        Args:
+            self: (todo): write your description
+        """
         expression = 'avg(darth.vader{over=9000}, deterministic, 60) GT 10.0 times 1'
         sub_expr_list = alarm_expr_parser.AlarmExprParser(expression).sub_expr_list
         sub_alarm_d = sub_alarm_definition.SubAlarmDefinition(sub_expr=sub_expr_list[0])
@@ -97,6 +121,12 @@ class TestSubAlarmDefinition(base.BaseTestCase):
         self.assertEqual('avg(darth.vader) GT 10.0', sub_alarm_d.expression)
 
     def test_equality_method(self):
+        """
+        Determine the method of a method.
+
+        Args:
+            self: (todo): write your description
+        """
         sub_alarm_d_dict = {'id': '111',
                             'alarm_definition_id': '123',
                             'function': 'AVG',

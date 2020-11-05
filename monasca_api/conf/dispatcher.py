@@ -73,9 +73,20 @@ dispatcher_group = cfg.OptGroup(name='dispatcher', title='dispatcher')
 
 
 def register_opts(conf):
+    """
+    Registers the options.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(dispatcher_group)
     conf.register_opts(dispatcher_opts, dispatcher_group)
 
 
 def list_opts():
+    """
+    Return a list of opts that match.
+
+    Args:
+    """
     return dispatcher_group, dispatcher_opts
