@@ -31,6 +31,11 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.add_column('alarm',
                   sa.Column('inhibited',
                             sa.Boolean(),
@@ -44,5 +49,10 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     op.drop_column('alarm', 'inhibited')
     op.drop_column('alarm', 'silenced')

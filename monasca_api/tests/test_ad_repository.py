@@ -46,6 +46,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """
+        Create an engine engine.
+
+        Args:
+            cls: (todo): write your description
+        """
         engine = create_engine('sqlite://')
         qry = open('monasca_api/tests/sqlite_alarm.sql', 'r').read()
         sconn = engine.raw_connection()
@@ -56,6 +62,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         cls.engine = engine
 
         def _fake_engine_from_config(*args, **kw):
+            """
+            Return an engine engine instance from the engine.
+
+            Args:
+                kw: (todo): write your description
+            """
             return cls.engine
 
         cls.fixture = fixtures.MonkeyPatch(
@@ -119,11 +131,23 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Tear wrapper for the class.
+
+        Args:
+            cls: (todo): write your description
+        """
         cls.fixture.cleanUp()
         if hasattr(CONF, 'sql_engine'):
             delattr(CONF, 'sql_engine')
 
     def setUp(self):
+        """
+        Sets the default config
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarmDefinitionRepoDB, self).setUp()
         self.conf_default(connection='sqlite://', group='database')
 
@@ -251,6 +275,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
             conn.execute(self._insert_aa_query, self.default_aas)
 
     def test_should_create(self):
+        """
+        Creates a new alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         expression = ('AVG(hpcs.compute{flavor_id=777, image_id=888,'
                       ' metric_name=cpu}) > 10')
         description = ''
@@ -287,6 +317,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
             self.assertEqual(count_sadd[0], 3)
 
     def test_should_try_to_create_with_wrong_alarm_action(self):
+        """
+        Create an action to create an alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         expression = ('AVG(hpcs.compute{flavor_id=777, image_id=888,'
                       ' metric_name=cpu}) > 10')
         description = ''
@@ -307,6 +343,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                           self.repo.create_alarm_definition, *args)
 
     def test_should_update(self):
+        """
+        Updates the update.
+
+        Args:
+            self: (todo): write your description
+        """
         expression = ''.join(['AVG(hpcs.compute{flavor_id=777, image_id=888,',
                               ' metric_name=mem}) > 20 and',
                               ' AVG(hpcs.compute) < 100'])
@@ -499,6 +541,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                           self.repo.get_alarm_definition, 'bob', '234')
 
     def test_should_find_by_id(self):
+        """
+        Test for a alarm by id.
+
+        Args:
+            self: (todo): write your description
+        """
         alarmDef1 = self.repo.get_alarm_definition('bob', '123')
         expected = {'actions_enabled': False,
                     'alarm_actions': '29387234,77778687',
@@ -520,6 +568,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(alarmDef2, expected)
 
     def test_shoud_find_sub_alarm_metric_definitions(self):
+        """
+        Test for alarms of the alarms. cfgarm.
+
+        Args:
+            self: (todo): write your description
+        """
         sub_alarms = self.repo.get_sub_alarm_definitions('123')
 
         expected = [{'alarm_definition_id': '123',
@@ -577,6 +631,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(sub_alarms, [])
 
     def test_try_update_alarm_that_does_not_exist(self):
+        """
+        Updates an alarm update operation.
+
+        Args:
+            self: (todo): write your description
+        """
         args = ('koala', '999',
                 None, None,
                 None, True,
@@ -588,6 +648,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
                           self.repo.update_or_patch_alarm_definition, *args)
 
     def test_exists(self):
+        """
+        Check if the alarm exists.
+
+        Args:
+            self: (todo): write your description
+        """
         alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
                                                     name='90% CPU')
         expected = {'actions_enabled': False,
@@ -608,6 +674,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(alarmDef2, [])
 
     def test_should_find(self):
+        """
+        Find the alarm for alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         alarmDef1 = self.repo.get_alarm_definitions(tenant_id='bob',
                                                     limit=1)
         expected = [{'actions_enabled': False,
@@ -654,6 +726,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(alarmDef3, [])
 
     def test_should_find_by_dimension(self):
+        """
+        This method is used alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         expected = [{'actions_enabled': False,
                      'alarm_actions': '29387234,77778687',
                      'description': None,
@@ -728,6 +806,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(alarmDef1, [])
 
     def test_should_find_and_sort(self):
+        """
+        Check for tests and alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         expected = [{'actions_enabled': False,
                      'alarm_actions': '29387234,77778687',
                      'description': None,
@@ -760,6 +844,12 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(expected[::-1], alarmDef2)
 
     def test_should_delete_by_id(self):
+        """
+        Deletes the specified alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         self.repo.delete_alarm_definition('bob', '123')
         from monasca_api.common.repositories import exceptions
         self.assertRaises(exceptions.DoesNotExistException,
@@ -785,76 +875,196 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
         self.assertEqual(alarmDef1, expected)
 
     def test_try_delete_alarm_that_does_not_exist(self):
+        """
+        Test if the test is deleted.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.repo.delete_alarm_definition('goku', '123')
         self.assertEqual(False, response)
 
     def test_should_patch_name(self):
+        """
+        Decorator to test if test_name exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(name=u'90% CPU New')
 
     def test_should_patch_description(self):
+        """
+        Decorator to run a test description
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(description=u'New Description')
 
     def test_should_patch_severity(self):
+        """
+        Decorator that the test test_shouldity.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(severity=u'CRITICAL')
 
     def test_should_patch_actions_enabled(self):
+        """
+        Determine if a test test test is enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(actions_enabled=False)
 
     def test_should_patch_ok_actions(self):
+        """
+        Determine if - test test test actions.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(ok_actions=[u'29387234'])
 
     def test_should_patch_alarm_actions(self):
+        """
+        Return the actions actions test actions.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(alarm_actions=[u'29387234'])
 
     def test_should_patch_undetermined_actions(self):
+        """
+        Determine whether the test test test test test test actions.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(undetermined_actions=[u'29387234', u'77778687'])
 
     def test_should_patch_match_by(self):
+        """
+        Returns true if the test should be executed.
+
+        Args:
+            self: (todo): write your description
+        """
         # match_by can't change, so make sure old value works
         self.run_patch_test(match_by=[u'flavor_id', u'image_id'])
 
     def test_should_patch_expression_no_change(self):
+        """
+        Determine whether the test test should be skipped.
+
+        Args:
+            self: (todo): write your description
+        """
         # match_by can't change, so make sure old value works
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'])
 
     def test_should_patch_expression_threshold_change(self):
+        """
+        Determine if the test threshold.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(' 10', ' 20'))
 
     def test_should_patch_expression_deterministic_change(self):
+        """
+        Determine whether the test test should be skipped.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(',deterministic',
                                                                                   ''))
 
     def test_should_patch_expression_function_change(self):
+        """
+        Determine whether the test function should be called.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace('AVG', 'MAX'))
 
     def test_should_patch_expression_operation_change(self):
+        """
+        Determine if the test operation should be run in a test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace('>', '<'))
 
     def test_should_patch_expression_period_change(self):
+        """
+        Determine whether the test change should be skipped.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(expression=ALARM_DEF_123_FIELDS['expression'].replace(')', ', 120)'))
 
     def test_should_patch_expression_periods_change(self):
+        """
+        Determine whether the test test_patch.
+
+        Args:
+            self: (todo): write your description
+        """
         self.run_patch_test(
             expression=ALARM_DEF_123_FIELDS['expression'].replace(
                 ' 10', ' 10 times 2'))
 
     def test_patch_fails_change_match_by(self):
+        """
+        Test whether the patch has changed.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(
             exceptions.InvalidUpdateException,
             self.run_patch_test,
             match_by=u'device')
 
     def test_patch_fails_change_metric_name(self):
+        """
+        Toggle metric name of the metric
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
                           expression=ALARM_DEF_123_FIELDS['expression'].replace('hpcs.compute',
                                                                                 'new_metric_name'))
 
     def test_patch_fails_change_metric_dimensions(self):
+        """
+        Takes the metric_patch and updates the metric_patch.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
                           expression=ALARM_DEF_123_FIELDS['expression'].replace('image_id=888',
                                                                                 'image_id=42'))
 
     def test_patch_fails_change_num_sub_expressions(self):
+        """
+        Set the number of patches after the given number of patches.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(exceptions.InvalidUpdateException, self.run_patch_test,
                           expression=ALARM_DEF_123_FIELDS['expression']
                           .replace(' 10', ' 10 and MAX(cpu.idle_perc) < 10'))
@@ -862,6 +1072,21 @@ class TestAlarmDefinitionRepoDB(base.BaseTestCase):
     def run_patch_test(self, name=None, expression=None, description=None, actions_enabled=None,
                        alarm_actions=None, ok_actions=None, undetermined_actions=None,
                        match_by=None, severity=None):
+        """
+        Run an update test.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            expression: (todo): write your description
+            description: (str): write your description
+            actions_enabled: (str): write your description
+            alarm_actions: (todo): write your description
+            ok_actions: (todo): write your description
+            undetermined_actions: (todo): write your description
+            match_by: (todo): write your description
+            severity: (todo): write your description
+        """
         if expression:
             sub_expr_list = (alarm_expr_parser.AlarmExprParser(expression).sub_expr_list)
         else:

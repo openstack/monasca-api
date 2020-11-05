@@ -207,11 +207,21 @@ def verify_deprecated_policy(old_policy, new_policy, default_rule, context):
 
 
 def get_rules():
+    """
+    Return the rules.
+
+    Args:
+    """
     if _ENFORCER:
         return _ENFORCER.rules
 
 
 def get_enforcer():
+    """
+    Return a list of environments.
+
+    Args:
+    """
     # This method is for use by oslopolicy CLI scripts. Those scripts need the
     # 'output-file' and 'namespace' options, but having those in sys.argv means
     # loading the project config options will fail as those are not expected to

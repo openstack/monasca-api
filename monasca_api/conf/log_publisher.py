@@ -40,9 +40,20 @@ log_publisher_group = cfg.OptGroup(name='log_publisher', title='log_publisher')
 
 
 def register_opts(conf):
+    """
+    Register options to register_opts.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(log_publisher_group)
     conf.register_opts(log_publisher_opts, log_publisher_group)
 
 
 def list_opts():
+    """
+    Return a list operations list
+
+    Args:
+    """
     return log_publisher_group, log_publisher_opts

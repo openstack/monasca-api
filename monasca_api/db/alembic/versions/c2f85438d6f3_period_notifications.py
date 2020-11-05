@@ -31,6 +31,11 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.add_column('notification_method',
                   sa.Column('period',
                             sa.Integer(),
@@ -39,4 +44,9 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     op.drop_column('notification_method', 'period')

@@ -25,6 +25,12 @@ from monasca_api.tests import base
 
 class TestPolicyFileCase(base.BaseTestCase):
     def setUp(self):
+        """
+        Sets the roles for this view.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestPolicyFileCase, self).setUp()
         self.context = context.RequestContext(user='fake',
                                               tenant='fake',
@@ -32,6 +38,12 @@ class TestPolicyFileCase(base.BaseTestCase):
         self.target = {'tenant_id': 'fake'}
 
     def test_modified_policy_reloads(self):
+        """
+        .. versionadded :: 0. 17. 0
+
+        Args:
+            self: (todo): write your description
+        """
         tmp_file = \
             self.create_tempfiles(files=[('policies', '{}')], ext='.yaml')[0]
         base.BaseTestCase.conf_override(policy_file=tmp_file,
@@ -56,6 +68,12 @@ class TestPolicyFileCase(base.BaseTestCase):
 
 class TestPolicyCase(base.BaseTestCase):
     def setUp(self):
+        """
+        Sets the default rules for this module.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestPolicyCase, self).setUp()
         rules = [
             os_policy.RuleDefault("true", "@"),
@@ -71,6 +89,12 @@ class TestPolicyCase(base.BaseTestCase):
         policy._ENFORCER.register_defaults(rules)
 
     def test_authorize_nonexist_action_throws(self):
+        """
+        Test if axist action_throws an oxist.
+
+        Args:
+            self: (todo): write your description
+        """
         action = "example:noexist"
         ctx = request.Request(
             testing.create_environ(
@@ -86,6 +110,12 @@ class TestPolicyCase(base.BaseTestCase):
                           ctx.context, action, {})
 
     def test_authorize_bad_action_throws(self):
+        """
+        Test if the oauth action.
+
+        Args:
+            self: (todo): write your description
+        """
         action = "example:denied"
         ctx = request.Request(
             testing.create_environ(
@@ -101,6 +131,12 @@ class TestPolicyCase(base.BaseTestCase):
                           ctx.context, action, {})
 
     def test_authorize_bad_action_no_exception(self):
+        """
+        Test if an oauth policy.
+
+        Args:
+            self: (todo): write your description
+        """
         action = "example:denied"
         ctx = request.Request(
             testing.create_environ(
@@ -116,6 +152,12 @@ class TestPolicyCase(base.BaseTestCase):
         self.assertFalse(result)
 
     def test_authorize_good_action(self):
+        """
+        Test for authorize action.
+
+        Args:
+            self: (todo): write your description
+        """
         action = "example:allowed"
         ctx = request.Request(
             testing.create_environ(
@@ -131,6 +173,12 @@ class TestPolicyCase(base.BaseTestCase):
         self.assertTrue(result)
 
     def test_ignore_case_role_check(self):
+        """
+        Test if the case case case.
+
+        Args:
+            self: (todo): write your description
+        """
         lowercase_action = "example:lowercase_monasca_user"
         uppercase_action = "example:uppercase_monasca_user"
 
@@ -154,6 +202,13 @@ class TestPolicyCase(base.BaseTestCase):
 
 class RegisteredPoliciesTestCase(base.BaseTestCase):
     def __init__(self, *args, **kwds):
+        """
+        Initialize roles.
+
+        Args:
+            self: (todo): write your description
+            kwds: (todo): write your description
+        """
         super(RegisteredPoliciesTestCase, self).__init__(*args, **kwds)
         self.agent_roles = ['monasca-agent']
         self.readonly_roles = ['monasca-read-only-user']
@@ -161,6 +216,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
         self.delegate_roles = ['admin']
 
     def test_alarms_policies_roles(self):
+        """
+        Test if the roles are roles.
+
+        Args:
+            self: (todo): write your description
+        """
         alarms_policies = {
             'api:alarms:definition:post': self.default_roles,
             'api:alarms:definition:get':
@@ -179,6 +240,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
         self._assert_rules(alarms_policies)
 
     def test_metrics_policies_roles(self):
+        """
+        Test for the roles
+
+        Args:
+            self: (todo): write your description
+        """
         metrics_policies = {
             'api:metrics:get': self.default_roles + self.readonly_roles,
             'api:metrics:post': self.agent_roles + self.default_roles,
@@ -191,6 +258,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
         self._assert_rules(metrics_policies)
 
     def test_notifications_policies_roles(self):
+        """
+        Set the roles for the user.
+
+        Args:
+            self: (todo): write your description
+        """
         notifications_policies = {
             'api:notifications:put': self.default_roles,
             'api:notifications:patch': self.default_roles,
@@ -203,6 +276,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
         self._assert_rules(notifications_policies)
 
     def test_versions_policies_roles(self):
+        """
+        Test if the rules are enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         versions_policies = {
             'api:versions': ['any_rule!']
 
@@ -210,18 +289,37 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
         self._assert_rules(versions_policies)
 
     def test_healthcheck_policies_roles(self):
+        """
+        Test if the health rules.
+
+        Args:
+            self: (todo): write your description
+        """
         healthcheck_policies = {
             'api:healthcheck': ['any_rule!']
         }
         self._assert_rules(healthcheck_policies)
 
     def test_delegate_policies_roles(self):
+        """
+        Test if the rules are enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         delegate_policies = {
             'api:delegate': self.delegate_roles
         }
         self._assert_rules(delegate_policies)
 
     def _assert_rules(self, policies_list):
+        """
+        Assign policies for the policies.
+
+        Args:
+            self: (todo): write your description
+            policies_list: (list): write your description
+        """
         for policy_name in policies_list:
             registered_rule = policy.get_rules()[policy_name]
             if hasattr(registered_rule, 'rules'):
@@ -236,6 +334,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
 
     @staticmethod
     def _get_request_context(role):
+        """
+        Return the context for the given role.
+
+        Args:
+            role: (str): write your description
+        """
         return request.Request(
             testing.create_environ(
                 path='/',
@@ -246,6 +350,12 @@ class RegisteredPoliciesTestCase(base.BaseTestCase):
 
 class PolicyUtilsTestCase(base.BaseTestCase):
     def test_roles_list_to_check_str(self):
+        """
+        Convert a list of roles to a string.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(roles_list_to_check_str(['test_role']), 'role:test_role')
         self.assertEqual(roles_list_to_check_str(['role1', 'role2', 'role3']),
                          'role:role1 or role:role2 or role:role3')

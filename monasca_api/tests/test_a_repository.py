@@ -32,6 +32,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """
+        Create an engine engine.
+
+        Args:
+            cls: (todo): write your description
+        """
         engine = create_engine('sqlite://')
 
         qry = open('monasca_api/tests/sqlite_alarm.sql', 'r').read()
@@ -43,6 +49,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         cls.engine = engine
 
         def _fake_engine_from_config(*args, **kw):
+            """
+            Return an engine engine instance from the engine.
+
+            Args:
+                kw: (todo): write your description
+            """
             return cls.engine
         cls.fixture = fixtures.MonkeyPatch(
             'sqlalchemy.create_engine', _fake_engine_from_config)
@@ -166,11 +178,23 @@ class TestAlarmRepoDB(base.BaseTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Tear wrapper for the class.
+
+        Args:
+            cls: (todo): write your description
+        """
         cls.fixture.cleanUp()
         if hasattr(CONF, 'sql_engine'):
             delattr(CONF, 'sql_engine')
 
     def setUp(self):
+        """
+        Sets the interface.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestAlarmRepoDB, self).setUp()
 
         self.conf_override(connection='sqlite://', group='database')
@@ -525,6 +549,13 @@ class TestAlarmRepoDB(base.BaseTestCase):
             conn.execute(self._insert_aa_query, self.default_aas)
 
     def helper_builder_result(self, alarm_rows):
+        """
+        Returns the alarm result.
+
+        Args:
+            self: (todo): write your description
+            alarm_rows: (todo): write your description
+        """
         result = []
 
         if not alarm_rows:
@@ -573,6 +604,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         return result
 
     def test_should_delete(self):
+        """
+        Ensure the alarm is deleted.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         alarm_id = '1'
 
@@ -585,12 +622,24 @@ class TestAlarmRepoDB(base.BaseTestCase):
                           self.repo.get_alarm, tenant_id, alarm_id)
 
     def test_should_throw_exception_on_delete(self):
+        """
+        Test if the cloudformation exception.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         from monasca_api.common.repositories import exceptions
         self.assertRaises(exceptions.DoesNotExistException,
                           self.repo.delete_alarm, tenant_id, 'Not an alarm ID')
 
     def test_should_find_alarm_def(self):
+        """
+        Uses the alarm alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         alarm_id = '1'
 
@@ -614,6 +663,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
                           tenant_id, 'Not an alarm ID')
 
     def test_should_find(self):
+        """
+        Returns a boolean indicating whether this query
+
+        Args:
+            self: (todo): write your description
+        """
         res = self.repo.get_alarms(tenant_id='Not a tenant id', limit=1)
         self.assertEqual(res, [])
 
@@ -859,6 +914,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual(expected, res)
 
     def test_should_count(self):
+        """
+        Return the number of alarms
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
 
         res = self.repo.get_alarms_count(tenant_id=tenant_id)
@@ -963,6 +1024,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual([{'count': 4}], res)
 
     def test_should_sort_and_find(self):
+        """
+        Return a list of all the alarms
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         query_parms = {'metric_name': 'cpu.idle_perc',
                        'sort_by': ['alarm_id']}
@@ -1061,6 +1128,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual(expected, res)
 
     def test_should_update(self):
+        """
+        Updates the state of an alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         alarm_id = '2'
 
@@ -1107,6 +1180,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual(alarm_new_tmp, prev_state)
 
     def test_should_throw_exception_on_update(self):
+        """
+        Updates the update of an update.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         alarm_id = 'Not real alarm id'
         from monasca_api.common.repositories import exceptions
@@ -1120,6 +1199,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
                           None)
 
     def test_get_alarm_metrics(self):
+        """
+        Get alarms for this alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         alarm_id = '2'
         alarm_metrics = self.repo.get_alarm_metrics(alarm_id)
 
@@ -1130,6 +1215,12 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual(alarm_metrics, expected)
 
     def test_get_subalarms(self):
+        """
+        Retrieve the alarm.
+
+        Args:
+            self: (todo): write your description
+        """
         tenant_id = 'bob'
         alarm_id = '2'
 

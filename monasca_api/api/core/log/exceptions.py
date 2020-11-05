@@ -29,6 +29,13 @@ class HTTPUnprocessableEntity(falcon.OptionalRepresentation, falcon.HTTPError):
                         :py:class:`falcon.HTTPError`
     """
     def __init__(self, message, **kwargs):
+        """
+        Initialize a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         falcon.HTTPError.__init__(self,
                                   HTTP_422,
                                   'unprocessable_entity',

@@ -38,8 +38,19 @@ Enable Logs api endpoints''')
 
 
 def register_opts(conf):
+    """
+    Register the options.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_opts(global_opts)
 
 
 def list_opts():
+    """
+    Returns the options for all options.
+
+    Args:
+    """
     return 'DEFAULT', global_opts

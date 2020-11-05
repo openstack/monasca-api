@@ -40,6 +40,12 @@ class KafkaHealthCheck(base.BaseHealthCheck):
     """
 
     def health_check(self):
+        """
+        Checks if the kafka client.
+
+        Args:
+            self: (todo): write your description
+        """
         url = CONF.kafka.uri
 
         try:
@@ -57,6 +63,12 @@ class KafkaHealthCheck(base.BaseHealthCheck):
 
     @staticmethod
     def _verify_topics(kafka_client):
+        """
+        Verify topics.
+
+        Args:
+            kafka_client: (todo): write your description
+        """
         topics = (CONF.kafka.metrics_topic,
                   CONF.kafka.events_topic,
                   CONF.kafka.alarm_state_transitions_topic)
@@ -73,6 +85,12 @@ class KafkaHealthCheck(base.BaseHealthCheck):
 
     @staticmethod
     def _disconnect_gracefully(kafka_client):
+        """
+        Disconnect a client.
+
+        Args:
+            kafka_client: (todo): write your description
+        """
         try:
             kafka_client.close()
         except Exception:

@@ -66,6 +66,12 @@ def to_json(data):
 
 
 def validate_json_content_type(req):
+    """
+    Validate the content - type.
+
+    Args:
+        req: (todo): write your description
+    """
     if req.content_type not in ['application/json']:
         raise falcon.HTTPBadRequest('Bad request', 'Bad content type. Must be '
                                                    'application/json')
@@ -124,6 +130,13 @@ def validate_payload_size(content_length):
 
 
 def get_x_tenant_or_tenant_id(http_request, delegate_authorized_rules_list):
+    """
+    Gets the tenant id.
+
+    Args:
+        http_request: (todo): write your description
+        delegate_authorized_rules_list: (todo): write your description
+    """
     params = falcon.uri.parse_query_string(http_request.query_string)
     if 'tenant_id' in params:
         tenant_id = params['tenant_id']
@@ -139,6 +152,15 @@ def get_x_tenant_or_tenant_id(http_request, delegate_authorized_rules_list):
 
 
 def get_query_param(req, param_name, required=False, default_val=None):
+    """
+    Get a query parameter from request url.
+
+    Args:
+        req: (todo): write your description
+        param_name: (str): write your description
+        required: (todo): write your description
+        default_val: (str): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if param_name in params:
@@ -215,6 +237,13 @@ def get_query_dimensions(req, param_key='dimensions'):
 
 
 def get_query_starttime_timestamp(req, required=True):
+    """
+    Get the start time for a request.
+
+    Args:
+        req: (todo): write your description
+        required: (todo): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'start_time' in params:
@@ -230,6 +259,13 @@ def get_query_starttime_timestamp(req, required=True):
 
 
 def get_query_endtime_timestamp(req, required=True):
+    """
+    Get the endtime query string.
+
+    Args:
+        req: (todo): write your description
+        required: (todo): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'end_time' in params:
@@ -245,6 +281,13 @@ def get_query_endtime_timestamp(req, required=True):
 
 
 def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
+    """
+    Validate start_timestamps.
+
+    Args:
+        start_timestamp: (todo): write your description
+        end_timestamp: (todo): write your description
+    """
     if end_timestamp:
         if not start_timestamp < end_timestamp:
             raise falcon.HTTPBadRequest('Bad request',
@@ -252,6 +295,12 @@ def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
 
 
 def _convert_time_string(date_time_string):
+    """
+    Convert a datetime object to a datetime object.
+
+    Args:
+        date_time_string: (str): write your description
+    """
     dt = timeutils.parse_isotime(date_time_string)
     dt = timeutils.normalize_time(dt)
     timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -259,6 +308,12 @@ def _convert_time_string(date_time_string):
 
 
 def get_query_statistics(req):
+    """
+    Get statistics from query string.
+
+    Args:
+        req: (todo): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'statistics' in params:
@@ -281,6 +336,12 @@ def get_query_statistics(req):
 
 
 def get_query_period(req):
+    """
+    Get the query period.
+
+    Args:
+        req: (str): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'period' in params:
@@ -300,6 +361,12 @@ def get_query_period(req):
 
 
 def get_query_group_by(req):
+    """
+    Get group by group by query string.
+
+    Args:
+        req: (todo): write your description
+    """
     try:
         params = falcon.uri.parse_query_string(req.query_string)
         if 'group_by' in params:
@@ -354,6 +421,14 @@ def validate_query_dimensions(dimensions):
 
 
 def paginate(resource, uri, limit):
+    """
+    Paginate a uri.
+
+    Args:
+        resource: (dict): write your description
+        uri: (str): write your description
+        limit: (int): write your description
+    """
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = encodeutils.safe_decode(build_base_uri(parsed_uri), 'utf8')
@@ -459,6 +534,14 @@ def _truncate_with_offset(resource, value_list, offset):
 
 
 def paginate_alarming(resource, uri, limit):
+    """
+    Paginate a uri.
+
+    Args:
+        resource: (todo): write your description
+        uri: (str): write your description
+        limit: (int): write your description
+    """
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -502,6 +585,15 @@ def paginate_alarming(resource, uri, limit):
 
 
 def paginate_dimension_values(dimvals, uri, offset, limit):
+    """
+    Paginate query dimensions.
+
+    Args:
+        dimvals: (int): write your description
+        uri: (str): write your description
+        offset: (int): write your description
+        limit: (int): write your description
+    """
 
     parsed_uri = urlparse.urlparse(uri)
     self_link = build_base_uri(parsed_uri)
@@ -549,6 +641,14 @@ def paginate_dimension_values(dimvals, uri, offset, limit):
 
 
 def _truncate_dimension_values(values, limit, offset):
+    """
+    Truncate values in - 1.
+
+    Args:
+        values: (array): write your description
+        limit: (int): write your description
+        offset: (int): write your description
+    """
     if offset and offset in values:
         next_value_pos = values.index(offset) + 1
         values = values[next_value_pos:]
@@ -557,6 +657,14 @@ def _truncate_dimension_values(values, limit, offset):
 
 
 def paginate_measurements(measurements, uri, limit):
+    """
+    Paginate the paginated list.
+
+    Args:
+        measurements: (todo): write your description
+        uri: (str): write your description
+        limit: (int): write your description
+    """
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -615,6 +723,12 @@ def paginate_measurements(measurements, uri, limit):
 
 
 def _get_old_query_params(parsed_uri):
+    """
+    Returns the query params for a given uri.
+
+    Args:
+        parsed_uri: (todo): write your description
+    """
     old_query_params = []
 
     if parsed_uri.query:
@@ -631,6 +745,13 @@ def _get_old_query_params(parsed_uri):
 
 
 def _get_old_query_params_except_offset(new_query_params, parsed_uri):
+    """
+    Returns the old old query string.
+
+    Args:
+        new_query_params: (dict): write your description
+        parsed_uri: (todo): write your description
+    """
     if parsed_uri.query:
 
         for query_param in parsed_uri.query.split('&'):
@@ -644,6 +765,14 @@ def _get_old_query_params_except_offset(new_query_params, parsed_uri):
 
 
 def paginate_statistics(statistics, uri, limit):
+    """
+    Paginate statistics for the statistics.
+
+    Args:
+        statistics: (str): write your description
+        uri: (str): write your description
+        limit: (int): write your description
+    """
     parsed_uri = urlparse.urlparse(uri)
 
     self_link = build_base_uri(parsed_uri)
@@ -712,6 +841,14 @@ def paginate_statistics(statistics, uri, limit):
 
 
 def create_alarms_count_next_link(uri, offset, limit):
+    """
+    Create a new link to the given uri.
+
+    Args:
+        uri: (str): write your description
+        offset: (int): write your description
+        limit: (int): write your description
+    """
     if offset is None:
         offset = 0
     parsed_url = urlparse.urlparse(uri)
@@ -727,6 +864,12 @@ def create_alarms_count_next_link(uri, offset, limit):
 
 
 def build_base_uri(parsed_uri):
+    """
+    Build the base uri based on the given uri.
+
+    Args:
+        parsed_uri: (todo): write your description
+    """
     return parsed_uri.scheme + '://' + parsed_uri.netloc + parsed_uri.path
 
 
@@ -786,4 +929,10 @@ def raise_not_found_exception(resource_name, resource_id, tenant_id):
 
 
 def str_2_bool(s):
+    """
+    Convert a string to a bool.
+
+    Args:
+        s: (str): write your description
+    """
     return s.lower() in ("true")

@@ -31,6 +31,12 @@ TENANT_ID = u"fedcba9876543210fedcba9876543210"
 
 class TestNotifications(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets up notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestNotifications, self).setUp()
 
         self.conf_override(
@@ -54,6 +60,12 @@ class TestNotifications(base.BaseApiTestCase):
             '/v2.0/notification-methods/{notification_method_id}', self.notification_resource)
 
     def test_create_notifications(self):
+        """
+        Create a dictionary of notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         request_body = \
             {
                 "name": "Name",
@@ -79,6 +91,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_201, response.status)
 
     def test_create_notifications_with_incorrect_type(self):
+        """
+        Create notifications for notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         request_body = \
             {
                 "name": "Name",
@@ -104,6 +122,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_400, response.status)
 
     def test_create_notifications_when_name_is_taken(self):
+        """
+        Create a new notifications for a given notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         request_body = \
             {
                 "name": "Name",
@@ -137,6 +161,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_409, response.status)
 
     def test_list_notifications(self):
+        """
+        List all notifications
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {'elements': [
                 {'name': u'notification',
@@ -167,6 +197,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_list_notifications_with_sort_by(self):
+        """
+        Return a list of the notifications that have not been blocked
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {'elements': [
                 {'name': u'notification',
@@ -198,6 +234,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_list_notifications_with_incorrect_sort_by(self):
+        """
+        List notifications that have not been submitted.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(path='/v2.0/notification-methods',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
@@ -207,6 +249,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_422, response.status)
 
     def test_list_notifications_with_offset(self):
+        """
+        Simulate notifications list notifications
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {'elements': [
                 {'name': u'notification',
@@ -238,6 +286,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_list_notifications_with_incorrect_offset(self):
+        """
+        Notify notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         return_value = self.notifications_repo_mock.return_value
         return_value.list_notifications.return_value = \
             [{'name': u'notification',
@@ -257,6 +311,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_422, result.status)
 
     def test_get_notification_with_id(self):
+        """
+        Get a specific notification.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {'name': u'notification',
              'id': u'1',
@@ -283,6 +343,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_delete_notification(self):
+        """
+        Delete a notification.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(path='/v2.0/notification-methods/1',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
@@ -291,6 +357,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_204, response.status)
 
     def test_put_notification(self):
+        """
+        Send a get / notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "shy_name",
@@ -333,6 +405,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_patch_notification_all_fields(self):
+        """
+        Simulate all fields for all fields.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "shy_name",
@@ -375,6 +453,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_patch_notification_name_fields(self):
+        """
+        Simulate the fields of a mock.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "shy_name",
@@ -422,6 +506,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_patch_notification_type_fields(self):
+        """
+        Simulate fields of the fields.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "notification",
@@ -469,6 +559,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_patch_notification_address_fields(self):
+        """
+        Simulate notification fields.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "notification",
@@ -516,6 +612,12 @@ class TestNotifications(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_patch_notification_period_fields(self):
+        """
+        Simulate a single notifications.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {"id": "1",
              "name": "notification",
@@ -565,6 +667,12 @@ class TestNotifications(base.BaseApiTestCase):
 
 class TestNotificationsType(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets notification.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestNotificationsType, self).setUp()
 
         self.conf_override(
@@ -582,6 +690,12 @@ class TestNotificationsType(base.BaseApiTestCase):
             '/v2.0/notification-methods/types', self.notification_resource)
 
     def test_get_notification_types(self):
+        """
+        Obtain notification types.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_notification_types = \
             {'elements': [
                 {'type': 'EMAIL'},

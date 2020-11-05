@@ -14,4 +14,10 @@
 
 
 def date_handler(obj):
+    """
+    Convert datetime object to iso - 8601 format.
+
+    Args:
+        obj: (todo): write your description
+    """
     return obj.isoformat() if hasattr(obj, 'isoformat') else obj

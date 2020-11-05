@@ -18,7 +18,21 @@ from monasca_api.common.messaging import publisher
 class FakePublisher(publisher.Publisher):
 
     def __init__(self, topic):
+        """
+        Initialize the given topic.
+
+        Args:
+            self: (todo): write your description
+            topic: (int): write your description
+        """
         pass
 
     def send_message(self, message):
+        """
+        Send a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         pass

@@ -19,34 +19,105 @@ LOG = log.getLogger(__name__)
 
 class AlarmsV2API(object):
     def __init__(self):
+        """
+        Initialize the device initialization.
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmsV2API, self).__init__()
         LOG.info('Initializing AlarmsV2API!')
 
     def on_put(self, req, res, alarm_id):
+        """
+        Respond to a request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_patch(self, req, res, alarm_id):
+        """
+        Send put request to update.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_delete(self, req, res, alarm_id):
+        """
+        Delete an update request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
         res.status = '501 Not Implemented'
 
     def on_get(self, req, res, alarm_id):
+        """
+        Respond to get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            alarm_id: (str): write your description
+        """
         res.status = '501 Not Implemented'
 
 
 class AlarmsCountV2API(object):
     def __init__(self):
+        """
+        Initialize non - v2 classes
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmsCountV2API, self).__init__()
 
     def on_get(self, req, res):
+        """
+        Respond to get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         res.status = '501 Not Implemented'
 
 
 class AlarmsStateHistoryV2API(object):
     def __init__(self):
+        """
+        Initialize the device state.
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmsStateHistoryV2API, self).__init__()
         LOG.info('Initializing AlarmsStateHistoryV2API!')
 
     def on_get(self, req, res, alarm_id):
+        """
+        Respond to get request.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            alarm_id: (str): write your description
+        """
         res.status = '501 Not Implemented'

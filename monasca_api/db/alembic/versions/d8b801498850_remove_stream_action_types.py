@@ -31,10 +31,20 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.drop_table('stream_actions_action_type')
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     stream_action_types = op.create_table(
         'stream_actions_action_type',
         sa.Column('name',

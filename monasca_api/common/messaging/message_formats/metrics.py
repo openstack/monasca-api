@@ -18,6 +18,14 @@ from monasca_api.common.rest import utils as rest_utils
 
 
 def transform(metrics, tenant_id, region):
+    """
+    Transform metrics to json.
+
+    Args:
+        metrics: (array): write your description
+        tenant_id: (str): write your description
+        region: (array): write your description
+    """
     transformed_metric = {'metric': {},
                           'meta': {'tenantId': tenant_id, 'region': region},
                           'creation_time': timeutils.utcnow_ts()}

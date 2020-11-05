@@ -33,6 +33,12 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                  adr.AlarmDefinitionsRepository):
 
     def __init__(self):
+        """
+        Initialize the database.
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmDefinitionsRepository, self).__init__()
 
         metadata = MetaData()
@@ -269,10 +275,27 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarm_definition(self, tenant_id, _id):
+        """
+        Get alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+        """
         with self._db_engine.connect() as conn:
             return self._get_alarm_definition(conn, tenant_id, _id)
 
     def _get_alarm_definition(self, conn, tenant_id, _id):
+        """
+        Retrieves the alarm definition.
+
+        Args:
+            self: (todo): write your description
+            conn: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+        """
         ad = self.ad_s
         query = (self.base_query
                  .select_from(self.base_query_from)
@@ -292,6 +315,19 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
     @sql_repository.sql_try_catch_block
     def get_alarm_definitions(self, tenant_id, name=None, dimensions=None, severity=None,
                               sort_by=None, offset=None, limit=1000):
+        """
+        Get all alarm information.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            dimensions: (dict): write your description
+            severity: (str): write your description
+            sort_by: (str): write your description
+            offset: (todo): write your description
+            limit: (todo): write your description
+        """
 
         with self._db_engine.connect() as conn:
             ad = self.ad_s
@@ -360,6 +396,14 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_definition_id):
+        """
+        Retrieves all alarms.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_definition_id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
             return [dict(row) for row in conn.execute(self.get_sub_alarms_query,
@@ -368,6 +412,14 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarm_metrics(self, tenant_id, alarm_definition_id):
+        """
+        Returns a list of alarm metrics.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_definition_id: (str): write your description
+        """
         with self._db_engine.connect() as conn:
             return [dict(row) for row in conn.execute(self.get_alarm_metrics_query,
                                                       b_tenant_id=tenant_id,
@@ -403,10 +455,25 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_sub_alarm_definitions(self, alarm_definition_id):
+        """
+        Returns the alarm definition for a given alarm.
+
+        Args:
+            self: (todo): write your description
+            alarm_definition_id: (str): write your description
+        """
         with self._db_engine.connect() as conn:
             return self._get_sub_alarm_definitions(conn, alarm_definition_id)
 
     def _get_sub_alarm_definitions(self, conn, alarm_definition_id):
+        """
+        Returns a list of alarm definitions.
+
+        Args:
+            self: (todo): write your description
+            conn: (todo): write your description
+            alarm_definition_id: (str): write your description
+        """
         return [
             dict(row) for row in conn.execute(
                 self.get_sub_alarm_definitions_query,
@@ -417,6 +484,22 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                 sub_expr_list, description, severity, match_by,
                                 alarm_actions, undetermined_actions,
                                 ok_actions):
+        """
+        Create an alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            expression: (str): write your description
+            sub_expr_list: (list): write your description
+            description: (str): write your description
+            severity: (str): write your description
+            match_by: (todo): write your description
+            alarm_actions: (todo): write your description
+            undetermined_actions: (todo): write your description
+            ok_actions: (todo): write your description
+        """
         with self._db_engine.begin() as conn:
 
             now = datetime.datetime.utcnow()
@@ -479,6 +562,25 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                          description, alarm_actions,
                                          ok_actions, undetermined_actions,
                                          match_by, severity, patch=False):
+        """
+        Updates a alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_definition_id: (str): write your description
+            name: (str): write your description
+            expression: (todo): write your description
+            sub_expr_list: (list): write your description
+            actions_enabled: (bool): write your description
+            description: (str): write your description
+            alarm_actions: (todo): write your description
+            ok_actions: (todo): write your description
+            undetermined_actions: (todo): write your description
+            match_by: (todo): write your description
+            severity: (todo): write your description
+            patch: (todo): write your description
+        """
 
         with self._db_engine.begin() as conn:
             original_row = self._get_alarm_definition(conn,
@@ -649,6 +751,15 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
     def _determine_sub_expr_changes(self, alarm_definition_id,
                                     old_sub_alarm_defs_by_id,
                                     sub_expr_list):
+        """
+        Determine whether the given.
+
+        Args:
+            self: (todo): write your description
+            alarm_definition_id: (str): write your description
+            old_sub_alarm_defs_by_id: (todo): write your description
+            sub_expr_list: (list): write your description
+        """
 
         old_sub_alarm_defs_set = set(
             old_sub_alarm_defs_by_id.values())
@@ -725,12 +836,31 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 unchanged_sub_alarm_defs_by_id)
 
     def _delete_alarm_actions(self, conn, _id, alarm_action_name):
+        """
+        Delete an alarm actions.
+
+        Args:
+            self: (todo): write your description
+            conn: (todo): write your description
+            _id: (str): write your description
+            alarm_action_name: (str): write your description
+        """
         conn.execute(self.delete_aa_state_query,
                      b_alarm_definition_id=_id,
                      b_alarm_state=alarm_action_name)
 
     def _insert_into_alarm_action(self, conn, alarm_definition_id, actions,
                                   alarm_state):
+        """
+        Insert an alarm into the alarm.
+
+        Args:
+            self: (todo): write your description
+            conn: (todo): write your description
+            alarm_definition_id: (str): write your description
+            actions: (str): write your description
+            alarm_state: (todo): write your description
+        """
 
         if actions is None:
             return

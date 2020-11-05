@@ -22,6 +22,12 @@ from monasca_api.tests import base
 class TestModelsDB(base.BaseTestCase):
 
     def setUp(self):
+        """
+        See db. database.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestModelsDB, self).setUp()
         metadata = MetaData()
 
@@ -44,6 +50,12 @@ class TestModelsDB(base.BaseTestCase):
             asc(models.field_sort(md.c.dimension_set_id, map(text, ["'A'", "'B'", "'C'"])))))
 
     def test_oracle(self):
+        """
+        Run sqlite *
+
+        Args:
+            self: (todo): write your description
+        """
         from sqlalchemy.dialects import oracle
         dialect = oracle.dialect()
         query = str(self.group_concat_md.compile(dialect=dialect))
@@ -73,6 +85,12 @@ FROM metric_dimension GROUP BY metric_dimension.dimension_set_id''')
         self.assertEqual(expected, query)
 
     def test_postgres(self):
+        """
+        Add sqliteite sqlite query.
+
+        Args:
+            self: (todo): write your description
+        """
         from sqlalchemy.dialects import postgresql as diale_
         dialect = diale_.dialect()
         query = str(self.group_concat_md.compile(dialect=dialect))
@@ -103,6 +121,12 @@ FROM metric_dimension GROUP BY metric_dimension.dimension_set_id''')
         self.assertEqual(expected, query)
 
     def test_sybase(self):
+        """
+        Set the sqlalchemy sql query.
+
+        Args:
+            self: (todo): write your description
+        """
         from sqlalchemy.dialects import sybase as diale_
         dialect = diale_.dialect()
         query = str(self.group_concat_md.compile(dialect=dialect))
@@ -132,6 +156,12 @@ FROM metric_dimension GROUP BY metric_dimension.dimension_set_id''')
         self.assertEqual(expected, query)
 
     def test_mysql(self):
+        """
+        * execute sql query to execute sqlite query *
+
+        Args:
+            self: (todo): write your description
+        """
         from sqlalchemy.dialects import mysql as diale_
         dialect = diale_.dialect()
         query = str(self.group_concat_md.compile(dialect=dialect))

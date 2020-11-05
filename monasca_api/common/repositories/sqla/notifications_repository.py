@@ -29,6 +29,12 @@ from sqlalchemy import select, bindparam, func, and_, literal_column
 class NotificationsRepository(sql_repository.SQLRepository,
                               nr.NotificationsRepository):
     def __init__(self):
+        """
+        Initialize the database.
+
+        Args:
+            self: (todo): write your description
+        """
 
         super(NotificationsRepository, self).__init__()
 
@@ -86,6 +92,17 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     def create_notification(self, tenant_id, name,
                             notification_type, address, period):
+        """
+        Create a notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            notification_type: (str): write your description
+            address: (str): write your description
+            period: (todo): write your description
+        """
 
         with self._db_engine.connect() as conn:
             row = conn.execute(self._select_nm_count_name_query,
@@ -113,6 +130,16 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def list_notifications(self, tenant_id, sort_by, offset, limit):
+        """
+        List notifications.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            sort_by: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         rows = []
 
@@ -149,6 +176,14 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def delete_notification(self, tenant_id, _id):
+        """
+        Deletes the notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
 
@@ -165,6 +200,14 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def list_notification(self, tenant_id, notification_id):
+        """
+        Returns a notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
 
@@ -179,6 +222,14 @@ class NotificationsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def find_notification_by_name(self, tenant_id, name):
+        """
+        Find a notification by its name.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+        """
         name = name if six.PY3 else name.encode('utf8')
         with self._db_engine.connect() as conn:
             return conn.execute(self._select_nm_name_query,
@@ -194,6 +245,18 @@ class NotificationsRepository(sql_repository.SQLRepository,
             notification_type,
             address,
             period):
+        """
+        Updates a notification.
+
+        Args:
+            self: (todo): write your description
+            notification_id: (str): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            notification_type: (str): write your description
+            address: (str): write your description
+            period: (todo): write your description
+        """
         with self._db_engine.connect() as conn:
             now = datetime.datetime.utcnow()
 

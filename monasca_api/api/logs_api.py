@@ -29,6 +29,12 @@ class LogsApi(object):
 
     """
     def __init__(self):
+        """
+        Method to initialize logspi.
+
+        Args:
+            self: (todo): write your description
+        """
         super(LogsApi, self).__init__()
         LOG.info('Initializing LogsApi')
 
@@ -58,4 +64,10 @@ class LogsApi(object):
 
     @property
     def version(self):
+        """
+        Returns the version of the server.
+
+        Args:
+            self: (todo): write your description
+        """
         return getattr(self, 'VERSION')

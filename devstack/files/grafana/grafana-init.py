@@ -44,8 +44,28 @@ DASHBOARDS_DIR = os.environ.get('DASHBOARDS_DIR', '/dashboards.d')
 
 
 def retry(retries=5, delay=2.0, exc_types=(RequestException,)):
+    """
+    Retry a function.
+
+    Args:
+        retries: (int): write your description
+        delay: (todo): write your description
+        exc_types: (todo): write your description
+        RequestException: (todo): write your description
+    """
     def decorator(func):
+        """
+        Decorator to retry exceptions.
+
+        Args:
+            func: (todo): write your description
+        """
         def f_retry(*args, **kwargs):
+            """
+            Retry the given function and retry.
+
+            Args:
+            """
             for i in range(retries):
                 try:
                     return func(*args, **kwargs)
@@ -65,6 +85,11 @@ def retry(retries=5, delay=2.0, exc_types=(RequestException,)):
 
 
 def create_login_payload():
+    """
+    Create username and password
+
+    Args:
+    """
     if os.environ.get('GRAFANA_USERS'):
         try:
             json.loads(os.environ.get('GRAFANA_USERS'))
@@ -79,6 +104,13 @@ def create_login_payload():
 
 @retry(retries=24, delay=5.0)
 def login(session, user):
+    """
+    Login to a user.
+
+    Args:
+        session: (todo): write your description
+        user: (str): write your description
+    """
     r = session.post('{url}/login'.format(url=GRAFANA_URL),
                      json=user,
                      timeout=5)
@@ -87,6 +119,12 @@ def login(session, user):
 
 @retry(retries=12, delay=5.0)
 def check_initialized(session):
+    """
+    Check if the current session exists.
+
+    Args:
+        session: (todo): write your description
+    """
     r = session.get('{url}/api/datasources'.format(url=GRAFANA_URL), timeout=5)
     r.raise_for_status()
 
@@ -100,6 +138,11 @@ def check_initialized(session):
 
 
 def create_datasource_payload():
+    """
+    Creates datasource payload.
+
+    Args:
+    """
     payload = {
         'name': DATASOURCE_NAME,
         'url': DATASOURCE_URL,
@@ -133,6 +176,12 @@ def create_datasource_payload():
 
 
 def create_dashboard_payload(json_path):
+    """
+    Create a dashboard payload.
+
+    Args:
+        json_path: (str): write your description
+    """
     with open(json_path, 'r') as f:
         dashboard = json.load(f)
         dashboard['id'] = None
@@ -144,6 +193,11 @@ def create_dashboard_payload(json_path):
 
 
 def main():
+    """
+    Main function.
+
+    Args:
+    """
     for user in create_login_payload():
         logging.info('Opening a Grafana session...')
         session = Session()

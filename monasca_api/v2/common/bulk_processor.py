@@ -71,6 +71,13 @@ class BulkProcessor(log_publisher.LogPublisher):
             LOG.exception(ex)
 
     def _transform_message(self, log_element, *args):
+        """
+        Applies the log_element to the log
+
+        Args:
+            self: (todo): write your description
+            log_element: (todo): write your description
+        """
         try:
             validation.validate_log_message(log_element)
 

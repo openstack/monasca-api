@@ -22,4 +22,10 @@ class NotificationMethodTypeRepository(object):
 
     @abc.abstractmethod
     def list_notification_method_types(self):
+        """
+        Returns the list of all registered notification types that are notification.
+
+        Args:
+            self: (todo): write your description
+        """
         return

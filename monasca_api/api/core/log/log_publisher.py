@@ -60,6 +60,12 @@ class LogPublisher(object):
     """
 
     def __init__(self):
+        """
+        Initialize kafka client.
+
+        Args:
+            self: (todo): write your description
+        """
         self._topics = CONF.kafka.logs_topics
         self.max_message_size = CONF.log_publisher.max_message_size
 

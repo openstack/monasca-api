@@ -25,12 +25,25 @@ ROLES = 'admin'
 
 
 def _init_resource(test):
+    """
+    Initialize a flask application.
+
+    Args:
+        test: (todo): write your description
+    """
     resource = logs.Logs()
     test.app.add_route(ENDPOINT, resource)
     return resource
 
 
 def _generate_payload(log_count=None, messages=None):
+    """
+    Generate log messages
+
+    Args:
+        log_count: (todo): write your description
+        messages: (str): write your description
+    """
     if not log_count and messages:
         log_count = len(messages)
         logs = [{
@@ -64,6 +77,13 @@ class TestApiLogsVersion(base.BaseApiTestCase):
 
     @mock.patch('monasca_api.v2.common.bulk_processor.BulkProcessor')
     def test_should_return_as_version(self, _):
+        """
+        Returns true if the log version of the test.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         logs_resource = logs.Logs()
         self.assertEqual('v2.0', logs_resource.version)
 
@@ -72,6 +92,13 @@ class TestApiLogs(base.BaseApiTestCase):
 
     @mock.patch('monasca_api.v2.common.bulk_processor.BulkProcessor')
     def test_should_pass_cross_tenant_id(self, bulk_processor):
+        """
+        Test if a tenant should be sent.
+
+        Args:
+            self: (todo): write your description
+            bulk_processor: (todo): write your description
+        """
         logs_resource = _init_resource(self)
         logs_resource._processor = bulk_processor
 
@@ -97,6 +124,13 @@ class TestApiLogs(base.BaseApiTestCase):
 
     @mock.patch('monasca_api.v2.common.bulk_processor.BulkProcessor')
     def test_should_fail_not_delegate_ok_cross_tenant_id(self, _):
+        """
+        Determine the kl failure should be sent.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         _init_resource(self)
         response = self.simulate_request(
             path='/logs',
@@ -113,6 +147,13 @@ class TestApiLogs(base.BaseApiTestCase):
     @mock.patch('monasca_api.v2.common.bulk_processor.BulkProcessor')
     def test_should_pass_empty_cross_tenant_id_wrong_role(self,
                                                           bulk_processor):
+        """
+        Test if a tenant should be sent to a tenant
+
+        Args:
+            self: (todo): write your description
+            bulk_processor: (todo): write your description
+        """
         logs_resource = _init_resource(self)
         logs_resource._processor = bulk_processor
 
@@ -135,6 +176,13 @@ class TestApiLogs(base.BaseApiTestCase):
     @mock.patch('monasca_api.v2.common.bulk_processor.BulkProcessor')
     def test_should_pass_empty_cross_tenant_id_ok_role(self,
                                                        bulk_processor):
+        """
+        Test if a tenant should be sent to a tenant
+
+        Args:
+            self: (todo): write your description
+            bulk_processor: (todo): write your description
+        """
         logs_resource = _init_resource(self)
         logs_resource._processor = bulk_processor
 
@@ -160,6 +208,13 @@ class TestUnicodeLogs(base.BaseApiTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_send_unicode_messages(self, _):
+        """
+        Deters json payload to - test messages.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         _init_resource(self)
 
         messages = [m['input'] for m in base.UNICODE_MESSAGES]

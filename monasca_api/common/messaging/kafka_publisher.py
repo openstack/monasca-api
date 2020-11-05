@@ -25,6 +25,13 @@ LOG = log.getLogger(__name__)
 
 class KafkaPublisher(publisher.Publisher):
     def __init__(self, topic):
+        """
+        Initialize the kafka message.
+
+        Args:
+            self: (todo): write your description
+            topic: (int): write your description
+        """
         if not cfg.CONF.kafka.uri:
             raise Exception('Kafka is not configured correctly! '
                             'Use configuration file to specify Kafka '
@@ -49,9 +56,22 @@ class KafkaPublisher(publisher.Publisher):
             self.uri, cfg.CONF.kafka.legacy_kafka_client_enabled, **config)
 
     def close(self):
+        """
+        Close the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def send_message(self, message):
+        """
+        Send a message to kafka.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         try:
             self._producer.publish(self.topic, message)
 

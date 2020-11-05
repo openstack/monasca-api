@@ -75,9 +75,20 @@ kafka_group = cfg.OptGroup(name='kafka', title='kafka')
 
 
 def register_opts(conf):
+    """
+    Register optparse.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(kafka_group)
     conf.register_opts(kafka_opts, kafka_group)
 
 
 def list_opts():
+    """
+    Returns a list of all opts.
+
+    Args:
+    """
     return kafka_group, kafka_opts

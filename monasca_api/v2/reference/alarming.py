@@ -32,6 +32,12 @@ class Alarming(object):
     """
 
     def __init__(self):
+        """
+        Initialize the event loop.
+
+        Args:
+            self: (todo): write your description
+        """
 
         super(Alarming, self).__init__()
 
@@ -47,6 +53,21 @@ class Alarming(object):
                                        old_state, new_state,
                                        link, lifecycle_state,
                                        time_ms):
+        """
+        Sends an alarm event.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (int): write your description
+            alarm_definition_row: (todo): write your description
+            alarm_metric_rows: (todo): write your description
+            old_state: (todo): write your description
+            new_state: (todo): write your description
+            link: (todo): write your description
+            lifecycle_state: (todo): write your description
+            time_ms: (int): write your description
+        """
 
         # This is a change via the API, so there is no SubAlarm info to add
         sub_alarms = []
@@ -77,6 +98,13 @@ class Alarming(object):
                         alarm_transitioned_event_msg)
 
     def _build_metric(self, alarm_metric_row):
+        """
+        Builds a metric metric.
+
+        Args:
+            self: (todo): write your description
+            alarm_metric_row: (str): write your description
+        """
 
         dimensions = {}
 
@@ -93,6 +121,20 @@ class Alarming(object):
     def _send_alarm_event(self, event_type, tenant_id, alarm_definition_id,
                           alarm_metric_rows, sub_alarm_rows, link, lifecycle_state,
                           extra_info=None):
+        """
+        Sends an alarm event.
+
+        Args:
+            self: (todo): write your description
+            event_type: (str): write your description
+            tenant_id: (str): write your description
+            alarm_definition_id: (str): write your description
+            alarm_metric_rows: (str): write your description
+            sub_alarm_rows: (todo): write your description
+            link: (todo): write your description
+            lifecycle_state: (todo): write your description
+            extra_info: (todo): write your description
+        """
 
         if not alarm_metric_rows:
             return
@@ -145,6 +187,14 @@ class Alarming(object):
                         alarm_event_msg)
 
     def _build_sub_alarm_event_msg(self, sub_alarm_dict, alarm_id):
+        """
+        Build an alarm event from a dict.
+
+        Args:
+            self: (todo): write your description
+            sub_alarm_dict: (dict): write your description
+            alarm_id: (str): write your description
+        """
 
         sub_alarms_event_msg = {}
 
@@ -173,6 +223,14 @@ class Alarming(object):
         return sub_alarms_event_msg
 
     def send_event(self, message_queue, event_msg):
+        """
+        Send a message to the queue.
+
+        Args:
+            self: (todo): write your description
+            message_queue: (todo): write your description
+            event_msg: (str): write your description
+        """
         try:
             message_queue.send_message(helpers.to_json(event_msg))
         except message_queue_exceptions.MessageQueueException as ex:

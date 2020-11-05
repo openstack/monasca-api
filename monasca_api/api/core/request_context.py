@@ -29,6 +29,14 @@ class RequestContext(context.RequestContext):
     """
 
     def can(self, action, target=None):
+        """
+        Return true if the given action is allowed.
+
+        Args:
+            self: (todo): write your description
+            action: (str): write your description
+            target: (todo): write your description
+        """
         if target is None:
             target = {'project_id': self.project_id,
                       'user_id': self.user_id}

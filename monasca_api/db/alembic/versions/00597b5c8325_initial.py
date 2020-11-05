@@ -31,6 +31,11 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     # Enum tables (will be prepopulated with values through bulk_insert)
 
     alarm_states = op.create_table('alarm_state',
@@ -566,6 +571,11 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Downgrade database.
+
+    Args:
+    """
     op.drop_table('alarm_state')
     op.drop_table('alarm_definition_severity')
     op.drop_table('notification_method_type')

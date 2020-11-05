@@ -31,6 +31,12 @@ class AlarmsRepository(sql_repository.SQLRepository,
                        alarms_repository.AlarmsRepository):
 
     def __init__(self):
+        """
+        Initialize the db models.
+
+        Args:
+            self: (todo): write your description
+        """
         super(AlarmsRepository, self).__init__()
 
         metadata = MetaData()
@@ -161,6 +167,14 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarm_definition(self, tenant_id, alarm_id):
+        """
+        Get alarm definition.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (int): write your description
+        """
         with self._db_engine.connect() as conn:
             row = conn.execute(self.get_ad_query,
                                b_tenant_id=tenant_id,
@@ -173,6 +187,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarm_metrics(self, alarm_id):
+        """
+        Returns a list of the specified alarm.
+
+        Args:
+            self: (todo): write your description
+            alarm_id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
             rows = conn.execute(self.get_am_query, b_id=alarm_id).fetchall()
@@ -180,6 +201,14 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_id):
+        """
+        Get a list of alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
             rows = conn.execute(self.get_sa_query,
@@ -189,6 +218,17 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def update_alarm(self, tenant_id, _id, state, lifecycle_state, link):
+        """
+        Update the alarm state.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+            state: (todo): write your description
+            lifecycle_state: (todo): write your description
+            link: (todo): write your description
+        """
 
         time_ms = int(round(time() * 1000.0))
         with self._db_engine.connect() as conn:
@@ -231,6 +271,14 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def delete_alarm(self, tenant_id, _id):
+        """
+        Deletes the alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
             cursor = conn.execute(self.delete_alarm_query,
@@ -242,6 +290,14 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarm(self, tenant_id, _id):
+        """
+        Get the alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            _id: (str): write your description
+        """
 
         with self._db_engine.connect() as conn:
             ad = self.ad
@@ -263,6 +319,16 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarms(self, tenant_id, query_parms=None, offset=None, limit=None):
+        """
+        Get alarms.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            query_parms: (str): write your description
+            offset: (int): write your description
+            limit: (todo): write your description
+        """
         if not query_parms:
             query_parms = {}
 
@@ -425,6 +491,14 @@ class AlarmsRepository(sql_repository.SQLRepository,
             return [dict(row) for row in conn.execute(main_query, parms).fetchall()]
 
     def _remap_columns(self, columns, columns_mapper):
+        """
+        Removes columns from columns
+
+        Args:
+            self: (todo): write your description
+            columns: (list): write your description
+            columns_mapper: (dict): write your description
+        """
         received_cols = {}
         order_columns = []
         for col in columns:
@@ -443,6 +517,16 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
     @sql_repository.sql_try_catch_block
     def get_alarms_count(self, tenant_id, query_parms=None, offset=None, limit=None):
+        """
+        Return the alarm count.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            query_parms: (str): write your description
+            offset: (int): write your description
+            limit: (str): write your description
+        """
         if not query_parms:
             query_parms = {}
 

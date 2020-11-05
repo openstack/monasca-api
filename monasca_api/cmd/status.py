@@ -24,6 +24,12 @@ from oslo_upgradecheck import upgradecheck
 
 
 def _(message):
+    """
+    Returns a function that takes a message.
+
+    Args:
+        message: (str): write your description
+    """
     # TODO(joadavis): simplified localization, Monasca not using oslo_i18n
     return message
 
@@ -35,6 +41,12 @@ class Checks(upgradecheck.UpgradeCommands):
     """
 
     def _check_placeholder(self):
+        """
+        Check if the placeholder object
+
+        Args:
+            self: (todo): write your description
+        """
         # This is just a placeholder for upgrade checks, it should be
         # removed when the actual checks are added
         return upgradecheck.Result(upgradecheck.Code.SUCCESS)
@@ -53,6 +65,11 @@ class Checks(upgradecheck.UpgradeCommands):
 
 
 def main():
+    """
+    Main entry point.
+
+    Args:
+    """
     return upgradecheck.main(
         cfg.CONF, project='monasca', upgrade_command=Checks())
 

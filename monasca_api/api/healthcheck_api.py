@@ -26,6 +26,12 @@ class HealthCheckApi(object):
     """
 
     def __init__(self):
+        """
+        Initialize all the transport.
+
+        Args:
+            self: (todo): write your description
+        """
         super(HealthCheckApi, self).__init__()
         LOG.info('Initializing HealthCheckApi')
 

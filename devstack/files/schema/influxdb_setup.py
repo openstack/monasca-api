@@ -43,6 +43,12 @@ RETENTION = '90d'
 
 
 def format_response(req):
+    """
+    Format the json response
+
+    Args:
+        req: (todo): write your description
+    """
     try:
         json_value = json.loads(req.read())
         if (len(json_value['results'][0]) > 0 and

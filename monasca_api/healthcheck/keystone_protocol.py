@@ -37,6 +37,13 @@ class SkippingAuthProtocol(auth_token.AuthProtocol):
     """
 
     def process_request(self, request):
+        """
+        Process the request.
+
+        Args:
+            self: (str): write your description
+            request: (todo): write your description
+        """
         path = request.path
         for p in _SKIP_PATH:
             if path.endswith(p):
@@ -60,6 +67,12 @@ def filter_factory(global_conf, **local_conf):  # pragma: no cover
     conf.update(local_conf)
 
     def auth_filter(app):
+        """
+        Returns an app filter.
+
+        Args:
+            app: (todo): write your description
+        """
         return SkippingAuthProtocol(app, conf)
 
     return auth_filter

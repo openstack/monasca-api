@@ -36,6 +36,12 @@ request_body_schema = voluptuous.Schema(alarm_update_schema, required=True,
 
 
 def validate(msg):
+    """
+    Validate the message body.
+
+    Args:
+        msg: (str): write your description
+    """
     try:
         request_body_schema(msg)
     except Exception as ex:

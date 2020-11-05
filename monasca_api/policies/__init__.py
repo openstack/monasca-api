@@ -28,6 +28,12 @@ CONF = cfg.CONF
 
 
 def roles_list_to_check_str(roles_list):
+    """
+    Convert a list of roles to a string.
+
+    Args:
+        roles_list: (list): write your description
+    """
     converted_roles_list = ["role:" + role if role != '@' else role for role in roles_list]
     return ' or '.join(converted_roles_list)
 
@@ -51,6 +57,11 @@ def load_policy_modules():
 
 
 def _list_module_names():
+    """
+    Return a list of all sub - modules.
+
+    Args:
+    """
     package_path = os.path.dirname(os.path.abspath(__file__))
     for _, modname, ispkg in pkgutil.iter_modules(path=[package_path]):
         if not (modname == "opts" and ispkg):

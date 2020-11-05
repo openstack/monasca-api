@@ -29,6 +29,12 @@ TENANT_ID = u"fedcba9876543210fedcba9876543210"
 
 class TestMetrics(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets metrics for metrics
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestMetrics, self).setUp()
 
         self.useFixture(fixtures.MockPatch(
@@ -50,6 +56,12 @@ class TestMetrics(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_list_metrics(self):
+        """
+        Get the metrics list of metrics
+
+        Args:
+            self: (todo): write your description
+        """
         expected_elements = \
             {'elements': [{'id': '0',
                            'name': 'mon.fake_metric',
@@ -75,6 +87,12 @@ class TestMetrics(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_elements))
 
     def test_send_metrics(self):
+        """
+        Test to see http post request
+
+        Args:
+            self: (todo): write your description
+        """
         request_body = {
             "name": "mon.fake_metric",
             "dimensions": {
@@ -97,6 +115,12 @@ class TestMetrics(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_204, response.status)
 
     def test_send_incorrect_metric(self):
+        """
+        Test the cross - validation metric.
+
+        Args:
+            self: (todo): write your description
+        """
         request_body = {
             "name": "mon.fake_metric",
             "dimensions": 'oh no',
@@ -114,6 +138,12 @@ class TestMetrics(base.BaseApiTestCase):
 
 class TestMeasurements(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets the metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestMeasurements, self).setUp()
 
         self.metrics_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -126,6 +156,12 @@ class TestMeasurements(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_get_measurements(self):
+        """
+        This function for measurements.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_measurements = \
             {'elements': [
                 {u'name': u'mon.fake_metric',
@@ -156,6 +192,12 @@ class TestMeasurements(base.BaseApiTestCase):
         self.assertThat(response, base.RESTResponseEquals(expected_measurements))
 
     def test_get_measurements_invalid_metric_name(self):
+        """
+        This method is used to validate the measurements of the measurements.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(path='/v2.0/metrics/measurements',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
@@ -166,6 +208,12 @@ class TestMeasurements(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_422, response.status)
 
     def test_get_measurements_missing_start_time(self):
+        """
+        This method is called when the request.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(path='/v2.0/metrics/measurements',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
@@ -175,6 +223,12 @@ class TestMeasurements(base.BaseApiTestCase):
         self.assertEqual(falcon.HTTP_422, response.status)
 
     def test_get_measurements_missing_name(self):
+        """
+        Gets the name of all measurements.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.simulate_request(path='/v2.0/metrics/measurements',
                                          headers={'X-Roles':
                                                   CONF.security.default_authorized_roles[0],
@@ -186,6 +240,12 @@ class TestMeasurements(base.BaseApiTestCase):
 
 class TestStatistics(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets the metrics
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStatistics, self).setUp()
 
         self.metrics_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -198,6 +258,12 @@ class TestStatistics(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_get_statistics(self):
+        """
+        Get statistics about the test statistics.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_statistics = \
             {u'elements': [{u'name': u'mon.fake_metric',
                             u'columns':
@@ -229,6 +295,12 @@ class TestStatistics(base.BaseApiTestCase):
 
 class TestMetricsNames(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets metrics to be run.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestMetricsNames, self).setUp()
 
         self.metrics_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -241,6 +313,12 @@ class TestMetricsNames(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_get_metrics_names(self):
+        """
+        Get the metrics dict of the current repo.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_metrics_names = \
             {u'elements': [
                 {u'name': u'cpu.frequency_mhz'},
@@ -264,6 +342,12 @@ class TestMetricsNames(base.BaseApiTestCase):
 
 class TestDimensionNames(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Sets metrics todoension.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDimensionNames, self).setUp()
 
         self.metrics_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -276,6 +360,12 @@ class TestDimensionNames(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_get_dimension_names(self):
+        """
+        Returns a list of all dimension names of the repo.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_dimension_names = \
             {u'elements': [
                 {u'dimension_name': u'component'},
@@ -297,6 +387,12 @@ class TestDimensionNames(base.BaseApiTestCase):
 
 class TestDimensionValues(base.BaseApiTestCase):
     def setUp(self):
+        """
+        Set the metrics todo.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDimensionValues, self).setUp()
 
         self.metrics_repo_mock = self.useFixture(fixtures.MockPatch(
@@ -309,6 +405,12 @@ class TestDimensionValues(base.BaseApiTestCase):
                            self.metrics_resource)
 
     def test_get_dimension_values(self):
+        """
+        Simulate : a list of dimensions of the dimensions.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_dimension_names = \
             {u'elements': [
                 {u'dimension_value': u'dummy_dimension_value'}]}

@@ -30,6 +30,12 @@ CONF = config.CONF
 
 
 def launch(conf):
+    """
+    Launch a wsgi application.
+
+    Args:
+        conf: (todo): write your description
+    """
     config.parse_args()
 
     app = falcon.API(request_type=request.Request)
@@ -61,6 +67,12 @@ def launch(conf):
 
 
 def launch_metrics_api(app):
+    """
+    Launch a metrics.
+
+    Args:
+        app: (todo): write your description
+    """
     metrics = simport.load(cfg.CONF.dispatcher.metrics)()
     app.add_route("/v2.0/metrics", metrics)
 
@@ -110,12 +122,24 @@ def launch_metrics_api(app):
 
 
 def launch_log_api(app):
+    """
+    Launch an application.
+
+    Args:
+        app: (todo): write your description
+    """
     logs = simport.load(
         cfg.CONF.dispatcher.logs)()
     app.add_route("/v2.0/logs", logs)
 
 
 def get_wsgi_app(config_base_path=None, **kwargs):
+    """
+    Create a wsgi application.
+
+    Args:
+        config_base_path: (str): write your description
+    """
 
     # allow to override names of the configuration files
     config_file = kwargs.get('config_file', 'monasca-api.conf')

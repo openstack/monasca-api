@@ -28,6 +28,13 @@ _DEFAULT_PERIODS = 1
 class SubExpr(object):
 
     def __init__(self, tokens):
+        """
+        Initialize the simulation.
+
+        Args:
+            self: (todo): write your description
+            tokens: (int): write your description
+        """
 
         if not tokens.func:
             if tokens.relational_op.lower() in ['gte', 'gt', '>=', '>']:
@@ -144,6 +151,12 @@ class SubExpr(object):
 
     @property
     def deterministic(self):
+        """
+        Determine whether the deter should be a deter.
+
+        Args:
+            self: (todo): write your description
+        """
         return True if self._deterministic else False
 
     @property
@@ -171,11 +184,24 @@ class SubExpr(object):
 
 class BinaryOp(object):
     def __init__(self, tokens):
+        """
+        Initialize a list of tokens.
+
+        Args:
+            self: (todo): write your description
+            tokens: (int): write your description
+        """
         self.op = tokens[0][1]
         self.operands = tokens[0][0::2]
 
     @property
     def operands_list(self):
+        """
+        Returns a list of the operands.
+
+        Args:
+            self: (todo): write your description
+        """
         return ([sub_operand for operand in self.operands for sub_operand in
                  operand.operands_list])
 
@@ -199,6 +225,14 @@ RBRACE = pyparsing.Suppress(pyparsing.Literal("}"))
 
 
 def periodValidation(instr, loc, tokens):
+    """
+    Validate period. period.
+
+    Args:
+        instr: (str): write your description
+        loc: (todo): write your description
+        tokens: (str): write your description
+    """
     period = int(tokens[0])
     if period == 0:
         raise pyparsing.ParseFatalException(instr, loc,
@@ -213,6 +247,14 @@ def periodValidation(instr, loc, tokens):
 
 
 def periodsValidation(instr, loc, tokens):
+    """
+    Validate period period.
+
+    Args:
+        instr: (str): write your description
+        loc: (todo): write your description
+        tokens: (str): write your description
+    """
     periods = int(tokens[0])
     if periods < 1:
         raise pyparsing.ParseFatalException(instr, loc,
@@ -307,10 +349,23 @@ expression = (
 
 class AlarmExprParser(object):
     def __init__(self, expr):
+        """
+        Initialize this expression.
+
+        Args:
+            self: (todo): write your description
+            expr: (todo): write your description
+        """
         self._expr = expr
 
     @property
     def sub_expr_list(self):
+        """
+        Return a list of sub - expressions.
+
+        Args:
+            self: (todo): write your description
+        """
         # Remove all spaces before parsing. Simple, quick fix for whitespace
         # issue with dimension list not allowing whitespace after comma.
         parse_result = (expression + pyparsing.stringEnd).parseString(

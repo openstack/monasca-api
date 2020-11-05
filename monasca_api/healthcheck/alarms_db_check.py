@@ -34,11 +34,23 @@ class AlarmsDbHealthCheck(base.BaseHealthCheck,
     """
 
     def health_check(self):
+        """
+        Check status check.
+
+        Args:
+            self: (todo): write your description
+        """
         status = self.check_db_status()
         return base.CheckResult(healthy=status[0],
                                 message=status[1])
 
     def check_db_status(self):
+        """
+        Check if the database status.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             with self._db_engine.connect() as con:
                 query = text('SELECT 1')

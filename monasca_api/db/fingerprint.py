@@ -41,6 +41,13 @@ _REVS = {"43e5913b0272077321ab6f25ffbcda7149b6284b": "00597b5c8325",
 class Fingerprint(object):
 
     def __init__(self, engine):
+        """
+        Initialize the schema.
+
+        Args:
+            self: (todo): write your description
+            engine: (todo): write your description
+        """
         metadata = self._get_metadata(engine)
         self.schema_raw = self._get_schema_raw(metadata)
         self.sha1 = self._get_schema_sha1(self.schema_raw)
@@ -48,10 +55,22 @@ class Fingerprint(object):
 
     @staticmethod
     def _get_metadata(engine):
+        """
+        Get the metadata for the given engine.
+
+        Args:
+            engine: (todo): write your description
+        """
         return MetaData(bind=engine, reflect=True)
 
     @staticmethod
     def _get_schema_raw(metadata):
+        """
+        Return the raw schema schema for the schema.
+
+        Args:
+            metadata: (todo): write your description
+        """
         schema_strings = []
 
         for table in metadata.sorted_tables:
@@ -76,10 +95,24 @@ class Fingerprint(object):
 
     @staticmethod
     def _get_schema_sha1(schema_raw):
+        """
+        Return the sha1 hash of the given schema.
+
+        Args:
+            schema_raw: (todo): write your description
+        """
         return hashlib.sha1(encodeutils.to_utf8(schema_raw)).hexdigest()
 
     @staticmethod
     def _get_revision(metadata, engine, sha1):
+        """
+        Get the revision for the given revision.
+
+        Args:
+            metadata: (dict): write your description
+            engine: (todo): write your description
+            sha1: (str): write your description
+        """
         # Alembic stores the current version in the DB so check that first
         # and fall back to the lookup table for the pre-alembic case.
         versions_table = metadata.tables.get('alembic_version')
@@ -90,11 +123,24 @@ class Fingerprint(object):
 
     @staticmethod
     def _get_db_session(engine):
+        """
+        Return a session object.
+
+        Args:
+            engine: (str): write your description
+        """
         Session = sessionmaker(bind=engine)
         return Session()
 
     @staticmethod
     def _lookup_version_from_db(versions_table, engine):
+        """
+        Lookup the version from the database.
+
+        Args:
+            versions_table: (str): write your description
+            engine: (todo): write your description
+        """
         session = Fingerprint._get_db_session(engine)
         # This will throw an exception for the unexpected case when there is
         # more than one row. The query returns a tuple which is stripped off
@@ -103,6 +149,12 @@ class Fingerprint(object):
 
     @staticmethod
     def _lookup_version_from_table(sha1):
+        """
+        Look up the version of a given revision.
+
+        Args:
+            sha1: (int): write your description
+        """
         revision = _REVS.get(sha1)
         if not revision:
             LOG.warning("Fingerprint: {} does not match any revisions."

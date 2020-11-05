@@ -35,9 +35,24 @@ VERSIONS = {
 
 class Versions(versions_api.VersionsAPI):
     def __init__(self):
+        """
+        Initialize the superclass.
+
+        Args:
+            self: (todo): write your description
+        """
         super(Versions, self).__init__()
 
     def on_get(self, req, res, version_id=None):
+        """
+        Respond to a get request
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            version_id: (str): write your description
+        """
         req_uri = req.uri.decode('utf8') if six.PY2 else req.uri
         helpers.validate_authorization(req,
                                        ['api:versions'])

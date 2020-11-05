@@ -34,6 +34,12 @@ LOG = log.getLogger(__name__)
 
 class Notifications(notifications_api_v2.NotificationsV2API):
     def __init__(self):
+        """
+        Initialize notifications.
+
+        Args:
+            self: (todo): write your description
+        """
 
         super(Notifications, self).__init__()
 
@@ -58,6 +64,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             raise falcon.HTTPBadRequest('Bad Request', str(ex))
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
+        """
+        Ensure the notifications exist.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            name: (str): write your description
+            expected_id: (str): write your description
+        """
         notification = self._notifications_repo.find_notification_by_name(tenant_id, name)
 
         if notification:
@@ -79,6 +94,13 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                     .format(name, found_notification_id))
 
     def _validate_notification_method_type_exist(self, nmt):
+        """
+        Ensure that the nmt notification.
+
+        Args:
+            self: (todo): write your description
+            nmt: (str): write your description
+        """
         notification_methods = self._notification_method_type_repo.list_notification_method_types()
         exists = nmt.upper() in notification_methods
 
@@ -91,6 +113,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                                         .format(nmt))
 
     def _create_notification(self, tenant_id, notification, uri):
+        """
+        Create a notification for a given notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification: (todo): write your description
+            uri: (str): write your description
+        """
 
         name = notification['name']
         notification_type = notification['type'].upper()
@@ -115,6 +146,16 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                                                   uri)
 
     def _update_notification(self, notification_id, tenant_id, notification, uri):
+        """
+        Updates a notification.
+
+        Args:
+            self: (todo): write your description
+            notification_id: (str): write your description
+            tenant_id: (str): write your description
+            notification: (todo): write your description
+            uri: (str): write your description
+        """
 
         name = notification['name']
         notification_type = notification['type'].upper()
@@ -138,6 +179,18 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     def _create_notification_response(self, id, name, type,
                                       address, period, uri):
+        """
+        Create a notification response.
+
+        Args:
+            self: (todo): write your description
+            id: (todo): write your description
+            name: (str): write your description
+            type: (str): write your description
+            address: (str): write your description
+            period: (int): write your description
+            uri: (str): write your description
+        """
 
         response = {
             'id': id,
@@ -150,6 +203,17 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         return helpers.add_links_to_resource(response, uri)
 
     def _list_notifications(self, tenant_id, uri, sort_by, offset, limit):
+        """
+        Return a notification notifications for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            uri: (str): write your description
+            sort_by: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         rows = self._notifications_repo.list_notifications(tenant_id, sort_by,
                                                            offset, limit)
@@ -160,6 +224,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         return helpers.paginate(result, uri, limit)
 
     def _list_notification(self, tenant_id, notification_id, uri):
+        """
+        Gets a list for a tenant.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+            uri: (str): write your description
+        """
 
         row = self._notifications_repo.list_notification(
             tenant_id,
@@ -168,6 +241,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         return self._build_notification_result(row, uri)
 
     def _build_notification_result(self, notification_row, uri):
+        """
+        Parse notification result
+
+        Args:
+            self: (todo): write your description
+            notification_row: (todo): write your description
+            uri: (str): write your description
+        """
 
         result = {
             u'id': notification_row['id'],
@@ -182,11 +263,28 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         return result
 
     def _delete_notification(self, tenant_id, notification_id):
+        """
+        Deletes a notification.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+        """
 
         self._notifications_repo.delete_notification(tenant_id,
                                                      notification_id)
 
     def _patch_get_notification(self, tenant_id, notification_id, notification):
+        """
+        Patch notification for notifications.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            notification_id: (str): write your description
+            notification: (str): write your description
+        """
         original_notification = self._notifications_repo.list_notification(
             tenant_id, notification_id)
         if 'name' not in notification:
@@ -200,6 +298,14 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     @resource.resource_try_catch_block
     def on_post(self, req, res):
+        """
+        Callback for post request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+        """
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, ['api:notifications:post'])
         notification = helpers.from_json(req)
@@ -210,6 +316,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, notification_method_id=None):
+        """
+        Respond to get get requests.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            notification_method_id: (str): write your description
+        """
         helpers.validate_authorization(req, ['api:notifications:get'])
         if notification_method_id is None:
             sort_by = helpers.get_query_param(req, 'sort_by', default_val=None)
@@ -245,12 +360,30 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     @resource.resource_try_catch_block
     def on_delete(self, req, res, notification_method_id):
+        """
+        Delete a notification.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (todo): write your description
+            notification_method_id: (str): write your description
+        """
         helpers.validate_authorization(req, ['api:notifications:delete'])
         self._delete_notification(req.project_id, notification_method_id)
         res.status = falcon.HTTP_204
 
     @resource.resource_try_catch_block
     def on_put(self, req, res, notification_method_id):
+        """
+        Respond to put request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            notification_method_id: (str): write your description
+        """
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, ['api:notifications:put'])
         notification = helpers.from_json(req)
@@ -262,6 +395,15 @@ class Notifications(notifications_api_v2.NotificationsV2API):
 
     @resource.resource_try_catch_block
     def on_patch(self, req, res, notification_method_id):
+        """
+        Dispatches a patch request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            notification_method_id: (str): write your description
+        """
         helpers.validate_json_content_type(req)
         helpers.validate_authorization(req, ['api:notifications:patch'])
         notification = helpers.from_json(req)

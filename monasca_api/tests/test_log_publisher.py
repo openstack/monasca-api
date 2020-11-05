@@ -38,6 +38,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_not_send_empty_message(self, _):
+        """
+        Determine if a message was sent.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         instance = log_publisher.LogPublisher()
 
         instance._kafka_publisher = mock.Mock()
@@ -47,6 +54,12 @@ class TestSendMessage(base.BaseTestCase):
 
     @unittest.expectedFailure
     def test_should_not_send_message_not_dict(self):
+        """
+        Determine if the test is not sent.
+
+        Args:
+            self: (todo): write your description
+        """
         instance = log_publisher.LogPublisher()
         not_dict_value = 123
         instance.send_message(not_dict_value)
@@ -54,6 +67,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_not_send_message_missing_keys(self, _):
+        """
+        Check if the missing keys to be sent
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         # checks every combination of missing keys
         # test does not rely on those keys having a value or not,
         # it simply assumes that values are set but important
@@ -78,6 +98,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_not_send_message_missing_values(self, _):
+        """
+        Determine if any missing missing missing missing missing missing missing missing missing missing missing missing missing missing missing.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         # original message assumes that every property has value
         # test modify each property one by one by removing that value
         # (i.e. creating false-like value)
@@ -102,6 +129,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_send_message(self, kafka_producer):
+        """
+        Sends the kafka
+
+        Args:
+            self: (todo): write your description
+            kafka_producer: (str): write your description
+        """
         instance = log_publisher.LogPublisher()
         instance._kafka_publisher = kafka_producer
         instance.send_message({})
@@ -137,6 +171,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_send_message_multiple_topics(self, _):
+        """
+        Publish topics to the topic.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         topics = ['logs_topics', 'analyzer', 'tester']
         self.conf_override(logs_topics=topics,
                            group='kafka')
@@ -182,6 +223,13 @@ class TestSendMessage(base.BaseTestCase):
     @mock.patch('monasca_api.api.core.log.log_publisher.client_factory'
                 '.get_kafka_producer')
     def test_should_send_unicode_message(self, kp):
+        """
+        Check whether the kafka was sent.
+
+        Args:
+            self: (todo): write your description
+            kp: (todo): write your description
+        """
         instance = log_publisher.LogPublisher()
         instance._kafka_publisher = kp
 
@@ -227,15 +275,36 @@ class TestTruncation(base.BaseTestCase):
     }), 'utf8')) - 2
 
     def test_should_not_truncate_message_if_size_is_smaller(self, _):
+        """
+        Test if random test test size for random test.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         diff_size = random.randint(1, 100)
         self._run_truncate_test(log_size_factor=-diff_size,
                                 truncate_by=0)
 
     def test_should_not_truncate_message_if_size_equal_to_max(self, _):
+        """
+        Truncate test test_shouldate_size_factor.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         self._run_truncate_test(log_size_factor=0,
                                 truncate_by=0)
 
     def test_should_truncate_too_big_message(self, _):
+        """
+        Truncates a random integers exist.
+
+        Args:
+            self: (todo): write your description
+            _: (todo): write your description
+        """
         diff_size = random.randint(1, 100)
         max_size = 1000
         truncate_by = ((max_size -
@@ -250,6 +319,18 @@ class TestTruncation(base.BaseTestCase):
                            log_size_factor=0,
                            truncate_by=0,
                            gen_fn=base.generate_unique_message):
+        """
+        Runs test test test
+
+        Args:
+            self: (todo): write your description
+            max_message_size: (int): write your description
+            log_size_factor: (int): write your description
+            truncate_by: (todo): write your description
+            gen_fn: (int): write your description
+            base: (str): write your description
+            generate_unique_message: (bool): write your description
+        """
 
         log_size = (max_message_size -
                     TestTruncation.EXTRA_CHARS_SIZE -

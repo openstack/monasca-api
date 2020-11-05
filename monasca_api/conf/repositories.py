@@ -64,9 +64,20 @@ repositories_group = cfg.OptGroup(name='repositories', title='repositories')
 
 
 def register_opts(conf):
+    """
+    Register the options for the given conf.
+
+    Args:
+        conf: (todo): write your description
+    """
     conf.register_group(repositories_group)
     conf.register_opts(repositories_opts, repositories_group)
 
 
 def list_opts():
+    """
+    Returns a list of opts that match a repository.
+
+    Args:
+    """
     return repositories_group, repositories_opts

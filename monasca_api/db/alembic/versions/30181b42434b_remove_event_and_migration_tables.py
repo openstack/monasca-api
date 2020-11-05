@@ -32,6 +32,11 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.drop_table('event_transform')
     op.drop_table('schema_migrations')
     op.drop_table('stream_actions')
@@ -39,6 +44,11 @@ def upgrade():
 
 
 def downgrade():
+    """
+    Upgrade database.
+
+    Args:
+    """
     op.create_table(
         'event_transform',
         sa.Column('id',

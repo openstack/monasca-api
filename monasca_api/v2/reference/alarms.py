@@ -36,6 +36,12 @@ LOG = log.getLogger(__name__)
 class Alarms(alarms_api_v2.AlarmsV2API,
              alarming.Alarming):
     def __init__(self):
+        """
+        Initialize the alarms.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(Alarms, self).__init__()
             self._region = cfg.CONF.region
@@ -48,6 +54,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     @resource.resource_try_catch_block
     def on_put(self, req, res, alarm_id):
+        """
+        Respond to a alarm.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
 
         helpers.validate_authorization(req, ['api:alarms:put'])
 
@@ -75,6 +90,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     @resource.resource_try_catch_block
     def on_patch(self, req, res, alarm_id):
+        """
+        Send patch request.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
 
         helpers.validate_authorization(req, ['api:alarms:patch'])
 
@@ -101,6 +125,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     @resource.resource_try_catch_block
     def on_delete(self, req, res, alarm_id):
+        """
+        Deletes the alarm.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (todo): write your description
+            alarm_id: (str): write your description
+        """
 
         helpers.validate_authorization(req, ['api:alarms:delete'])
 
@@ -110,6 +143,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
+        """
+        Respond to get a query.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            alarm_id: (str): write your description
+        """
         helpers.validate_authorization(req, ['api:alarms:get'])
 
         if alarm_id is None:
@@ -161,6 +203,17 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     def _alarm_update(self, tenant_id, alarm_id, new_state, lifecycle_state,
                       link):
+        """
+        Updates an alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (str): write your description
+            new_state: (todo): write your description
+            lifecycle_state: (todo): write your description
+            link: (todo): write your description
+        """
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
@@ -197,6 +250,17 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
     def _alarm_patch(self, tenant_id, alarm_id, new_state, lifecycle_state,
                      link):
+        """
+        Updates the alarm for a specific alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (str): write your description
+            new_state: (todo): write your description
+            lifecycle_state: (todo): write your description
+            link: (todo): write your description
+        """
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(alarm_id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, alarm_id)
@@ -232,6 +296,14 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                                     time_ms)
 
     def _alarm_delete(self, tenant_id, id):
+        """
+        Deletes the alarm.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            id: (str): write your description
+        """
 
         alarm_metric_rows = self._alarms_repo.get_alarm_metrics(id)
         sub_alarm_rows = self._alarms_repo.get_sub_alarms(tenant_id, id)
@@ -246,6 +318,15 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                sub_alarm_rows, None, None)
 
     def _alarm_show(self, req_uri, tenant_id, alarm_id):
+        """
+        Show alarms for a alarm.
+
+        Args:
+            self: (todo): write your description
+            req_uri: (str): write your description
+            tenant_id: (str): write your description
+            alarm_id: (str): write your description
+        """
 
         alarm_rows = self._alarms_repo.get_alarm(tenant_id, alarm_id)
 
@@ -292,6 +373,17 @@ class Alarms(alarms_api_v2.AlarmsV2API,
         return alarm
 
     def _alarm_list(self, req_uri, tenant_id, query_parms, offset, limit):
+        """
+        Return a list.
+
+        Args:
+            self: (todo): write your description
+            req_uri: (str): write your description
+            tenant_id: (str): write your description
+            query_parms: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         alarm_rows = self._alarms_repo.get_alarms(tenant_id, query_parms,
                                                   offset, limit)
@@ -352,6 +444,12 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
     def __init__(self):
+        """
+        Initialize alarms
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(AlarmsCount, self).__init__()
             self._region = cfg.CONF.region
@@ -364,6 +462,14 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
     @resource.resource_try_catch_block
     def on_get(self, req, res):
+        """
+        Respons query.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+        """
         helpers.validate_authorization(req, ['api:alarms:count'])
         query_parms = falcon.uri.parse_query_string(req.query_string)
 
@@ -399,6 +505,17 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         res.status = falcon.HTTP_200
 
     def _alarms_count(self, req_uri, tenant_id, query_parms, offset, limit):
+        """
+        Returns a list of a list.
+
+        Args:
+            self: (todo): write your description
+            req_uri: (str): write your description
+            tenant_id: (str): write your description
+            query_parms: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         count_data = self._alarms_repo.get_alarms_count(tenant_id, query_parms, offset, limit)
         group_by = query_parms['group_by'] if 'group_by' in query_parms else []
@@ -441,6 +558,13 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
         return result
 
     def _validate_group_by(self, group_by):
+        """
+        Validate group_by object is not allowed.
+
+        Args:
+            self: (todo): write your description
+            group_by: (todo): write your description
+        """
         allowed_values = {'alarm_definition_id', 'name', 'state', 'severity',
                           'link', 'lifecycle_state', 'metric_name',
                           'dimension_name', 'dimension_value'}
@@ -454,6 +578,12 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
                          alarming.Alarming):
     def __init__(self):
+        """
+        Initialize metrics.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             super(AlarmsStateHistory, self).__init__()
             self._region = cfg.CONF.region
@@ -468,6 +598,15 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
 
     @resource.resource_try_catch_block
     def on_get(self, req, res, alarm_id=None):
+        """
+        Get a get query.
+
+        Args:
+            self: (todo): write your description
+            req: (str): write your description
+            res: (list): write your description
+            alarm_id: (str): write your description
+        """
         helpers.validate_authorization(req, ['api:alarms:state_history'])
         offset = helpers.get_query_param(req, 'offset')
 
@@ -493,6 +632,19 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
     def _alarm_history_list(self, tenant_id, start_timestamp,
                             end_timestamp, dimensions, req_uri, offset,
                             limit):
+        """
+        Return a list of alarms.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            start_timestamp: (int): write your description
+            end_timestamp: (int): write your description
+            dimensions: (int): write your description
+            req_uri: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         # get_alarms expects 'metric_dimensions' for dimensions key.
         new_query_parms = {'metric_dimensions': dimensions}
@@ -509,6 +661,17 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
         return helpers.paginate(result, req_uri, limit)
 
     def _alarm_history(self, tenant_id, alarm_id, req_uri, offset, limit):
+        """
+        Retrieves the alarm history.
+
+        Args:
+            self: (todo): write your description
+            tenant_id: (str): write your description
+            alarm_id: (str): write your description
+            req_uri: (str): write your description
+            offset: (int): write your description
+            limit: (int): write your description
+        """
 
         result = self._metrics_repo.alarm_history(tenant_id, [alarm_id], offset,
                                                   limit)
