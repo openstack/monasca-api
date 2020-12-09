@@ -1,6 +1,6 @@
 alabaster==0.7.10
-alembic==0.8.10
-appdirs==1.3.0
+alembic==0.9.6
+appdirs==1.4.0
 asn1crypto==0.23.0
 Babel==2.3.4
 bandit==1.4.0
@@ -15,7 +15,7 @@ cryptography==2.7
 debtcollector==1.2.0
 decorator==3.4.0
 doc8==0.6.0
-docutils==0.11
+docutils==0.12
 dulwich==0.15.0
 eventlet==0.18.2
 extras==1.0.0
@@ -42,7 +42,7 @@ keystonemiddleware==4.17.0
 linecache2==1.0.0
 Mako==0.4.0
 MarkupSafe==1.1.1
-mccabe==0.2.1
+mccabe==0.6.0
 monasca-common==2.16.0
 monotonic==0.6
 mox3==0.20.0
@@ -93,7 +93,7 @@ requests-mock==1.2.0
 restructuredtext-lint==1.1.1
 rfc3986==0.3.1
 simplejson==3.8.1
-six==1.10.0
+six==1.12.0
 smmap==0.9.0
 snowballstemmer==1.2.1
 Sphinx==2.0.0
