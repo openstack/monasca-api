@@ -15,6 +15,7 @@
 
 import unittest
 
+from oslo_config import cfg
 from oslo_upgradecheck.upgradecheck import Code
 
 from monasca_api.cmd import status
@@ -25,9 +26,13 @@ class TestUpgradeChecks(unittest.TestCase):
     def setUp(self):
         super(TestUpgradeChecks, self).setUp()
         self.cmd = status.Checks()
+        cfg.CONF(args=[], project='magnum')
 
-    def test__check_placeholder(self):
-        check_result = self.cmd._check_placeholder()
-        self.assertEqual(
-            Code.SUCCESS, check_result.code,
-            "Placeholder should always succeed.")
+    def test_checks(self):
+        for name, func in self.cmd._upgrade_checks:
+            if isinstance(func, tuple):
+                func_name, kwargs = func
+                result = func_name(self, **kwargs)
+            else:
+                result = func(self)
+            self.assertEqual(Code.SUCCESS, result.code)
