@@ -17,7 +17,7 @@ decorator==3.4.0
 doc8==0.6.0
 docutils==0.12
 dulwich==0.15.0
-eventlet==0.18.2
+eventlet==0.31.0
 extras==1.0.0
 falcon==2.0.0
 fasteners==0.7.0
