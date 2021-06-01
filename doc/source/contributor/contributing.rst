@@ -17,7 +17,7 @@ Communication
    where your meeting is, the tags you prepend to your ML threads, etc.
 
 For communicating with Monasca Team, you can reach out to us on
-*#openstack-monasca* IRC channel at freenode.net.
+*#openstack-monasca* IRC channel at OFTC.
 
 We hold weekly `team meetings`_ in our IRC channel which is a good opportunity
 to ask questions, propose new features or just get in touch with the team.
