@@ -88,9 +88,9 @@ def validate_authorization(http_request, authorized_rules_list):
         except Exception as ex:
             LOG.debug(ex)
 
-    raise falcon.HTTPUnauthorized('Forbidden',
-                                  'The request does not have access to this service',
-                                  challenge)
+    raise falcon.HTTPUnauthorized(title='Forbidden',
+                                  description='The request does not have access to this service',
+                                  challenges=challenge)
 
 
 def validate_payload_size(content_length):

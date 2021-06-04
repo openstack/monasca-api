@@ -75,7 +75,7 @@ def launch_metrics_api(app):
     app.add_route("/v2.0/metrics/names", metrics_names)
 
     alarm_definitions = simport.load(cfg.CONF.dispatcher.alarm_definitions)()
-    app.add_route("/v2.0/alarm-definitions/", alarm_definitions)
+    app.add_route("/v2.0/alarm-definitions", alarm_definitions)
     app.add_route("/v2.0/alarm-definitions/{alarm_definition_id}",
                   alarm_definitions)
 
@@ -84,7 +84,7 @@ def launch_metrics_api(app):
     app.add_route("/v2.0/alarms/{alarm_id}", alarms)
 
     alarm_count = simport.load(cfg.CONF.dispatcher.alarms_count)()
-    app.add_route("/v2.0/alarms/count/", alarm_count)
+    app.add_route("/v2.0/alarms/count", alarm_count)
 
     alarms_state_history = simport.load(
         cfg.CONF.dispatcher.alarms_state_history)()

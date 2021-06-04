@@ -1,5 +1,4 @@
-# Copyright 2015 kornicameister@gmail.com
-# Copyright 2015 FUJITSU LIMITED
+# Copyright 2021 FUJITSU LIMITED
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -18,14 +17,13 @@ import falcon
 HTTP_422 = '422 Unprocessable Entity'
 
 
-class HTTPUnprocessableEntity(falcon.OptionalRepresentation, falcon.HTTPError):
+class HTTPUnprocessableEntity(falcon.HTTPError):
     """HTTPUnprocessableEntity http error.
 
     HTTPError that comes with '422 Unprocessable Entity' status
 
     :argument: message(str) - meaningful description of what caused an error
     :argument: kwargs - any other option defined in
-                        :py:class:`falcon.OptionalRepresentation` and
                         :py:class:`falcon.HTTPError`
     """
     def __init__(self, message, **kwargs):
