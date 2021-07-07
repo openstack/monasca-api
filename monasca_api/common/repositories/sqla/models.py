@@ -18,7 +18,7 @@
 from sqlalchemy import Column
 from sqlalchemy.ext import compiler
 from sqlalchemy.sql import expression
-from sqlalchemy import String, DateTime, Boolean, Integer, Binary, Float
+from sqlalchemy import String, DateTime, Boolean, Integer, LargeBinary, Float
 from sqlalchemy import MetaData
 from sqlalchemy import Table
 
@@ -76,14 +76,14 @@ def create_aa_model(metadata=None):
 
 def create_md_model(metadata=None):
     return Table('metric_dimension', metadata,
-                 Column('dimension_set_id', Binary),
+                 Column('dimension_set_id', LargeBinary),
                  Column('name', String(255)),
                  Column('value', String(255)))
 
 
 def create_mde_model(metadata=None):
     return Table('metric_definition', metadata,
-                 Column('id', Binary),
+                 Column('id', LargeBinary),
                  Column('name', String(255)),
                  Column('tenant_id', String(255)),
                  Column('region', String(255)))
@@ -108,15 +108,15 @@ def create_nmt_model(metadata=None):
 
 def create_mdd_model(metadata=None):
     return Table('metric_definition_dimensions', metadata,
-                 Column('id', Binary),
-                 Column('metric_definition_id', Binary),
-                 Column('metric_dimension_set_id', Binary))
+                 Column('id', LargeBinary),
+                 Column('metric_definition_id', LargeBinary),
+                 Column('metric_dimension_set_id', LargeBinary))
 
 
 def create_am_model(metadata=None):
     return Table('alarm_metric', metadata,
                  Column('alarm_id', String(36)),
-                 Column('metric_definition_dimensions_id', Binary))
+                 Column('metric_definition_dimensions_id', LargeBinary))
 
 
 def create_ad_model(metadata=None):

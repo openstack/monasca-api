@@ -48,7 +48,7 @@ class Fingerprint(object):
 
     @staticmethod
     def _get_metadata(engine):
-        return MetaData(bind=engine, reflect=True)
+        return MetaData(bind=engine)
 
     @staticmethod
     def _get_schema_raw(metadata):
