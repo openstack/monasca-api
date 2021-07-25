@@ -173,9 +173,6 @@
     post:
       jobs:
         - publish-monasca-api-docker-image
-    periodic:
-      jobs:
-        - publish-monasca-api-docker-image
     release:
       jobs:
         - publish-monasca-api-docker-image
