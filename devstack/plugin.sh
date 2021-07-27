@@ -1121,7 +1121,9 @@ function install_monasca_agent {
         sudo chown $STACK_USER:monasca /opt/monasca-agent
 
         if python3_enabled; then
-            (cd /opt/monasca-agent ; virtualenv -p python3 .)
+            (cd /opt/monasca-agent ;
+            virtualenv -p python3 . ;
+            bin/python3 -m pip install --upgrade pip==20.2.3)
             sudo rm -rf /opt/stack/monasca-common/.eggs/
         else
             (cd /opt/monasca-agent ; virtualenv .)
