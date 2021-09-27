@@ -625,8 +625,8 @@ function install_schema_kafka_topics {
     sudo mkdir -p /opt/kafka/logs || true
     sudo chown kafka:kafka /opt/kafka/logs
     sudo chmod 0766 /opt/kafka/logs
-    # Right number of partition is crucial for performance optimization, 
-    # in high load(real world) deployment this number should be increased.  
+    # Right number of partition is crucial for performance optimization,
+    # in high load(real world) deployment this number should be increased.
     /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
         --replication-factor 1 --partitions 3 --topic metrics
     /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
