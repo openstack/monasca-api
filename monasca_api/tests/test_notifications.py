@@ -61,6 +61,7 @@ class TestNotifications(base.BaseApiTestCase):
                 "address": "john@doe.com"
             }
         return_value = self.notifications_repo_mock.return_value
+        return_value.create_notification.return_value = 'a9362cc5-c78e-4674-bd39-4639fc274a20'
         return_value.find_notification_by_name.return_value = {}
 
         return_value = self.notifications_type_repo_mock.return_value
