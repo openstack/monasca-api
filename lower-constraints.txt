@@ -13,7 +13,7 @@ cmd2==0.8.0
 coverage==4.0
 cryptography==2.7
 debtcollector==1.2.0
-decorator==3.4.0
+decorator==4.1.0
 doc8==0.6.0
 docutils==0.12
 dulwich==0.15.0
@@ -40,7 +40,7 @@ kazoo==2.8.0
 keystoneauth1==3.4.0
 keystonemiddleware==4.17.0
 linecache2==1.0.0
-Mako==0.4.0
+Mako==1.0.7
 MarkupSafe==1.1.1
 mccabe==0.6.0
 monasca-common==2.16.0
