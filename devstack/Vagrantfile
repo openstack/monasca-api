@@ -39,8 +39,8 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    # sudo apt-get update
-    # sudo apt-get -y upgrade
+    sudo apt-get update
+    sudo apt-get -y upgrade
     sudo apt-get -y install git lnav
 
     if [ $http_proxy ]; then
@@ -190,6 +190,7 @@ enable_plugin monasca-api https://opendev.org/openstack/monasca-api
 enable_plugin monasca-tempest-plugin https://opendev.org/openstack/monasca-tempest-plugin
 
 ' > local.conf
+    sudo apt purge -y python3-simplejson
     ./stack.sh
     # Cache downloaded files for future runs
     if [ -d "/tmp/vagrant-cache" ]; then
