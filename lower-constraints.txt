@@ -2,7 +2,7 @@ alabaster==0.7.10
 alembic==0.9.6
 appdirs==1.4.0
 asn1crypto==0.23.0
-Babel==2.3.4
+Babel==2.9.1
 bandit==1.4.0
 bashate==0.5.1
 cassandra-driver==3.3.0
