@@ -300,9 +300,9 @@ sub_expression = ((function_and_metric | metric) + relational_op + threshold +
 sub_expression.setParseAction(SubExpr)
 
 expression = (
-    pyparsing.operatorPrecedence(sub_expression,
-                                 [(AND, 2, pyparsing.opAssoc.LEFT, AndSubExpr),
-                                  (OR, 2, pyparsing.opAssoc.LEFT, OrSubExpr)]))
+    pyparsing.infixNotation(sub_expression,
+                            [(AND, 2, pyparsing.opAssoc.LEFT, AndSubExpr),
+                             (OR, 2, pyparsing.opAssoc.LEFT, OrSubExpr)]))
 
 
 class AlarmExprParser(object):

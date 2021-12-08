@@ -73,7 +73,7 @@ class TestAlarmExpression(base.BaseTestCase):
         sub_exprs = alarm_expr_parser.AlarmExprParser(expression).sub_expr_list
         print([x.dimensions_as_list for x in sub_exprs].__str__())
         self.assertEqual([x.dimensions_as_list for x in sub_exprs].__str__(),
-                         "[(['hostname=fred'], {}), [], []]")
+                         "[ParseResults(['hostname=fred'], {}), [], []]")
 
     def test_operator(self):
         expression = self.good_simple_expression
