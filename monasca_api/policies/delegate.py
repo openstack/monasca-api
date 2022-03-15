@@ -25,7 +25,7 @@ rules = [
         name='api:delegate',
         check_str=DELEGATE_AUTHORIZED_ROLES,
         description='The rules which allow to access the API on'
-                    ' behalf of another tenant.',
+                    ' behalf of another project (tenant).',
 
     )
 ]

@@ -24,8 +24,8 @@ from monasca_api.v2.common import exceptions
 
 policy.POLICIES = policies
 
-_TENANT_ID_PARAM = 'tenant_id'
-"""Name of the query-param pointing at project-id (tenant-id)"""
+_PROJECT_ID_PARAM = 'project_id'
+"""Name of the query-param pointing at project-id"""
 
 
 class Request(falcon.Request):
@@ -42,17 +42,17 @@ class Request(falcon.Request):
 
     @property
     def project_id(self):
-        """Returns project-id (tenant-id)
+        """Returns project-id
 
         :return: project-id
         :rtype: str
 
         """
-        return self.context.tenant
+        return self.context.project_id
 
     @property
     def cross_project_id(self):
-        """Returns project-id (tenant-id) found in query params.
+        """Returns project-id found in query params.
 
         This particular project-id is later on identified as
         cross-project-id
@@ -61,7 +61,7 @@ class Request(falcon.Request):
         :rtype: str
 
         """
-        return self.get_param(_TENANT_ID_PARAM, required=False)
+        return self.get_param(_PROJECT_ID_PARAM, required=False)
 
     @property
     def user_id(self):

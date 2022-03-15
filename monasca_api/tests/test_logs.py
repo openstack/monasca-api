@@ -81,7 +81,7 @@ class TestApiLogs(base.BaseApiTestCase):
         response = self.simulate_request(
             path='/logs',
             method='POST',
-            query_string='tenant_id=1',
+            query_string='project_id=1',
             headers={
                 'X_ROLES': ROLES,
                 'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ class TestApiLogs(base.BaseApiTestCase):
         response = self.simulate_request(
             path='/logs',
             method='POST',
-            query_string='tenant_id=1',
+            query_string='project_id=1',
             headers={
                 'X-Roles': ROLES,
                 'Content-Type': 'application/json',

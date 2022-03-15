@@ -27,9 +27,9 @@ class TestPolicyFileCase(base.BaseTestCase):
     def setUp(self):
         super(TestPolicyFileCase, self).setUp()
         self.context = context.RequestContext(user='fake',
-                                              tenant='fake',
+                                              project_id='fake',
                                               roles=['fake'])
-        self.target = {'tenant_id': 'fake'}
+        self.target = {'project_id': 'fake'}
 
     def test_modified_policy_reloads(self):
         tmp_file = \
