@@ -28,7 +28,7 @@ class PolicyFileTestCase(base.BaseTestCase):
     def setUp(self):
         super(PolicyFileTestCase, self).setUp()
         self.context = context.RequestContext(user='fake',
-                                              tenant='fake',
+                                              project_id='fake',
                                               is_admin=False)
         self.target = {}
 
@@ -83,7 +83,7 @@ class PolicyTestCase(base.BaseTestCase):
         policy_engine.init()
 
         self.context = context.RequestContext(user='fake',
-                                              tenant='fake',
+                                              project_id='fake',
                                               is_admin=False)
         policy_engine._ENFORCER.register_defaults(rules)
         self.target = {}

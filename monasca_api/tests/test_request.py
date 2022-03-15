@@ -41,7 +41,7 @@ class TestRequest(base.BaseApiTestCase):
                     'X_PROJECT_ID': '333',
                     'X_ROLES': 'terminator,predator',
                 },
-                query_string='tenant_id=444'
+                query_string='project_id=444'
 
             )
         )
