@@ -149,6 +149,7 @@
 
 
 - project:
+    queue: monasca
     templates:
       - check-requirements
       - openstack-cover-jobs
@@ -165,7 +166,6 @@
         - monasca-tempest-python2-java-cassandra
         - build-monasca-docker-image
     gate:
-      queue: monasca
       jobs:
         - monasca-tempest-python2-influxdb
         - monasca-tempest-python3-influxdb
