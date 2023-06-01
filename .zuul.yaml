@@ -195,6 +195,7 @@
         TEMPEST_PLUGINS: /opt/stack/monasca-tempest-plugin
 
 - project:
+    queue: monasca
     templates:
       - check-requirements
       - openstack-cover-jobs
@@ -209,7 +210,6 @@
         - monasca-tempest-python3-cassandra
         - build-monasca-docker-image
     gate:
-      queue: monasca
       jobs:
         - monasca-tempest-python3-influxdb
         - monasca-tempest-log-python3-influxdb
