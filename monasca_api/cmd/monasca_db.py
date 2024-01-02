@@ -41,7 +41,7 @@ def do_detect_revision():
     fingerprint = Fingerprint(sql_repository.get_engine())
 
     if fingerprint.revision is None:
-        print(_FP_NOREVISION % fingerprint.sha1)
+        print(_FP_NOREVISION % fingerprint.sha256)
         sys.exit(1)
     else:
         print(fingerprint.revision)
@@ -52,7 +52,7 @@ def do_fingerprint():
     if CONF.command.raw:
         print(fingerprint.schema_raw, end="")
     else:
-        print(fingerprint.sha1)
+        print(fingerprint.sha256)
 
 
 def do_stamp():
@@ -71,7 +71,7 @@ def do_stamp():
         else:
             fp = Fingerprint(engine)
             if fp.revision is None:
-                print(_FP_NOREVISION % fp.sha1)
+                print(_FP_NOREVISION % fp.sha256)
                 sys.exit(1)
             rev = fp.revision
 
@@ -110,7 +110,7 @@ def do_version():
 
 def add_command_parsers(subparsers):
     parser = subparsers.add_parser('fingerprint',
-                                   help="Compute SHA1 fingerprint of "
+                                   help="Compute SHA256 fingerprint of "
                                         "current database schema ")
     parser.add_argument('-r', '--raw', action='store_true',
                         help='Print raw schema dump used for '

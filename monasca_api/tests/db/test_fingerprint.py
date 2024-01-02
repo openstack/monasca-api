@@ -35,11 +35,11 @@ class TestFingerprint(base.BaseTestCase):
         # table of fingerprints. Since we use a dummy schema, we insert a dummy
         # entry into the lookup table.
         fingerprint._REVS[
-            hashlib.sha1(b'dummy_schema_raw').hexdigest()] = 'dummy_revision'
+            hashlib.sha256(b'dummy_schema_raw').hexdigest()] = 'dummy_revision'
 
         f = fingerprint.Fingerprint('mock_engine')
         self.assertEqual(f.schema_raw, 'dummy_schema_raw')
-        self.assertEqual(f.sha1, hashlib.sha1(b'dummy_schema_raw').hexdigest())
+        self.assertEqual(f.sha256, hashlib.sha256(b'dummy_schema_raw').hexdigest())
         self.assertEqual(f.revision, 'dummy_revision')
 
     @mock.patch('monasca_api.db.fingerprint.Fingerprint._get_db_session')
@@ -61,5 +61,5 @@ class TestFingerprint(base.BaseTestCase):
 
         f = fingerprint.Fingerprint('mock_engine')
         self.assertEqual(f.schema_raw, 'dummy_schema_raw')
-        self.assertEqual(f.sha1, hashlib.sha1(b'dummy_schema_raw').hexdigest())
+        self.assertEqual(f.sha256, hashlib.sha256(b'dummy_schema_raw').hexdigest())
         self.assertEqual(f.revision, 'dummy_revision')

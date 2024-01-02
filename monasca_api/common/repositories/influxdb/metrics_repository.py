@@ -214,6 +214,20 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
 
         return query
 
+    def _build_select_all_query(self, dimensions, name, tenant_id,
+                                region, start_timestamp, end_timestamp,
+                                no_record_check_dim):
+
+        from_clause = self._build_from_clause(dimensions, name, tenant_id,
+                                              region, start_timestamp,
+                                              end_timestamp)
+        if no_record_check_dim is not None:
+            query = 'select *' + from_clause + " and {} != ''".format(no_record_check_dim)
+        else:
+            query = 'select *' + from_clause
+
+        return query
+
     def _build_statistics_query(self, dimensions, name, tenant_id,
                                 region, start_timestamp, end_timestamp,
                                 statistics, period, offset, group_by, limit):
@@ -263,7 +277,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
             # replace ' with \' to make query parsable
             clean_name = name.replace("'", "\\'") if PY3 \
                 else name.replace("'", "\\'").encode('utf-8')
-            where_clause += ' from  "{}" '.format(clean_name)
+            where_clause += ' from "{}"'.format(clean_name)
 
         # region
         where_clause += " where _region = '{}'".format(region)
@@ -889,9 +903,25 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                       start_timestamp,
                                                       end_timestamp)
             result = self.query_tenant_db(query, tenant_id)
-            json_dim_name_list = self._build_serie_dimension_values(
+            json_dim_value_list = self._build_serie_dimension_values(
                 result, dimension_name)
-            return json_dim_name_list
+            json_dim_value_list_filtered = list()
+            for serie in result.raw['series']:
+                for dim_value_dict in json_dim_value_list:
+                    query = self._build_select_all_query(
+                        dimensions={dimension_name: dim_value_dict['dimension_value']},
+                        name=serie['name'],
+                        tenant_id=tenant_id,
+                        region=region,
+                        start_timestamp=start_timestamp,
+                        end_timestamp=end_timestamp,
+                        no_record_check_dim=None)
+                    result = self.query_tenant_db(query, tenant_id)
+                    if len(result.raw['series']) > 0:
+                        json_dim_value_list_filtered.append(dim_value_dict)
+            json_dim_value_list_filtered = sorted(json_dim_value_list_filtered, key=lambda
+                                                  dim_value_dict: dim_value_dict['dimension_value'])
+            return json_dim_value_list_filtered
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
@@ -905,7 +935,26 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
                                                     end_timestamp)
             result = self.query_tenant_db(query, tenant_id)
             json_dim_name_list = self._build_serie_dimension_names(result)
-            return json_dim_name_list
+            if metric_name is not None:
+                json_dim_name_list_filtered = list()
+                for dim_name_dict in json_dim_name_list:
+                    query = self._build_select_all_query(
+                        dimensions=None,
+                        name=metric_name,
+                        tenant_id=tenant_id,
+                        region=region,
+                        start_timestamp=start_timestamp,
+                        end_timestamp=end_timestamp,
+                        no_record_check_dim=dim_name_dict['dimension_name'])
+                    result = self.query_tenant_db(query, tenant_id)
+                    if len(result.raw['series']) > 0:
+                        json_dim_name_list_filtered.append(dim_name_dict)
+
+                json_dim_name_list_filtered = sorted(json_dim_name_list_filtered, key=lambda
+                                                     dim_name_dict: dim_name_dict['dimension_name'])
+                return json_dim_name_list_filtered
+            else:
+                return json_dim_name_list
         except Exception as ex:
             LOG.exception(ex)
             raise exceptions.RepositoryException(ex)
@@ -915,7 +964,7 @@ class MetricsRepository(metrics_repository.AbstractMetricsRepository):
         uri = 'http://{0}:{1}/ping'.format(CONF.influxdb.ip_address,
                                            CONF.influxdb.port)
         try:
-            resp = requests.head(url=uri)
+            resp = requests.head(url=uri, timeout=5)
         except Exception as ex:
             LOG.exception(str(ex))
             return False, str(ex)

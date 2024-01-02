@@ -309,7 +309,7 @@ function install_logstash {
         tar xzf ${logstash_dest} -C $DEST
 
         sudo chown -R $STACK_USER $DEST/logstash-${LOGSTASH_VERSION}
-        ln -sf $DEST/logstash-${LOGSTASH_VERSION} $LOGSTASH_DIR
+        sudo ln -sf $DEST/logstash-${LOGSTASH_VERSION} $LOGSTASH_DIR
 
         sudo mkdir -p $LOGSTASH_DATA_DIR
         sudo chown $STACK_USER:monasca $LOGSTASH_DATA_DIR
@@ -339,7 +339,7 @@ function install_elasticsearch {
         tar xzf ${es_dest} -C $DEST
 
         sudo chown -R $STACK_USER $DEST/elasticsearch-${ELASTICSEARCH_VERSION}
-        ln -sf $DEST/elasticsearch-${ELASTICSEARCH_VERSION} $ELASTICSEARCH_DIR
+        sudo ln -sf $DEST/elasticsearch-${ELASTICSEARCH_VERSION} $ELASTICSEARCH_DIR
     fi
 }
 
@@ -364,7 +364,7 @@ function configure_elasticsearch {
             s|%ES_LOG_DIR%|$ELASTICSEARCH_LOG_DIR|g;
         " -i $ELASTICSEARCH_CFG_DIR/elasticsearch.yml
 
-        ln -sf $ELASTICSEARCH_CFG_DIR/elasticsearch.yml $GATE_CONFIGURATION_DIR/elasticsearch.yml
+        sudo ln -sf $ELASTICSEARCH_CFG_DIR/elasticsearch.yml $GATE_CONFIGURATION_DIR/elasticsearch.yml
 
         echo "[Service]" | sudo tee --append /etc/systemd/system/devstack\@elasticsearch.service > /dev/null
         echo "LimitNOFILE=$LIMIT_NOFILE" | sudo tee --append /etc/systemd/system/devstack\@elasticsearch.service > /dev/null
@@ -420,7 +420,7 @@ function install_kibana {
         local kibana_version_name
         kibana_version_name=`_get_kibana_version_name`
         sudo chown -R $STACK_USER $DEST/${kibana_version_name}
-        ln -sf $DEST/${kibana_version_name} $KIBANA_DIR
+        sudo ln -sf $DEST/${kibana_version_name} $KIBANA_DIR
     fi
 }
 
@@ -443,7 +443,7 @@ function configure_kibana {
             s|%KEYSTONE_AUTH_URI%|$KEYSTONE_AUTH_URI|g;
         " -i $KIBANA_CFG_DIR/kibana.yml
 
-        ln -sf $KIBANA_CFG_DIR/kibana.yml $GATE_CONFIGURATION_DIR/kibana.yml
+        sudo ln -sf $KIBANA_CFG_DIR/kibana.yml $GATE_CONFIGURATION_DIR/kibana.yml
     fi
 }
 
@@ -522,7 +522,7 @@ function build_kibana_plugin {
         yarn --cwd $KIBANA_DEV_DIR kbn bootstrap
         yarn --cwd $plugin_dir build
 
-        local get_version_script="import json; obj = json.load(open('$plugin_dir/package.json')); print obj['version']"
+        local get_version_script="import json; obj = json.load(open('$plugin_dir/package.json')); print(obj['version'])"
         local monasca_kibana_plugin_version
         monasca_kibana_plugin_version=$(python -c "$get_version_script")
         local pkg="$plugin_dir/build/monasca-kibana-plugin-$monasca_kibana_plugin_version.zip"

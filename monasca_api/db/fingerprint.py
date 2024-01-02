@@ -21,7 +21,7 @@ from sqlalchemy.orm import sessionmaker
 
 LOG = log.getLogger(__name__)
 
-# Map of SHA1 fingerprints to alembic revisions. Note that this is
+# Map of SHA256 fingerprints to alembic revisions. Note that this is
 # used in the pre-alembic case and does not need to be updated if a
 # new revision is introduced.
 _REVS = {"43e5913b0272077321ab6f25ffbcda7149b6284b": "00597b5c8325",
@@ -43,8 +43,8 @@ class Fingerprint(object):
     def __init__(self, engine):
         metadata = self._get_metadata(engine)
         self.schema_raw = self._get_schema_raw(metadata)
-        self.sha1 = self._get_schema_sha1(self.schema_raw)
-        self.revision = self._get_revision(metadata, engine, self.sha1)
+        self.sha256 = self._get_schema_sha256(self.schema_raw)
+        self.revision = self._get_revision(metadata, engine, self.sha256)
 
     @staticmethod
     def _get_metadata(engine):
@@ -75,18 +75,18 @@ class Fingerprint(object):
         return "\n".join(schema_strings)
 
     @staticmethod
-    def _get_schema_sha1(schema_raw):
-        return hashlib.sha1(encodeutils.to_utf8(schema_raw)).hexdigest()
+    def _get_schema_sha256(schema_raw):
+        return hashlib.sha256(encodeutils.to_utf8(schema_raw)).hexdigest()
 
     @staticmethod
-    def _get_revision(metadata, engine, sha1):
+    def _get_revision(metadata, engine, sha256):
         # Alembic stores the current version in the DB so check that first
         # and fall back to the lookup table for the pre-alembic case.
         versions_table = metadata.tables.get('alembic_version')
         if versions_table is not None:
             return Fingerprint._lookup_version_from_db(versions_table, engine)
-        elif sha1:
-            return Fingerprint._lookup_version_from_table(sha1)
+        elif sha256:
+            return Fingerprint._lookup_version_from_table(sha256)
 
     @staticmethod
     def _get_db_session(engine):
@@ -102,9 +102,9 @@ class Fingerprint(object):
         return session.query(versions_table).one()[0]
 
     @staticmethod
-    def _lookup_version_from_table(sha1):
-        revision = _REVS.get(sha1)
+    def _lookup_version_from_table(sha256):
+        revision = _REVS.get(sha256)
         if not revision:
             LOG.warning("Fingerprint: {} does not match any revisions."
-                        .format(sha1))
+                        .format(sha256))
         return revision

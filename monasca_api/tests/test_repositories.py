@@ -221,18 +221,20 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
 
         self.assertEqual(result, [{u'dimension_value': hostname}])
 
-        query = ('show tag values from "{metric}"'
-                 ' with key = "{column}"'
+        query = ('select * from "{metric}"'
                  ' where _region = \'{region}\''
-                 .format(region=region, metric=metric, column=column))
+                 .format(region=region, metric=metric))
         query += ('' if db_per_tenant else ' and _tenant_id = \'{tenant_id}\''
                   .format(tenant_id=tenant_id))
+        query += (' and "{column}" = \'{hostname}\''
+                  .format(column=column,
+                          hostname=hostname))
         query += (' and time >= {start_timestamp}000000u'
                   ' and time < {end_timestamp}000000u'
                   .format(start_timestamp=start_timestamp,
                           end_timestamp=end_timestamp)
                   if timestamp else '')
-        mock_client.query.assert_called_once_with(query, database=database)
+        mock_client.query.assert_called_with(query, database=database)
 
     def test_list_dimension_values_with_timestamp(self):
         self.test_list_dimension_values(timestamp=True)
@@ -275,18 +277,19 @@ class TestRepoMetricsInfluxDB(base.BaseTestCase):
                              {u'dimension_name': u'service'}
                          ])
 
-        query = ('show tag keys from "{metric}"'
-                 ' where _region = \'{region}\''
-                 .format(region=region, metric=metric))
-        query += ('' if db_per_tenant else ' and _tenant_id = \'{tenant_id}\''
-                  .format(tenant_id=tenant_id))
-        query += (' and time >= {start_timestamp}000000u'
-                  ' and time < {end_timestamp}000000u'
-                  .format(start_timestamp=start_timestamp,
-                          end_timestamp=end_timestamp)
-                  if timestamp else '')
+        query_last = ('select * from "{metric}"'
+                      ' where _region = \'{region}\''
+                      .format(region=region, metric=metric))
+        query_last += ('' if db_per_tenant else ' and _tenant_id = \'{tenant_id}\''
+                       .format(tenant_id=tenant_id))
+        query_last += (' and time >= {start_timestamp}000000u'
+                       ' and time < {end_timestamp}000000u'
+                       .format(start_timestamp=start_timestamp,
+                               end_timestamp=end_timestamp)
+                       if timestamp else '')
+        query_last += (' and service != \'\'')
 
-        mock_client.query.assert_called_once_with(query, database=database)
+        mock_client.query.assert_called_with(query_last, database=database)
 
     def test_list_dimension_names_with_timestamp(self):
         self.test_list_dimension_names(timestamp=True)

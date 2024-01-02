@@ -113,6 +113,29 @@ Administrating
 
    admin/index
 
+Glossary
+-------------
+.. toctree::
+   :maxdepth: 2
+
+   glossary
+
+Installation
+------------
+
+.. toctree::
+   :maxdepth: 2
+
+   install/index
+
+User
+------------
+
+.. toctree::
+   :maxdepth: 2
+
+   user/index
+
 Configuration
 -------------
 
@@ -124,7 +147,3 @@ Configuration
    admin/index
    cli/index
    configuration/sample
-.. only:: html
-   glossary
-   install/index
-   user/index

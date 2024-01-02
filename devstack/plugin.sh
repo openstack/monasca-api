@@ -1154,7 +1154,7 @@ function install_monasca_agent {
     if is_service_enabled monasca-agent; then
         echo_summary "Install Monasca monasca_agent"
 
-        apt_get install python-yaml libxml2-dev libxslt1-dev
+        apt_get install python3-yaml libxml2-dev libxslt1-dev
 
         MONASCA_AGENT_EXTRAS="kafka_plugin"
         if is_service_enabled nova && [ "$VIRT_DRIVER" = "libvirt" ]; then
@@ -1262,7 +1262,7 @@ function clean_monasca_agent {
 
         apt_get purge libxslt1-dev
         apt_get purge libxml2-dev
-        apt_get purge python-yaml
+        apt_get purge python3-yaml
     fi
 }
 
@@ -1271,7 +1271,7 @@ function clean_monasca_agent {
 function install_nodejs {
 
     echo_summary "Install Node.js"
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo bash -
 
     apt_get install nodejs
     npm config set registry "http://registry.npmjs.org/"; \
