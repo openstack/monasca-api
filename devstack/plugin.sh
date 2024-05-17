@@ -477,9 +477,10 @@ function install_monasca_cassandra {
         echo_summary "Install Monasca Cassandra"
 
         if [[ "$OFFLINE" != "True" ]]; then
-            sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian ${CASSANDRA_VERSION} main' > /etc/apt/sources.list.d/cassandra.sources.list"
+            sudo sh -c "echo 'deb [signed-by=/etc/apt/keyrings/apache-cassandra.asc] https://debian.cassandra.apache.org ${CASSANDRA_VERSION} main' > /etc/apt/sources.list.d/cassandra.sources.list"
             REPOS_UPDATED=False
-            curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+            mkdir -p /etc/apt/keyrings
+            curl -o /etc/apt/keyrings/apache-cassandra.asc https://downloads.apache.org/cassandra/KEYS
             PUBLIC_KEY=`sudo apt_get update 2>&1 | awk '/NO_PUBKEY/ {print $NF}'`
             if [ -n "${PUBLIC_KEY}" ]; then
                 sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-key  ${PUBLIC_KEY}

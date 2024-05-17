@@ -56,8 +56,8 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
         gc_columns = [md.c.name + text("'='") + md.c.value]
 
-        mdg = (select([md.c.dimension_set_id,
-                       models.group_concat(gc_columns).label('dimensions')])
+        mdg = (select(md.c.dimension_set_id,
+                      models.group_concat(gc_columns).label('dimensions'))
                .select_from(md)
                .group_by(md.c.dimension_set_id).alias('mdg'))
 
@@ -74,31 +74,31 @@ class AlarmsRepository(sql_repository.SQLRepository,
                         mdg,
                 mdg.c.dimension_set_id == mdd.c.metric_dimension_set_id))
 
-        self.base_query = select([a_s.c.id.label('alarm_id'),
-                                  a_s.c.state,
-                                  a_s.c.state_updated_at.
-                                  label('state_updated_timestamp'),
-                                  a_s.c.updated_at.label('updated_timestamp'),
-                                  a_s.c.created_at.label('created_timestamp'),
-                                  a_s.c.lifecycle_state,
-                                  a_s.c.link,
-                                  ad.c.id.label('alarm_definition_id'),
-                                  ad.c.name.label('alarm_definition_name'),
-                                  ad.c.severity,
-                                  mde.c.name.label('metric_name'),
-                                  mdg.c.dimensions.label('metric_dimensions')])
+        self.base_query = select(a_s.c.id.label('alarm_id'),
+                                 a_s.c.state,
+                                 a_s.c.state_updated_at.
+                                 label('state_updated_timestamp'),
+                                 a_s.c.updated_at.label('updated_timestamp'),
+                                 a_s.c.created_at.label('created_timestamp'),
+                                 a_s.c.lifecycle_state,
+                                 a_s.c.link,
+                                 ad.c.id.label('alarm_definition_id'),
+                                 ad.c.name.label('alarm_definition_name'),
+                                 ad.c.severity,
+                                 mde.c.name.label('metric_name'),
+                                 mdg.c.dimensions.label('metric_dimensions'))
 
-        self.base_subquery_list = (select([a_s.c.id])
+        self.base_subquery_list = (select(a_s.c.id)
                                    .select_from(a_s.join(ad, a_s.c.alarm_definition_id == ad.c.id)))
 
-        self.get_ad_query = (select([ad])
+        self.get_ad_query = (select(ad)
                              .select_from(ad.join(a, ad.c.id == a.c.alarm_definition_id))
                              .where(ad.c.tenant_id == bindparam('b_tenant_id'))
                              .where(a.c.id == bindparam('b_id')))
 
-        self.get_am_query = (select([a_s.c.id.label('alarm_id'),
-                                     mde.c.name,
-                                     mdg.c.dimensions])
+        self.get_am_query = (select(a_s.c.id.label('alarm_id'),
+                                    mde.c.name,
+                                    mdg.c.dimensions)
                              .select_from(a_s.join(am, am.c.alarm_id == a_s.c.id)
                                           .join(mdd,
                                                 mdd.c.id ==
@@ -111,10 +111,10 @@ class AlarmsRepository(sql_repository.SQLRepository,
                              .order_by(a_s.c.id)
                              .distinct())
 
-        self.get_sa_query = (select([sa.c.id.label('sub_alarm_id'),
-                                     sa.c.alarm_id,
-                                     sa.c.expression,
-                                     ad.c.id.label('alarm_definition_id')])
+        self.get_sa_query = (select(sa.c.id.label('sub_alarm_id'),
+                                    sa.c.alarm_id,
+                                    sa.c.expression,
+                                    ad.c.id.label('alarm_definition_id'))
                              .select_from(sa.join(a_s,
                                                   a_s.c.id == sa.c.alarm_id)
                                           .join(ad,
@@ -123,13 +123,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
                              .where(a_s.c.id == bindparam('b_id'))
                              .distinct())
 
-        self.get_a_query = (select([a_s.c.state, a_s.c.link, a_s.c.lifecycle_state])
+        self.get_a_query = (select(a_s.c.state, a_s.c.link, a_s.c.lifecycle_state)
                             .select_from(a_s.join(ad,
                                                   ad.c.id == a_s.c.alarm_definition_id))
                             .where(ad.c.tenant_id == bindparam('b_tenant_id'))
                             .where(a_s.c.id == bindparam('b_id')))
 
-        self.get_a_ad_query = (select([a_s.c.id])
+        self.get_a_ad_query = (select(a_s.c.id)
                                .select_from(a_s.join(ad,
                                                      ad.c.id ==
                                                      a_s.c.alarm_definition_id))
@@ -137,7 +137,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                                .where(a_s.c.id == bindparam('b_id'))
                                .alias('a_ad'))
 
-        select_tmp = (select([literal_column('id')])
+        select_tmp = (select(literal_column('id'))
                       .select_from(self.get_a_ad_query)
                       .distinct()
                       .alias('temporarytable'))
@@ -145,10 +145,10 @@ class AlarmsRepository(sql_repository.SQLRepository,
         self.delete_alarm_query = (delete(a)
                                    .where(a.c.id.in_(select_tmp)))
 
-        md_ = (select([mde.c.id])
+        md_ = (select(mde.c.id)
                .where(mde.c.name == bindparam('b_md_name')).alias('md_'))
 
-        self.get_a_am_query = (select([a_s.c.id])
+        self.get_a_am_query = (select(a_s.c.id)
                                .select_from(a_s.join(am,
                                                      am.c.alarm_id ==
                                                      a_s.c.id)
@@ -162,12 +162,15 @@ class AlarmsRepository(sql_repository.SQLRepository,
     @sql_repository.sql_try_catch_block
     def get_alarm_definition(self, tenant_id, alarm_id):
         with self._db_engine.connect() as conn:
-            row = conn.execute(self.get_ad_query,
-                               b_tenant_id=tenant_id,
-                               b_id=alarm_id).fetchone()
+            row = conn.execute(
+                self.get_ad_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': alarm_id
+                }).fetchone()
 
             if row is not None:
-                return dict(row)
+                return row._mapping
             else:
                 raise exceptions.DoesNotExistException
 
@@ -175,17 +178,24 @@ class AlarmsRepository(sql_repository.SQLRepository,
     def get_alarm_metrics(self, alarm_id):
 
         with self._db_engine.connect() as conn:
-            rows = conn.execute(self.get_am_query, b_id=alarm_id).fetchall()
-            return [dict(row) for row in rows]
+            rows = conn.execute(
+                self.get_am_query,
+                parameters={'b_id': alarm_id}
+            ).fetchall()
+            return [row._mapping for row in rows]
 
     @sql_repository.sql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_id):
 
         with self._db_engine.connect() as conn:
-            rows = conn.execute(self.get_sa_query,
-                                b_tenant_id=tenant_id,
-                                b_id=alarm_id).fetchall()
-            return [dict(row) for row in rows]
+            rows = conn.execute(
+                self.get_sa_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': alarm_id
+                }
+            ).fetchall()
+            return [row._mapping for row in rows]
 
     @sql_repository.sql_try_catch_block
     def update_alarm(self, tenant_id, _id, state, lifecycle_state, link):
@@ -193,12 +203,18 @@ class AlarmsRepository(sql_repository.SQLRepository,
         time_ms = int(round(time() * 1000.0))
         with self._db_engine.connect() as conn:
             self.get_a_query.bind = self._db_engine
-            prev_alarm = conn.execute(self.get_a_query,
-                                      b_tenant_id=tenant_id,
-                                      b_id=_id).fetchone()
+            prev_alarm = conn.execute(
+                self.get_a_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': _id
+                }
+            ).fetchone()
 
             if prev_alarm is None:
                 raise exceptions.DoesNotExistException
+            else:
+                prev_alarm = prev_alarm._mapping
 
             parms = {'b_lifecycle_state': lifecycle_state,
                      'b_link': link}
@@ -206,8 +222,9 @@ class AlarmsRepository(sql_repository.SQLRepository,
                           bindparam('b_lifecycle_state'),
                           'link': bindparam('b_link'),
                           'updated_at': func.now()}
-
-            if state != prev_alarm['state']:
+            # TODO(thuvh) find better solution to get state from row
+            prev_state = prev_alarm['state']
+            if state != prev_state:
                 parms['b_state'] = state
                 set_values['state'] = bindparam('b_state')
                 set_values['state_updated_at'] = func.now()
@@ -215,7 +232,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
             parms['b_tenant_id'] = tenant_id
             parms['b_id'] = _id
 
-            select_tmp = (select([literal_column('id')])
+            select_tmp = (select(literal_column('id'))
                           .select_from(self.get_a_ad_query)
                           .distinct()
                           .alias('temporarytable'))
@@ -227,15 +244,23 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             conn.execute(update_query, parms)
 
+            # TODO(thuvh) find a better solution
+            conn.commit()
+
             return prev_alarm, time_ms
 
     @sql_repository.sql_try_catch_block
     def delete_alarm(self, tenant_id, _id):
 
         with self._db_engine.connect() as conn:
-            cursor = conn.execute(self.delete_alarm_query,
-                                  b_tenant_id=tenant_id,
-                                  b_id=_id)
+            cursor = conn.execute(
+                self.delete_alarm_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': _id
+                })
+            # TODO(thuvh) find a better solution
+            conn.commit()
 
             if cursor.rowcount < 1:
                 raise exceptions.DoesNotExistException
@@ -252,14 +277,18 @@ class AlarmsRepository(sql_repository.SQLRepository,
                      .where(a.c.id == bindparam('b_id'))
                      .distinct())
 
-            rows = conn.execute(query,
-                                b_tenant_id=tenant_id,
-                                b_id=_id).fetchall()
+            rows = conn.execute(
+                query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': _id
+                }
+            ).fetchall()
 
             if rows is None or len(rows) == 0:
                 raise exceptions.DoesNotExistException
 
-            return [dict(row) for row in rows]
+            return [row._mapping for row in rows]
 
     @sql_repository.sql_try_catch_block
     def get_alarms(self, tenant_id, query_parms=None, offset=None, limit=None):
@@ -324,13 +353,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 parms['b_state_updated_at'] = date_param
 
             if 'metric_dimensions' in query_parms:
-                sub_query = select([a.c.id])
+                sub_query = select(a.c.id)
                 sub_query_from = (a.join(am, am.c.alarm_id == a.c.id)
                                   .join(mdd,
                                         mdd.c.id ==
                                         am.c.metric_definition_dimensions_id))
 
-                sub_query_md_base = select([md.c.dimension_set_id]).select_from(md)
+                sub_query_md_base = select(md.c.dimension_set_id).select_from(md)
 
                 for i, metric_dimension in enumerate(query_parms['metric_dimensions'].items()):
 
@@ -422,7 +451,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
 
             main_query = main_query.order_by(*order_columns)
 
-            return [dict(row) for row in conn.execute(main_query, parms).fetchall()]
+            return [row._mapping for row in conn.execute(main_query, parms).fetchall()]
 
     def _remap_columns(self, columns, columns_mapper):
         received_cols = {}
@@ -484,7 +513,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
                             md, mdd.c.metric_dimension_set_id == md.c.dimension_set_id) .join(
                             am, am.c.metric_definition_dimensions_id == mdd.c.id))
 
-                    sub_query = (select(sub_query_columns)
+                    sub_query = (select(*sub_query_columns)
                                  .select_from(sub_query_from)
                                  .distinct()
                                  .alias('metrics'))
@@ -494,7 +523,7 @@ class AlarmsRepository(sql_repository.SQLRepository,
             query_columns = [func.count().label('count')]
             query_columns.extend([column(col) for col in group_by_columns])
 
-            query = (select(query_columns)
+            query = (select(*query_columns)
                      .select_from(query_from)
                      .where(ad.c.tenant_id == bindparam('b_tenant_id')))
 
@@ -539,13 +568,13 @@ class AlarmsRepository(sql_repository.SQLRepository,
                     query_parms['metric_name'].encode('utf8')
 
             if 'metric_dimensions' in query_parms:
-                sub_query = select([a.c.id])
+                sub_query = select(a.c.id)
                 sub_query_from = (a.join(am, am.c.alarm_id == a.c.id)
                                   .join(mdd,
                                         mdd.c.id ==
                                         am.c.metric_definition_dimensions_id))
 
-                sub_query_md_base = select([md.c.dimension_set_id]).select_from(md)
+                sub_query_md_base = select(md.c.dimension_set_id).select_from(md)
 
                 for i, metric_dimension in enumerate(query_parms['metric_dimensions'].items()):
                     dimension_value = metric_dimension[1] if six.PY3 else \
@@ -599,4 +628,4 @@ class AlarmsRepository(sql_repository.SQLRepository,
                 parms['b_offset'] = offset
 
             query = query.distinct()
-            return [dict(row) for row in conn.execute(query, parms).fetchall()]
+            return [row._mapping for row in conn.execute(query, parms).fetchall()]

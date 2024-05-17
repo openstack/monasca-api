@@ -5,7 +5,6 @@
       Base job for running tempest tests with monasca-api devstack plugin.
     timeout: 7800
     required-projects:
-      - openstack/devstack-gate
       - openstack/monasca-agent
       - openstack/monasca-api
       - openstack/monasca-common
@@ -70,7 +69,6 @@
       Base job for running tempest tests with monasca-log-api devstack plugin.
     timeout: 7800
     required-projects:
-      - openstack/devstack-gate
       - openstack/monasca-api
       - openstack/monasca-common
       - openstack/python-monascaclient

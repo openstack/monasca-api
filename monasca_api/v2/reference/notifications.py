@@ -58,7 +58,10 @@ class Notifications(notifications_api_v2.NotificationsV2API):
             raise falcon.HTTPBadRequest('Bad Request', str(ex))
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
-        notification = self._notifications_repo.find_notification_by_name(tenant_id, name)
+        try:
+            notification = self._notifications_repo.find_notification_by_name(tenant_id, name)
+        except exceptions.DoesNotExistException:
+            notification = None
 
         if notification:
             if not expected_id:

@@ -1081,8 +1081,9 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertNotEqual(original_state_updated_date,
                             new_state_updated_date,
                             'state_updated_at did not change')
-        alarm_tmp = tuple(alarm[k] for k in ('state', 'link', 'lifecycle_state'))
-        self.assertEqual(alarm_tmp, prev_state)
+        for k in ('state', 'link', 'lifecycle_state'):
+            self.assertEqual(alarm[k], prev_state[k])
+
         alarm['state_updated_timestamp'] = alarm_new['state_updated_timestamp']
         alarm['updated_timestamp'] = alarm_new['updated_timestamp']
         alarm['state'] = alarm_new['state']
@@ -1103,8 +1104,8 @@ class TestAlarmRepoDB(base.BaseTestCase):
         self.assertEqual(unchanged_state_updated_date,
                          new_state_updated_date,
                          'state_updated_at did change')
-        alarm_new_tmp = tuple(alarm_new[k] for k in ('state', 'link', 'lifecycle_state'))
-        self.assertEqual(alarm_new_tmp, prev_state)
+        for k in ('state', 'link', 'lifecycle_state'):
+            self.assertEqual(alarm_new[k], prev_state[k])
 
     def test_should_throw_exception_on_update(self):
         tenant_id = 'bob'

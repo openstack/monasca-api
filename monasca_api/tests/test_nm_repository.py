@@ -20,7 +20,7 @@ import fixtures
 from oslo_config import cfg
 from oslo_config import fixture as fixture_config
 from oslo_db.sqlalchemy.engines import create_engine
-from sqlalchemy import delete, MetaData, insert, bindparam
+from sqlalchemy import delete, MetaData, insert, inspect, bindparam
 
 from monasca_api.common.repositories.sqla import models
 from monasca_api.tests import base
@@ -109,6 +109,8 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
         with self.engine.connect() as conn:
             conn.execute(self._delete_nm_query)
             conn.execute(self._insert_nm_query, self.default_nms)
+            # TODO(thuvh) find better solution
+            conn.commit()
 
     def test_fixture_and_setup(self):
         class A(object):
@@ -133,7 +135,8 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
                                 'sub_alarm_definition_dimension']
 
         self.assertEqual(self.engine, a.engine)
-        self.assertEqual(self.engine.table_names(), expected_list_tables)
+        inspection = inspect(self.engine)
+        self.assertEqual(inspection.get_table_names(), expected_list_tables)
 
     def test_should_create(self):
         from monasca_api.common.repositories import exceptions
@@ -170,10 +173,17 @@ class TestNotificationMethodRepoDB(base.BaseTestCase):
 
     def test_should_find_by_name(self):
         nms = self.repo.find_notification_by_name('444', 'MyEmail')
-        expected = ('123', '444', 'MyEmail', 'EMAIL', 'a@b', 0,
-                    self.created_at,
-                    self.updated_at)
-        self.assertEqual(expected, nms)
+        self.assertEqual(nms['id'], '123')
+        self.assertEqual(nms['tenant_id'], '444')
+        self.assertEqual(nms['type'], 'EMAIL')
+        self.assertEqual(nms['address'], 'a@b')
+        self.assertEqual(nms['period'], 0)
+        self.assertEqual(nms['created_at'], self.created_at)
+        self.assertEqual(nms['updated_at'], self.updated_at)
+
+        from monasca_api.common.repositories import exceptions
+        self.assertRaises(exceptions.DoesNotExistException,
+                          self.repo.find_notification_by_name, '444', '222222MyEmail22222')
 
     def test_should_find(self):
         nms = self.repo.list_notifications('444', None, None, 2)

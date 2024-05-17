@@ -30,7 +30,7 @@ class NotificationMethodTypeRepository(sql_repository.SQLRepository,
         self.nmt = models.create_nmt_model(metadata)
 
         nmt = self.nmt
-        self._nmt_query = select([nmt.c.name])
+        self._nmt_query = select(nmt.c.name)
 
     @sql_repository.sql_try_catch_block
     def list_notification_method_types(self):

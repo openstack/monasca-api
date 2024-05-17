@@ -72,24 +72,24 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
         sadd_s = sadd.alias('sadd')
 
         aaa_aa = aa.alias('aaa_aa')
-        aaa = (select([aaa_aa.c.alarm_definition_id,
-                       models.group_concat([aaa_aa.c.action_id]).label('alarm_actions')])
+        aaa = (select(aaa_aa.c.alarm_definition_id,
+                      models.group_concat([aaa_aa.c.action_id]).label('alarm_actions'))
                .select_from(aaa_aa)
                .where(aaa_aa.c.alarm_state == text("'ALARM'"))
                .group_by(aaa_aa.c.alarm_definition_id)
                .alias('aaa'))
 
         aao_aa = aa.alias('aao_aa')
-        aao = (select([aao_aa.c.alarm_definition_id,
-                       models.group_concat([aao_aa.c.action_id]).label('ok_actions')])
+        aao = (select(aao_aa.c.alarm_definition_id,
+                      models.group_concat([aao_aa.c.action_id]).label('ok_actions'))
                .select_from(aao_aa)
                .where(aao_aa.c.alarm_state == text("'OK'"))
                .group_by(aao_aa.c.alarm_definition_id)
                .alias('aao'))
 
         aau_aa = aa.alias('aau_aa')
-        aau = (select([aau_aa.c.alarm_definition_id,
-                       models.group_concat([aau_aa.c.action_id]).label('undetermined_actions')])
+        aau = (select(aau_aa.c.alarm_definition_id,
+                      models.group_concat([aau_aa.c.action_id]).label('undetermined_actions'))
                .select_from(aau_aa)
                .where(aau_aa.c.alarm_state == text("'UNDETERMINED'"))
                .group_by(aau_aa.c.alarm_definition_id)
@@ -99,23 +99,21 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                 .outerjoin(aao, aao.c.alarm_definition_id == ad_s.c.id)
                                 .outerjoin(aau, aau.c.alarm_definition_id == ad_s.c.id))
 
-        self.base_query = (select([ad_s.c.id,
-                                   ad_s.c.name,
-                                   ad_s.c.description,
-                                   ad_s.c.expression,
-                                   ad_s.c.match_by,
-                                   ad_s.c.severity,
-                                   ad_s.c.actions_enabled,
-                                   aaa.c.alarm_actions,
-                                   aao.c.ok_actions,
-                                   aau.c.undetermined_actions]))
+        self.base_query = (select(ad_s.c.id,
+                                  ad_s.c.name,
+                                  ad_s.c.description,
+                                  ad_s.c.expression,
+                                  ad_s.c.match_by,
+                                  ad_s.c.severity,
+                                  ad_s.c.actions_enabled,
+                                  aaa.c.alarm_actions,
+                                  aao.c.ok_actions,
+                                  aau.c.undetermined_actions))
 
         self.get_sub_alarms_query = (
-            select(
-                [
-                    sa_s.c.id.label('sub_alarm_id'),
-                    sa_s.c.alarm_id,
-                    sa_s.c.expression]) .select_from(
+            select(sa_s.c.id.label('sub_alarm_id'),
+                   sa_s.c.alarm_id,
+                   sa_s.c.expression) .select_from(
                 sa_s.join(
                     a_s,
                     a_s.c.id == sa_s.c.alarm_id) .join(
@@ -124,18 +122,18 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                             ad_s.c.tenant_id == bindparam('b_tenant_id')) .where(
                                 ad_s.c.id == bindparam('b_id')) .distinct())
 
-        mdg = (select([md_s.c.dimension_set_id,
-                       models.group_concat(
-                           [md_s.c.name + text("'='") + md_s.c.value]).label('dimensions')])
+        mdg = (select(md_s.c.dimension_set_id,
+                      models.group_concat(
+                          [md_s.c.name + text("'='") + md_s.c.value]).label('dimensions'))
                .select_from(md_s)
                .group_by(md_s.c.dimension_set_id)
                .alias('mdg'))
 
         self.get_alarm_metrics_query = (
             select(
-                [a_s.c.id.label('alarm_id'),
-                 mde_s.c.name,
-                 mdg.c.dimensions]) .select_from(
+                a_s.c.id.label('alarm_id'),
+                mde_s.c.name,
+                mdg.c.dimensions) .select_from(
                 a_s.join(
                     ad_s,
                     ad_s.c.id == a_s.c.alarm_definition_id) .join(
@@ -161,17 +159,15 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                                .where(a.c.alarm_definition_id == bindparam('b_id')))
 
         columns_gc = [sadd_s.c.dimension_name + text("'='") + sadd_s.c.value]
-        saddg = (select([sadd_s.c.sub_alarm_definition_id,
-                         models.group_concat(columns_gc).label('dimensions')])
+        saddg = (select(sadd_s.c.sub_alarm_definition_id,
+                        models.group_concat(columns_gc).label('dimensions'))
                  .select_from(sadd_s)
                  .group_by(sadd_s.c.sub_alarm_definition_id)
                  .alias('saddg'))
 
         self.get_sub_alarm_definitions_query = (
-            select(
-                [
-                    sad_s,
-                    saddg.c.dimensions]) .select_from(
+            select(sad_s,
+                   saddg.c.dimensions) .select_from(
                 sad_s.outerjoin(
                     saddg,
                     saddg.c.sub_alarm_definition_id == sad_s.c.id)) .where(
@@ -257,7 +253,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 aa.c.alarm_definition_id == bindparam('b_alarm_definition_id')) .where(
                 aa.c.alarm_state == bindparam('b_alarm_state')))
 
-        self.select_nm_query = (select([nm_s.c.id])
+        self.select_nm_query = (select(nm_s.c.id)
                                 .select_from(nm_s)
                                 .where(nm_s.c.id == bindparam('b_id')))
 
@@ -280,12 +276,16 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                  .where(ad.c.id == bindparam('b_id'))
                  .where(ad.c.deleted_at == null()))
 
-        row = conn.execute(query,
-                           b_tenant_id=tenant_id,
-                           b_id=_id).fetchone()
+        row = conn.execute(
+            query,
+            parameters={
+                'b_tenant_id': tenant_id,
+                'b_id': _id
+            }
+        ).fetchone()
 
         if row is not None:
-            return dict(row)
+            return row._mapping
         else:
             raise exceptions.DoesNotExistException
 
@@ -309,7 +309,7 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 for n, v in dimensions.items():
                     bind_dimension_name = 'b_sadd_dimension_name_{}'.format(i)
                     bind_value = 'b_sadd_value_{}'.format(i)
-                    sadd_ = (select([sadd.c.sub_alarm_definition_id])
+                    sadd_ = (select(sadd.c.sub_alarm_definition_id)
                              .select_from(sadd)
                              .where(sadd.c.dimension_name == bindparam(bind_dimension_name))
                              .where(sadd.c.value == bindparam(bind_value))
@@ -356,22 +356,26 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
             parms['b_limit'] = limit + 1
 
-            return [dict(row) for row in conn.execute(query, parms).fetchall()]
+            return [row._mapping for row in conn.execute(query, parms).fetchall()]
 
     @sql_repository.sql_try_catch_block
     def get_sub_alarms(self, tenant_id, alarm_definition_id):
 
         with self._db_engine.connect() as conn:
-            return [dict(row) for row in conn.execute(self.get_sub_alarms_query,
-                                                      b_tenant_id=tenant_id,
-                                                      b_id=alarm_definition_id).fetchall()]
+            return [row._mapping for row in conn.execute(self.get_sub_alarms_query,
+                                                         parameters={
+                                                             'b_tenant_id': tenant_id,
+                                                             'b_id': alarm_definition_id
+                                                         }).fetchall()]
 
     @sql_repository.sql_try_catch_block
     def get_alarm_metrics(self, tenant_id, alarm_definition_id):
         with self._db_engine.connect() as conn:
-            return [dict(row) for row in conn.execute(self.get_alarm_metrics_query,
-                                                      b_tenant_id=tenant_id,
-                                                      b_id=alarm_definition_id).fetchall()]
+            return [row._mapping for row in conn.execute(self.get_alarm_metrics_query,
+                                                         parameters={
+                                                             'b_tenant_id': tenant_id,
+                                                             'b_id': alarm_definition_id
+                                                         }).fetchall()]
 
     @sql_repository.sql_try_catch_block
     def delete_alarm_definition(self, tenant_id, alarm_definition_id):
@@ -388,16 +392,24 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
         """
 
         with self._db_engine.begin() as conn:
-            cursor = conn.execute(self.soft_delete_ad_query,
-                                  b_tenant_id=tenant_id,
-                                  b_id=alarm_definition_id)
+            cursor = conn.execute(
+                self.soft_delete_ad_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': alarm_definition_id
+                }
+            )
 
             if cursor.rowcount < 1:
                 return False
 
-            conn.execute(self.delete_a_query,
-                         b_tenant_id=tenant_id,
-                         b_id=alarm_definition_id)
+            conn.execute(
+                self.delete_a_query,
+                parameters={
+                    'b_tenant_id': tenant_id,
+                    'b_id': alarm_definition_id
+                }
+            )
 
             return True
 
@@ -408,9 +420,13 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
     def _get_sub_alarm_definitions(self, conn, alarm_definition_id):
         return [
-            dict(row) for row in conn.execute(
+            row._mapping for row in conn.execute(
                 self.get_sub_alarm_definitions_query,
-                b_alarm_definition_id=alarm_definition_id).fetchall()]
+                parameters={
+                    'b_alarm_definition_id': alarm_definition_id
+                }
+            ).fetchall()
+        ]
 
     @sql_repository.sql_try_catch_block
     def create_alarm_definition(self, tenant_id, name, expression,
@@ -422,45 +438,57 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
             now = datetime.datetime.utcnow()
             alarm_definition_id = uuidutils.generate_uuid()
 
-            conn.execute(self.create_alarm_definition_insert_ad_query,
-                         b_id=alarm_definition_id,
-                         b_tenant_id=tenant_id,
-                         b_name=name.encode('utf8'),
-                         b_description=description.encode('utf8'),
-                         b_expression=expression.encode('utf8'),
-                         b_severity=severity.upper().encode('utf8'),
-                         b_match_by=",".join(match_by).encode('utf8'),
-                         b_actions_enabled=True,
-                         b_created_at=now,
-                         b_updated_at=now)
+            conn.execute(
+                self.create_alarm_definition_insert_ad_query,
+                parameters={
+                    'b_id': alarm_definition_id,
+                    'b_tenant_id': tenant_id,
+                    'b_name': name.encode('utf8'),
+                    'b_description': description.encode('utf8'),
+                    'b_expression': expression.encode('utf8'),
+                    'b_severity': severity.upper().encode('utf8'),
+                    'b_match_by': ",".join(match_by).encode('utf8'),
+                    'b_actions_enabled': True,
+                    'b_created_at': now,
+                    'b_updated_at': now
+                }
+            )
 
             for sub_expr in sub_expr_list:
                 sub_alarm_definition_id = uuidutils.generate_uuid()
                 sub_expr.id = sub_alarm_definition_id
                 metric_name = sub_expr.metric_name.encode("utf8")
                 operator = sub_expr.normalized_operator.encode('utf8')
-                conn.execute(self.create_alarm_definition_insert_sad_query,
-                             b_id=sub_alarm_definition_id,
-                             b_alarm_definition_id=alarm_definition_id,
-                             b_function=sub_expr.normalized_func.encode('utf8'),
-                             b_metric_name=metric_name,
-                             b_operator=operator,
-                             b_threshold=sub_expr.threshold,
-                             b_period=sub_expr.period,
-                             b_periods=sub_expr.periods,
-                             b_is_deterministic=sub_expr.deterministic,
-                             b_created_at=now,
-                             b_updated_at=now)
+                conn.execute(
+                    self.create_alarm_definition_insert_sad_query,
+                    parameters={
+                        'b_id': sub_alarm_definition_id,
+                        'b_alarm_definition_id': alarm_definition_id,
+                        'b_function': sub_expr.normalized_func.encode('utf8'),
+                        'b_metric_name': metric_name,
+                        'b_operator': operator,
+                        'b_threshold': sub_expr.threshold,
+                        'b_period': sub_expr.period,
+                        'b_periods': sub_expr.periods,
+                        'b_is_deterministic': sub_expr.deterministic,
+                        'b_created_at': now,
+                        'b_updated_at': now
+                    }
+                )
 
                 for dimension in sub_expr.dimensions_as_list:
                     parsed_dimension = dimension.split('=')
                     query = self.create_alarm_definition_insert_sadd_query
                     sadi = sub_alarm_definition_id
                     dimension_name = parsed_dimension[0].encode('utf8')
-                    conn.execute(query,
-                                 b_sub_alarm_definition_id=sadi,
-                                 b_dimension_name=dimension_name,
-                                 b_value=parsed_dimension[1].encode('utf8'))
+                    conn.execute(
+                        query,
+                        parameters={
+                            'b_sub_alarm_definition_id': sadi,
+                            'b_dimension_name': dimension_name,
+                            'b_value': parsed_dimension[1].encode('utf8')
+                        }
+                    )
 
             self._insert_into_alarm_action(conn, alarm_definition_id,
                                            alarm_actions, u"ALARM")
@@ -575,15 +603,17 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                              actions_enabled=bindparam('b_actions_enabled'),
                              updated_at=bindparam('b_updated_at')
                          ),
-                         b_name=new_name,
-                         b_description=new_description,
-                         b_expression=new_expression,
-                         b_match_by=new_match_by,
-                         b_severity=new_severity,
-                         b_actions_enabled=bool(new_actions_enabled),
-                         b_updated_at=now,
-                         b_tenant_id=tenant_id,
-                         b_id=alarm_definition_id)
+                         parameters={
+                             'b_name': new_name,
+                             'b_description': new_description,
+                             'b_expression': new_expression,
+                             'b_match_by': new_match_by,
+                             'b_severity': new_severity,
+                             'b_actions_enabled': bool(new_actions_enabled),
+                             'b_updated_at': now,
+                             'b_tenant_id': tenant_id,
+                             'b_id': alarm_definition_id
+                         })
             parms = []
             for sub_alarm_definition_id, sub_alarm_def in (
                     changed_sub_alarm_defs_by_id.items()):
@@ -608,8 +638,12 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                     self._delete_alarm_actions(conn, alarm_definition_id,
                                                'UNDETERMINED')
             else:
-                conn.execute(self.delete_aa_query,
-                             b_alarm_definition_id=alarm_definition_id)
+                conn.execute(
+                    self.delete_aa_query,
+                    parameters={
+                        'b_alarm_definition_id': alarm_definition_id
+                    }
+                )
 
             # Insert new alarm actions
             self._insert_into_alarm_action(conn, alarm_definition_id,
@@ -631,12 +665,19 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                      .where(ad.c.id == bindparam('b_id'))
                      .where(ad.c.deleted_at == null()))
 
-            updated_row = conn.execute(query,
-                                       b_id=alarm_definition_id,
-                                       b_tenant_id=tenant_id).fetchone()
+            updated_row = conn.execute(
+                query,
+                parameters={
+                    'b_id': alarm_definition_id,
+                    'b_tenant_id': tenant_id
+                }
+            ).fetchone()
 
+            # TODO(thuvh) need return not found exception
             if updated_row is None:
                 raise Exception("Failed to find current alarm definition")
+            else:
+                updated_row = updated_row._mapping
 
             sub_alarm_defs_dict = {'old': old_sub_alarm_defs_by_id,
                                    'changed': changed_sub_alarm_defs_by_id,
@@ -725,9 +766,13 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
                 unchanged_sub_alarm_defs_by_id)
 
     def _delete_alarm_actions(self, conn, _id, alarm_action_name):
-        conn.execute(self.delete_aa_state_query,
-                     b_alarm_definition_id=_id,
-                     b_alarm_state=alarm_action_name)
+        conn.execute(
+            self.delete_aa_state_query,
+            parameters={
+                'b_alarm_definition_id': _id,
+                'b_alarm_state': alarm_action_name
+            }
+        )
 
     def _insert_into_alarm_action(self, conn, alarm_definition_id, actions,
                                   alarm_state):
@@ -737,15 +782,22 @@ class AlarmDefinitionsRepository(sql_repository.SQLRepository,
 
         for action in actions:
             b_id = action.encode('utf8') if six.PY2 else action
-            row = conn.execute(self.select_nm_query,
-                               b_id=b_id).fetchone()
+            row = conn.execute(
+                self.select_nm_query,
+                parameters={
+                    'b_id': b_id
+                }
+            ).fetchone()
             if row is None:
                 raise exceptions.InvalidUpdateException(
                     "Non-existent notification id {} submitted for {} "
                     "notification action".format(encodeutils.to_utf8(action),
                                                  encodeutils.to_utf8(alarm_state)))
-            conn.execute(self.insert_aa_query,
-                         b_alarm_definition_id=alarm_definition_id,
-                         b_alarm_state=alarm_state.encode('utf8') if six.PY2 else alarm_state,
-                         b_action_id=action.encode('utf8') if six.PY2 else action
-                         )
+            conn.execute(
+                self.insert_aa_query,
+                parameters={
+                    'b_alarm_definition_id': alarm_definition_id,
+                    'b_alarm_state': alarm_state.encode('utf8') if six.PY2 else alarm_state,
+                    'b_action_id': action.encode('utf8') if six.PY2 else action
+                }
+            )
