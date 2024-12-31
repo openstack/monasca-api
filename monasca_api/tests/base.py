@@ -92,7 +92,7 @@ class BaseApiTestCase(BaseTestCase, testing.TestCase):
         # TODO(dszumski): Loading the app from api/server.py seems to make
         # more sense here so that we don't have to manually keep the tests in
         # sync with it.
-        self.app = falcon.API(request_type=request.Request)
+        self.app = falcon.App(request_type=request.Request)
         # NOTE(dszumski): Falcon 2.0.0 switches the default for this from True
         # to False so we explicitly set it here to prevent the behaviour
         # changing between versions.

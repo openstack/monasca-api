@@ -112,8 +112,8 @@ function pre_install_monasca {
     find_nearest_apache_mirror
     install_gate_config_holder
     configure_system_encoding_format
-    install_kafka
     install_zookeeper
+    install_kafka
     install_storm
 
     install_monasca_virtual_env
@@ -218,18 +218,13 @@ function start_monasca_services {
 
 function delete_kafka_topics {
 
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic metrics || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic events || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic alarm-state-transitions || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic alarm-notifications || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic retry-notifications || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic 60-seconds-notifications || true
+    for topic in ${KAFKA_SERVICE_TOPICS//,/ }; do
+        /opt/kafka/bin/kafka-topics.sh --delete \
+            --bootstrap-server $KAFKA_SERVICE_HOST:$KAFKA_SERVICE_PORT \
+            --replication-factor 1 \
+            --partitions 3 \
+            --topic $topic || true
+    done
 }
 
 function unstack_monasca {
@@ -414,7 +409,8 @@ function install_monasca_influxdb {
         echo_summary "Install Monasca Influxdb"
 
         local influxdb_deb=influxdb_${INFLUXDB_VERSION}_amd64.deb
-        local influxdb_deb_url=https://dl.influxdata.com/influxdb/releases/${influxdb_deb}
+        local influxdb_deb_url=${INFLUXDB_DEB_URL}${influxdb_deb}
+        echo "influxdb deb url: ${influxdb_deb_url}"
 
         local influxdb_deb_dest
         influxdb_deb_dest=`get_extra_file ${influxdb_deb_url}`
@@ -594,14 +590,29 @@ function install_schema {
 }
 
 function install_schema_metric_database_influxdb {
-    sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/influxdb_setup.py $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    if python3_enabled; then
-        sudo python3 $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    else
-        sudo python $MONASCA_SCHEMA_DIR/influxdb_setup.py
-    fi
+    # sudo cp -f "${MONASCA_API_DIR}"/devstack/files/schema/influxdb_setup.py $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    # sudo chmod 0750 $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    # sudo chown root:root $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    # if python3_enabled; then
+    #     sudo python3 $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    # else
+    #     sudo python $MONASCA_SCHEMA_DIR/influxdb_setup.py
+    # fi
+    curl --user root:root \
+        -XPOST 'http://127.0.0.1:8086/query' \
+        --data-urlencode 'q=CREATE DATABASE "mon"'
+    curl --user root:root \
+        -XPOST 'http://127.0.0.1:8086/query' \
+        --data-urlencode 'db=mon' \
+        --data-urlencode 'q=CREATE RETENTION POLICY "persister_all" ON mon DURATION 90d REPLICATION 1 DEFAULT'
+    curl --user root:root \
+        -XPOST 'http://127.0.0.1:8086/query' \
+        --data-urlencode 'db=mon' \
+        --data-urlencode "q=CREATE USER mon_api WITH PASSWORD 'password'"
+    curl --user root:root \
+        -XPOST 'http://127.0.0.1:8086/query' \
+        --data-urlencode 'db=mon' \
+        --data-urlencode "q=CREATE USER mon_persister WITH PASSWORD 'password'"
 }
 
 function install_schema_metric_database_vertica {
@@ -628,18 +639,13 @@ function install_schema_kafka_topics {
     sudo chmod 0766 /opt/kafka/logs
     # Right number of partition is crucial for performance optimization,
     # in high load(real world) deployment this number should be increased.
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 3 --topic metrics
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 2 --topic events
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 2 --topic alarm-state-transitions
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 2 --topic alarm-notifications
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 2 --topic retry-notifications
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 2 --topic 60-seconds-notifications
+    for topic in ${KAFKA_SERVICE_TOPICS//,/ }; do
+        /opt/kafka/bin/kafka-topics.sh --create \
+            --bootstrap-server $KAFKA_SERVICE_HOST:$KAFKA_SERVICE_PORT \
+            --replication-factor 1 \
+            --partitions 3 \
+            --topic $topic
+    done
 }
 
 function install_schema_alarm_database {

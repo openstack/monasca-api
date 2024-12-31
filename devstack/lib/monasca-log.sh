@@ -738,18 +738,24 @@ function clean_gate_config_holder {
 
 function configure_kafka {
     echo_summary "Configuring Kafka topics"
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 4 --topic log
-    /opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 \
-        --replication-factor 1 --partitions 4 --topic transformed-log
+    for topic in ${KAFKA_SERVICE_LOG_TOPICS//,/ }; do
+        /opt/kafka/bin/kafka-topics.sh --create \
+            --bootstrap-server $KAFKA_SERVICE_HOST:$KAFKA_SERVICE_PORT \
+            --replication-factor 1 \
+            --partitions 4 \
+            --topic $topic
+    done
 }
 
 function delete_kafka_topics {
     echo_summary "Deleting Kafka topics"
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic log || true
-        /opt/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 \
-                --topic transformed-log || true
+    for topic in ${KAFKA_SERVICE_LOG_TOPICS//,/ }; do
+        /opt/kafka/bin/kafka-topics.sh --delete \
+            --bootstrap-server $KAFKA_SERVICE_HOST:$KAFKA_SERVICE_PORT \
+            --replication-factor 1 \
+            --partitions 4 \
+            --topic $topic || true
+    done
 }
 
 function create_log_management_accounts {

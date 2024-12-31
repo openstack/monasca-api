@@ -55,7 +55,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                 notification, self.valid_periods, require_all=require_all)
         except schemas_exceptions.ValidationException as ex:
             LOG.exception(ex)
-            raise falcon.HTTPBadRequest('Bad Request', str(ex))
+            raise falcon.HTTPBadRequest(title='Bad Request', description=str(ex))
 
     def _validate_name_not_conflicting(self, tenant_id, name, expected_id=None):
         try:
@@ -90,8 +90,9 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                 "Found no notification method type  {}."
                 "Did you install/enable the plugin for that type?"
                 .format(nmt))
-            raise falcon.HTTPBadRequest('Bad Request', "Not a valid notification method type {} "
-                                        .format(nmt))
+            raise falcon.HTTPBadRequest(
+                title='Bad Request',
+                description="Not a valid notification method type {} ".format(nmt))
 
     def _create_notification(self, tenant_id, notification, uri):
 
@@ -208,7 +209,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         notification = helpers.from_json(req)
         self._parse_and_validate_notification(notification)
         result = self._create_notification(req.project_id, notification, req.uri)
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_201
 
     @resource.resource_try_catch_block
@@ -243,7 +244,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
                                              notification_method_id,
                                              req.uri)
 
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
@@ -260,7 +261,7 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         self._parse_and_validate_notification(notification, require_all=True)
         result = self._update_notification(notification_method_id, req.project_id,
                                            notification, req.uri)
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
@@ -272,5 +273,5 @@ class Notifications(notifications_api_v2.NotificationsV2API):
         self._parse_and_validate_notification(notification, require_all=True)
         result = self._update_notification(notification_method_id, req.project_id,
                                            notification, req.uri)
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200

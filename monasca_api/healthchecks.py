@@ -55,4 +55,4 @@ class HealthChecks(healthcheck_api.HealthCheckApi):
         res.status = (self.HEALTHY_CODE_GET
                       if health else self.NOT_HEALTHY_CODE)
         res.cache_control = self.CACHE_CONTROL
-        res.body = helpers.to_json(status_data)
+        res.text = helpers.to_json(status_data)

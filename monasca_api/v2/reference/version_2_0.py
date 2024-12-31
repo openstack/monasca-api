@@ -34,4 +34,4 @@ class Version2(object):
             'status': 'CURRENT',
             'updated': "2013-03-06T00:00:00.000Z"
         }
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)

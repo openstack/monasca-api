@@ -53,12 +53,12 @@ class Versions(versions_api.VersionsAPI):
                 VERSIONS[version]['links'][0]['href'] = (
                     req_uri + version)
                 result['elements'].append(VERSIONS[version])
-            res.body = helpers.to_json(result)
+            res.text = helpers.to_json(result)
             res.status = falcon.HTTP_200
         else:
             if version_id in VERSIONS:
                 VERSIONS[version_id]['links'][0]['href'] = req_uri
-                res.body = helpers.to_json(VERSIONS[version_id])
+                res.text = helpers.to_json(VERSIONS[version_id])
                 res.status = falcon.HTTP_200
             else:
                 raise HTTPUnprocessableEntityError('Invalid version',

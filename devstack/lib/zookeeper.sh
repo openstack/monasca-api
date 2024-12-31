@@ -31,8 +31,8 @@ function clean_zookeeper {
         sudo systemctl stop zookeeper
         sudo rm -rf /var/log/zookeeper
         sudo rm -rf /var/lib/zookeeper
-        sudo rm -rf /opt/zookeeper-${ZOOKEEPER_VERSION}
         sudo rm -rf /opt/zookeeper
+        sudo rm -rf /opt/apache-zookeeper-${ZOOKEEPER_VERSION}-bin
         sudo rm -rf /etc/systemd/system/zookeeper.service
         sudo systemctl daemon-reload
     fi
@@ -43,7 +43,7 @@ function install_zookeeper {
     if is_zookeeper_enabled; then
         echo_summary "Install Monasca Zookeeper"
 
-        local zookeeper_tarball=zookeeper-${ZOOKEEPER_VERSION}.tar.gz
+        local zookeeper_tarball=apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz
         local zookeeper_tarball_url=${APACHE_ARCHIVES}zookeeper/zookeeper-${ZOOKEEPER_VERSION}/${zookeeper_tarball}
         local zookeeper_tarball_dest
         zookeeper_tarball_dest=`get_extra_file ${zookeeper_tarball_url}`
@@ -51,7 +51,7 @@ function install_zookeeper {
         sudo groupadd --system zookeeper || true
         sudo useradd --system -g zookeeper zookeeper || true
         sudo tar -xzf ${zookeeper_tarball_dest} -C /opt
-        sudo ln -sf /opt/zookeeper-${ZOOKEEPER_VERSION} /opt/zookeeper
+        sudo ln -sf /opt/apache-zookeeper-${ZOOKEEPER_VERSION}-bin /opt/zookeeper
         sudo cp $PLUGIN_FILES/zookeeper/* /opt/zookeeper/conf
         sudo chown -R zookeeper:zookeeper /opt/zookeeper/
 
@@ -62,7 +62,6 @@ function install_zookeeper {
         sudo chown -R zookeeper:zookeeper /var/lib/zookeeper
 
         sudo cp -f "${MONASCA_API_DIR}"/devstack/files/zookeeper/zookeeper.service /etc/systemd/system/zookeeper.service
-        sudo chown root:root /etc/systemd/system/kafka.service
         sudo chmod 644 /etc/systemd/system/zookeeper.service
 
         sudo systemctl daemon-reload

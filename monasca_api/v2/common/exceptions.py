@@ -17,9 +17,21 @@ from falcon.http_error import HTTPError
 
 class HTTPUnprocessableEntityError(HTTPError):
     def __init__(self, title, description, **kwargs):
-        HTTPError.__init__(self, '422 Unprocessable Entity', title, description, **kwargs)
+        HTTPError.__init__(
+            self,
+            '422 Unprocessable Entity',
+            title=title,
+            description=description,
+            **kwargs
+        )
 
 
 class HTTPBadRequestError(HTTPError):
     def __init__(self, title, description, **kwargs):
-        HTTPError.__init__(self, '400 Bad Request', title, description, **kwargs)
+        HTTPError.__init__(
+            self,
+            '400 Bad Request',
+            title=title,
+            description=description,
+            **kwargs
+        )

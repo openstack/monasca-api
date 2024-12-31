@@ -70,7 +70,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
@@ -96,7 +96,7 @@ class Alarms(alarms_api_v2.AlarmsV2API,
 
         result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     @resource.resource_try_catch_block
@@ -150,13 +150,13 @@ class Alarms(alarms_api_v2.AlarmsV2API,
                                       query_parms, offset,
                                       req.limit)
 
-            res.body = helpers.to_json(result)
+            res.text = helpers.to_json(result)
             res.status = falcon.HTTP_200
 
         else:
             result = self._alarm_show(req.uri, req.project_id, alarm_id)
 
-            res.body = helpers.to_json(result)
+            res.text = helpers.to_json(result)
             res.status = falcon.HTTP_200
 
     def _alarm_update(self, tenant_id, alarm_id, new_state, lifecycle_state,
@@ -395,7 +395,7 @@ class AlarmsCount(alarms_api_v2.AlarmsCountV2API, alarming.Alarming):
 
         result = self._alarms_count(req.uri, req.project_id, query_parms, offset, req.limit)
 
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _alarms_count(self, req_uri, tenant_id, query_parms, offset, limit):
@@ -487,7 +487,7 @@ class AlarmsStateHistory(alarms_api_v2.AlarmsStateHistoryV2API,
                                          req.uri, offset,
                                          req.limit)
 
-        res.body = helpers.to_json(result)
+        res.text = helpers.to_json(result)
         res.status = falcon.HTTP_200
 
     def _alarm_history_list(self, tenant_id, start_timestamp,

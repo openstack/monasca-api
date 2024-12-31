@@ -42,11 +42,11 @@ def from_json(req):
     :raises falcon.HTTPBadRequest:
     """
     try:
-        return req.media
+        return req.get_media()
     except Exception as ex:
         LOG.exception(ex)
-        raise falcon.HTTPBadRequest('Bad request',
-                                    'Request body is not valid JSON')
+        raise falcon.HTTPBadRequest(title='Bad request',
+                                    description='Request body is not valid JSON')
 
 
 def to_json(data):
@@ -67,8 +67,9 @@ def to_json(data):
 
 def validate_json_content_type(req):
     if req.content_type not in ['application/json']:
-        raise falcon.HTTPBadRequest('Bad request', 'Bad content type. Must be '
-                                                   'application/json')
+        raise falcon.HTTPBadRequest(
+            title='Bad request',
+            description='Bad content type. Must be application/json')
 
 
 def validate_authorization(http_request, authorized_rules_list):
@@ -247,8 +248,8 @@ def get_query_endtime_timestamp(req, required=True):
 def validate_start_end_timestamps(start_timestamp, end_timestamp=None):
     if end_timestamp:
         if not start_timestamp < end_timestamp:
-            raise falcon.HTTPBadRequest('Bad request',
-                                        'start_time must be before end_time')
+            raise falcon.HTTPBadRequest(title='Bad request',
+                                        description='start_time must be before end_time')
 
 
 def _convert_time_string(date_time_string):

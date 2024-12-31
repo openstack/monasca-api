@@ -34,24 +34,25 @@ def resource_try_catch_block(fun):
             raise falcon.HTTPNotFound
 
         except exceptions.MultipleMetricsException as ex:
-            raise falcon.HTTPConflict("MultipleMetrics", str(ex))
+            raise falcon.HTTPConflict(title="MultipleMetrics", description=str(ex))
 
         except exceptions.AlreadyExistsException as ex:
-            raise falcon.HTTPConflict(ex.__class__.__name__, str(ex))
+            raise falcon.HTTPConflict(title=ex.__class__.__name__, description=str(ex))
 
         except exceptions.InvalidUpdateException as ex:
-            raise HTTPUnprocessableEntityError(ex.__class__.__name__, str(ex))
+            raise HTTPUnprocessableEntityError(title=ex.__class__.__name__, description=str(ex))
 
         except exceptions.RepositoryException as ex:
             LOG.exception(ex)
             msg = " ".join(map(str, ex.args[0].args))
-            raise falcon.HTTPInternalServerError('The repository was unable '
-                                                 'to process your request',
-                                                 msg)
+            raise falcon.HTTPInternalServerError(
+                title='The repository was unable to process your request',
+                description=msg
+            )
 
         except Exception as ex:
             LOG.exception(ex)
-            raise falcon.HTTPInternalServerError('Service unavailable',
-                                                 str(ex))
+            raise falcon.HTTPInternalServerError(title='Service unavailable',
+                                                 description=str(ex))
 
     return try_it
